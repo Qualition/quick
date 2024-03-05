@@ -1,0 +1,9 @@
+cirq
+dwave-ocean-sdk
+dwave.gate
+numpy
+pennylane
+pytket
+pytket-qiskit
+qiskit
+qiskit_aer
