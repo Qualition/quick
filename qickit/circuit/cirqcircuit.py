@@ -18,12 +18,12 @@ __all__ = ['CirqCircuit']
 
 from collections.abc import Iterable
 import numpy as np
+from numpy.typing import NDArray
 import math
 
 # Cirq imports
 import cirq
 from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, CX, CZ
-from cirq.circuits.qasm_output import QasmUGate
 CY = cirq.ControlledGate(Y)
 
 # Qiskit imports
@@ -298,9 +298,25 @@ class CirqCircuit(Circuit):
             The index of the qubit to apply the gate to.
         """
         # Create a single qubit unitary gate
-        u3 = QasmUGate(angles[0] / np.pi, angles[1] / np.pi, angles[2] / np.pi)
+        u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
+              [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * np.cos(angles[0]/2)]]
+
+        # Define the U3 gate class
+        class U3(cirq.Gate):
+            def __init__(self):
+                super(U3, self)
+
+            def _num_qubits_(self):
+                return 1
+
+            def _unitary_(self):
+                return np.array(u3)
+
+            def _circuit_diagram_info_(self, args):
+                return "U3"
+
         # Apply the U3 gate to the circuit at the specified qubit
-        self.circuit.append(u3(self.qr[qubit_index]))
+        self.circuit.append(U3().on(self.qr[qubit_index]))
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'U3', 'angles': angles, 'qubit_index': qubit_index})
@@ -308,7 +324,7 @@ class CirqCircuit(Circuit):
     def CX(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CX gate to the circuit.
+        """ Apply a Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -328,7 +344,7 @@ class CirqCircuit(Circuit):
     def CY(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CY gate to the circuit.
+        """ Apply a Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -348,7 +364,7 @@ class CirqCircuit(Circuit):
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CZ gate to the circuit.
+        """ Apply a Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -429,7 +445,7 @@ class CirqCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRX gate to the circuit.
+        """ Apply a Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -456,7 +472,7 @@ class CirqCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRY gate to the circuit.
+        """ Apply a Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -483,7 +499,7 @@ class CirqCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRZ gate to the circuit.
+        """ Apply a Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -510,7 +526,7 @@ class CirqCircuit(Circuit):
             angles: Iterable[float],
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CU3 gate to the circuit.
+        """ Apply a Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -521,8 +537,26 @@ class CirqCircuit(Circuit):
         `target_index` (int):
             The index of the target qubit.
         """
+        # Create a single qubit unitary gate
+        u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
+              [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * np.cos(angles[0]/2)]]
+
+        # Define the U3 gate class
+        class U3(cirq.Gate):
+            def __init__(self):
+                super(U3, self)
+
+            def _num_qubits_(self):
+                return 1
+
+            def _unitary_(self):
+                return np.array(u3)
+
+            def _circuit_diagram_info_(self, args):
+                return "U3"
+
         # Create a Controlled-U3 gate with the specified angles
-        cu3 = QasmUGate(angles[0] / np.pi, angles[1] / np.pi, angles[2] / np.pi)(self.qr[target_index]).controlled_by(self.qr[control_index])
+        cu3 = U3().on(self.qr[target_index]).controlled_by(self.qr[control_index])
         # Apply the CU3 gate to the circuit at the specified control and target qubits
         self.circuit.append(cu3)
 
@@ -532,7 +566,7 @@ class CirqCircuit(Circuit):
     def MCX(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCX gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -555,7 +589,7 @@ class CirqCircuit(Circuit):
     def MCY(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCY gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -578,7 +612,7 @@ class CirqCircuit(Circuit):
     def MCZ(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCZ gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -601,7 +635,7 @@ class CirqCircuit(Circuit):
     def MCH(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Hadamard gate to the circuit.
+        """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Parameters
         ----------
@@ -624,7 +658,7 @@ class CirqCircuit(Circuit):
     def MCS(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-S gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -647,7 +681,7 @@ class CirqCircuit(Circuit):
     def MCT(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-T gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -671,7 +705,7 @@ class CirqCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRX gate to the circuit.
+        """ Apply a Multi-Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -701,7 +735,7 @@ class CirqCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRY gate to the circuit.
+        """ Apply a Multi-Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -731,7 +765,7 @@ class CirqCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRZ gate to the circuit.
+        """ Apply a Multi-Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -761,7 +795,7 @@ class CirqCircuit(Circuit):
              angles: Iterable[float],
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCU3 gate to the circuit.
+        """ Apply a Multi-Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -776,12 +810,27 @@ class CirqCircuit(Circuit):
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled U3 gate with the number of control qubits equal to the length of control_indices with the specified angle
-        cu3 = QasmUGate(angles[0] / np.pi, angles[1] / np.pi, angles[2] / np.pi)
+        # Create a single qubit unitary gate
+        u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
+              [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * np.cos(angles[0]/2)]]
+
+        # Define the U3 gate class
+        class U3(cirq.Gate):
+            def __init__(self):
+                super(U3, self)
+
+            def _num_qubits_(self):
+                return 1
+
+            def _unitary_(self):
+                return np.array(u3)
+
+            def _circuit_diagram_info_(self, args):
+                return "U3"
 
         # Apply the MCU3 gate to the circuit at the control and target qubits
         for i in range(len(target_indices)):
-            self.circuit.append(cu3(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
+            self.circuit.append(U3().on(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'MCU3', 'angles': angles, 'control_indices': control_indices, 'target_indices': target_indices})
@@ -817,16 +866,19 @@ class CirqCircuit(Circuit):
         -------
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
+        # Copy the circuit as the operations are applied inplace
+        circuit: CirqCircuit = self.copy()
+
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-        self.change_lsb()
+        circuit.change_lsb()
 
         if backend is None:
             # Define the state vector
-            state_vector = self.circuit.final_state_vector(qubit_order=self.qr)
+            state_vector = circuit.circuit.final_state_vector(qubit_order=self.qr)
 
         else:
             # Run the circuit on the specified backend and define the state vector
-            state_vector = backend.get_statevector(self.circuit)
+            state_vector = backend.get_statevector(circuit)
 
         # Round off the small values to 0 (values below 1e-12 are set to 0)
         state_vector = np.round(state_vector, 12)
@@ -877,10 +929,12 @@ class CirqCircuit(Circuit):
                       for index, amplitude in enumerate(state_vector)}
 
         else:
+            # Copy the circuit as the operations are applied inplace
+            circuit: CirqCircuit = self.copy()
             # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-            self.change_lsb()
+            circuit.change_lsb()
             # Run the circuit on the specified backend
-            counts = backend.get_counts(self.circuit, num_shots)
+            counts = backend.get_counts(circuit, num_shots)
 
         # Return the counts
         return counts
@@ -921,8 +975,24 @@ class CirqCircuit(Circuit):
         # Return the max depth
         return max_depth
 
-    def optimize(self) -> None:
-        """ Transpile the circuit to CX and U3 gates.
+    def get_unitary(self) -> NDArray[np.number]:
+        """ Get the unitary matrix of the circuit.
+
+        Returns
+        -------
+        `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
+        """
+        # Copy the circuit as the operations are applied inplace
+        circuit: CirqCircuit = self.copy()
+
+        # Define the unitary matrix
+        unitary = cirq.unitary(circuit.circuit)
+
+        # Return the unitary matrix
+        return unitary
+
+    def transpile(self) -> None:
+        """ Transpile the circuit to U3 and CX gates.
         """
         # Convert the circuit to QiskitCircuit
         circuit = self.convert(QiskitCircuit)

@@ -18,6 +18,7 @@ __all__ = ['QiskitCircuit']
 
 from collections.abc import Iterable
 import numpy as np
+from numpy.typing import NDArray
 import math
 import matplotlib.pyplot as plt
 
@@ -25,7 +26,7 @@ import matplotlib.pyplot as plt
 import qiskit
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, execute, transpile
 from qiskit.circuit.library import *
-from qiskit_aer import AerSimulator, StatevectorSimulator
+from qiskit_aer import AerSimulator, StatevectorSimulator, UnitarySimulator
 
 # Import `qickit.Circuit`
 from qickit.circuit import Circuit
@@ -238,7 +239,7 @@ class QiskitCircuit(Circuit):
 
     def S(self,
           qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a S gate to the circuit.
+        """ Apply a Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -262,7 +263,7 @@ class QiskitCircuit(Circuit):
 
     def T(self,
           qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a T gate to the circuit.
+        """ Apply a Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -299,7 +300,7 @@ class QiskitCircuit(Circuit):
         # Create a single qubit unitary gate
         u3 = U3Gate(angles[0], angles[1], angles[2])
         # Apply the U3 gate to the circuit at the specified qubit
-        self.circuit.append(u3, qubit_index)
+        self.circuit.append(u3, [qubit_index])
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'U3', 'angles': angles, 'qubit_index': qubit_index})
@@ -307,7 +308,7 @@ class QiskitCircuit(Circuit):
     def CX(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CX gate to the circuit.
+        """ Apply a Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -327,7 +328,7 @@ class QiskitCircuit(Circuit):
     def CY(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CY gate to the circuit.
+        """ Apply a Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -347,7 +348,7 @@ class QiskitCircuit(Circuit):
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CZ gate to the circuit.
+        """ Apply a Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -428,7 +429,7 @@ class QiskitCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRX gate to the circuit.
+        """ Apply a Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -455,7 +456,7 @@ class QiskitCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRY gate to the circuit.
+        """ Apply a Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -482,7 +483,7 @@ class QiskitCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRZ gate to the circuit.
+        """ Apply a Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -509,7 +510,7 @@ class QiskitCircuit(Circuit):
             angles: Iterable[float],
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CU3 gate to the circuit.
+        """ Apply a Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -523,7 +524,7 @@ class QiskitCircuit(Circuit):
         # Create a Controlled-U3 gate with the specified angles
         cu3 = U3Gate(angles[0], angles[1], angles[2]).control(1)
         # Apply the CU3 gate to the circuit at the specified control and target qubits
-        self.circuit.append(cu3, control_index, target_index)
+        self.circuit.append(cu3, [control_index, target_index])
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'CU3', 'angles': angles, 'control_index': control_index, 'target_index': target_index})
@@ -531,7 +532,7 @@ class QiskitCircuit(Circuit):
     def MCX(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCX gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -557,7 +558,7 @@ class QiskitCircuit(Circuit):
     def MCY(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCY gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -583,7 +584,7 @@ class QiskitCircuit(Circuit):
     def MCZ(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCZ gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -609,7 +610,7 @@ class QiskitCircuit(Circuit):
     def MCH(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Hadamard gate to the circuit.
+        """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Parameters
         ----------
@@ -635,7 +636,7 @@ class QiskitCircuit(Circuit):
     def MCS(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-S gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -661,7 +662,7 @@ class QiskitCircuit(Circuit):
     def MCT(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-T gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -688,7 +689,7 @@ class QiskitCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRX gate to the circuit.
+        """ Apply a Multi-Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -721,7 +722,7 @@ class QiskitCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRY gate to the circuit.
+        """ Apply a Multi-Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -754,7 +755,7 @@ class QiskitCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRZ gate to the circuit.
+        """ Apply a Multi-Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -787,7 +788,7 @@ class QiskitCircuit(Circuit):
              angles: Iterable[float],
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCU3 gate to the circuit.
+        """ Apply a Multi-Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -845,13 +846,13 @@ class QiskitCircuit(Circuit):
         """
         if backend is None:
             # If no backend is provided, use the StatevectorSimulator
-            backend = StatevectorSimulator(method="statevector")
+            backend: StatevectorSimulator = StatevectorSimulator(method="statevector")
             # Run the circuit and define the state vector
-            state_vector = (backend.run(self.circuit.decompose(reps=100))).result().get_statevector()
+            state_vector = backend.run(self.circuit.decompose(reps=1000)).result().get_statevector()
 
         else:
             # Run the circuit on the specified backend and define the state vector
-            state_vector = backend.get_statevector(self.circuit)
+            state_vector = backend.get_statevector(self)
 
         # Round off the small values to 0 (values below 1e-12 are set to 0)
         state_vector = np.round(state_vector, 12)
@@ -899,7 +900,7 @@ class QiskitCircuit(Circuit):
 
         if backend is None:
             # If no backend is provided, use the AerSimualtor
-            backend = AerSimulator()
+            backend: AerSimulator = AerSimulator()
             # Run the circuit
             result = execute(self.circuit, backend, shots=num_shots, seed_simulator=0).result()
             # Get the counts
@@ -907,7 +908,7 @@ class QiskitCircuit(Circuit):
 
         else:
             # Run the circuit on the specified backend
-            counts = backend.get_counts(self.circuit, num_shots)
+            counts = backend.get_counts(self, num_shots)
 
         # Return the counts
         return counts
@@ -926,8 +927,24 @@ class QiskitCircuit(Circuit):
         """
         return self.circuit.decompose(reps=100).depth()
 
-    def optimize(self) -> None:
-        """ Transpile the circuit to CX and U3 gates.
+    def get_unitary(self) -> NDArray[np.number]:
+        """ Get the unitary matrix of the circuit.
+
+        Returns
+        -------
+        `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
+        """
+        # Define the backend
+        backend: UnitarySimulator = UnitarySimulator(method='unitary')
+
+        # Get the unitary matrix of the circuit
+        unitary = backend.run(self.circuit.decompose(reps=1000)).result().get_unitary()
+
+        # Return the unitary matrix
+        return unitary
+
+    def transpile(self) -> None:
+        """ Transpile the circuit to U3 and CX gates.
         """
         # Use the built-in transpiler from IBM Qiskit to transpile the circuit
         transpiled_circuit: qiskit.QuantumCircuit = transpile(self.circuit, basis_gates = ['cx', 'u3'])

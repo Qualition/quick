@@ -18,6 +18,7 @@ __all__ = ['TKETCircuit']
 
 from collections.abc import Iterable
 import numpy as np
+from numpy.typing import NDArray
 import math
 
 # TKET imports
@@ -236,7 +237,7 @@ class TKETCircuit(Circuit):
 
     def S(self,
           qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a S gate to the circuit.
+        """ Apply a Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -260,7 +261,7 @@ class TKETCircuit(Circuit):
 
     def T(self,
           qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a T gate to the circuit.
+        """ Apply a Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -305,7 +306,7 @@ class TKETCircuit(Circuit):
     def CX(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CX gate to the circuit.
+        """ Apply a Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -325,7 +326,7 @@ class TKETCircuit(Circuit):
     def CY(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CY gate to the circuit.
+        """ Apply a Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -345,7 +346,7 @@ class TKETCircuit(Circuit):
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CZ gate to the circuit.
+        """ Apply a Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -427,7 +428,7 @@ class TKETCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRX gate to the circuit.
+        """ Apply a Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -454,7 +455,7 @@ class TKETCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRY gate to the circuit.
+        """ Apply a Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -481,7 +482,7 @@ class TKETCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRZ gate to the circuit.
+        """ Apply a Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -508,7 +509,7 @@ class TKETCircuit(Circuit):
             angles: Iterable[float],
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CU3 gate to the circuit.
+        """ Apply a Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -530,7 +531,7 @@ class TKETCircuit(Circuit):
     def MCX(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCX gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -556,7 +557,7 @@ class TKETCircuit(Circuit):
     def MCY(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCY gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -582,7 +583,7 @@ class TKETCircuit(Circuit):
     def MCZ(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCZ gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -608,7 +609,7 @@ class TKETCircuit(Circuit):
     def MCH(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Hadamard gate to the circuit.
+        """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Parameters
         ----------
@@ -635,7 +636,7 @@ class TKETCircuit(Circuit):
     def MCS(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-S gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -662,7 +663,7 @@ class TKETCircuit(Circuit):
     def MCT(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-T gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -690,7 +691,7 @@ class TKETCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRX gate to the circuit.
+        """ Apply a Multi-Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -724,7 +725,7 @@ class TKETCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRY gate to the circuit.
+        """ Apply a Multi-Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -758,7 +759,7 @@ class TKETCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRZ gate to the circuit.
+        """ Apply a Multi-Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -792,7 +793,7 @@ class TKETCircuit(Circuit):
              angles: Iterable[float],
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCU3 gate to the circuit.
+        """ Apply a Multi-Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -850,16 +851,19 @@ class TKETCircuit(Circuit):
         -------
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
+        # Copy the circuit as the operations are applied inplace
+        circuit: TKETCircuit = self.copy()
+
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-        self.change_lsb()
+        circuit.change_lsb()
 
         if backend is None:
             # Run the circuit and define the state vector
-            state_vector = self.circuit.get_statevector()
+            state_vector = circuit.circuit.get_statevector()
 
         else:
             # Run the circuit on the specified backend and define the state vector
-            state_vector = backend.get_statevector(self.circuit)
+            state_vector = backend.get_statevector(circuit)
 
         # Round off the small values to 0 (values below 1e-12 are set to 0)
         state_vector = np.round(state_vector, 12)
@@ -905,13 +909,20 @@ class TKETCircuit(Circuit):
         if self.measured is False:
             self.measure(range(self.num_qubits))
 
+        # Copy the circuit as the operations are applied inplace
+        circuit: TKETCircuit = self.copy()
+
+        # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
+        circuit.change_lsb()
+
         if backend is None:
             # If no backend is provided, use the AerBackend
-            backend = AerBackend()
+            backend: AerBackend = AerBackend()
             # Run the circuit
-            result = backend.get_result(backend.process_circuit(self.circuit, n_shots=num_shots, seed=0))
+            result = backend.get_result(backend.process_circuit(circuit.circuit, n_shots=num_shots, seed=0))
             # Get the counts
-            counts = {''.join(map(str, basis_state)): num_counts for basis_state, num_counts in result.get_counts().items()}
+            counts = {''.join(map(str, basis_state)): num_counts
+                      for basis_state, num_counts in result.get_counts().items()}
 
         else:
             # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -936,8 +947,24 @@ class TKETCircuit(Circuit):
         """
         return self.circuit.depth()
 
-    def optimize(self) -> None:
-        """ Transpile the circuit to CX and U3 gates.
+    def get_unitary(self) -> NDArray[np.number]:
+        """ Get the unitary matrix of the circuit.
+
+        Returns
+        -------
+        `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
+        """
+        # Copy the circuit as the operations are applied inplace
+        circuit: TKETCircuit = self.copy()
+
+        # Run the circuit and define the unitary matrix
+        unitary = circuit.circuit.get_unitary()
+
+        # Return the unitary matrix
+        return unitary
+
+    def transpile(self) -> None:
+        """ Transpile the circuit to U3 and CX gates.
         """
         # Convert the circuit to QiskitCircuit
         circuit = self.convert(QiskitCircuit)

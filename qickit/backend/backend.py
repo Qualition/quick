@@ -121,7 +121,7 @@ class AerBackend(Backend):
         backend = StatevectorSimulator()
 
         # Run the circuit
-        state_vector = (backend.run(self.circuit.decompose(reps=100))).result().get_statevector()
+        state_vector = (backend.run(circuit.circuit.decompose(reps=100))).result().get_statevector()
 
         # Return the statevector
         return state_vector
@@ -158,7 +158,7 @@ class AerBackend(Backend):
         backend = AerSimulator()
 
         # Run the circuit
-        counts = backend.run(circuit, shots=num_shots).result().get_counts()
+        counts = backend.run(circuit.circuit, shots=num_shots).result().get_counts()
 
         # Return the counts
         return counts

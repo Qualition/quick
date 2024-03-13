@@ -18,6 +18,7 @@ __all__ = ['PennylaneCircuit']
 
 from collections.abc import Iterable
 import numpy as np
+from numpy.typing import NDArray
 import math
 
 # Pennylane imports
@@ -229,14 +230,14 @@ class PennylaneCircuit(Circuit):
                 self.circuit.append(z(wires=index))
         else:
             # If it's not a list, apply the Z gate to the single qubit
-            self.circuit.append(z(wires=index))
+            self.circuit.append(z(wires=qubit_indices))
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'Z', 'qubit_indices': qubit_indices})
 
     def S(self,
           qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a S gate to the circuit.
+        """ Apply a Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -260,7 +261,7 @@ class PennylaneCircuit(Circuit):
 
     def T(self,
           qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a T gate to the circuit.
+        """ Apply a Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -305,7 +306,7 @@ class PennylaneCircuit(Circuit):
     def CX(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CX gate to the circuit.
+        """ Apply a Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -325,7 +326,7 @@ class PennylaneCircuit(Circuit):
     def CY(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CY gate to the circuit.
+        """ Apply a Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -345,7 +346,7 @@ class PennylaneCircuit(Circuit):
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a CZ gate to the circuit.
+        """ Apply a Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -397,7 +398,7 @@ class PennylaneCircuit(Circuit):
         # Create a Controlled-S gate
         cs = qml.ControlledQubitUnitary(qml.S(0).matrix(), control_wires=control_index, wires=target_index)
         # Apply the CS gate to the circuit at the specified control and target qubits
-        self.circuit.append(cs(wires=[control_index, target_index]))
+        self.circuit.append(cs)
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'CS', 'control_index': control_index, 'target_index': target_index})
@@ -417,7 +418,7 @@ class PennylaneCircuit(Circuit):
         # Create a Controlled-T gate
         ct = qml.ControlledQubitUnitary(qml.T(0).matrix(), control_wires=control_index, wires=target_index)
         # Apply the CT gate to the circuit at the specified control and target qubits
-        self.circuit.append(ct(wires=[control_index, target_index]))
+        self.circuit.append(ct)
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'CT', 'control_index': control_index, 'target_index': target_index})
@@ -426,7 +427,7 @@ class PennylaneCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRX gate to the circuit.
+        """ Apply a Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -453,7 +454,7 @@ class PennylaneCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRY gate to the circuit.
+        """ Apply a Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -480,7 +481,7 @@ class PennylaneCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CRZ gate to the circuit.
+        """ Apply a Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -507,7 +508,7 @@ class PennylaneCircuit(Circuit):
             angles: Iterable[float],
             control_index: int,
             target_index: int) -> None:
-        """ Apply a CU3 gate to the circuit.
+        """ Apply a Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -529,7 +530,7 @@ class PennylaneCircuit(Circuit):
     def MCX(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCX gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -552,7 +553,7 @@ class PennylaneCircuit(Circuit):
     def MCY(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCY gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -575,7 +576,7 @@ class PennylaneCircuit(Circuit):
     def MCZ(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCZ gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -598,7 +599,7 @@ class PennylaneCircuit(Circuit):
     def MCH(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Hadamard gate to the circuit.
+        """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Parameters
         ----------
@@ -621,7 +622,7 @@ class PennylaneCircuit(Circuit):
     def MCS(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-S gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -644,7 +645,7 @@ class PennylaneCircuit(Circuit):
     def MCT(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-T gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -668,7 +669,7 @@ class PennylaneCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRX gate to the circuit.
+        """ Apply a Multi-Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -698,7 +699,7 @@ class PennylaneCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRY gate to the circuit.
+        """ Apply a Multi-Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -728,7 +729,7 @@ class PennylaneCircuit(Circuit):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCRZ gate to the circuit.
+        """ Apply a Multi-Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -758,7 +759,7 @@ class PennylaneCircuit(Circuit):
              angles: Iterable[float],
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a MCU3 gate to the circuit.
+        """ Apply a Multi-Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -775,7 +776,7 @@ class PennylaneCircuit(Circuit):
 
         # Apply the MCU3 gate to the circuit at the control and target qubits
         for i in range(len(target_indices)):
-            self.circuit.append(qml.ControlledQubitUnitary(qml.U3(theta=angles[0], phi=angles[1], delta=angles[2], wires=0), control_wires=control_indices, wires=target_indices[i]))
+            self.circuit.append(qml.ControlledQubitUnitary(qml.U3(theta=angles[0], phi=angles[1], delta=angles[2], wires=0).matrix(), control_wires=control_indices, wires=target_indices[i]))
 
         # Add the gate to the log
         self.circuit_log.append({'gate': 'MCU3', 'angles': angles, 'control_indices': control_indices, 'target_indices': target_indices})
@@ -807,11 +808,14 @@ class PennylaneCircuit(Circuit):
         -------
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
+        # Copy the circuit as the operations are applied inplace
+        circuit: PennylaneCircuit = self.copy()
+
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        self.change_lsb()
+        circuit.change_lsb()
 
         def compile() -> qml.StateMP:
-            """ Compiles the circuit.
+            """ Compile the circuit.
 
             Parameters
             ----------
@@ -823,7 +827,7 @@ class PennylaneCircuit(Circuit):
             (StateMP): The state vector of the circuit.
             """
             # Apply the operations in the circuit
-            for op in self.circuit:
+            for op in circuit.circuit:
                 qml.apply(op)
 
             # Return the measurement
@@ -831,11 +835,11 @@ class PennylaneCircuit(Circuit):
 
         if backend is None:
             # Run the circuit and define the state vector
-            state_vector = qml.QNode(compile, self.device)()
+            state_vector = qml.QNode(compile, circuit.device)()
 
         else:
             # Run the circuit on the specified backend and define the state vector
-            state_vector = backend.get_statevector(self.circuit)
+            state_vector = backend.get_statevector(circuit)
 
         # Round off the small values to 0 (values below 1e-12 are set to 0)
         state_vector = np.round(state_vector, 12)
@@ -881,11 +885,14 @@ class PennylaneCircuit(Circuit):
         # Set the seed
         np.random.seed(0)
 
+        # Copy the circuit as the operations are applied inplace
+        circuit: PennylaneCircuit = self.copy()
+
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        self.change_lsb()
+        circuit.change_lsb()
 
         def compile() -> Iterable[qml.ProbabilityMP]:
-            """ Compiles the circuit.
+            """ Compile the circuit.
 
             Parameters
             ----------
@@ -897,7 +904,7 @@ class PennylaneCircuit(Circuit):
             (Iterable[qml.ProbabilityMP]): The list of probability measurements.
             """
             # Apply the operations in the circuit
-            for op in self.circuit:
+            for op in circuit.circuit:
                 qml.apply(op)
 
             # Return the measurement
@@ -905,7 +912,7 @@ class PennylaneCircuit(Circuit):
 
         if backend is None:
             # Define the device
-            device = qml.device(self.device.name, wires=self.num_qubits, shots=num_shots)
+            device = qml.device(circuit.device.name, wires=circuit.num_qubits, shots=num_shots)
             # Apply the operations in the circuit
             result = qml.QNode(compile, device)()
             # Get the counts
@@ -913,7 +920,7 @@ class PennylaneCircuit(Circuit):
 
         else:
             # Run the circuit on the specified backend
-            result = backend.get_counts(self.circuit, num_shots=num_shots)
+            result = backend.get_counts(circuit, num_shots=num_shots)
 
         # Return the counts
         return counts
@@ -956,8 +963,36 @@ class PennylaneCircuit(Circuit):
         # Return the depth
         return depth
 
-    def optimize(self) -> None:
-        """ Transpile the circuit to CX and U3 gates.
+    def get_unitary(self) -> NDArray[np.number]:
+        """ Get the unitary matrix of the circuit.
+
+        Returns
+        -------
+        `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
+        """
+        # Copy the circuit as the operations are applied inplace
+        circuit: PennylaneCircuit = self.copy()
+
+        def compile() -> None:
+            """ Compile the circuit.
+
+            Parameters
+            ----------
+            circuit (Iterable[qml.Op]):
+                The list of operations representing the circuit.
+            """
+            # Apply the operations in the circuit
+            for op in circuit.circuit:
+                qml.apply(op)
+
+        # Run the circuit and define the unitary matrix
+        unitary = np.array(qml.matrix(compile)(), dtype=complex)
+
+        # Return the unitary matrix
+        return unitary
+
+    def transpile(self) -> None:
+        """ Transpile the circuit to U3 and CX gates.
         """
         # Convert the circuit to QiskitCircuit
         circuit = self.convert(QiskitCircuit)

@@ -361,7 +361,7 @@ class Circuit(ABC):
     def MCX(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Pauli-X gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Parameters
         ----------
@@ -376,7 +376,7 @@ class Circuit(ABC):
     def MCY(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Pauli-Y gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Parameters
         ----------
@@ -391,7 +391,7 @@ class Circuit(ABC):
     def MCZ(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Pauli-Z gate to the circuit.
+        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Parameters
         ----------
@@ -406,7 +406,7 @@ class Circuit(ABC):
     def MCH(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Hadamard gate to the circuit.
+        """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Parameters
         ----------
@@ -421,7 +421,7 @@ class Circuit(ABC):
     def MCS(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-S gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Parameters
         ----------
@@ -436,7 +436,7 @@ class Circuit(ABC):
     def MCT(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled Clifford-T gate to the circuit.
+        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Parameters
         ----------
@@ -452,7 +452,7 @@ class Circuit(ABC):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled RX gate to the circuit.
+        """ Apply a Multi-Controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -470,7 +470,7 @@ class Circuit(ABC):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled RY gate to the circuit.
+        """ Apply a Multi-Controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -488,7 +488,7 @@ class Circuit(ABC):
              angle: float,
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled RZ gate to the circuit.
+        """ Apply a Multi-Controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -506,7 +506,7 @@ class Circuit(ABC):
              angles: Iterable[float],
              control_indices: int | Iterable[int],
              target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-controlled U3 gate to the circuit.
+        """ Apply a Multi-Controlled U3 gate to the circuit.
 
         Parameters
         ----------
@@ -551,7 +551,7 @@ class Circuit(ABC):
                 self.CX(gate[1][0].index, gate[1][1]._index)
 
     def vertical_reverse(self) -> None:
-        """ Reverse the circuit vertically.
+        """ Perform a vertical reverse operation.
         """
         # Iterate over every operation, and change the index accordingly
         for operation in self.circuit_log:
@@ -568,7 +568,7 @@ class Circuit(ABC):
 
     def horizontal_reverse(self,
                            adjoint: bool=True) -> None:
-        """ Reverse the circuit horizontally.
+        """ Perform a horizontal reverse operation.
 
         Parameters
         ----------
@@ -684,8 +684,18 @@ class Circuit(ABC):
         pass
 
     @abstractmethod
-    def optimize(self) -> None:
-        """ Optimize the circuit.
+    def get_unitary(self) -> NDArray[np.number]:
+        """ Get the unitary matrix of the circuit.
+
+        Returns
+        -------
+        `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
+        """
+        pass
+
+    @abstractmethod
+    def transpile(self) -> None:
+        """ Transpile the circuit to U3 and CX gates.
         """
         pass
 
@@ -751,7 +761,7 @@ class Circuit(ABC):
         self.circuit = new_circuit.circuit
 
     def change_lsb(self) -> None:
-        """ Change the least significant bit (LSB) of the circuit.
+        """ Change the circuit from Least Significant Bit (LSB) to Most Significant Bit (MSB) ordering.
         """
         # Reverse the qubit indices
         self.vertical_reverse()
