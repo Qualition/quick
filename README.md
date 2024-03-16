@@ -37,7 +37,7 @@ pip install pytest
 
 ## License
 
-Distributed under GNU General Public License v3.0 License. See LICENSE for details.
+Distributed under Apache v2.0 License. See [`LICENSE`](LICENSE) for details.
 
 ## Citation
 

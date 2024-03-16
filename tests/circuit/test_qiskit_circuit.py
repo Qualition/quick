@@ -1,6 +1,6 @@
 # Copyright 2023-2024 Qualition Computing LLC.
 #
-# Licensed under the GNU Version 3.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -19,7 +19,7 @@ __all__ = ['TestQiskitCircuit']
 import numpy as np
 
 # Qiskit imports
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit import QuantumCircuit
 from qiskit.circuit.library import *
 from qiskit_aer import UnitarySimulator
 backend = UnitarySimulator(method='unitary')
