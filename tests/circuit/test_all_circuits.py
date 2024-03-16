@@ -17,18 +17,16 @@ from __future__ import annotations
 __all__ = ['TestAllCircuits']
 
 import numpy as np
+from numpy.testing import assert_almost_equal
 
 # QICKIT imports
 from qickit.circuit import (CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit)
-from tester.circuit import TestCircuit
+from tests.circuit import Template
 
 
-class TestAllCircuits(TestCircuit):
+class TestAllCircuits(Template):
     """ `qickit.TestAllCircuits` is the tester class for ensuring all frameworks return the same result.
     """
-    def test_circuit_initialization(self) -> None:
-        pass
-
     def test_X(self) -> None:
         """ Test the Pauli-X gate.
         """
@@ -51,9 +49,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.X(0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_Y(self) -> None:
         """ Test the Pauli-Y gate.
@@ -77,9 +75,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.Y(0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_Z(self) -> None:
         """ Test the Pauli-Z gate.
@@ -103,9 +101,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.Z(0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_H(self) -> None:
         """ Test the Hadamard gate.
@@ -129,9 +127,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.H(0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_S(self) -> None:
         """ Test the S gate.
@@ -155,9 +153,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.S(0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_T(self) -> None:
         """ Test the T gate.
@@ -181,9 +179,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.T(0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RX(self) -> None:
         """ Test the RX gate.
@@ -207,9 +205,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.RX(0.5, 0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RY(self) -> None:
         """ Test the RY gate.
@@ -233,9 +231,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.RY(0.5, 0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RZ(self) -> None:
         """ Test the RZ gate.
@@ -259,9 +257,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.RZ(0.5, 0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_U3(self) -> None:
         """ Test the U3 gate.
@@ -285,9 +283,9 @@ class TestAllCircuits(TestCircuit):
         tket_circuit.U3([0.5, 0.5, 0.5], 0)
 
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CX(self) -> None:
         """ Test the Controlled Pauli-X gate.
@@ -310,13 +308,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CX(0, 1)
         tket_circuit.CX(0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CY(self) -> None:
         """ Test the Controlled Pauli-Y gate.
@@ -339,13 +334,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CY(0, 1)
         tket_circuit.CY(0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CZ(self) -> None:
         """ Test the Controlled Pauli-Z gate.
@@ -368,13 +360,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CZ(0, 1)
         tket_circuit.CZ(0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CH(self) -> None:
         """ Test the Controlled Hadamard gate.
@@ -397,13 +386,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CH(0, 1)
         tket_circuit.CH(0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CS(self) -> None:
         """ Test the Controlled Clifford-S gate.
@@ -426,13 +412,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CS(0, 1)
         tket_circuit.CS(0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CT(self) -> None:
         """ Test the Controlled T gate.
@@ -455,13 +438,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CT(0, 1)
         tket_circuit.CT(0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRX(self) -> None:
         """ Test the Controlled RX gate.
@@ -484,13 +464,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CRX(0.5, 0, 1)
         tket_circuit.CRX(0.5, 0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRY(self) -> None:
         """ Test the Controlled RY gate.
@@ -513,13 +490,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CRY(0.5, 0, 1)
         tket_circuit.CRY(0.5, 0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRZ(self) -> None:
         """ Test the Controlled RZ gate.
@@ -542,13 +516,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CRZ(0.5, 0, 1)
         tket_circuit.CRZ(0.5, 0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CU3(self) -> None:
         """ Test the Controlled U3 gate.
@@ -571,13 +542,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.CU3([0.5, 0.5, 0.5], 0, 1)
         tket_circuit.CU3([0.5, 0.5, 0.5], 0, 1)
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCX(self) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
@@ -600,13 +568,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCX([0, 1], [2, 3])
         tket_circuit.MCX([0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(8) == pennylane_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == qiskit_circuit.get_unitary().round(8))
-        assert np.all(cirq_circuit.get_unitary().round(8) == tket_circuit.get_unitary().round(8))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCY(self) -> None:
         """ Test the Multi-Controlled Pauli-Y gate.
@@ -629,13 +594,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCY([0, 1], [2, 3])
         tket_circuit.MCY([0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.all(cirq_circuit.get_unitary().round(6) == pennylane_circuit.get_unitary().round(6))
-        assert np.all(cirq_circuit.get_unitary().round(6) == qiskit_circuit.get_unitary().round(6))
-        assert np.all(cirq_circuit.get_unitary().round(6) == tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCZ(self) -> None:
         """ Test the Multi-Controlled Pauli-Z gate.
@@ -658,13 +620,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCZ([0, 1], [2, 3])
         tket_circuit.MCZ([0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCH(self) -> None:
         """ Test the Multi-Controlled Hadamard gate.
@@ -687,13 +646,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCH([0, 1], [2, 3])
         tket_circuit.MCH([0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCS(self) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
@@ -716,13 +672,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCS([0, 1], [2, 3])
         tket_circuit.MCS([0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCT(self) -> None:
         """ Test the Multi-Controlled T gate.
@@ -745,13 +698,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCT([0, 1], [2, 3])
         tket_circuit.MCT([0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRX(self) -> None:
         """ Test the Multi-Controlled RX gate.
@@ -774,13 +724,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCRX(0.5, [0, 1], [2, 3])
         tket_circuit.MCRX(0.5, [0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRY(self) -> None:
         """ Test the Multi-Controlled RY gate.
@@ -803,13 +750,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCRY(0.5, [0, 1], [2, 3])
         tket_circuit.MCRY(0.5, [0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRZ(self) -> None:
         """ Test the Multi-Controlled RZ gate.
@@ -832,13 +776,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCRZ(0.5, [0, 1], [2, 3])
         tket_circuit.MCRZ(0.5, [0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCU3(self) -> None:
         """ Test the Multi-Controlled U3 gate.
@@ -861,13 +802,10 @@ class TestAllCircuits(TestCircuit):
         qiskit_circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
         tket_circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
 
-        # Qiskit uses LSB convention, and other frameworks use MSB
-        qiskit_circuit.vertical_reverse()
-
         # Ensure they are equivalent
-        assert np.allclose(cirq_circuit.get_unitary().round(6), pennylane_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), qiskit_circuit.get_unitary().round(6))
-        assert np.allclose(cirq_circuit.get_unitary().round(6), tket_circuit.get_unitary().round(6))
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_measure(self) -> None:
         pass

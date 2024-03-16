@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['TestCircuit', 'TestCirqCircuit', 'TestDwaveCircuit', 'TestPennylaneCircuit', 'TestQiskitCircuit', 'TestTKETCircuit', 'TestAllCircuits']
+__all__ = ['Template', 'TestCirqCircuit', 'TestPennylaneCircuit', 'TestQiskitCircuit', 'TestTKETCircuit', 'TestAllCircuits']
 
-from tester.circuit.test_circuit import TestCircuit
-from tester.circuit.test_cirq_circuit import TestCirqCircuit
-from tester.circuit.test_dwave_circuit import TestDwaveCircuit
-from tester.circuit.test_pennylane_circuit import TestPennylaneCircuit
-from tester.circuit.test_qiskit_circuit import TestQiskitCircuit
-from tester.circuit.test_tket_circuit import TestTKETCircuit
-from tester.circuit.test_all_circuits import TestAllCircuits
+from tests.circuit.test_circuit import Template
+from tests.circuit.test_cirq_circuit import TestCirqCircuit
+from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit
+from tests.circuit.test_qiskit_circuit import TestQiskitCircuit
+from tests.circuit.test_tket_circuit import TestTKETCircuit
+from tests.circuit.test_all_circuits import TestAllCircuits

@@ -20,6 +20,7 @@ from collections.abc import Iterable
 import numpy as np
 from numpy.typing import NDArray
 import math
+import copy
 
 # Cirq imports
 import cirq
@@ -844,6 +845,9 @@ class CirqCircuit(Circuit):
         `qubit_indices` (int | Iterable[int]):
             The indices of the qubits to measure.
         """
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
         # Measure the qubits
         self.circuit.append(cirq.measure(*[self.qr[qubit_indices[i]] for i in range(len(qubit_indices))], key='meas'))
 
@@ -867,10 +871,10 @@ class CirqCircuit(Circuit):
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
         # Copy the circuit as the operations are applied inplace
-        circuit: CirqCircuit = self.copy()
+        circuit: CirqCircuit = copy.deepcopy(self)
 
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.change_lsb()
+        circuit.vertical_reverse()
 
         if backend is None:
             # Define the state vector
@@ -930,9 +934,9 @@ class CirqCircuit(Circuit):
 
         else:
             # Copy the circuit as the operations are applied inplace
-            circuit: CirqCircuit = self.copy()
+            circuit: CirqCircuit = copy.deepcopy(self)
             # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-            circuit.change_lsb()
+            circuit.vertical_reverse()
             # Run the circuit on the specified backend
             counts = backend.get_counts(circuit, num_shots)
 
@@ -983,13 +987,16 @@ class CirqCircuit(Circuit):
         `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
         """
         # Copy the circuit as the operations are applied inplace
-        circuit: CirqCircuit = self.copy()
+        circuit: CirqCircuit = copy.deepcopy(self)
+
+        # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the unitary matrix
         unitary = cirq.unitary(circuit.circuit)
 
         # Return the unitary matrix
-        return unitary
+        return np.array(unitary)
 
     def transpile(self) -> None:
         """ Transpile the circuit to U3 and CX gates.

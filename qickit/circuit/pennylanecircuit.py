@@ -20,6 +20,7 @@ from collections.abc import Iterable
 import numpy as np
 from numpy.typing import NDArray
 import math
+import copy
 
 # Pennylane imports
 import pennylane as qml
@@ -809,10 +810,10 @@ class PennylaneCircuit(Circuit):
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
         # Copy the circuit as the operations are applied inplace
-        circuit: PennylaneCircuit = self.copy()
+        circuit: PennylaneCircuit = copy.deepcopy(self)
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.change_lsb()
+        circuit.vertical_reverse()
 
         def compile() -> qml.StateMP:
             """ Compile the circuit.
@@ -886,10 +887,10 @@ class PennylaneCircuit(Circuit):
         np.random.seed(0)
 
         # Copy the circuit as the operations are applied inplace
-        circuit: PennylaneCircuit = self.copy()
+        circuit: PennylaneCircuit = copy.deepcopy(self)
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.change_lsb()
+        circuit.vertical_reverse()
 
         def compile() -> Iterable[qml.ProbabilityMP]:
             """ Compile the circuit.
@@ -971,14 +972,14 @@ class PennylaneCircuit(Circuit):
         `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
         """
         # Copy the circuit as the operations are applied inplace
-        circuit: PennylaneCircuit = self.copy()
+        circuit: PennylaneCircuit = copy.deepcopy(self)
 
         def compile() -> None:
             """ Compile the circuit.
 
             Parameters
             ----------
-            circuit (Iterable[qml.Op]):
+            `circuit` (Iterable[qml.Op]):
                 The list of operations representing the circuit.
             """
             # Apply the operations in the circuit
@@ -988,8 +989,41 @@ class PennylaneCircuit(Circuit):
         # Run the circuit and define the unitary matrix
         unitary = np.array(qml.matrix(compile)(), dtype=complex)
 
+        # PennyLane's `.matrix` function does not take qubit ordering into account,
+        # so we need to manually convert the unitary matrix from MSB to LSB
+        def MSB_to_LSB(matrix: NDArray[np.number]) -> NDArray[np.number]:
+            """ Convert the MSB to LSB.
+
+            Parameters
+            ----------
+            `matrix` (NDArray[np.number]):
+                The matrix to convert.
+
+            Returns
+            -------
+            `reordered_matrix` (NDArray[np.number]): The new matrix with LSB conversion.
+            """
+            # Determine the size of the matrix (assuming it's a square matrix)
+            size = len(matrix)
+
+            # Create a new matrix to store the reordered elements
+            reordered_matrix = np.zeros((size, size), dtype=type(matrix[0][0]))
+
+            # Iterate over each element in the original matrix
+            for i in range(size):
+                for j in range(size):
+                    # Convert the indices from MSB to LSB
+                    new_i = int(bin(i)[2:].zfill(int(np.log2(size)))[::-1], 2)
+                    new_j = int(bin(j)[2:].zfill(int(np.log2(size)))[::-1], 2)
+
+                    # Assign the value from the original matrix to the new position in the reordered matrix
+                    reordered_matrix[new_i][new_j] = matrix[i][j]
+
+            # Return the reordered matrix
+            return np.array(reordered_matrix)
+
         # Return the unitary matrix
-        return unitary
+        return MSB_to_LSB(unitary)
 
     def transpile(self) -> None:
         """ Transpile the circuit to U3 and CX gates.

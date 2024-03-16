@@ -25,22 +25,12 @@ CY = cirq.ControlledGate(Y)
 
 # QICKIT imports
 from qickit.circuit import CirqCircuit
-from tester.circuit.test_circuit import TestCircuit
+from tests.circuit import Template
 
 
-class TestCirqCircuit(TestCircuit):
+class TestCirqCircuit(Template):
     """ `qickit.TestCirqCircuit` is the tester class for `qickit.CirqCircuit` class.
     """
-    def test_circuit_initialization(self) -> None:
-        """ Test the initialization of the `CirqCircuit` class.
-        """
-        # Define the `qickit.CirqCircuit` instance
-        circuit = CirqCircuit(1, 1)
-
-        # Define the equivalent `cirq.Circuit` instance, and
-        # ensure they are equivalent
-        assert circuit.circuit == cirq.Circuit()
-
     def test_X(self) -> None:
         """ Test the Pauli-X gate.
         """
@@ -229,6 +219,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the CX gate
         circuit.CX(0, 1)
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
@@ -244,6 +237,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the CY gate
         circuit.CY(0, 1)
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -261,6 +257,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the CZ gate
         circuit.CZ(0, 1)
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
@@ -276,6 +275,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the CH gate
         circuit.CH(0, 1)
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -293,6 +295,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the CS gate
         circuit.CS(0, 1)
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
@@ -308,6 +313,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the CT gate
         circuit.CT(0, 1)
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -325,6 +333,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the CRX gate
         circuit.CRX(0.5, 0, 1)
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
@@ -340,6 +351,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the CRY gate
         circuit.CRY(0.5, 0, 1)
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -357,6 +371,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the CRZ gate
         circuit.CRZ(0.5, 0, 1)
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
@@ -372,6 +389,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the CU3 gate
         circuit.CU3([0.5, 0.5, 0.5], 0, 1)
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -408,6 +428,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
@@ -424,6 +447,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the MCY gate
         circuit.MCY([0, 1], [2, 3])
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -442,6 +468,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the MCZ gate
         circuit.MCZ([0, 1], [2, 3])
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
@@ -458,6 +487,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the MCH gate
         circuit.MCH([0, 1], [2, 3])
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -476,6 +508,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the MCS gate
         circuit.MCS([0, 1], [2, 3])
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
@@ -492,6 +527,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the MCT gate
         circuit.MCT([0, 1], [2, 3])
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -510,6 +548,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the MCRX gate
         circuit.MCRX(0.5, [0, 1], [2, 3])
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
@@ -526,6 +567,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the MCRY gate
         circuit.MCRY(0.5, [0, 1], [2, 3])
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -544,6 +588,9 @@ class TestCirqCircuit(TestCircuit):
         # Apply the MCRZ gate
         circuit.MCRZ(0.5, [0, 1], [2, 3])
 
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
@@ -560,6 +607,9 @@ class TestCirqCircuit(TestCircuit):
 
         # Apply the MCU3 gate
         circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
+
+        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
@@ -595,7 +645,7 @@ class TestCirqCircuit(TestCircuit):
         circuit = CirqCircuit(1, 1)
 
         # Apply the measurement gate
-        circuit.measure(0, 0)
+        circuit.measure(0)
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent

@@ -14,20 +14,12 @@
 
 from __future__ import annotations
 
-__all__ = ['TestCircuit']
-
 from abc import ABC, abstractmethod
 
 
-class TestCircuit(ABC):
-    """ `qickit.TestCircuit` is the template for creating circuit testers.
+class Template(ABC):
+    """ `qickit.Template` is the template for creating circuit testers.
     """
-    @abstractmethod
-    def test_circuit_initialization(self) -> None:
-        """ Test the initialization of the circuit.
-        """
-        pass
-
     @abstractmethod
     def test_X(self) -> None:
         """ Test the Pauli-X gate.

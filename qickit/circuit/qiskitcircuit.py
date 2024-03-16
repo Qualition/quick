@@ -941,7 +941,7 @@ class QiskitCircuit(Circuit):
         unitary = backend.run(self.circuit.decompose(reps=1000)).result().get_unitary()
 
         # Return the unitary matrix
-        return unitary
+        return np.array(unitary)
 
     def transpile(self) -> None:
         """ Transpile the circuit to U3 and CX gates.

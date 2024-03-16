@@ -20,6 +20,7 @@ from collections.abc import Iterable
 import numpy as np
 from numpy.typing import NDArray
 import math
+import copy
 
 # TKET imports
 from pytket import Circuit as TKCircuit
@@ -852,10 +853,10 @@ class TKETCircuit(Circuit):
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
         # Copy the circuit as the operations are applied inplace
-        circuit: TKETCircuit = self.copy()
+        circuit: TKETCircuit = copy.deepcopy(self)
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.change_lsb()
+        circuit.vertical_reverse()
 
         if backend is None:
             # Run the circuit and define the state vector
@@ -910,10 +911,10 @@ class TKETCircuit(Circuit):
             self.measure(range(self.num_qubits))
 
         # Copy the circuit as the operations are applied inplace
-        circuit: TKETCircuit = self.copy()
+        circuit: TKETCircuit = copy.deepcopy(self)
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.change_lsb()
+        circuit.vertical_reverse()
 
         if backend is None:
             # If no backend is provided, use the AerBackend
@@ -925,8 +926,6 @@ class TKETCircuit(Circuit):
                       for basis_state, num_counts in result.get_counts().items()}
 
         else:
-            # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-            self.change_lsb()
             # Run the circuit on the specified backend
             counts = backend.get_counts(self.circuit, num_shots=num_shots)
 
@@ -955,13 +954,16 @@ class TKETCircuit(Circuit):
         `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
         """
         # Copy the circuit as the operations are applied inplace
-        circuit: TKETCircuit = self.copy()
+        circuit: TKETCircuit = copy.deepcopy(self)
+
+        # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
 
         # Run the circuit and define the unitary matrix
         unitary = circuit.circuit.get_unitary()
 
         # Return the unitary matrix
-        return unitary
+        return np.array(unitary)
 
     def transpile(self) -> None:
         """ Transpile the circuit to U3 and CX gates.

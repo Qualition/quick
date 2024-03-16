@@ -38,7 +38,6 @@ class Circuit(ABC):
         - Google's Cirq
         - Quantinuum's PyTKET
         - Xanadu's PennyLane
-        - D-Wave's gate framework
     """
     def __init__(self,
                  num_qubits: int,
@@ -760,22 +759,6 @@ class Circuit(ABC):
         # Update the circuit
         self.circuit = new_circuit.circuit
 
-    def change_lsb(self) -> None:
-        """ Change the circuit from Least Significant Bit (LSB) to Most Significant Bit (MSB) ordering.
-        """
-        # Reverse the qubit indices
-        self.vertical_reverse()
-
-        # Remove the vertical reverse from log as it does not belong to circuit definition
-        for operation in self.circuit_log:
-            keys = ['target_indices', 'control_indices', 'qubit_indices', 'qubit_index', 'control_index', 'target_index']
-            for key in keys:
-                if key in operation:
-                    if isinstance(operation[key], Iterable):
-                        operation[key] = [(self.num_qubits - 1 - index) for index in operation[key]]
-                    else:
-                        operation[key] = (self.num_qubits - 1 - operation[key])
-
     def convert(self,
                 circuit_framework: Circuit) -> Circuit:
         """ Convert the circuit to another circuit framework.
@@ -850,25 +833,6 @@ class Circuit(ABC):
         `qasm` (str): The QASM representation of the circuit.
         """
         pass
-
-    def copy(self) -> Circuit:
-        """ Copy the circuit.
-
-        Returns
-        -------
-        `copied_circuit` (Circuit): The copied circuit.
-        """
-        # Define a new circuit
-        copied_circuit = type(self)(self.num_qubits, self.num_clbits)
-
-        # Copy the circuit log
-        copied_circuit.circuit_log = self.circuit_log.copy()
-
-        # Convert the circuit to create the copied circuit
-        copied_circuit.circuit = copied_circuit.convert(type(self)).circuit
-
-        # Return the copied circuit
-        return copied_circuit
 
     def reset(self) -> None:
         """ Reset the circuit to an empty circuit.
