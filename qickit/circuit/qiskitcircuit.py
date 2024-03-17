@@ -21,6 +21,7 @@ import numpy as np
 from numpy.typing import NDArray
 import math
 import matplotlib.pyplot as plt
+import copy
 
 # Qiskit imports
 import qiskit
@@ -925,7 +926,14 @@ class QiskitCircuit(Circuit):
         -------
         (int): The depth of the circuit.
         """
-        return self.circuit.decompose(reps=100).depth()
+        # Copy the circuit as the transpilation operation is inplace
+        circuit: QiskitCircuit = copy.deepcopy(self)
+
+        # Transpile the circuit to U3 and CX gates
+        circuit.transpile()
+
+        # Return
+        return circuit.circuit.depth()
 
     def get_unitary(self) -> NDArray[np.number]:
         """ Get the unitary matrix of the circuit.
@@ -947,7 +955,7 @@ class QiskitCircuit(Circuit):
         """ Transpile the circuit to U3 and CX gates.
         """
         # Use the built-in transpiler from IBM Qiskit to transpile the circuit
-        transpiled_circuit: qiskit.QuantumCircuit = transpile(self.circuit, basis_gates = ['cx', 'u3'])
+        transpiled_circuit: qiskit.QuantumCircuit = transpile(self.circuit, basis_gates = ['cx', 'u3'], optimization_level=3)
 
         # Reset the circuit log (as we will be creating a new one given the transpiled circuit)
         self.circuit_log =[]

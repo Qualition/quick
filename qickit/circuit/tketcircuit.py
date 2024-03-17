@@ -944,7 +944,11 @@ class TKETCircuit(Circuit):
         -------
         (int): The depth of the circuit.
         """
-        return self.circuit.depth()
+        # Convert the circuit to Qiskit
+        circuit = self.convert(QiskitCircuit)
+
+        # Return the effective depth of the circuit (the number of U3 and CX operations)
+        return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.number]:
         """ Get the unitary matrix of the circuit.
@@ -981,7 +985,7 @@ class TKETCircuit(Circuit):
         for gate in transpiled_circuit.data:
             # Add the U3 gate to circuit log
             if gate[0].name == 'u3':
-                self.circuit_log.append({'gate': 'U3', 'angles': gate[0].params, 'qubit_index': [gate[1][0]._index]})
+                self.circuit_log.append({'gate': 'U3', 'angles': gate[0].params, 'qubit_index': gate[1][0]._index})
 
             # Add the CX gate to circuit log
             else:

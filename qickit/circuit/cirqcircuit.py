@@ -955,29 +955,11 @@ class CirqCircuit(Circuit):
         -------
         max_depth (int): The depth of the circuit.
         """
-        # Since Cirq does not have a built-in depth method, we need to count the number of
-        # operations applied to each qubit, and return the one with the highest count
-        max_depth = 0
+        # Convert the circuit to Qiskit
+        circuit = self.convert(QiskitCircuit)
 
-        # Count the number of operations applied to each qubit
-        for qubit in range(self.num_qubits):
-            depth = sum(1 for operation in self.circuit_log if
-                        (isinstance(operation.get('qubit_indices', None), int) and qubit == operation['qubit_indices']) or
-                        (isinstance(operation.get('control_indices', None), int) and qubit == operation['control_indices']) or
-                        (isinstance(operation.get('target_indices', None), int) and qubit == operation['target_indices']) or
-                        (isinstance(operation.get('qubit_indices', None), Iterable) and qubit in operation['qubit_indices']) or
-                        (isinstance(operation.get('control_indices', None), Iterable) and qubit in operation['control_indices']) or
-                        (isinstance(operation.get('target_indices', None), Iterable) and qubit in operation['target_indices']) or
-                        qubit == operation.get('qubit_index', None) or
-                        qubit == operation.get('control_index', None) or
-                        qubit == operation.get('target_index', None))
-
-            # Update the max depth
-            if depth > max_depth:
-                max_depth = depth
-
-        # Return the max depth
-        return max_depth
+        # Return the effective depth of the circuit (the number of U3 and CX operations)
+        return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.number]:
         """ Get the unitary matrix of the circuit.
@@ -1014,7 +996,7 @@ class CirqCircuit(Circuit):
         for gate in transpiled_circuit.data:
             # Add the U3 gate to circuit log
             if gate[0].name == 'u3':
-                self.circuit_log.append({'gate': 'U3', 'angles': gate[0].params, 'qubit_index': [gate[1][0]._index]})
+                self.circuit_log.append({'gate': 'U3', 'angles': gate[0].params, 'qubit_index': gate[1][0]._index})
 
             # Add the CX gate to circuit log
             else:

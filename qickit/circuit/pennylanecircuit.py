@@ -938,31 +938,11 @@ class PennylaneCircuit(Circuit):
         -------
         (int): The depth of the circuit.
         """
-        @qml.qnode(self.device)
-        def compile() -> Iterable[qml.ProbabilityMP]:
-            """ Compiles the circuit.
+        # Convert the circuit to Qiskit
+        circuit = self.convert(QiskitCircuit)
 
-            Parameters
-            ----------
-            circuit (Iterable[qml.Op]):
-                The list of operations representing the circuit.
-
-            Returns
-            -------
-            (Iterable[qml.ProbabilityMP]): The list of probability measurements.
-            """
-            # Apply the operations in the circuit
-            for op in self.circuit:
-                qml.apply(op)
-
-            # Return the measurement
-            return qml.expval(qml.PauliZ(0))
-
-        # Get the depth of the circuit
-        depth = qml.specs(compile)()['resources'].depth
-
-        # Return the depth
-        return depth
+        # Return the effective depth of the circuit (the number of U3 and CX operations)
+        return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.number]:
         """ Get the unitary matrix of the circuit.
