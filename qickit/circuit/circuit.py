@@ -17,6 +17,9 @@ from __future__ import annotations
 __all__ = ['Circuit']
 
 from abc import ABC, abstractmethod
+from functools import wraps
+import inspect
+from typing import TYPE_CHECKING
 from collections.abc import Iterable
 from types import NotImplementedType
 import numpy as np
@@ -26,8 +29,9 @@ from numpy.typing import NDArray
 import qiskit
 from qiskit import transpile
 
-# `qickit.Backend` import
-from qickit.backend import Backend
+# Import `qickit.Backend`
+if TYPE_CHECKING:
+    from qickit.backend import Backend
 
 
 class Circuit(ABC):
@@ -61,6 +65,46 @@ class Circuit(ABC):
         self.measured = False
         # Define the circuit log (list[dict])
         self.circuit_log = []
+
+    def gatemethod(method: callable) -> callable:
+        """Decorator for gate methods to log operations.
+
+        This decorator logs the method name and its arguments before executing the method.
+
+        Parameters
+        ----------
+        method : callable
+            The method to decorate.
+
+        Returns
+        -------
+        callable
+            The decorated method.
+        """
+        @wraps(method)
+        def wrapped(instance, *args, **kwargs):
+            # Retrieve the method's signature, including 'self' for instance methods
+            sig = inspect.signature(method)
+            # Bind the provided arguments to the method's parameters
+            bound_args = sig.bind(instance, *args, **kwargs)
+            bound_args.apply_defaults()
+
+            # Prepare a dictionary to log the method name and its arguments
+            method_log = {'gate': method.__name__}
+
+            # Populate the log dictionary with the method's arguments
+            for name, value in bound_args.arguments.items():
+                # Skip 'self' as it's not part of the method's signature
+                if name != 'self':
+                    method_log[name] = value
+
+            # Append the method log to the instance's circuit log
+            instance.circuit_log.append(method_log)
+
+            # Execute the method with the provided arguments
+            return method(instance, *args, **kwargs)
+
+        return wrapped
 
     @abstractmethod
     def RX(self,

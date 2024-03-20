@@ -16,6 +16,7 @@ from __future__ import annotations
 
 __all__ = ['CirqCircuit']
 
+from typing import TYPE_CHECKING
 from collections.abc import Iterable
 import numpy as np
 from numpy.typing import NDArray
@@ -35,7 +36,8 @@ from qiskit import transpile
 from qickit.circuit import Circuit, QiskitCircuit
 
 # Import `qickit.Backend`
-from qickit.backend import Backend
+if TYPE_CHECKING:
+    from qickit.backend import Backend
 
 
 class CirqCircuit(Circuit):
@@ -70,6 +72,7 @@ class CirqCircuit(Circuit):
         # Define the circuit log (list[dict])
         self.circuit_log = []
 
+    @Circuit.gatemethod
     def RX(self,
            angle: float,
            qubit_index: int) -> None:
@@ -91,9 +94,7 @@ class CirqCircuit(Circuit):
         # Apply the RX gate to the circuit at the specified qubit
         self.circuit.append(rx(self.qr[qubit_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'RX', 'angle': angle, 'qubit_index': qubit_index})
-
+    @Circuit.gatemethod
     def RY(self,
            angle: float,
            qubit_index: int) -> None:
@@ -115,9 +116,7 @@ class CirqCircuit(Circuit):
         # Apply the RY gate to the circuit at the specified qubit
         self.circuit.append(ry(self.qr[qubit_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'RY', 'angle': angle, 'qubit_index': qubit_index})
-
+    @Circuit.gatemethod
     def RZ(self,
            angle: float,
            qubit_index: int) -> None:
@@ -139,9 +138,7 @@ class CirqCircuit(Circuit):
         # Apply the RZ gate to the circuit at the specified qubit
         self.circuit.append(rz(self.qr[qubit_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'RZ', 'angle': angle, 'qubit_index': qubit_index})
-
+    @Circuit.gatemethod
     def H(self,
           qubit_indices: int | Iterable[int]) -> None:
         """ Apply a Hadamard gate to the circuit.
@@ -163,9 +160,7 @@ class CirqCircuit(Circuit):
             # If it's not a list, apply the H gate to the single qubit
             self.circuit.append(h(self.qr[qubit_indices]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'H', 'qubit_indices': qubit_indices})
-
+    @Circuit.gatemethod
     def X(self,
           qubit_indices: int | Iterable[int]) -> None:
         """ Apply a Pauli-X gate to the circuit.
@@ -187,9 +182,7 @@ class CirqCircuit(Circuit):
             # If it's not a list, apply the X gate to the single qubit
             self.circuit.append(x(self.qr[qubit_indices]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'X', 'qubit_indices': qubit_indices})
-
+    @Circuit.gatemethod
     def Y(self,
           qubit_indices: int | Iterable[int]) -> None:
         """ Apply a Pauli-Y gate to the circuit.
@@ -211,9 +204,7 @@ class CirqCircuit(Circuit):
             # If it's not a list, apply the Y gate to the single qubit
             self.circuit.append(y(self.qr[qubit_indices]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'Y', 'qubit_indices': qubit_indices})
-
+    @Circuit.gatemethod
     def Z(self,
           qubit_indices: int | Iterable[int]) -> None:
         """ Apply a Pauli-Z gate to the circuit.
@@ -235,9 +226,7 @@ class CirqCircuit(Circuit):
             # If it's not a list, apply the Z gate to the single qubit
             self.circuit.append(z(self.qr[qubit_indices]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'Z', 'qubit_indices': qubit_indices})
-
+    @Circuit.gatemethod
     def S(self,
           qubit_indices: int | Iterable[int]) -> None:
         """ Apply a S gate to the circuit.
@@ -259,9 +248,7 @@ class CirqCircuit(Circuit):
             # If it's not a list, apply the S gate to the single qubit
             self.circuit.append(s(self.qr[qubit_indices]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'S', 'qubit_indices': qubit_indices})
-
+    @Circuit.gatemethod
     def T(self,
           qubit_indices: int | Iterable[int]) -> None:
         """ Apply a T gate to the circuit.
@@ -283,9 +270,7 @@ class CirqCircuit(Circuit):
             # If it's not a list, apply the T gate to the single qubit
             self.circuit.append(t(self.qr[qubit_indices]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'T', 'qubit_indices': qubit_indices})
-
+    @Circuit.gatemethod
     def U3(self,
            angles: Iterable[float],
            qubit_index: int) -> None:
@@ -319,9 +304,7 @@ class CirqCircuit(Circuit):
         # Apply the U3 gate to the circuit at the specified qubit
         self.circuit.append(U3().on(self.qr[qubit_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'U3', 'angles': angles, 'qubit_index': qubit_index})
-
+    @Circuit.gatemethod
     def CX(self,
            control_index: int,
            target_index: int) -> None:
@@ -339,9 +322,7 @@ class CirqCircuit(Circuit):
         # Apply the CX gate to the circuit at the specified control and target qubits
         self.circuit.append(cx(self.qr[control_index], self.qr[target_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CX', 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CY(self,
            control_index: int,
            target_index: int) -> None:
@@ -359,9 +340,7 @@ class CirqCircuit(Circuit):
         # Apply the CY gate to the circuit at the specified control and target qubits
         self.circuit.append(cy(self.qr[control_index], self.qr[target_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CY', 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
@@ -379,9 +358,7 @@ class CirqCircuit(Circuit):
         # Apply the CZ gate to the circuit at the specified control and target qubits
         self.circuit.append(cz(self.qr[control_index], self.qr[target_index]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CZ', 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CH(self,
            control_index: int,
            target_index: int) -> None:
@@ -399,9 +376,7 @@ class CirqCircuit(Circuit):
         # Apply the CH gate to the circuit at the specified control and target qubits
         self.circuit.append(ch)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CH', 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CS(self,
            control_index: int,
            target_index: int) -> None:
@@ -419,9 +394,7 @@ class CirqCircuit(Circuit):
         # Apply the CS gate to the circuit at the specified control and target qubits
         self.circuit.append(cs)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CS', 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CT(self,
            control_index: int,
            target_index: int) -> None:
@@ -439,9 +412,7 @@ class CirqCircuit(Circuit):
         # Apply the CT gate to the circuit at the specified control and target qubits
         self.circuit.append(ct)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CT', 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CRX(self,
             angle: float,
             control_index: int,
@@ -466,9 +437,7 @@ class CirqCircuit(Circuit):
         # Apply the CRX gate to the circuit
         self.circuit.append(crx_gate)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CRX', 'angle': angle, 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CRY(self,
             angle: float,
             control_index: int,
@@ -493,9 +462,7 @@ class CirqCircuit(Circuit):
         # Apply the CRY gate to the circuit at the specified control and target qubits
         self.circuit.append(cry)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CRY', 'angle': angle, 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CRZ(self,
             angle: float,
             control_index: int,
@@ -520,9 +487,7 @@ class CirqCircuit(Circuit):
         # Apply the CRZ gate to the circuit at the specified control and target qubits
         self.circuit.append(crz)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CRZ', 'angle': angle, 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def CU3(self,
             angles: Iterable[float],
             control_index: int,
@@ -561,9 +526,7 @@ class CirqCircuit(Circuit):
         # Apply the CU3 gate to the circuit at the specified control and target qubits
         self.circuit.append(cu3)
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'CU3', 'angles': angles, 'control_index': control_index, 'target_index': target_index})
-
+    @Circuit.gatemethod
     def MCX(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
@@ -584,9 +547,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(X(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCX', 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCY(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
@@ -607,9 +568,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(Y(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCY', 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCZ(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
@@ -630,9 +589,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(Z(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCZ', 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCH(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
@@ -653,9 +610,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(H(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCH', 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCS(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
@@ -676,9 +631,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(S(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCS', 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCT(self,
             control_indices: int | Iterable[int],
             target_indices: int | Iterable[int]) -> None:
@@ -699,9 +652,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(T(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCT', 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCRX(self,
              angle: float,
              control_indices: int | Iterable[int],
@@ -729,9 +680,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(Rx(rads=angle)(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCRX', 'angle': angle, 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCRY(self,
              angle: float,
              control_indices: int | Iterable[int],
@@ -759,9 +708,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(Ry(rads=angle)(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCRY', 'angle': angle, 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCRZ(self,
              angle: float,
              control_indices: int | Iterable[int],
@@ -789,9 +736,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(Rz(rads=angle)(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCRZ', 'angle': angle, 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def MCU3(self,
              angles: Iterable[float],
              control_indices: int | Iterable[int],
@@ -833,9 +778,7 @@ class CirqCircuit(Circuit):
         for i in range(len(target_indices)):
             self.circuit.append(U3().on(self.qr[target_indices[i]]).controlled_by(*[self.qr[control_indices[j]] for j in range(len(control_indices))]))
 
-        # Add the gate to the log
-        self.circuit_log.append({'gate': 'MCU3', 'angles': angles, 'control_indices': control_indices, 'target_indices': target_indices})
-
+    @Circuit.gatemethod
     def measure(self,
                 qubit_indices: int | Iterable[int]) -> None:
         """ Measure qubits in the circuit.
@@ -853,9 +796,6 @@ class CirqCircuit(Circuit):
 
         # Set the measurement as applied
         self.measured = True
-
-        # Add the operation to the log
-        self.circuit_log.append({'gate': 'measure', 'qubit_indices': qubit_indices})
 
     def get_statevector(self,
                         backend: Backend | None=None) -> Iterable[float]:

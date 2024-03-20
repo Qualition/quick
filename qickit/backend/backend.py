@@ -17,7 +17,7 @@ from __future__ import annotations
 __all__ = ['Backend', 'AerBackend']
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from functools import wraps
 import numpy as np
 from numpy.typing import NDArray
 
@@ -25,8 +25,7 @@ from numpy.typing import NDArray
 from qiskit_aer import AerSimulator, StatevectorSimulator
 
 # Import `qickit.Circuit` instances
-if TYPE_CHECKING:
-    from qickit.circuit import *
+from qickit.circuit import *
 
 
 class Backend(ABC):
@@ -45,6 +44,30 @@ class Backend(ABC):
         """
         self._qc_framework: Circuit = None
         self._sv_only: bool = False
+
+    def backend(method: callable) -> callable:
+        """ Decorator for backend methods.
+
+        Parameters
+        ----------
+        `method` (callable):
+            The method to decorate.
+
+        Returns
+        -------
+        `wrapper` (callable): The decorated method.
+        """
+        @wraps(method)
+        def wrapped(instance, circuit: Circuit):
+            # Ensure the type is compatible
+            if isinstance(circuit, instance._qc_framework) is False:
+                circuit = circuit.convert(instance._qc_framework).circuit
+
+            # Run the method
+            return method(instance, circuit)
+
+        # Return the decorated method
+        return wrapped
 
     @abstractmethod
     def get_statevector(self,
@@ -98,42 +121,38 @@ class AerBackend(Backend):
         self._qc_framework = QiskitCircuit
         self._sv_only = False
 
+    @Backend.backend
     def get_statevector(self,
-                        circuit: QiskitCircuit) -> NDArray[np.complex128]:
+                        circuit: Circuit) -> NDArray[np.complex128]:
         """ Get the statevector of the circuit.
 
         Parameters
         ----------
-        `circuit` (QiskitCircuit):
+        `circuit` (Circuit):
             The circuit to run.
 
         Returns
         -------
         `state_vector` (NDArray[np.complex128]): The statevector of the circuit.
         """
-        # Assert the circuit type is supported
-        try:
-            isinstance(circuit, QiskitCircuit)
-        except TypeError:
-            raise TypeError("The circuit must be a QiskitCircuit.")
-
         # Define the backend
         backend = StatevectorSimulator()
 
         # Run the circuit
-        state_vector = (backend.run(circuit.circuit.decompose(reps=100))).result().get_statevector()
+        state_vector = (backend.run(circuit.decompose(reps=1000))).result().get_statevector()
 
         # Return the statevector
         return state_vector
 
+    @Backend.backend
     def get_counts(self,
-                   circuit: QiskitCircuit,
+                   circuit: Circuit,
                    num_shots: int) -> dict:
         """ Get the counts of the backend.
 
         Parameters
         ----------
-        `circuit` (QiskitCircuit):
+        `circuit` (Circuit):
             The circuit to run.
         `num_shots` (int):
             The number of shots to run.
@@ -142,12 +161,6 @@ class AerBackend(Backend):
         -------
         `counts` (dict): The counts of the circuit.
         """
-        # Assert the circuit type is supported
-        try:
-            isinstance(circuit, QiskitCircuit)
-        except TypeError:
-            raise TypeError("The circuit must be a QiskitCircuit.")
-
         # Assert the number of shots is valid
         try:
             isinstance(num_shots, int) and num_shots > 0
@@ -158,7 +171,7 @@ class AerBackend(Backend):
         backend = AerSimulator()
 
         # Run the circuit
-        counts = backend.run(circuit.circuit, shots=num_shots).result().get_counts()
+        counts = backend.run(circuit, shots=num_shots).result().get_counts()
 
         # Return the counts
         return counts
