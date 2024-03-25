@@ -26,9 +26,11 @@ import copy
 
 # Qiskit imports
 import qiskit
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, execute, transpile
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
 from qiskit.circuit.library import *
-from qiskit_aer import AerSimulator, StatevectorSimulator, UnitarySimulator
+from qiskit.primitives import BackendSampler
+from qiskit_aer.aerprovider import AerSimulator
+from qiskit.quantum_info import Statevector, Operator
 
 # Import `qickit.Circuit`
 from qickit.circuit import Circuit
@@ -786,10 +788,8 @@ class QiskitCircuit(Circuit):
         `statevector` (Iterable[float]): The state vector of the circuit.
         """
         if backend is None:
-            # If no backend is provided, use the StatevectorSimulator
-            backend: StatevectorSimulator = StatevectorSimulator(method="statevector")
             # Run the circuit and define the state vector
-            state_vector = backend.run(self.circuit.decompose(reps=1000)).result().get_statevector()
+            state_vector = Statevector(self.circuit).data
 
         else:
             # Run the circuit on the specified backend and define the state vector
@@ -841,11 +841,17 @@ class QiskitCircuit(Circuit):
 
         if backend is None:
             # If no backend is provided, use the AerSimualtor
-            backend: AerSimulator = AerSimulator()
+            backend: BackendSampler = BackendSampler(AerSimulator())
             # Run the circuit
-            result = execute(self.circuit, backend, shots=num_shots, seed_simulator=0).result()
-            # Get the counts
-            counts = result.get_counts()
+            result = backend.run(self.circuit, shots=num_shots, seed_simulator=0).result()
+            # Extract the quasi-probability distribution from the first result
+            quasi_dist = result.quasi_dists[0]
+            # Convert the quasi-probability distribution to counts
+            counts = {bin(k)[2:].zfill(self.num_qubits): int(v * num_shots) for k, v in quasi_dist.items()}
+            # Fill the counts array with zeros for the missing states
+            counts = {f'{i:0{self.num_qubits}b}': counts.get(f'{i:0{self.num_qubits}b}', 0) for i in range(2**self.num_qubits)}
+            # Sort the counts by their keys (basis states)
+            counts = dict(sorted(counts.items()))
 
         else:
             # Run the circuit on the specified backend
@@ -882,11 +888,8 @@ class QiskitCircuit(Circuit):
         -------
         `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
         """
-        # Define the backend
-        backend: UnitarySimulator = UnitarySimulator(method='unitary')
-
         # Get the unitary matrix of the circuit
-        unitary = backend.run(self.circuit.decompose(reps=1000)).result().get_unitary()
+        unitary = Operator(self.circuit).data
 
         # Return the unitary matrix
         return np.array(unitary)

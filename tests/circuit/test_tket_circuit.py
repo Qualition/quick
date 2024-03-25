@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ['TestTKETCircuit']
 
 import numpy as np
+from numpy.testing import assert_almost_equal
 
 # TKET imports
 from pytket import Circuit as TKCircuit
@@ -45,7 +46,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.X, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_Y(self) -> None:
         """ Test the Pauli-Y gate.
@@ -61,7 +62,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.Y, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_Z(self) -> None:
         """ Test the Pauli-Z gate.
@@ -77,7 +78,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.Z, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_H(self) -> None:
         """ Test the Hadamard gate.
@@ -93,7 +94,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.H, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_S(self) -> None:
         """ Test the Clifford-S gate.
@@ -109,7 +110,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.S, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_T(self) -> None:
         """ Test the Clifford-T gate.
@@ -125,7 +126,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.T, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RX(self) -> None:
         """ Test the RX gate.
@@ -141,7 +142,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.Rx, 0.5/np.pi, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RY(self) -> None:
         """ Test the RY gate.
@@ -157,7 +158,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.Ry, 0.5/np.pi, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RZ(self) -> None:
         """ Test the RZ gate.
@@ -173,7 +174,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.Rz, 0.5/np.pi, [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_U3(self) -> None:
         """ Test the U3 gate.
@@ -189,7 +190,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(1, 1)
         tket_circuit.add_gate(OpType.U3, [0.5/np.pi, 0.5/np.pi, 0.5/np.pi], [0])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CX(self) -> None:
         """ Test the Controlled Pauli-X gate.
@@ -208,7 +209,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(2, 2)
         tket_circuit.add_gate(OpType.CX, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CY(self) -> None:
         """ Test the Controlled Pauli-Y gate.
@@ -227,7 +228,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(2, 2)
         tket_circuit.add_gate(OpType.CY, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CZ(self) -> None:
         """ Test the Controlled Pauli-Z gate.
@@ -246,7 +247,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(2, 2)
         tket_circuit.add_gate(OpType.CZ, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CH(self) -> None:
         """ Test the Controlled Hadamard gate.
@@ -265,7 +266,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(2, 2)
         tket_circuit.add_gate(OpType.CH, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CS(self) -> None:
         """ Test the Controlled Clifford-S gate.
@@ -284,7 +285,7 @@ class TestTKETCircuit(Template):
         tket_circuit = TKCircuit(2, 2)
         tket_circuit.add_gate(OpType.CS, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CT(self) -> None:
         """ Test the Controlled Clifford-T gate.
@@ -305,7 +306,7 @@ class TestTKETCircuit(Template):
         ct = QControlBox(t, 1)
         tket_circuit.add_gate(ct, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRX(self) -> None:
         """ Test the Controlled RX gate.
@@ -325,7 +326,7 @@ class TestTKETCircuit(Template):
         crx = OpType.CRx
         tket_circuit.add_gate(crx, 0.5/np.pi, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRY(self) -> None:
         """ Test the Controlled RY gate.
@@ -345,7 +346,7 @@ class TestTKETCircuit(Template):
         cry = OpType.CRy
         tket_circuit.add_gate(cry, 0.5/np.pi, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRZ(self) -> None:
         """ Test the Controlled RZ gate.
@@ -365,7 +366,7 @@ class TestTKETCircuit(Template):
         crz = OpType.CRz
         tket_circuit.add_gate(crz, 0.5/np.pi, [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CU3(self) -> None:
         """ Test the Controlled U3 gate.
@@ -385,7 +386,7 @@ class TestTKETCircuit(Template):
         cu3 = OpType.CU3
         tket_circuit.add_gate(cu3, [0.5/np.pi, 0.5/np.pi, 0.5/np.pi], [0, 1])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCX(self) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
@@ -405,7 +406,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(OpType.CnX, [0, 1, 2])
         tket_circuit.add_gate(OpType.CnX, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCY(self) -> None:
         """ Test the Multi-Controlled Pauli-Y gate.
@@ -425,7 +426,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(OpType.CnY, [0, 1, 2])
         tket_circuit.add_gate(OpType.CnY, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCZ(self) -> None:
         """ Test the Multi-Controlled Pauli-Z gate.
@@ -445,7 +446,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(OpType.CnZ, [0, 1, 2])
         tket_circuit.add_gate(OpType.CnZ, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCH(self) -> None:
         """ Test the Multi-Controlled Hadamard gate.
@@ -467,7 +468,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(ch, [0, 1, 2])
         tket_circuit.add_gate(ch, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCS(self) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
@@ -489,7 +490,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(cs, [0, 1, 2])
         tket_circuit.add_gate(cs, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCT(self) -> None:
         """ Test the Multi-Controlled Clifford-T gate.
@@ -511,7 +512,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(ct, [0, 1, 2])
         tket_circuit.add_gate(ct, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRX(self) -> None:
         """ Test the Multi-Controlled RX gate.
@@ -533,7 +534,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(crx, [0, 1, 2])
         tket_circuit.add_gate(crx, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRY(self) -> None:
         """ Test the Multi-Controlled RY gate.
@@ -555,7 +556,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(cry, [0, 1, 2])
         tket_circuit.add_gate(cry, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRZ(self) -> None:
         """ Test the Multi-Controlled RZ gate.
@@ -577,7 +578,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(crz, [0, 1, 2])
         tket_circuit.add_gate(crz, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCU3(self) -> None:
         """ Test the Multi-Controlled U3 gate.
@@ -599,7 +600,7 @@ class TestTKETCircuit(Template):
         tket_circuit.add_gate(cu3, [0, 1, 2])
         tket_circuit.add_gate(cu3, [0, 1, 3])
 
-        assert np.all(circuit.get_unitary() == tket_circuit.get_unitary())
+        assert_almost_equal(circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_measure(self) -> None:
         return super().test_measure()

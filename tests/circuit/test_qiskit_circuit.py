@@ -17,12 +17,12 @@ from __future__ import annotations
 __all__ = ['TestQiskitCircuit']
 
 import numpy as np
+from numpy.testing import assert_almost_equal
 
 # Qiskit imports
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import *
-from qiskit_aer import UnitarySimulator
-backend = UnitarySimulator(method='unitary')
+from qiskit.quantum_info import Operator
 
 # QICKIT imports
 from qickit.circuit import QiskitCircuit
@@ -46,9 +46,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.x(0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_Y(self) -> None:
         """ Test the Pauli-Y gate.
@@ -64,9 +64,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.y(0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_Z(self) -> None:
         """ Test the Pauli-Z gate.
@@ -82,9 +82,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.z(0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_H(self) -> None:
         """ Test the Hadamard gate.
@@ -100,9 +100,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.h(0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_S(self) -> None:
         """ Test the Clifford-S gate.
@@ -118,9 +118,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.s(0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_T(self) -> None:
         """ Test the Clifford-T gate.
@@ -136,9 +136,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.t(0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_RX(self) -> None:
         """ Test the RX gate.
@@ -154,9 +154,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.rx(0.5, 0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_RY(self) -> None:
         """ Test the RY gate.
@@ -172,9 +172,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.ry(0.5, 0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_RZ(self) -> None:
         """ Test the RZ gate.
@@ -190,9 +190,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.rz(0.5, 0)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_U3(self) -> None:
         """ Test the U3 gate.
@@ -208,9 +208,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(1, 1)
         qiskit_circuit.append(U3Gate(0.5, 0.5, 0.5), [0])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CX(self) -> None:
         """ Test the Controlled Pauli-X gate.
@@ -226,9 +226,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(2, 2)
         qiskit_circuit.cx(0, 1)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CY(self) -> None:
         """ Test the Controlled Pauli-Y gate.
@@ -244,9 +244,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(2, 2)
         qiskit_circuit.cy(0, 1)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CZ(self) -> None:
         """ Test the Controlled Pauli-Z gate.
@@ -262,9 +262,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(2, 2)
         qiskit_circuit.cz(0, 1)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CH(self) -> None:
         """ Test the Controlled Hadamard gate.
@@ -280,9 +280,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(2, 2)
         qiskit_circuit.ch(0, 1)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CS(self) -> None:
         """ Test the Controlled Clifford-S gate.
@@ -298,9 +298,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit = QuantumCircuit(2, 2)
         qiskit_circuit.cs(0, 1)
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CT(self) -> None:
         """ Test the Controlled Clifford-T gate.
@@ -317,9 +317,9 @@ class TestQiskitCircuit(Template):
         ct = TGate().control(1)
         qiskit_circuit.append(ct, [0, 1])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CRX(self) -> None:
         """ Test the Controlled RX gate.
@@ -336,9 +336,9 @@ class TestQiskitCircuit(Template):
         crx = RXGate(0.5).control(1)
         qiskit_circuit.append(crx, [0, 1])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CRY(self) -> None:
         """ Test the Controlled RY gate.
@@ -355,9 +355,9 @@ class TestQiskitCircuit(Template):
         cry = RYGate(0.5).control(1)
         qiskit_circuit.append(cry, [0, 1])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CRZ(self) -> None:
         """ Test the Controlled RZ gate.
@@ -374,9 +374,9 @@ class TestQiskitCircuit(Template):
         crz = RZGate(0.5).control(1)
         qiskit_circuit.append(crz, [0, 1])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_CU3(self) -> None:
         """ Test the Controlled U3 gate.
@@ -393,9 +393,9 @@ class TestQiskitCircuit(Template):
         cu3 = U3Gate(0.5, 0.5, 0.5).control(1)
         qiskit_circuit.append(cu3, [0, 1])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCX(self) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
@@ -413,9 +413,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcx, [0, 1, 2])
         qiskit_circuit.append(mcx, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCY(self) -> None:
         """ Test the Multi-Controlled Pauli-Y gate.
@@ -433,9 +433,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcy, [0, 1, 2])
         qiskit_circuit.append(mcy, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCZ(self) -> None:
         """ Test the Multi-Controlled Pauli-Z gate.
@@ -453,9 +453,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcz, [0, 1, 2])
         qiskit_circuit.append(mcz, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCH(self) -> None:
         """ Test the Multi-Controlled Hadamard gate.
@@ -473,9 +473,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mch, [0, 1, 2])
         qiskit_circuit.append(mch, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCS(self) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
@@ -493,9 +493,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcs, [0, 1, 2])
         qiskit_circuit.append(mcs, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCT(self) -> None:
         """ Test the Multi-Controlled Clifford-T gate.
@@ -513,9 +513,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mct, [0, 1, 2])
         qiskit_circuit.append(mct, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCRX(self) -> None:
         """ Test the Multi-Controlled RX gate.
@@ -533,9 +533,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcrx, [0, 1, 2])
         qiskit_circuit.append(mcrx, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCRY(self) -> None:
         """ Test the Multi-Controlled RY gate.
@@ -553,9 +553,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcry, [0, 1, 2])
         qiskit_circuit.append(mcry, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCRZ(self) -> None:
         """ Test the Multi-Controlled RZ gate.
@@ -573,9 +573,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcrz, [0, 1, 2])
         qiskit_circuit.append(mcrz, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_MCU3(self) -> None:
         """ Test the Multi-Controlled U3 gate.
@@ -593,9 +593,9 @@ class TestQiskitCircuit(Template):
         qiskit_circuit.append(mcu3, [0, 1, 2])
         qiskit_circuit.append(mcu3, [0, 1, 3])
 
-        result = backend.run(qiskit_circuit.decompose(reps=1000)).result()
+        result = Operator(qiskit_circuit).data
 
-        assert np.all(np.array(circuit.get_unitary()) == np.array(result.get_unitary()))
+        assert_almost_equal(np.array(circuit.get_unitary()), np.array(result), 8)
 
     def test_measure(self) -> None:
         return super().test_measure()

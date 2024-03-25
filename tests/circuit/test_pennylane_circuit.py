@@ -18,6 +18,7 @@ __all__ = ['TestPennylaneCircuit']
 
 import numpy as np
 from numpy.typing import NDArray
+from numpy.testing import assert_almost_equal
 
 # Pennylane imports
 import pennylane as qml
@@ -79,7 +80,7 @@ class TestPennylaneCircuit(Template):
             qml.PauliX(0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_Y(self) -> None:
         """ Test the Pauli-Y gate.
@@ -97,7 +98,7 @@ class TestPennylaneCircuit(Template):
             qml.PauliY(0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_Z(self) -> None:
         """ Test the Pauli-Z gate.
@@ -115,7 +116,7 @@ class TestPennylaneCircuit(Template):
             qml.PauliZ(0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_H(self) -> None:
         """ Test the Hadamard gate.
@@ -133,7 +134,7 @@ class TestPennylaneCircuit(Template):
             qml.Hadamard(0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_S(self) -> None:
         """ Test the Clifford-S gate.
@@ -151,7 +152,7 @@ class TestPennylaneCircuit(Template):
             qml.S(0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_T(self) -> None:
         """ Test the Clifford-T gate.
@@ -169,7 +170,7 @@ class TestPennylaneCircuit(Template):
             qml.T(0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_RX(self) -> None:
         """ Test the RX gate.
@@ -187,7 +188,7 @@ class TestPennylaneCircuit(Template):
             qml.RX(0.5, 0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_RY(self) -> None:
         """ Test the RY gate.
@@ -205,7 +206,7 @@ class TestPennylaneCircuit(Template):
             qml.RY(0.5, 0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_RZ(self) -> None:
         """ Test the RZ gate.
@@ -223,7 +224,7 @@ class TestPennylaneCircuit(Template):
             qml.RZ(0.5, 0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_U3(self) -> None:
         """ Test the U3 gate.
@@ -241,7 +242,7 @@ class TestPennylaneCircuit(Template):
             qml.U3(0.5, 0.5, 0.5, 0)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CX(self) -> None:
         """ Test the Controlled Pauli-X gate.
@@ -259,7 +260,7 @@ class TestPennylaneCircuit(Template):
             qml.CNOT([0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CY(self) -> None:
         """ Test the Controlled Pauli-Y gate.
@@ -277,7 +278,7 @@ class TestPennylaneCircuit(Template):
             qml.CY([0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CZ(self) -> None:
         """ Test the Controlled Pauli-Z gate.
@@ -295,7 +296,7 @@ class TestPennylaneCircuit(Template):
             qml.CZ([0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CH(self) -> None:
         """ Test the Controlled Hadamard gate.
@@ -313,7 +314,7 @@ class TestPennylaneCircuit(Template):
             qml.CH([0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CS(self) -> None:
         """ Test the Controlled Clifford-S gate.
@@ -333,7 +334,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(cs)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CT(self) -> None:
         """ Test the Controlled Clifford-T gate.
@@ -353,7 +354,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(ct)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CRX(self) -> None:
         """ Test the Controlled RX gate.
@@ -371,7 +372,7 @@ class TestPennylaneCircuit(Template):
             qml.CRX(0.5, [0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CRY(self) -> None:
         """ Test the Controlled RY gate.
@@ -389,7 +390,7 @@ class TestPennylaneCircuit(Template):
             qml.CRY(0.5, [0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CRZ(self) -> None:
         """ Test the Controlled RZ gate.
@@ -407,7 +408,7 @@ class TestPennylaneCircuit(Template):
             qml.CRZ(0.5, [0, 1])
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_CU3(self) -> None:
         """ Test the Controlled U3 gate.
@@ -428,7 +429,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(cu3)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCX(self) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
@@ -450,7 +451,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcx_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCY(self) -> None:
         """ Test the Multi-Controlled Pauli-Y gate.
@@ -472,7 +473,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcy_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCZ(self) -> None:
         """ Test the Multi-Controlled Pauli-Z gate.
@@ -494,7 +495,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcz_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCH(self) -> None:
         """ Test the Multi-Controlled Hadamard gate.
@@ -516,7 +517,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mch_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCS(self) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
@@ -538,7 +539,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcs_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCT(self) -> None:
         """ Test the Multi-Controlled Clifford-T gate.
@@ -560,7 +561,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mct_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCRX(self) -> None:
         """ Test the Multi-Controlled RX gate.
@@ -582,7 +583,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcrx_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCRY(self) -> None:
         """ Test the Multi-Controlled RY gate.
@@ -604,7 +605,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcry_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCRZ(self) -> None:
         """ Test the Multi-Controlled RZ gate.
@@ -626,7 +627,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcrz_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_MCU3(self) -> None:
         """ Test the Multi-Controlled U3 gate.
@@ -650,7 +651,7 @@ class TestPennylaneCircuit(Template):
             qml.apply(mcu3_2)
 
         # Compare the results
-        assert np.all(circuit.get_unitary() == MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)))
+        assert_almost_equal(circuit.get_unitary(), MSB_to_LSB(np.array(qml.matrix(pennylane_circuit)(), dtype=complex)), 8)
 
     def test_measure(self) -> None:
         return super().test_measure()

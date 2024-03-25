@@ -22,6 +22,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 # Qiskit imports
+import qiskit
 from qiskit_aer import AerSimulator, StatevectorSimulator
 
 # Import `qickit.Circuit` instances
@@ -61,7 +62,7 @@ class Backend(ABC):
         def wrapped(instance, circuit: Circuit):
             # Ensure the type is compatible
             if isinstance(circuit, instance._qc_framework) is False:
-                circuit = circuit.convert(instance._qc_framework).circuit
+                circuit = circuit.convert(instance._qc_framework)
 
             # Run the method
             return method(instance, circuit)
@@ -138,6 +139,9 @@ class AerBackend(Backend):
         # Define the backend
         backend = StatevectorSimulator()
 
+        # Get the circuit
+        circuit: qiskit.QuantumCircuit = circuit.circuit
+
         # Run the circuit
         state_vector = (backend.run(circuit.decompose(reps=1000))).result().get_statevector()
 
@@ -169,6 +173,9 @@ class AerBackend(Backend):
 
         # Define the backend
         backend = AerSimulator()
+
+        # Get the circuit
+        circuit: qiskit.QuantumCircuit = circuit.circuit
 
         # Run the circuit
         counts = backend.run(circuit, shots=num_shots).result().get_counts()

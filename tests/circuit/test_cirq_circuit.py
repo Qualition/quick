@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ['TestCirqCircuit']
 
 import numpy as np
+from numpy.testing import assert_almost_equal
 
 # Cirq imports
 import cirq
@@ -45,7 +46,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(X(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_Y(self) -> None:
         """ Test the Pauli-Y gate.
@@ -61,7 +62,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(Y(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_Z(self) -> None:
         """ Test the Pauli-Z gate.
@@ -77,7 +78,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(Z(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_H(self) -> None:
         """ Test the Hadamard gate.
@@ -93,7 +94,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(H(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_S(self) -> None:
         """ Test the Clifford-S gate.
@@ -109,7 +110,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(S(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_T(self) -> None:
         """ Test the Clifford-T gate.
@@ -125,7 +126,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(T(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_RX(self) -> None:
         """ Test the RX gate.
@@ -141,7 +142,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(Rx(rads=0.5)(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_RY(self) -> None:
         """ Test the RY gate.
@@ -157,7 +158,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(Ry(rads=0.5)(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_RZ(self) -> None:
         """ Test the RZ gate.
@@ -173,7 +174,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(Rz(rads=0.5)(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_U3(self) -> None:
         """ Test the U3 gate.
@@ -208,7 +209,7 @@ class TestCirqCircuit(Template):
 
         cirq_circuit = cirq.Circuit(U3().on(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CX(self) -> None:
         """ Test the Controlled Pauli-X gate.
@@ -227,7 +228,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(CX(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CY(self) -> None:
         """ Test the Controlled Pauli-Y gate.
@@ -246,7 +247,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(CY(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CZ(self) -> None:
         """ Test the Controlled Pauli-Z gate.
@@ -265,7 +266,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(CZ(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CH(self) -> None:
         """ Test the Controlled Hadamard gate.
@@ -284,7 +285,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(H(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CS(self) -> None:
         """ Test the Controlled Clifford-S gate.
@@ -303,7 +304,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(S(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CT(self) -> None:
         """ Test the Controlled Clifford-T gate.
@@ -322,7 +323,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(T(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CRX(self) -> None:
         """ Test the Controlled RX gate.
@@ -341,7 +342,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(Rx(rads=0.5)(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CRY(self) -> None:
         """ Test the Controlled RY gate.
@@ -360,7 +361,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(Ry(rads=0.5)(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CRZ(self) -> None:
         """ Test the Controlled RZ gate.
@@ -379,7 +380,7 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
         cirq_circuit = cirq.Circuit(Rz(rads=0.5)(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CU3(self) -> None:
         """ Test the Controlled U3 gate.
@@ -417,7 +418,7 @@ class TestCirqCircuit(Template):
 
         cirq_circuit = cirq.Circuit(U3().on(qr[1]).controlled_by(qr[0]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCX(self) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
@@ -437,7 +438,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(X(qr[2]).controlled_by(qr[0], qr[1]),
                                     X(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCY(self) -> None:
         """ Test the Multi-Controlled Pauli-Y gate.
@@ -457,7 +458,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(Y(qr[2]).controlled_by(qr[0], qr[1]),
                                     Y(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCZ(self) -> None:
         """ Test the Multi-Controlled Pauli-Z gate.
@@ -477,7 +478,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(Z(qr[2]).controlled_by(qr[0], qr[1]),
                                     Z(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCH(self) -> None:
         """ Test the Multi-Controlled Hadamard gate.
@@ -497,7 +498,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(H(qr[2]).controlled_by(qr[0], qr[1]),
                                     H(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCS(self) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
@@ -517,7 +518,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(S(qr[2]).controlled_by(qr[0], qr[1]),
                                     S(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCT(self) -> None:
         """ Test the Multi-Controlled Clifford-T gate.
@@ -537,7 +538,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(T(qr[2]).controlled_by(qr[0], qr[1]),
                                     T(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCRX(self) -> None:
         """ Test the Multi-Controlled RX gate.
@@ -557,7 +558,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(Rx(rads=0.5)(qr[2]).controlled_by(qr[0], qr[1]),
                                     Rx(rads=0.5)(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCRY(self) -> None:
         """ Test the Multi-Controlled RY gate.
@@ -597,7 +598,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(Rz(rads=0.5)(qr[2]).controlled_by(qr[0], qr[1]),
                                     Rz(rads=0.5)(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCU3(self) -> None:
         """ Test the Multi-Controlled U3 gate.
@@ -636,7 +637,7 @@ class TestCirqCircuit(Template):
         cirq_circuit = cirq.Circuit(U3().on(qr[2]).controlled_by(qr[0], qr[1]),
                                     U3().on(qr[3]).controlled_by(qr[0], qr[1]))
 
-        assert np.all(circuit.get_unitary() == cirq.unitary(cirq_circuit))
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_measure(self) -> None:
         """ Test the measurement gate.
