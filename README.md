@@ -1,4 +1,7 @@
 # Qickit
+[![PyPI version](https://img.shields.io/pypi/v/qoin)](//pypi.org/project/qickit)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 ![image](https://github.com/Qualition/QICKIT/assets/73689800/6878b3cd-0bd7-4b11-86db-189cb241a3f8)
 
 `Qickit` is an agnostic gate-based circuit SDK, providing an integrated interface for using any supported quantum circuit framework seamlessly.

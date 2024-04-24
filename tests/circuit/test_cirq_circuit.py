@@ -14,15 +14,17 @@
 
 from __future__ import annotations
 
+import cirq.ops.identity
+
 __all__ = ['TestCirqCircuit']
 
+import cirq.ops
 import numpy as np
 from numpy.testing import assert_almost_equal
 
 # Cirq imports
 import cirq
-from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, CX, CZ
-CY = cirq.ControlledGate(Y)
+from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, SWAP, I
 
 # QICKIT imports
 from qickit.circuit import CirqCircuit
@@ -30,12 +32,10 @@ from tests.circuit import Template
 
 
 class TestCirqCircuit(Template):
-    """ `qickit.TestCirqCircuit` is the tester class for `qickit.CirqCircuit` class.
+    """ `tests.circuit.TestCirqCircuit` is the tester class for `qickit.circuit.CirqCircuit` class.
     """
     def test_X(self) -> None:
-        """ Test the Pauli-X gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the Pauli X gate
@@ -49,9 +49,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_Y(self) -> None:
-        """ Test the Pauli-Y gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the Pauli Y gate
@@ -65,9 +63,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_Z(self) -> None:
-        """ Test the Pauli-Z gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the Pauli Z gate
@@ -81,9 +77,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_H(self) -> None:
-        """ Test the Hadamard gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the Hadamard gate
@@ -97,9 +91,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_S(self) -> None:
-        """ Test the Clifford-S gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the Clifford S gate
@@ -113,9 +105,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_T(self) -> None:
-        """ Test the Clifford-T gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the Clifford T gate
@@ -129,9 +119,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_RX(self) -> None:
-        """ Test the RX gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the RX gate
@@ -145,9 +133,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_RY(self) -> None:
-        """ Test the RY gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the RY gate
@@ -161,9 +147,7 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_RZ(self) -> None:
-        """ Test the RZ gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the RZ gate
@@ -177,21 +161,21 @@ class TestCirqCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_U3(self) -> None:
-        """ Test the U3 gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the U3 gate
-        circuit.U3([0.5, 0.5, 0.5], 0)
+        params = [0.1, 0.2, 0.3]
+        circuit.U3(params, 0)
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(1)
 
         # Create a single qubit unitary gate
-        u3 = [[np.cos(0.5/2), -np.exp(1j*0.5) * np.sin(0.5/2)],
-              [np.exp(1j*0.5) * np.sin(0.5/2), np.exp(1j*(0.5 + 0.5)) * np.cos(0.5/2)]]
+        u3 = [[np.cos(params[0]/2), -np.exp(1j*params[2]) * np.sin(params[0]/2)],
+              [np.exp(1j*params[1]) * np.sin(params[0]/2), np.exp(1j*(params[1] + params[2])) * \
+                                                           np.cos(params[0]/2)]]
 
         # Define the U3 gate class
         class U3(cirq.Gate):
@@ -211,187 +195,191 @@ class TestCirqCircuit(Template):
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
+    def test_SWAP(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2, 2)
+
+        # Apply the SWAP gate
+        circuit.SWAP(0, 1)
+
+        # Define the equivalent `cirq.Circuit` instance, and
+        # ensure they are equivalent
+        qr = cirq.LineQubit.range(2)
+        cirq_circuit = cirq.Circuit(cirq.SWAP(qr[0], qr[1]))
+
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
+
     def test_CX(self) -> None:
-        """ Test the Controlled Pauli-X gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CX gate
         circuit.CX(0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(CX(qr[0], qr[1]))
+        cx = cirq.ControlledGate(sub_gate=X, num_controls=1)
+        cirq_circuit = cirq.Circuit(cx(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CY(self) -> None:
-        """ Test the Controlled Pauli-Y gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CY gate
         circuit.CY(0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(CY(qr[0], qr[1]))
+        cy = cirq.ControlledGate(sub_gate=Y, num_controls=1)
+        cirq_circuit = cirq.Circuit(cy(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CZ(self) -> None:
-        """ Test the Controlled Pauli-Z gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CZ gate
         circuit.CZ(0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(CZ(qr[0], qr[1]))
+        cz = cirq.ControlledGate(sub_gate=Z, num_controls=1)
+        cirq_circuit = cirq.Circuit(cz(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CH(self) -> None:
-        """ Test the Controlled Hadamard gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CH gate
         circuit.CH(0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(H(qr[1]).controlled_by(qr[0]))
+        ch = cirq.ControlledGate(sub_gate=H, num_controls=1)
+        cirq_circuit = cirq.Circuit(ch(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CS(self) -> None:
-        """ Test the Controlled Clifford-S gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CS gate
         circuit.CS(0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(S(qr[1]).controlled_by(qr[0]))
+        cs = cirq.ControlledGate(sub_gate=S, num_controls=1)
+        cirq_circuit = cirq.Circuit(cs(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CT(self) -> None:
-        """ Test the Controlled Clifford-T gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CT gate
         circuit.CT(0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(T(qr[1]).controlled_by(qr[0]))
+        ct = cirq.ControlledGate(sub_gate=T, num_controls=1)
+        cirq_circuit = cirq.Circuit(ct(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CRX(self) -> None:
-        """ Test the Controlled RX gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CRX gate
         circuit.CRX(0.5, 0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(Rx(rads=0.5)(qr[1]).controlled_by(qr[0]))
+        crx = cirq.ControlledGate(sub_gate=Rx(rads=0.5), num_controls=1)
+        cirq_circuit = cirq.Circuit(crx(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CRY(self) -> None:
-        """ Test the Controlled RY gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CRY gate
         circuit.CRY(0.5, 0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(Ry(rads=0.5)(qr[1]).controlled_by(qr[0]))
+        cry = cirq.ControlledGate(sub_gate=Ry(rads=0.5), num_controls=1)
+        cirq_circuit = cirq.Circuit(cry(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CRZ(self) -> None:
-        """ Test the Controlled RZ gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CRZ gate
         circuit.CRZ(0.5, 0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(2)
-        cirq_circuit = cirq.Circuit(Rz(rads=0.5)(qr[1]).controlled_by(qr[0]))
+        crz = cirq.ControlledGate(sub_gate=Rz(rads=0.5), num_controls=1)
+        cirq_circuit = cirq.Circuit(crz(qr[0], qr[1]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_CU3(self) -> None:
-        """ Test the Controlled U3 gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2, 2)
 
         # Apply the CU3 gate
-        circuit.CU3([0.5, 0.5, 0.5], 0, 1)
+        params = [0.1, 0.2, 0.3]
+        circuit.CU3(params, 0, 1)
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
@@ -399,8 +387,9 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(2)
 
         # Create a single qubit unitary gate
-        u3 = [[np.cos(0.5/2), -np.exp(1j*0.5) * np.sin(0.5/2)],
-              [np.exp(1j*0.5) * np.sin(0.5/2), np.exp(1j*(0.5 + 0.5)) * np.cos(0.5/2)]]
+        u3 = [[np.cos(params[0]/2), -np.exp(1j*params[2]) * np.sin(params[0]/2)],
+              [np.exp(1j*params[1]) * np.sin(params[0]/2), np.exp(1j*(params[1] + params[2])) * \
+                                                           np.cos(params[0]/2)]]
 
         # Define the U3 gate class
         class U3(cirq.Gate):
@@ -416,200 +405,207 @@ class TestCirqCircuit(Template):
             def _circuit_diagram_info_(self, args):
                 return "U3"
 
-        cirq_circuit = cirq.Circuit(U3().on(qr[1]).controlled_by(qr[0]))
+        cu3 = cirq.ControlledGate(sub_gate=U3(), num_controls=1)
+        cirq_circuit = cirq.Circuit(cu3(qr[0], qr[1]))
+
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
+
+    def test_CSWAP(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(3, 3)
+
+        # Apply the CSWAP gate
+        circuit.CSWAP(0, 1, 2)
+        circuit.vertical_reverse()
+
+        # Define the equivalent `cirq.Circuit` instance, and
+        # ensure they are equivalent
+        qr = cirq.LineQubit.range(3)
+        cswap = cirq.ControlledGate(sub_gate=SWAP, num_controls=1)
+        cirq_circuit = cirq.Circuit(cswap(qr[0], qr[1], qr[2]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCX(self) -> None:
-        """ Test the Multi-Controlled Pauli-X gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(X(qr[2]).controlled_by(qr[0], qr[1]),
-                                    X(qr[3]).controlled_by(qr[0], qr[1]))
+        mcx = cirq.ControlledGate(sub_gate=X, num_controls=2)
+        cirq_circuit = cirq.Circuit(mcx(qr[0], qr[1], qr[2]),
+                                    mcx(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCY(self) -> None:
-        """ Test the Multi-Controlled Pauli-Y gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCY gate
         circuit.MCY([0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(Y(qr[2]).controlled_by(qr[0], qr[1]),
-                                    Y(qr[3]).controlled_by(qr[0], qr[1]))
+        mcy = cirq.ControlledGate(sub_gate=Y, num_controls=2)
+        cirq_circuit = cirq.Circuit(mcy(qr[0], qr[1], qr[2]),
+                                    mcy(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCZ(self) -> None:
-        """ Test the Multi-Controlled Pauli-Z gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCZ gate
         circuit.MCZ([0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(Z(qr[2]).controlled_by(qr[0], qr[1]),
-                                    Z(qr[3]).controlled_by(qr[0], qr[1]))
+        mcz = cirq.ControlledGate(sub_gate=Z, num_controls=2)
+        cirq_circuit = cirq.Circuit(mcz(qr[0], qr[1], qr[2]),
+                                    mcz(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCH(self) -> None:
-        """ Test the Multi-Controlled Hadamard gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCH gate
         circuit.MCH([0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(H(qr[2]).controlled_by(qr[0], qr[1]),
-                                    H(qr[3]).controlled_by(qr[0], qr[1]))
+        mch = cirq.ControlledGate(sub_gate=H, num_controls=2)
+        cirq_circuit = cirq.Circuit(mch(qr[0], qr[1], qr[2]),
+                                    mch(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCS(self) -> None:
-        """ Test the Multi-Controlled Clifford-S gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCS gate
         circuit.MCS([0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(S(qr[2]).controlled_by(qr[0], qr[1]),
-                                    S(qr[3]).controlled_by(qr[0], qr[1]))
+        mcs = cirq.ControlledGate(sub_gate=S, num_controls=2)
+        cirq_circuit = cirq.Circuit(mcs(qr[0], qr[1], qr[2]),
+                                    mcs(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCT(self) -> None:
-        """ Test the Multi-Controlled Clifford-T gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCT gate
         circuit.MCT([0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(T(qr[2]).controlled_by(qr[0], qr[1]),
-                                    T(qr[3]).controlled_by(qr[0], qr[1]))
+        mct = cirq.ControlledGate(sub_gate=T, num_controls=2)
+        cirq_circuit = cirq.Circuit(mct(qr[0], qr[1], qr[2]),
+                                    mct(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCRX(self) -> None:
-        """ Test the Multi-Controlled RX gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCRX gate
         circuit.MCRX(0.5, [0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(Rx(rads=0.5)(qr[2]).controlled_by(qr[0], qr[1]),
-                                    Rx(rads=0.5)(qr[3]).controlled_by(qr[0], qr[1]))
+        mcrx = cirq.ControlledGate(sub_gate=Rx(rads=0.5), num_controls=2)
+        cirq_circuit = cirq.Circuit(mcrx(qr[0], qr[1], qr[2]),
+                                    mcrx(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCRY(self) -> None:
-        """ Test the Multi-Controlled RY gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCRY gate
         circuit.MCRY(0.5, [0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(Ry(rads=0.5)(qr[2]).controlled_by(qr[0], qr[1]),
-                                    Ry(rads=0.5)(qr[3]).controlled_by(qr[0], qr[1]))
+        mcry = cirq.ControlledGate(sub_gate=Ry(rads=0.5), num_controls=2)
+        cirq_circuit = cirq.Circuit(mcry(qr[0], qr[1], qr[2]),
+                                    mcry(qr[0], qr[1], qr[3]))
 
         assert np.allclose(circuit.get_unitary(), cirq.unitary(cirq_circuit))
 
     def test_MCRZ(self) -> None:
-        """ Test the Multi-Controlled RZ gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCRZ gate
         circuit.MCRZ(0.5, [0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(4)
-        cirq_circuit = cirq.Circuit(Rz(rads=0.5)(qr[2]).controlled_by(qr[0], qr[1]),
-                                    Rz(rads=0.5)(qr[3]).controlled_by(qr[0], qr[1]))
+        mcrz = cirq.ControlledGate(sub_gate=Rz(rads=0.5), num_controls=2)
+        cirq_circuit = cirq.Circuit(mcrz(qr[0], qr[1], qr[2]),
+                                    mcrz(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
     def test_MCU3(self) -> None:
-        """ Test the Multi-Controlled U3 gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4, 4)
 
         # Apply the MCU3 gate
-        circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
+        params = [0.1, 0.2, 0.3]
+        circuit.MCU3(params, [0, 1], [2, 3])
 
-        # `qickit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
+        # `qickit.circuit.CirqCircuit` uses LSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
         # Define the equivalent `cirq.Circuit` instance, and
@@ -617,8 +613,9 @@ class TestCirqCircuit(Template):
         qr = cirq.LineQubit.range(4)
 
         # Create a single qubit unitary gate
-        u3 = [[np.cos(0.5/2), -np.exp(1j*0.5) * np.sin(0.5/2)],
-              [np.exp(1j*0.5) * np.sin(0.5/2), np.exp(1j*(0.5 + 0.5)) * np.cos(0.5/2)]]
+        u3 = [[np.cos(params[0]/2), -np.exp(1j*params[2]) * np.sin(params[0]/2)],
+              [np.exp(1j*params[1]) * np.sin(params[0]/2), np.exp(1j*(params[1] + params[2])) * \
+                                                           np.cos(params[0]/2)]]
 
         # Define the U3 gate class
         class U3(cirq.Gate):
@@ -634,15 +631,45 @@ class TestCirqCircuit(Template):
             def _circuit_diagram_info_(self, args):
                 return "U3"
 
-        cirq_circuit = cirq.Circuit(U3().on(qr[2]).controlled_by(qr[0], qr[1]),
-                                    U3().on(qr[3]).controlled_by(qr[0], qr[1]))
+        mcu3 = cirq.ControlledGate(sub_gate=U3(), num_controls=2)
+        cirq_circuit = cirq.Circuit(mcu3(qr[0], qr[1], qr[2]),
+                                    mcu3(qr[0], qr[1], qr[3]))
 
         assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
 
+    def test_MCSWAP(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4, 4)
+
+        # Apply the MCSWAP gate
+        circuit.MCSWAP([0, 1], 2, 3)
+        circuit.vertical_reverse()
+
+        # Define the equivalent `cirq.Circuit` instance, and
+        # ensure they are equivalent
+        qr = cirq.LineQubit.range(4)
+        cswap = cirq.ControlledGate(sub_gate=SWAP, num_controls=2)
+        cirq_circuit = cirq.Circuit(cswap(qr[0], qr[1], qr[2], qr[3]))
+
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit), 8)
+
+    def test_GlobalPhase(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(1, 1)
+
+        # Apply the global phase gate
+        circuit.GlobalPhase(1.8)
+
+        # Define the equivalent `cirq.Circuit` instance, and
+        # ensure they are equivalent
+        qr = cirq.LineQubit.range(1)
+        cirq_circuit = cirq.Circuit(I(qr[0]))
+
+        # Ensure the global phase is correct
+        assert_almost_equal(circuit.get_unitary(), cirq.unitary(cirq_circuit) * np.exp(1j*1.8))
+
     def test_measure(self) -> None:
-        """ Test the measurement gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1, 1)
 
         # Apply the measurement gate
@@ -651,5 +678,156 @@ class TestCirqCircuit(Template):
         # Define the equivalent `cirq.Circuit` instance, and
         # ensure they are equivalent
         qr = cirq.LineQubit.range(1)
+        cirq_circuit = cirq.Circuit(I(qr[0]),
+                                    cirq.measure(qr[0], key='meas'))
 
-        assert circuit.circuit == cirq.Circuit(cirq.measure(qr[0], key='meas'))
+        assert circuit.circuit == cirq_circuit
+
+    def test_unitary(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4, 4)
+
+        # Apply the gate
+        circuit.MCX([0, 1], [2, 3])
+
+        # Define the unitary
+        unitary = circuit.get_unitary()
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        unitary_circuit = CirqCircuit(4, 4)
+        unitary_circuit.unitary(unitary, [0, 1, 2, 3])
+
+        assert_almost_equal(unitary_circuit.get_unitary(), unitary, 8)
+
+    def test_vertical_reverse(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2, 2)
+
+        # Apply GHZ state
+        circuit.H(0)
+        circuit.CX(0, 1)
+
+        # Apply the vertical reverse operation
+        circuit.vertical_reverse()
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        updated_circuit = CirqCircuit(2, 2)
+        updated_circuit.H(1)
+        updated_circuit.CX(1, 0)
+
+        assert circuit == updated_circuit
+        assert_almost_equal(circuit.get_unitary(), updated_circuit.get_unitary(), 8)
+
+    def test_horizontal_reverse(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2, 2)
+
+        # Apply a RX and CX gate
+        circuit.RX(np.pi, 0)
+        circuit.CX(0, 1)
+
+        # Apply the horizontal reverse operation
+        circuit.horizontal_reverse()
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        updated_circuit = CirqCircuit(2, 2)
+        updated_circuit.CX(0, 1)
+        updated_circuit.RX(-np.pi, 0)
+
+        assert circuit == updated_circuit
+        assert_almost_equal(circuit.get_unitary(), updated_circuit.get_unitary(), 8)
+
+    def test_add(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instances
+        circuit1 = CirqCircuit(2, 2)
+        circuit2 = CirqCircuit(2, 2)
+
+        # Apply the Pauli-X gate
+        circuit1.CX(0, 1)
+        circuit2.CY(1, 0)
+
+        # Add the two circuits
+        circuit1.add(circuit2, [0, 1])
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        added_circuit = CirqCircuit(2, 2)
+        added_circuit.CX(0, 1)
+        added_circuit.CY(1, 0)
+
+        assert circuit1 == added_circuit
+        assert_almost_equal(circuit1.get_unitary(), added_circuit.get_unitary(), 8)
+
+    def test_transpile(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4, 4)
+
+        # Apply the MCX gate
+        circuit.MCX([0, 1], [2, 3])
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        transpiled_circuit = CirqCircuit(4, 4)
+        transpiled_circuit.MCX([0, 1], [2, 3])
+        transpiled_circuit.transpile()
+
+        assert_almost_equal(circuit.get_unitary(), transpiled_circuit.get_unitary(), 8)
+
+    def test_get_depth(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4, 4)
+
+        # Apply the MCX gate
+        circuit.MCX([0, 1], [2, 3])
+
+        # Get the depth of the circuit, and ensure it is correct
+        depth = circuit.get_depth()
+
+        assert depth == 21
+
+    def test_get_width(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4, 4)
+
+        # Get the width of the circuit, and ensure it is correct
+        width = circuit.get_width()
+
+        assert width == 4
+
+    def test_compress(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(1, 1)
+
+        # Apply the MCX gate
+        circuit.RX(np.pi/2, 0)
+
+        # Compress the circuit
+        circuit.compress(1.0)
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        compressed_circuit = CirqCircuit(1, 1)
+
+        assert circuit == compressed_circuit
+        assert_almost_equal(circuit.get_unitary(), compressed_circuit.get_unitary(), 8)
+
+    def test_change_mapping(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4, 4)
+
+        # Apply the MCX gate
+        circuit.MCX([0, 1], [2, 3])
+
+        # Change the mapping of the circuit
+        circuit.change_mapping([3, 2, 1, 0])
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        mapped_circuit = CirqCircuit(4, 4)
+        mapped_circuit.MCX([3, 2], [1, 0])
+
+        assert circuit == mapped_circuit
+        assert_almost_equal(circuit.get_unitary(), mapped_circuit.get_unitary(), 8)

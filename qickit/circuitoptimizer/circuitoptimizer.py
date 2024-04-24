@@ -18,16 +18,15 @@ __all__ = ['CircuitOptimizer', 'CNOTOptimizer']
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
-import numpy as np
-from numpy.typing import NDArray
 
-# Import `qickit.Circuit` instances
+# Import `qickit.circuit.Circuit` instances
 if TYPE_CHECKING:
-    from qickit.circuit import *
+    from qickit.circuit import Circuit
 
 
 class CircuitOptimizer(ABC):
-    """ `qickit.CircuitOptimizer` is the class for optimizing `qickit.Circuit` instances.
+    """ `qickit.circuitoptimizer.CircuitOptimizer` is the class for optimizing
+    `qickit.circuit.Circuit` instances.
     """
     def __init__(self) -> None:
         """ Initialize the circuit optimizer.
@@ -41,34 +40,23 @@ class CircuitOptimizer(ABC):
 
         Parameters
         ----------
-        `circuit` (Circuit):
+        `circuit` : qickit.circuit.Circuit
             The circuit to optimize.
 
         Returns
         -------
-        `Circuit`:
+        `optimized_circuit` : qickit.circuit.Circuit
             The optimized circuit.
         """
         pass
 
 
 class CNOTOptimizer(CircuitOptimizer):
-    """ `qickit.CNOTOptimizer` is the class for optimizing `qickit.Circuit` instances by reducing the number of CNOT gates.
+    """ `qickit.circuitoptimizer.CNOTOptimizer` is the class for optimizing `qickit.circuit.Circuit`
+    instances by reducing the number of CNOT gates.
     """
     def optimize(self,
                  circuit: Circuit) -> Circuit:
-        """ Optimize the circuit by reducing the number of CNOT gates.
-
-        Parameters
-        ----------
-        `circuit` (Circuit):
-            The circuit to optimize.
-
-        Returns
-        -------
-        `Circuit`:
-            The optimized circuit.
-        """
         # TODO
         # Perform optimization
 

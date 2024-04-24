@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['circuit',
-           'backend',
-           'circuitoptimizer']
+__all__ = ['backend',
+           'circuit',
+           'circuitoptimizer',
+           'data',
+           'synthesis',
+           'types',]
 
-from qickit import (circuit, backend, circuitoptimizer)
+from qickit import circuit, backend, circuitoptimizer, data, synthesis, types

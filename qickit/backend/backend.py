@@ -20,48 +20,72 @@ from abc import ABC, abstractmethod
 from functools import wraps
 import numpy as np
 from numpy.typing import NDArray
+from typing import Callable, Type
 
 # Qiskit imports
-import qiskit
-from qiskit_aer import AerSimulator, StatevectorSimulator
+from qiskit.primitives import BackendSampler # type: ignore
+from qiskit_aer.aerprovider import AerSimulator # type: ignore
+from qiskit.quantum_info import Statevector, Operator # type: ignore
 
-# Import `qickit.Circuit` instances
-from qickit.circuit import *
+# Import `qickit.circuit.Circuit` instances
+from qickit.circuit import Circuit, QiskitCircuit
 
 
 class Backend(ABC):
-    """ `qickit.Backend` is the class for running `qickit.Circuit` instances.
-        This provides both GPU and NISQ hardware support.
+    """ `qickit.backend.Backend` is the class for running `qickit.circuit.Circuit`
+    instances. This provides both GPU and NISQ hardware support.
+
+    Attributes
+    ----------
+    `_qc_framework` : Type[qickit.circuit.Circuit]
+        The quantum computing framework to use.
+    `_sv_only` : bool
+        If True, the backend will only support :func:`get_statevector()`.
+
+    Usage
+    -----
+    >>> backend = Backend()
     """
     def __init__(self) -> None:
-        """ Initialize the backend.
-
-        Parameters
-        ----------
-        `_qc_framework` (Circuit):
-            The quantum computing framework to use.
-        `_sv_only` (bool):
-            If True, the backend will only support `get_statevector()`.
+        """ Initialize a `qickit.backend.Backend` instance.
         """
-        self._qc_framework: Circuit = None
-        self._sv_only: bool = False
+        self._qc_framework: Type[Circuit]
+        self._sv_only: bool
 
-    def backend(method: callable) -> callable:
+    @staticmethod
+    def backendmethod(method: Callable) -> Callable:
         """ Decorator for backend methods.
 
         Parameters
         ----------
-        `method` (callable):
+        `method` : Callable
             The method to decorate.
 
         Returns
         -------
-        `wrapper` (callable): The decorated method.
+        `wrapper` : Callable
+            The decorated method.
+
+        Raises
+        ------
+        TypeError
+            If the circuit is not of type `qickit.circuit.Circuit`.
+
+        Usage
+        -----
+        >>> @Backend.backendmethod
+        ... def get_statevector(self, circuit: Circuit) -> NDArray[np.complex128]:
+        ...     ...
         """
         @wraps(method)
         def wrapped(instance, circuit: Circuit):
-            # Ensure the type is compatible
-            if isinstance(circuit, instance._qc_framework) is False:
+            # Ensure the circuit is of type `qickit.circuit.Circuit`
+            if not isinstance(circuit, Circuit):
+                raise TypeError(f"The circuit must be of type `qickit.Circuit`, not {type(circuit)}.")
+
+            # If the circuit passed is an instance of `qickit.circuit.Circuit`,
+            # then ensure it is compatible with the backend framework
+            if not isinstance(circuit, instance._qc_framework):
                 circuit = circuit.convert(instance._qc_framework)
 
             # Run the method
@@ -77,31 +101,67 @@ class Backend(ABC):
 
         Parameters
         ----------
-        `circuit` (Circuit):
+        `circuit` : qickit.circuit.Circuit
             The circuit to run.
 
         Returns
         -------
-        (NDArray[np.complex128]): The statevector of the circuit.
+        NDArray[np.complex128]
+            The statevector of the circuit.
+
+        Usage
+        -----
+        >>> backed.get_statevector(circuit)
+        """
+        pass
+
+    @abstractmethod
+    def get_operator(self,
+                     circuit: Circuit) -> NDArray[np.complex128]:
+        """ Get the operator of the circuit.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The circuit to run.
+
+        Returns
+        -------
+        NDArray[np.complex128]
+            The operator of the circuit.
+
+        Usage
+        -----
+        >>> backed.get_operator(circuit)
         """
         pass
 
     @abstractmethod
     def get_counts(self,
                    circuit: Circuit,
-                   num_shots: int) -> dict:
+                   num_shots: int) -> dict[str, int]:
         """ Get the counts of the backend.
 
         Parameters
         ----------
-        `circuit` (Circuit):
+        `circuit` : qickit.circuit.Circuit
             The circuit to run.
-        `num_shots` (int):
+        `num_shots` : int
             The number of shots to run.
 
         Returns
         -------
-        (dict): The counts of the circuit.
+        dict[str, int]
+            The counts of the circuit.
+
+        Raises
+        ------
+        ValueError
+            If the number of shots is not a positive integer.
+
+        Usage
+        -----
+        >>> backed.get_counts(circuit, num_shots=1024)
         """
         pass
 
@@ -110,75 +170,54 @@ class AerBackend(Backend):
     """ `qickit.AerBackend` is the class for running `qickit.Circuit` instances on Aer.
     """
     def __init__(self) -> None:
-        """ Initialize the backend.
-
-        Parameters
-        ----------
-        `_qc_framework` (Circuit):
-            The quantum computing framework to use.
-        `_sv_only` (bool):
-            If True, the backend will only support `get_statevector()`.
-        """
         self._qc_framework = QiskitCircuit
         self._sv_only = False
 
-    @Backend.backend
+    @Backend.backendmethod
     def get_statevector(self,
                         circuit: Circuit) -> NDArray[np.complex128]:
-        """ Get the statevector of the circuit.
-
-        Parameters
-        ----------
-        `circuit` (Circuit):
-            The circuit to run.
-
-        Returns
-        -------
-        `state_vector` (NDArray[np.complex128]): The statevector of the circuit.
-        """
-        # Define the backend
-        backend = StatevectorSimulator()
-
-        # Get the circuit
-        circuit: qiskit.QuantumCircuit = circuit.circuit
-
-        # Run the circuit
-        state_vector = (backend.run(circuit.decompose(reps=1000))).result().get_statevector()
+        # Run the circuit to get the statevector
+        state_vector = Statevector(circuit.circuit).data
 
         # Return the statevector
         return state_vector
 
-    @Backend.backend
+    @Backend.backendmethod
+    def get_operator(self,
+                     circuit: Circuit) -> NDArray[np.complex128]:
+        # Run the circuit to get the operator
+        operator = Operator(circuit.circuit).data
+
+        # Return the operator
+        return operator
+
+    @Backend.backendmethod
     def get_counts(self,
                    circuit: Circuit,
-                   num_shots: int) -> dict:
-        """ Get the counts of the backend.
-
-        Parameters
-        ----------
-        `circuit` (Circuit):
-            The circuit to run.
-        `num_shots` (int):
-            The number of shots to run.
-
-        Returns
-        -------
-        `counts` (dict): The counts of the circuit.
-        """
-        # Assert the number of shots is valid
-        try:
-            isinstance(num_shots, int) and num_shots > 0
-        except ValueError:
+                   num_shots: int) -> dict[str, int]:
+        # Assert the number of shots is valid (an integer greater than 0)
+        if not isinstance(num_shots, int) or num_shots <= 0:
             raise ValueError("The number of shots must be a positive integer.")
 
-        # Define the backend
-        backend = AerSimulator()
+        # Define the backend to run the circuit on
+        backend: BackendSampler = BackendSampler(AerSimulator())
 
-        # Get the circuit
-        circuit: qiskit.QuantumCircuit = circuit.circuit
+        # Run the circuit on the backend to generate the result
+        result = backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
 
-        # Run the circuit
-        counts = backend.run(circuit, shots=num_shots).result().get_counts()
+        # Extract the quasi-probability distribution from the first result
+        quasi_dist = result.quasi_dists[0]
+
+        # Convert the quasi-probability distribution to counts
+        counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) \
+                  for k, v in quasi_dist.items()}
+
+        # Fill the counts dict with zeros for the missing states
+        counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) \
+                  for i in range(2**circuit.num_qubits)}
+
+        # Sort the counts by their keys (basis states)
+        counts = dict(sorted(counts.items()))
 
         # Return the counts
         return counts

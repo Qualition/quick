@@ -16,12 +16,10 @@ from __future__ import annotations
 
 __all__ = ['TKETCircuit']
 
-from typing import TYPE_CHECKING
-from collections.abc import Iterable
+import copy
 import numpy as np
 from numpy.typing import NDArray
-import math
-import copy
+from typing import TYPE_CHECKING
 
 # TKET imports
 from pytket import Circuit as TKCircuit
@@ -30,149 +28,60 @@ from pytket.circuit import Op, QControlBox
 from pytket.extensions.qiskit import AerBackend
 
 # Qiskit imports
-import qiskit
-from qiskit import transpile
+import qiskit # type: ignore
+from qiskit import transpile # type: ignore
 
-# Import `qickit.Circuit`
+# Import `qickit.circuit.Circuit`
 from qickit.circuit import Circuit, QiskitCircuit
 
-# Import `qickit.Backend`
+# Import `qickit.backend.Backend`
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
+# Import `qickit.types.collection.Collection`
+from qickit.types import Collection
+
 
 class TKETCircuit(Circuit):
-    """ `TKETCircuit` is the wrapper for using Quantinuum's TKET in Qickit SDK.
+    """ `qickit.circuit.TKETCircuit` is the wrapper for using Quantinuum's TKET in Qickit SDK.
+
+    Parameters
+    ----------
+    `num_qubits` : int
+        Number of qubits in the circuit.
+    `num_clbits` : int
+        Number of classical bits in the circuit.
+
+    Attributes
+    ----------
+    `num_qubits` : int
+        Number of qubits in the circuit.
+    `num_clbits` : int
+        Number of classical bits in the circuit.
+    `circuit` : pytket.Circuit
+        The TKET circuit.
+    `measured` : bool
+        The measurement status.
+    `circuit_log` : list[dict]
+        The circuit log.
     """
     def __init__(self,
                  num_qubits: int,
                  num_clbits: int) -> None:
-        """ Initialize a `qickit.TKETCircuit` instance.
-
-        Parameters
-        ----------
-        `num_qubits` (int):
-            Number of qubits in the circuit.
-        `num_clbits` (int):
-            Number of classical bits in the circuit.
-        """
-        # Define the number of quantum bits
-        self.num_qubits = num_qubits
-        # Define the number of classical bits
-        self.num_clbits = num_clbits
+        super().__init__(num_qubits=num_qubits,
+                         num_clbits=num_clbits)
 
         # Define the circuit
         self.circuit = TKCircuit(self.num_qubits, self.num_clbits)
 
-        # Define the measurement status
-        self.measured = False
-
-        # Define the circuit log (list[dict])
-        self.circuit_log = []
-
-    @Circuit.gatemethod
-    def RX(self,
-           angle: float,
-           qubit_index: int) -> None:
-        """ Apply a RX gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `qubit_index` (int):
-            The index of the qubit to apply the gate to.
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the RX gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
-        # Create an RX gate with the specified angle
-        rx = OpType.Rx
-        # Apply the RX gate to the circuit at the specified qubit
-        self.circuit.add_gate(rx, angle/np.pi, [qubit_index])
-
-    @Circuit.gatemethod
-    def RY(self,
-           angle: float,
-           qubit_index: int) -> None:
-        """ Apply a RY gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `qubit_index` (int):
-            The index of the qubit to apply the gate to.
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the RY gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
-        # Create an RY gate with the specified angle
-        ry = OpType.Ry
-        # Apply the RY gate to the circuit at the specified qubit
-        self.circuit.add_gate(ry, angle/np.pi, [qubit_index])
-
-    @Circuit.gatemethod
-    def RZ(self,
-           angle: float,
-           qubit_index: int) -> None:
-        """ Apply a RZ gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `qubit_index` (int):
-            The index of the qubit to apply the gate to.
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the RZ gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
-        # Create an RZ gate with the specified angle
-        rz = OpType.Rz
-        # Apply the RZ gate to the circuit at the specified qubit
-        self.circuit.add_gate(rz, angle/np.pi, [qubit_index])
-
-    @Circuit.gatemethod
-    def H(self,
-          qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a Hadamard gate to the circuit.
-
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The index of the qubit(s) to apply the gate to.
-        """
-        # Create a Hadamard gate
-        h = OpType.H
-
-        # Check if the qubit_indices is a list
-        if isinstance(qubit_indices, Iterable):
-            # If it is, apply the H gate to each qubit in the list
-            for index in qubit_indices:
-                self.circuit.add_gate(h, [index])
-        else:
-            # If it's not an list, apply the H gate to the single qubit
-            self.circuit.add_gate(h, [qubit_indices])
-
     @Circuit.gatemethod
     def X(self,
-          qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a Pauli-X gate to the circuit.
-
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The index of the qubit(s) to apply the gate to.
-        """
-        # Create a Pauli X gate
+          qubit_indices: int | Collection[int]) -> None:
+        # Create a Pauli-X gate
         x = OpType.X
 
         # Check if the qubit_indices is a list
-        if isinstance(qubit_indices, Iterable):
+        if isinstance(qubit_indices, Collection):
             # If it is, apply the X gate to each qubit in the list
             for index in qubit_indices:
                 self.circuit.add_gate(x, [index])
@@ -182,19 +91,12 @@ class TKETCircuit(Circuit):
 
     @Circuit.gatemethod
     def Y(self,
-          qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a Pauli-Y gate to the circuit.
-
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The index of the qubit(s) to apply the gate to.
-        """
-        # Create a Pauli Y gate
+          qubit_indices: int | Collection[int]) -> None:
+        # Create a Pauli-Y gate
         y = OpType.Y
 
         # Check if the qubit_indices is a list
-        if isinstance(qubit_indices, Iterable):
+        if isinstance(qubit_indices, Collection):
             # If it is, apply the Y gate to each qubit in the list
             for index in qubit_indices:
                 self.circuit.add_gate(y, [index])
@@ -204,19 +106,12 @@ class TKETCircuit(Circuit):
 
     @Circuit.gatemethod
     def Z(self,
-          qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a Pauli-Z gate to the circuit.
-
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The index of the qubit(s) to apply the gate to.
-        """
-        # Create a Pauli Z gate
+          qubit_indices: int | Collection[int]) -> None:
+        # Create a Pauli-Z gate
         z = OpType.Z
 
         # Check if the qubit_indices is a list
-        if isinstance(qubit_indices, Iterable):
+        if isinstance(qubit_indices, Collection):
             # If it is, apply the Z gate to each qubit in the list
             for index in qubit_indices:
                 self.circuit.add_gate(z, [index])
@@ -225,20 +120,28 @@ class TKETCircuit(Circuit):
             self.circuit.add_gate(z, [qubit_indices])
 
     @Circuit.gatemethod
-    def S(self,
-          qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a Clifford-S gate to the circuit.
+    def H(self,
+          qubit_indices: int | Collection[int]) -> None:
+        # Create a Hadamard gate
+        h = OpType.H
 
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The index of the qubit(s) to apply the gate to.
-        """
-        # Create a Clifford S gate
+        # Check if the qubit_indices is a list
+        if isinstance(qubit_indices, Collection):
+            # If it is, apply the H gate to each qubit in the list
+            for index in qubit_indices:
+                self.circuit.add_gate(h, [index])
+        else:
+            # If it's not an list, apply the H gate to the single qubit
+            self.circuit.add_gate(h, [qubit_indices])
+
+    @Circuit.gatemethod
+    def S(self,
+          qubit_indices: int | Collection[int]) -> None:
+        # Create a Clifford-S gate
         s = OpType.S
 
         # Check if the qubit_indices is a list
-        if isinstance(qubit_indices, Iterable):
+        if isinstance(qubit_indices, Collection):
             # If it is, apply the S gate to each qubit in the list
             for index in qubit_indices:
                 self.circuit.add_gate(s, [index])
@@ -248,19 +151,12 @@ class TKETCircuit(Circuit):
 
     @Circuit.gatemethod
     def T(self,
-          qubit_indices: int | Iterable[int]) -> None:
-        """ Apply a Clifford-T gate to the circuit.
-
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The index of the qubit(s) to apply the gate to.
-        """
-        # Create a Clifford T gate
+          qubit_indices: int | Collection[int]) -> None:
+        # Create a Clifford-T gate
         t = OpType.T
 
         # Check if the qubit_indices is a list
-        if isinstance(qubit_indices, Iterable):
+        if isinstance(qubit_indices, Collection):
             # If it is, apply the T gate to each qubit in the list
             for index in qubit_indices:
                 self.circuit.add_gate(t, [index])
@@ -269,36 +165,54 @@ class TKETCircuit(Circuit):
             self.circuit.add_gate(t, [qubit_indices])
 
     @Circuit.gatemethod
-    def U3(self,
-           angles: Iterable[float],
+    def RX(self,
+           angle: float,
            qubit_index: int) -> None:
-        """ Apply a U3 gate to the circuit.
+        # Create an RX gate with the specified angle
+        rx = OpType.Rx
+        # Apply the RX gate to the circuit at the specified qubit
+        self.circuit.add_gate(rx, angle/np.pi, [qubit_index])
 
-        Parameters
-        ----------
-        `angles` (Iterable[float]):
-            The rotation angles in radians.
-        `qubit_index` (int):
-            The index of the qubit to apply the gate to.
-        """
+    @Circuit.gatemethod
+    def RY(self,
+           angle: float,
+           qubit_index: int) -> None:
+        # Create an RY gate with the specified angle
+        ry = OpType.Ry
+        # Apply the RY gate to the circuit at the specified qubit
+        self.circuit.add_gate(ry, angle/np.pi, [qubit_index])
+
+    @Circuit.gatemethod
+    def RZ(self,
+           angle: float,
+           qubit_index: int) -> None:
+        # Create an RZ gate with the specified angle
+        rz = OpType.Rz
+        # Apply the RZ gate to the circuit at the specified qubit
+        self.circuit.add_gate(rz, angle/np.pi, [qubit_index])
+
+    @Circuit.gatemethod
+    def U3(self,
+           angles: Collection[float],
+           qubit_index: int) -> None:
         # Create a single qubit unitary gate
         u3 = OpType.U3
         # Apply the U3 gate to the circuit at the specified qubit
         self.circuit.add_gate(u3, [angles[i]/np.pi for i in range(3)], [qubit_index])
 
     @Circuit.gatemethod
+    def SWAP(self,
+             first_qubit: int,
+             second_qubit: int) -> None:
+        # Create a SWAP gate
+        swap = OpType.SWAP
+        # Apply the SWAP gate to the circuit at the specified qubits
+        self.circuit.add_gate(swap, [first_qubit, second_qubit])
+
+    @Circuit.gatemethod
     def CX(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a Controlled Pauli-X gate to the circuit.
-
-        Parameters
-        ----------
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-X gate
         cx = OpType.CX
         # Apply the CX gate to the circuit at the specified control and target qubits
@@ -308,15 +222,6 @@ class TKETCircuit(Circuit):
     def CY(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a Controlled Pauli-Y gate to the circuit.
-
-        Parameters
-        ----------
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-Y gate
         cy = OpType.CY
         # Apply the CY gate to the circuit at the specified control and target qubits
@@ -326,15 +231,6 @@ class TKETCircuit(Circuit):
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a Controlled Pauli-Z gate to the circuit.
-
-        Parameters
-        ----------
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-Z gate
         cz = OpType.CZ
         # Apply the CZ gate to the circuit at the specified control and target qubits
@@ -344,15 +240,6 @@ class TKETCircuit(Circuit):
     def CH(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a Controlled Hadamard gate to the circuit.
-
-        Parameters
-        ----------
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-H gate
         ch = OpType.CH
         # Apply the CH gate to the circuit at the specified control and target qubits
@@ -362,15 +249,6 @@ class TKETCircuit(Circuit):
     def CS(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a Controlled Clifford-S gate to the circuit.
-
-        Parameters
-        ----------
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-S gate
         cs = OpType.CS
         # Apply the CS gate to the circuit at the specified control and target qubits
@@ -380,15 +258,6 @@ class TKETCircuit(Circuit):
     def CT(self,
            control_index: int,
            target_index: int) -> None:
-        """ Apply a Controlled Clifford-T gate to the circuit.
-
-        Parameters
-        ----------
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-T gate
         t = Op.create(OpType.T)
         ct = QControlBox(t, 1)
@@ -400,21 +269,6 @@ class TKETCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a Controlled RX gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the CRX gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
         # Create a Controlled-RX gate with the specified angle
         crx = OpType.CRx
         # Apply the CRX gate to the circuit at the specified control and target qubits
@@ -425,21 +279,6 @@ class TKETCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a Controlled RY gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the CRY gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
         # Create a Controlled-RY gate with the specified angle
         cry = OpType.CRy
         # Apply the CRY gate to the circuit at the specified control and target qubits
@@ -450,21 +289,6 @@ class TKETCircuit(Circuit):
             angle: float,
             control_index: int,
             target_index: int) -> None:
-        """ Apply a Controlled RZ gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the CRZ gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
         # Create a Controlled-RZ gate with the specified angle
         crz = OpType.CRz
         # Apply the CRZ gate to the circuit at the specified control and target qubits
@@ -472,326 +296,233 @@ class TKETCircuit(Circuit):
 
     @Circuit.gatemethod
     def CU3(self,
-            angles: Iterable[float],
+            angles: Collection[float],
             control_index: int,
             target_index: int) -> None:
-        """ Apply a Controlled U3 gate to the circuit.
-
-        Parameters
-        ----------
-        `angles` (Iterable[float]):
-            The rotation angles in radians.
-        `control_index` (int):
-            The index of the control qubit.
-        `target_index` (int):
-            The index of the target qubit.
-        """
         # Create a Controlled-U3 gate with the specified angles
         cu3 = OpType.CU3
         # Apply the CU3 gate to the circuit at the specified control and target qubits
         self.circuit.add_gate(cu3, [angles[i]/np.pi for i in range(3)], [control_index, target_index])
 
     @Circuit.gatemethod
-    def MCX(self,
-            control_indices: int | Iterable[int],
-            target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
+    def CSWAP(self,
+              control_index: int,
+              first_target_index: int,
+              second_target_index: int) -> None:
+        # Create a Controlled-SWAP gate
+        cswap = OpType.CSWAP
+        # Apply the CSWAP gate to the circuit at the specified control and target qubits
+        self.circuit.add_gate(cswap, [control_index, first_target_index, second_target_index])
 
-        Parameters
-        ----------
-        `control_indices (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+    @Circuit.gatemethod
+    def MCX(self,
+            control_indices: int | Collection[int],
+            target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create an Multi Controlled-X gate with the number of control qubits equal to the length of control_indices
+        # Create an Multi-Controlled X gate with the number of control qubits equal to
+        # the length of control_indices
         mcx = OpType.CnX
 
         # Apply the MCX gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_gate(mcx, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_gate(mcx, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCY(self,
-            control_indices: int | Iterable[int],
-            target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
-
-        Parameters
-        ----------
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+            control_indices: int | Collection[int],
+            target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create an Multi-Controlled-Y gate with the number of control qubits equal to the length of control_indices
+        # Create an Multi-Controlled Y gate with the number of control qubits equal to
+        # the length of control_indices
         mcy = OpType.CnY
 
         # Apply the MCY gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_gate(mcy, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_gate(mcy, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCZ(self,
-            control_indices: int | Iterable[int],
-            target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
-
-        Parameters
-        ----------
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+            control_indices: int | Collection[int],
+            target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create an Multi-Controlled-Z gate with the number of control qubits equal to the length of control_indices
+        # Create an Multi-Controlled Z gate with the number of control qubits equal to
+        # the length of control_indices
         mcz = OpType.CnZ
 
         # Apply the MCZ gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_gate(mcz, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_gate(mcz, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCH(self,
-            control_indices: int | Iterable[int],
-            target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled Hadamard gate to the circuit.
-
-        Parameters
-        ----------
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+            control_indices: int | Collection[int],
+            target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled H gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled H gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         h = Op.create(OpType.H)
-        ch = QControlBox(h, len(control_indices))
+        mch = QControlBox(h, len(control_indices))
 
         # Apply the MCH gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(ch, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mch, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCS(self,
-            control_indices: int | Iterable[int],
-            target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
-
-        Parameters
-        ----------
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+            control_indices: int | Collection[int],
+            target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled S gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled S gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         s = Op.create(OpType.S)
-        cs = QControlBox(s, len(control_indices))
+        mcs = QControlBox(s, len(control_indices))
 
         # Apply the MCS gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(cs, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mcs, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCT(self,
-            control_indices: int | Iterable[int],
-            target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
-
-        Parameters
-        ----------
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+            control_indices: int | Collection[int],
+            target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled T gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled T gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         t = Op.create(OpType.T)
-        ct = QControlBox(t, len(control_indices))
+        mct = QControlBox(t, len(control_indices))
 
         # Apply the MCT gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(ct, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mct, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCRX(self,
              angle: float,
-             control_indices: int | Iterable[int],
-             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled RX gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the MCRX gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
+             control_indices: int | Collection[int],
+             target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled RX gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled RX gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         rx = Op.create(OpType.Rx, angle/np.pi)
-        crx = QControlBox(rx, len(control_indices))
+        mcrx = QControlBox(rx, len(control_indices))
 
         # Apply the MCRX gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(crx, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mcrx, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCRY(self,
              angle: float,
-             control_indices: int | Iterable[int],
-             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled RY gate to the circuit.
-
-        Parameters
-        ----------
-        `angle (float):
-            The rotation angle in radians.
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the MCRY gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
+             control_indices: int | Collection[int],
+             target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled RY gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled RY gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         ry = Op.create(OpType.Ry, angle/np.pi)
-        cry = QControlBox(ry, len(control_indices))
+        mcry = QControlBox(ry, len(control_indices))
 
         # Apply the MCRY gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(cry, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mcry, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCRZ(self,
              angle: float,
-             control_indices: int | Iterable[int],
-             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled RZ gate to the circuit.
-
-        Parameters
-        ----------
-        `angle` (float):
-            The rotation angle in radians.
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
-        # If the angle is zero or a multiple of 2 pi, do not apply the MCRZ gate
-        if angle == 0 or math.isclose(angle % (2 * np.pi), 0):
-            return
-
+             control_indices: int | Collection[int],
+             target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled RZ gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled RZ gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         rz = Op.create(OpType.Rz, angle/np.pi)
-        crz = QControlBox(rz, len(control_indices))
+        mcrz = QControlBox(rz, len(control_indices))
 
         # Apply the MCRZ gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(crz, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mcrz, control_indices[:] + [target_index])
 
     @Circuit.gatemethod
     def MCU3(self,
-             angles: Iterable[float],
-             control_indices: int | Iterable[int],
-             target_indices: int | Iterable[int]) -> None:
-        """ Apply a Multi-Controlled U3 gate to the circuit.
-
-        Parameters
-        ----------
-        `angles` (Iterable[float]):
-            The rotation angles in radians.
-        `control_indices` (int | Iterable[int]):
-            The index of the control qubit(s).
-        `target_indices` (int | Iterable[int]):
-            The index of the target qubit(s).
-        """
+             angles: Collection[float],
+             control_indices: int | Collection[int],
+             target_indices: int | Collection[int]) -> None:
         # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Create a Multi-Controlled U3 gate with the number of control qubits equal to the length of control_indices with the specified angle
+        # Create a Multi-Controlled U3 gate with the number of control qubits equal to
+        # the length of control_indices with the specified angle
         u3 = Op.create(OpType.U3, [angles[i]/np.pi for i in range(3)])
-        cu3 = QControlBox(u3, len(control_indices))
+        mcu3 = QControlBox(u3, len(control_indices))
 
         # Apply the MCU3 gate to the circuit at the control and target qubits
-        for i in range(len(target_indices)):
-            self.circuit.add_qcontrolbox(cu3, control_indices[:] + [target_indices[i]])
+        for target_index in target_indices:
+            self.circuit.add_qcontrolbox(mcu3, control_indices[:] + [target_index])
+
+    @Circuit.gatemethod
+    def MCSWAP(self,
+               control_indices: int | Collection[int],
+               first_target_index: int,
+               second_target_index: int) -> None:
+        # Ensure control_indices is always treated as a list
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        # Create a Multi-Controlled SWAP gate with the number of control qubits equal to
+        # the length of control_indices
+        swap = Op.create(OpType.SWAP)
+        mcswap = QControlBox(swap, len(control_indices))
+
+        # Apply the MCSWAP gate to the circuit at the control and target qubits
+        self.circuit.add_gate(mcswap, control_indices[:] + [first_target_index, second_target_index])
+
+    @Circuit.gatemethod
+    def GlobalPhase(self,
+                    angle: float) -> None:
+        # Create a Global Phase gate, and apply it to the circuit
+        self.circuit.add_phase(angle/np.pi)
 
     @Circuit.gatemethod
     def measure(self,
-                qubit_indices: int | Iterable[int]) -> None:
-        """ Measure qubits in the circuit.
-
-        Parameters
-        ----------
-        `qubit_indices` (int | Iterable[int]):
-            The indices of the qubits to measure.
-        """
+                qubit_indices: int | Collection[int]) -> None:
         # Measure the qubits
-        for i in range(len(qubit_indices)):
-            self.circuit.Measure(qubit_indices[i], qubit_indices[i])
+        if isinstance(qubit_indices, int):
+            self.circuit.Measure(qubit_indices, qubit_indices)
+
+        elif isinstance(qubit_indices, Collection):
+            for index in qubit_indices:
+                self.circuit.Measure(index, index)
 
         # Set the measurement as applied
         self.measured = True
 
     def get_statevector(self,
-                        backend: Backend | None=None) -> Iterable[float]:
-        """ Get the state vector of the circuit.
-
-        Parameters
-        ----------
-        `backend` (Optional[object]):
-            The backend to run the circuit on.
-
-        Returns
-        -------
-        `statevector` (Iterable[float]): The state vector of the circuit.
-        """
+                        backend: Backend | None=None) -> Collection[float]:
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -833,20 +564,7 @@ class TKETCircuit(Circuit):
 
     def get_counts(self,
                    num_shots: int,
-                   backend: Backend | None=None) -> dict:
-        """ Get the counts of the circuit.
-
-        Parameters
-        ----------
-        `num_shots` (int):
-            The number of shots to run.
-        `backend` (Optional[object]):
-            The backend to run the circuit on.
-
-        Returns
-        -------
-        `counts` (dict): The counts of the circuit.
-        """
+                   backend: Backend | None=None) -> dict[str, int]:
         if self.measured is False:
             self.measure(range(self.num_qubits))
 
@@ -858,9 +576,9 @@ class TKETCircuit(Circuit):
 
         if backend is None:
             # If no backend is provided, use the AerBackend
-            backend: AerBackend = AerBackend()
+            base_backend: AerBackend = AerBackend()
             # Run the circuit
-            result = backend.get_result(backend.process_circuit(circuit.circuit, n_shots=num_shots, seed=0))
+            result = base_backend.get_result(base_backend.process_circuit(circuit.circuit, n_shots=num_shots, seed=0))
             # Get the counts
             counts = {''.join(map(str, basis_state)): num_counts
                       for basis_state, num_counts in result.get_counts().items()}
@@ -872,18 +590,7 @@ class TKETCircuit(Circuit):
         # Return the counts
         return counts
 
-    def draw(self) -> None:
-        """ Draw the circuit.
-        """
-        pass
-
     def get_depth(self) -> int:
-        """ Get the depth of the circuit.
-
-        Returns
-        -------
-        (int): The depth of the circuit.
-        """
         # Convert the circuit to Qiskit
         circuit = self.convert(QiskitCircuit)
 
@@ -891,12 +598,6 @@ class TKETCircuit(Circuit):
         return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.number]:
-        """ Get the unitary matrix of the circuit.
-
-        Returns
-        -------
-        `unitary` (NDArray[np.number]): The unitary matrix of the circuit.
-        """
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -910,39 +611,37 @@ class TKETCircuit(Circuit):
         return np.array(unitary)
 
     def transpile(self) -> None:
-        """ Transpile the circuit to U3 and CX gates.
-        """
         # Convert the circuit to QiskitCircuit
         circuit = self.convert(QiskitCircuit)
 
         # Use the built-in transpiler from IBM Qiskit to transpile the circuit
-        transpiled_circuit: qiskit.QuantumCircuit = transpile(circuit.circuit, basis_gates = ['cx', 'u3'])
+        transpiled_circuit: qiskit.QuantumCircuit = transpile(circuit.circuit,
+                                                              basis_gates = ['cx', 'u3'],
+                                                              optimization_level=3,
+                                                              seed_transpiler=0)
 
         # Reset the circuit log (as we will be creating a new one given the transpiled circuit)
-        self.circuit_log =[]
+        self.reset()
 
         # Iterate over the gates in the transpiled circuit
         for gate in transpiled_circuit.data:
             # Add the U3 gate to circuit log
             if gate[0].name == 'u3':
-                self.circuit_log.append({'gate': 'U3', 'angles': gate[0].params, 'qubit_index': gate[1][0]._index})
+                self.U3(gate[0].params, gate[1][0]._index)
 
             # Add the CX gate to circuit log
             else:
-                self.circuit_log.append({'gate': 'CX', 'control_index': gate[1][0]._index, 'target_index': gate[1][1]._index})
+                self.CX(gate[1][0]._index, gate[1][1]._index)
 
-        # Convert back to define the updated circuit after transpilation
-        self.circuit = self.convert(type(self)).circuit
+        # Update the global phase
+        self.GlobalPhase(transpiled_circuit.global_phase)
 
     def to_qasm(self) -> str:
-        """ Convert the circuit to QASM.
-
-        Returns
-        -------
-        `qasm` (str): The QASM representation of the circuit.
-        """
         # Convert the circuit to QASM
         qasm = self.convert(QiskitCircuit).circuit.qasm()
 
         # Return the QASM
         return qasm
+
+    def draw(self) -> None:
+        pass

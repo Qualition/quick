@@ -14,11 +14,13 @@
 
 from __future__ import annotations
 
+__all__ = ['Template']
+
 from abc import ABC, abstractmethod
 
 
 class Template(ABC):
-    """ `qickit.Template` is the template for creating circuit testers.
+    """ `tests.circuit.Template` is the template for creating circuit testers.
     """
     @abstractmethod
     def test_X(self) -> None:
@@ -77,6 +79,12 @@ class Template(ABC):
     @abstractmethod
     def test_U3(self) -> None:
         """ Test the U3 gate.
+        """
+        pass
+
+    @abstractmethod
+    def test_SWAP(self) -> None:
+        """ Test the SWAP gate.
         """
         pass
 
@@ -141,6 +149,12 @@ class Template(ABC):
         pass
 
     @abstractmethod
+    def test_CSWAP(self) -> None:
+        """ Test the Controlled SWAP gate.
+        """
+        pass
+
+    @abstractmethod
     def test_MCX(self) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
         """
@@ -201,7 +215,73 @@ class Template(ABC):
         pass
 
     @abstractmethod
+    def test_MCSWAP(self) -> None:
+        """ Test the Multi-Controlled SWAP gate.
+        """
+        pass
+
+    @abstractmethod
+    def test_GlobalPhase(self) -> None:
+        """ Test the Global Phase gate.
+        """
+        pass
+
+    @abstractmethod
     def test_measure(self) -> None:
         """ Test the measurement gate.
+        """
+        pass
+
+    @abstractmethod
+    def test_unitary(self) -> None:
+        """ Test the unitary gate.
+        """
+        pass
+
+    @abstractmethod
+    def test_vertical_reverse(self) -> None:
+        """ Test the vertical reverse operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_horizontal_reverse(self) -> None:
+        """ Test the horizontal reverse operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_add(self) -> None:
+        """ Test the addition operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_transpile(self) -> None:
+        """ Test the transpile operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_get_depth(self) -> None:
+        """ Test the get_depth operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_get_width(self) -> None:
+        """ Test the get_width operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_compress(self) -> None:
+        """ Test the compress operation.
+        """
+        pass
+
+    @abstractmethod
+    def test_change_mapping(self) -> None:
+        """ Test the change_mapping operation.
         """
         pass

@@ -24,21 +24,19 @@ from tests.circuit import Template
 
 
 class TestAllCircuits(Template):
-    """ `qickit.TestAllCircuits` is the tester class for ensuring all frameworks return the same result.
+    """ `tests.circuit.TestAllCircuits` is the tester class for ensuring all frameworks return the same result.
     """
     def test_X(self) -> None:
-        """ Test the Pauli-X gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the Pauli-X gate
@@ -53,18 +51,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_Y(self) -> None:
-        """ Test the Pauli-Y gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the Pauli-Y gate
@@ -79,18 +75,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_Z(self) -> None:
-        """ Test the Pauli-Z gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the Pauli-Z gate
@@ -105,18 +99,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_H(self) -> None:
-        """ Test the Hadamard gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the Hadamard gate
@@ -131,18 +123,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_S(self) -> None:
-        """ Test the S gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the S gate
@@ -157,18 +147,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_T(self) -> None:
-        """ Test the T gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the T gate
@@ -183,18 +171,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RX(self) -> None:
-        """ Test the RX gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the Pauli-X gate
@@ -209,18 +195,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RY(self) -> None:
-        """ Test the RY gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the RY gate
@@ -235,18 +219,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_RZ(self) -> None:
-        """ Test the RZ gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the RZ gate
@@ -261,25 +243,47 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_U3(self) -> None:
-        """ Test the U3 gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(1, 1)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(1, 1)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(1, 1)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(1, 1)
 
         # Apply the U3 gate
-        cirq_circuit.U3([0.5, 0.5, 0.5], 0)
-        pennylane_circuit.U3([0.5, 0.5, 0.5], 0)
-        qiskit_circuit.U3([0.5, 0.5, 0.5], 0)
-        tket_circuit.U3([0.5, 0.5, 0.5], 0)
+        cirq_circuit.U3([0.1, 0.2, 0.3], 0)
+        pennylane_circuit.U3([0.1, 0.2, 0.3], 0)
+        qiskit_circuit.U3([0.1, 0.2, 0.3], 0)
+        tket_circuit.U3([0.1, 0.2, 0.3], 0)
+
+        # Ensure they are equivalent
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
+
+    def test_SWAP(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        cirq_circuit = CirqCircuit(2, 2)
+
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        pennylane_circuit = PennylaneCircuit(2, 2)
+
+        # Define the `qickit.circuit.QiskitCircuit` instance
+        qiskit_circuit = QiskitCircuit(2, 2)
+
+        # Define the `qickit.circuit.TKETCircuit` instance
+        tket_circuit = TKETCircuit(2, 2)
+
+        # Apply the SWAP gate
+        cirq_circuit.SWAP(0, 1)
+        pennylane_circuit.SWAP(0, 1)
+        qiskit_circuit.SWAP(0, 1)
+        tket_circuit.SWAP(0, 1)
 
         # Ensure they are equivalent
         assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
@@ -287,18 +291,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CX(self) -> None:
-        """ Test the Controlled Pauli-X gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CX gate
@@ -313,18 +315,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CY(self) -> None:
-        """ Test the Controlled Pauli-Y gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CY gate
@@ -339,18 +339,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CZ(self) -> None:
-        """ Test the Controlled Pauli-Z gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CZ gate
@@ -365,18 +363,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CH(self) -> None:
-        """ Test the Controlled Hadamard gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CH gate
@@ -391,18 +387,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CS(self) -> None:
-        """ Test the Controlled Clifford-S gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CS gate
@@ -417,18 +411,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CT(self) -> None:
-        """ Test the Controlled T gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CT gate
@@ -443,18 +435,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRX(self) -> None:
-        """ Test the Controlled RX gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CRX gate
@@ -469,18 +459,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRY(self) -> None:
-        """ Test the Controlled RY gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CRY gate
@@ -495,18 +483,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CRZ(self) -> None:
-        """ Test the Controlled RZ gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CRZ gate
@@ -521,25 +507,47 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_CU3(self) -> None:
-        """ Test the Controlled U3 gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(2, 2)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(2, 2)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(2, 2)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(2, 2)
 
         # Apply the CU3 gate
-        cirq_circuit.CU3([0.5, 0.5, 0.5], 0, 1)
-        pennylane_circuit.CU3([0.5, 0.5, 0.5], 0, 1)
-        qiskit_circuit.CU3([0.5, 0.5, 0.5], 0, 1)
-        tket_circuit.CU3([0.5, 0.5, 0.5], 0, 1)
+        cirq_circuit.CU3([0.1, 0.2, 0.3], 0, 1)
+        pennylane_circuit.CU3([0.1, 0.2, 0.3], 0, 1)
+        qiskit_circuit.CU3([0.1, 0.2, 0.3], 0, 1)
+        tket_circuit.CU3([0.1, 0.2, 0.3], 0, 1)
+
+        # Ensure they are equivalent
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
+
+    def test_CSWAP(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        cirq_circuit = CirqCircuit(3, 3)
+
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        pennylane_circuit = PennylaneCircuit(3, 3)
+
+        # Define the `qickit.circuit.QiskitCircuit` instance
+        qiskit_circuit = QiskitCircuit(3, 3)
+
+        # Define the `qickit.circuit.TKETCircuit` instance
+        tket_circuit = TKETCircuit(3, 3)
+
+        # Apply the CSWAP gate
+        cirq_circuit.CSWAP(0, 1, 2)
+        pennylane_circuit.CSWAP(0, 1, 2)
+        qiskit_circuit.CSWAP(0, 1, 2)
+        tket_circuit.CSWAP(0, 1, 2)
 
         # Ensure they are equivalent
         assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
@@ -547,18 +555,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCX(self) -> None:
-        """ Test the Multi-Controlled Pauli-X gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCX gate
@@ -573,18 +579,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCY(self) -> None:
-        """ Test the Multi-Controlled Pauli-Y gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCY gate
@@ -599,18 +603,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCZ(self) -> None:
-        """ Test the Multi-Controlled Pauli-Z gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCZ gate
@@ -625,18 +627,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCH(self) -> None:
-        """ Test the Multi-Controlled Hadamard gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCH gate
@@ -651,18 +651,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCS(self) -> None:
-        """ Test the Multi-Controlled Clifford-S gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCS gate
@@ -677,18 +675,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCT(self) -> None:
-        """ Test the Multi-Controlled T gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCT gate
@@ -703,18 +699,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRX(self) -> None:
-        """ Test the Multi-Controlled RX gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCRX gate
@@ -729,18 +723,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRY(self) -> None:
-        """ Test the Multi-Controlled RY gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCRY gate
@@ -755,18 +747,16 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCRZ(self) -> None:
-        """ Test the Multi-Controlled RZ gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCRZ gate
@@ -781,25 +771,80 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_MCU3(self) -> None:
-        """ Test the Multi-Controlled U3 gate.
-        """
-        # Define the `qickit.CirqCircuit` instance
+        # Define the `qickit.circuit.CirqCircuit` instance
         cirq_circuit = CirqCircuit(4, 4)
 
-        # Define the `qickit.PennylaneCircuit` instance
+        # Define the `qickit.circuit.PennylaneCircuit` instance
         pennylane_circuit = PennylaneCircuit(4, 4)
 
-        # Define the `qickit.QiskitCircuit` instance
+        # Define the `qickit.circuit.QiskitCircuit` instance
         qiskit_circuit = QiskitCircuit(4, 4)
 
-        # Define the `qickit.TKETCircuit` instance
+        # Define the `qickit.circuit.TKETCircuit` instance
         tket_circuit = TKETCircuit(4, 4)
 
         # Apply the MCU3 gate
-        cirq_circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
-        pennylane_circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
-        qiskit_circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
-        tket_circuit.MCU3([0.5, 0.5, 0.5], [0, 1], [2, 3])
+        cirq_circuit.MCU3([0.1, 0.2, 0.3], [0, 1], [2, 3])
+        pennylane_circuit.MCU3([0.1, 0.2, 0.3], [0, 1], [2, 3])
+        qiskit_circuit.MCU3([0.1, 0.2, 0.3], [0, 1], [2, 3])
+        tket_circuit.MCU3([0.1, 0.2, 0.3], [0, 1], [2, 3])
+
+        # Ensure they are equivalent
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
+
+    def test_MCSWAP(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        cirq_circuit = CirqCircuit(4, 4)
+
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        pennylane_circuit = PennylaneCircuit(4, 4)
+
+        # Define the `qickit.circuit.QiskitCircuit` instance
+        qiskit_circuit = QiskitCircuit(4, 4)
+
+        # Define the `qickit.circuit.TKETCircuit` instance
+        tket_circuit = TKETCircuit(4, 4)
+
+        # Apply the MCSWAP gate
+        cirq_circuit.MCSWAP([0, 1], 2, 3)
+        pennylane_circuit.MCSWAP([0, 1], 2, 3)
+        qiskit_circuit.MCSWAP([0, 1], 2, 3)
+        tket_circuit.MCSWAP([0, 1], 2, 3)
+
+        # Ensure they are equivalent
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
+
+    def test_GlobalPhase(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        cirq_circuit = CirqCircuit(1, 1)
+
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        pennylane_circuit = PennylaneCircuit(1, 1)
+
+        # Define the `qickit.circuit.QiskitCircuit` instance
+        qiskit_circuit = QiskitCircuit(1, 1)
+
+        # Define the `qickit.circuit.TKETCircuit` instance
+        tket_circuit = TKETCircuit(1, 1)
+
+        # Apply the GlobalPhase gate
+        cirq_circuit.GlobalPhase(1.8)
+        pennylane_circuit.GlobalPhase(1.8)
+        qiskit_circuit.GlobalPhase(1.8)
+        tket_circuit.GlobalPhase(1.8)
+
+        print("Cirq")
+        print(cirq_circuit.get_unitary())
+        print("Pennylane")
+        print(pennylane_circuit.get_unitary())
+        print("Qiskit")
+        print(qiskit_circuit.get_unitary())
+        print("TKET")
+        print(tket_circuit.get_unitary())
 
         # Ensure they are equivalent
         assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
@@ -807,4 +852,58 @@ class TestAllCircuits(Template):
         assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
 
     def test_measure(self) -> None:
+        pass
+
+    def test_unitary(self) -> None:
+        pass
+
+    def test_vertical_reverse(self) -> None:
+        pass
+
+    def test_horizontal_reverse(self) -> None:
+        pass
+
+    def test_add(self) -> None:
+        pass
+
+    def test_transpile(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        cirq_circuit = CirqCircuit(4, 4)
+
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        pennylane_circuit = PennylaneCircuit(4, 4)
+
+        # Define the `qickit.circuit.QiskitCircuit` instance
+        qiskit_circuit = QiskitCircuit(4, 4)
+
+        # Define the `qickit.circuit.TKETCircuit` instance
+        tket_circuit = TKETCircuit(4, 4)
+
+        # Apply the MCX gate
+        cirq_circuit.MCX([0, 1], [2, 3])
+        pennylane_circuit.MCX([0, 1], [2, 3])
+        qiskit_circuit.MCX([0, 1], [2, 3])
+        tket_circuit.MCX([0, 1], [2, 3])
+
+        # Transpile
+        cirq_circuit.transpile()
+        pennylane_circuit.transpile()
+        qiskit_circuit.transpile()
+        tket_circuit.transpile()
+
+        # Ensure they are equivalent
+        assert_almost_equal(cirq_circuit.get_unitary(), pennylane_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), qiskit_circuit.get_unitary(), 8)
+        assert_almost_equal(cirq_circuit.get_unitary(), tket_circuit.get_unitary(), 8)
+
+    def test_get_depth(self) -> None:
+        pass
+
+    def test_get_width(self) -> None:
+        pass
+
+    def test_compress(self) -> None:
+        pass
+
+    def test_change_mapping(self) -> None:
         pass
