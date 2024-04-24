@@ -3,6 +3,6 @@ numpy == 1.26.3
 pennylane == 0.34.0
 pytket
 pytket-qiskit == 0.50.0
-qcs-api-client == 0.21.6
+pydantic == 2.6.4
 qiskit == 1.0.2
 qiskit_aer == 0.13.3
