@@ -27,6 +27,7 @@ jobs:
         - name: Run tests with pytest
           run: |
             pip install pytest
+            pip install pytest-cov
             pytest tests/ --cov=qickit --cov-report=xml
 
         - name: Run mypy
