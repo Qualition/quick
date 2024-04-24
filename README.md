@@ -1,5 +1,6 @@
 # Qickit
 [![Tests](https://github.com/qualition/qickit/actions/workflows/tests.yml/badge.svg)](https://github.com/qualition/qickit/actions/workflows/tests.yml)
+[![Code Coverage](https://codecov.io/gh/qualition/qickit/branch/main/graph/badge.svg)](https://codecov.io/gh/qualition/qickit)
 [![PyPI version](https://img.shields.io/pypi/v/qoin)](//pypi.org/project/qickit)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
