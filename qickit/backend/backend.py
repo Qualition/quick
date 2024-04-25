@@ -113,7 +113,7 @@ class Backend(ABC):
         -----
         >>> backed.get_statevector(circuit)
         """
-        pass
+        ...
 
     @abstractmethod
     def get_operator(self,
@@ -134,7 +134,7 @@ class Backend(ABC):
         -----
         >>> backed.get_operator(circuit)
         """
-        pass
+        ...
 
     @abstractmethod
     def get_counts(self,
@@ -163,7 +163,7 @@ class Backend(ABC):
         -----
         >>> backed.get_counts(circuit, num_shots=1024)
         """
-        pass
+        ...
 
 
 class AerBackend(Backend):

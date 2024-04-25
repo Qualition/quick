@@ -23,6 +23,7 @@ from qickit.types import Collection
 
 """ Helper functions for the Mottonen encoder
 """
+
 def grayCode(x: int) -> int:
     """ Return the gray code of x.
 
@@ -142,6 +143,7 @@ def ind(k: int) -> list[int]:
 
 """ Helper functions for the Shende encoder
 """
+
 def bloch_angles(pair_of_complex: Collection[complex]) -> tuple:
     """ Take a pair of complex numbers and return the corresponding Bloch angles.
 

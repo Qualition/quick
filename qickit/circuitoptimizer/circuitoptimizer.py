@@ -31,7 +31,7 @@ class CircuitOptimizer(ABC):
     def __init__(self) -> None:
         """ Initialize the circuit optimizer.
         """
-        pass
+        ...
 
     @abstractmethod
     def optimize(self,
@@ -48,7 +48,7 @@ class CircuitOptimizer(ABC):
         `optimized_circuit` : qickit.circuit.Circuit
             The optimized circuit.
         """
-        pass
+        ...
 
 
 class CNOTOptimizer(CircuitOptimizer):

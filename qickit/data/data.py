@@ -375,7 +375,7 @@ class Data:
     @staticmethod
     def iscloseto(first_data: object,
                   second_data: object,
-                  tolerance: float=1e-8) -> bool:
+                  tolerance: float = 1e-8) -> bool:
         """ Check if two `qickit.data.Data` instances are close to each other.
 
         Parameters

@@ -39,6 +39,7 @@ class Collection(Protocol[T]):
   def __mul__(self, other: int) -> Self:
     ...
 
+
 # `NestedCollection` is a type alias that represents a collection of elements
 # of type T or a collection of collections of elements of type T.
 NestedCollection: TypeAlias = Collection[T] | Collection['NestedCollection[T]']

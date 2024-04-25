@@ -522,7 +522,7 @@ class TKETCircuit(Circuit):
         self.measured = True
 
     def get_statevector(self,
-                        backend: Backend | None=None) -> Collection[float]:
+                        backend: Backend | None = None) -> Collection[float]:
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -564,7 +564,7 @@ class TKETCircuit(Circuit):
 
     def get_counts(self,
                    num_shots: int,
-                   backend: Backend | None=None) -> dict[str, int]:
+                   backend: Backend | None = None) -> dict[str, int]:
         if self.measured is False:
             self.measure(range(self.num_qubits))
 

@@ -149,7 +149,7 @@ class Circuit(ABC):
         -----
         >>> @Circuit.gatemethod
         ... def RX(self, angle: float, qubit_index: int) -> None:
-        ...     pass
+        ...     ...
         """
         @wraps(method)
         def wrapped(instance, *args, **kwargs):
@@ -243,7 +243,7 @@ class Circuit(ABC):
         >>> circuit.X(qubit_indices=0)
         >>> circuit.X(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def Y(self,
@@ -260,7 +260,7 @@ class Circuit(ABC):
         >>> circuit.Y(qubit_indices=0)
         >>> circuit.Y(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def Z(self,
@@ -277,7 +277,7 @@ class Circuit(ABC):
         >>> circuit.Z(qubit_indices=0)
         >>> circuit.Z(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def H(self,
@@ -294,7 +294,7 @@ class Circuit(ABC):
         >>> circuit.H(qubit_indices=0)
         >>> circuit.H(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def S(self,
@@ -311,7 +311,7 @@ class Circuit(ABC):
         >>> circuit.S(qubit_indices=0)
         >>> circuit.S(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def T(self,
@@ -328,7 +328,7 @@ class Circuit(ABC):
         >>> circuit.T(qubit_indices=0)
         >>> circuit.T(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def RX(self,
@@ -347,7 +347,7 @@ class Circuit(ABC):
         -----
         >>> circuit.RX(angle=np.pi/2, qubit_index=0)
         """
-        pass
+        ...
 
     @abstractmethod
     def RY(self,
@@ -366,7 +366,7 @@ class Circuit(ABC):
         -----
         >>> circuit.RY(angle=np.pi/2, qubit_index=0)
         """
-        pass
+        ...
 
     @abstractmethod
     def RZ(self,
@@ -385,7 +385,7 @@ class Circuit(ABC):
         -----
         >>> circuit.RZ(angle=np.pi/2, qubit_index=0)
         """
-        pass
+        ...
 
     @abstractmethod
     def U3(self,
@@ -404,7 +404,7 @@ class Circuit(ABC):
         -----
         >>> circuit.U3(angles=[np.pi/2, np.pi/2, np.pi/2], qubit_index=0)
         """
-        pass
+        ...
 
     @abstractmethod
     def SWAP(self,
@@ -423,7 +423,7 @@ class Circuit(ABC):
         -----
         >>> circuit.SWAP(first_qubit=0, second_qubit=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CX(self,
@@ -442,7 +442,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CX(control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CY(self,
@@ -461,7 +461,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CY(control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CZ(self,
@@ -480,7 +480,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CZ(control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CH(self,
@@ -499,7 +499,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CH(control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CS(self,
@@ -518,7 +518,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CS(control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CT(self,
@@ -537,7 +537,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CT(control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CRX(self,
@@ -559,7 +559,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CRY(self,
@@ -581,7 +581,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CRZ(self,
@@ -603,7 +603,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CU3(self,
@@ -625,7 +625,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
-        pass
+        ...
 
     @abstractmethod
     def CSWAP(self,
@@ -647,7 +647,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
         """
-        pass
+        ...
 
     @abstractmethod
     def MCX(self,
@@ -669,7 +669,7 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCY(self,
@@ -691,7 +691,7 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCZ(self,
@@ -713,7 +713,7 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCH(self,
@@ -735,7 +735,7 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCS(self,
@@ -757,7 +757,7 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCT(self,
@@ -779,7 +779,7 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCRX(self,
@@ -804,7 +804,7 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCRY(self,
@@ -829,7 +829,7 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCRZ(self,
@@ -854,7 +854,7 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCU3(self,
@@ -879,7 +879,7 @@ class Circuit(ABC):
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=2)
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=[2, 3])
         """
-        pass
+        ...
 
     @abstractmethod
     def MCSWAP(self,
@@ -902,7 +902,7 @@ class Circuit(ABC):
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
         >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3)
         """
-        pass
+        ...
 
     @abstractmethod
     def GlobalPhase(self,
@@ -918,7 +918,7 @@ class Circuit(ABC):
         -----
         >>> circuit.GlobalPhase(angle=np.pi/2)
         """
-        pass
+        ...
 
     def unitary(self,
                 unitary_matrix: NDArray[np.number],
@@ -1004,7 +1004,7 @@ class Circuit(ABC):
         self.circuit = self.convert(type(self)).circuit
 
     def horizontal_reverse(self,
-                           adjoint: bool=True) -> None:
+                           adjoint: bool = True) -> None:
         """ Perform a horizontal reverse operation.
 
         Parameters
@@ -1115,11 +1115,11 @@ class Circuit(ABC):
         >>> circuit.measure(qubit_indices=0)
         >>> circuit.measure(qubit_indices=[0, 1])
         """
-        pass
+        ...
 
     @abstractmethod
     def get_statevector(self,
-                        backend: Backend | None=None) -> Collection[float]:
+                        backend: Backend | None = None) -> Collection[float]:
         """ Get the statevector of the circuit.
 
         Parameters
@@ -1137,12 +1137,12 @@ class Circuit(ABC):
         >>> circuit.get_statevector()
         >>> circuit.get_statevector(backend=backend)
         """
-        pass
+        ...
 
     @abstractmethod
     def get_counts(self,
                    num_shots: int,
-                   backend: Backend | None=None) -> dict[str, int]:
+                   backend: Backend | None = None) -> dict[str, int]:
         """ Get the counts of the circuit.
 
         Parameters
@@ -1162,7 +1162,7 @@ class Circuit(ABC):
         >>> circuit.get_counts(num_shots=1024)
         >>> circuit.get_counts(num_shots=1024, backend=backend)
         """
-        pass
+        ...
 
     @abstractmethod
     def get_depth(self) -> int:
@@ -1177,7 +1177,7 @@ class Circuit(ABC):
         -----
         >>> circuit.get_depth()
         """
-        pass
+        ...
 
     def get_width(self) -> int:
         """ Get the width of the circuit.
@@ -1206,7 +1206,7 @@ class Circuit(ABC):
         -----
         >>> circuit.get_unitary()
         """
-        pass
+        ...
 
     @abstractmethod
     def transpile(self) -> None:
@@ -1216,7 +1216,7 @@ class Circuit(ABC):
         -----
         >>> circuit.transpile()
         """
-        pass
+        ...
 
     def compress(self,
                  compression_percentage: float) -> None:
@@ -1242,13 +1242,13 @@ class Circuit(ABC):
         # Iterate over all angles, and set the angles within the
         # compression percentage to 0
         for index, operation in enumerate(self.circuit_log):
-                if 'angle' in operation:
-                    if abs(operation['angle']) < threshold:
-                        indices_to_remove.append(index)
+            if 'angle' in operation:
+                if abs(operation['angle']) < threshold:
+                    indices_to_remove.append(index)
 
-                elif 'angles' in operation:
-                    if all([abs(angle) < threshold for angle in operation['angles']]):
-                        indices_to_remove.append(index)
+            elif 'angles' in operation:
+                if all([abs(angle) < threshold for angle in operation['angles']]):
+                    indices_to_remove.append(index)
 
         # Remove the operations with angles within the compression percentage
         for index in sorted(indices_to_remove, reverse=True):
@@ -1394,7 +1394,7 @@ class Circuit(ABC):
         -----
         >>> circuit.to_qasm()
         """
-        pass
+        ...
 
     @staticmethod
     def from_cirq(cirq_circuit: cirq.Circuit,
@@ -1484,7 +1484,7 @@ class Circuit(ABC):
                 if parameters["sub_gate"] == cirq.X:
                     if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCX(control_indices=qubit_indices[:-1],
-                                 target_indices=qubit_indices[-1])
+                                    target_indices=qubit_indices[-1])
                     else:
                         circuit.CX(qubit_indices[0], qubit_indices[1])
 
@@ -1512,7 +1512,7 @@ class Circuit(ABC):
                 elif parameters["sub_gate"] == cirq.S:
                     if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCS(control_indices=qubit_indices[:-1],
-                                 target_indices=qubit_indices[-1])
+                                    target_indices=qubit_indices[-1])
                     else:
                         circuit.CS(qubit_indices[0], qubit_indices[1])
 
@@ -1682,10 +1682,10 @@ class Circuit(ABC):
         -----
         >>> circuit.draw()
         """
-        pass
+        ...
 
     def plot_histogram(self,
-                       non_zeros_only: bool=False) -> plt.Figure:
+                       non_zeros_only: bool = False) -> plt.Figure:
         """ Plot the histogram of the circuit.
 
         Parameters

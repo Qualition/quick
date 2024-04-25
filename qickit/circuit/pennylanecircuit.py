@@ -534,7 +534,7 @@ class PennylaneCircuit(Circuit):
         pass
 
     def get_statevector(self,
-                        backend: Backend | None=None) -> Collection[float]:
+                        backend: Backend | None = None) -> Collection[float]:
         # Copy the circuit as the operations are applied inplace
         circuit: PennylaneCircuit = copy.deepcopy(self)
 
@@ -596,7 +596,7 @@ class PennylaneCircuit(Circuit):
 
     def get_counts(self,
                    num_shots: int,
-                   backend: Backend | None=None) -> dict[str, int]:
+                   backend: Backend | None = None) -> dict[str, int]:
         # Set the seed
         np.random.seed(0)
 

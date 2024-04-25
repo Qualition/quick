@@ -23,7 +23,7 @@ from numpy.typing import NDArray
 from typing import Callable
 
 # Import `qickit.circuit.Circuit` instances
-from qickit.circuit import *
+from qickit.circuit import Circuit
 
 
 class UnitaryPreparation(ABC):
@@ -102,4 +102,4 @@ class UnitaryPreparation(ABC):
         `circuit` : qickit.circuit.Circuit
             The quantum circuit for preparing the unitary operator.
         """
-        pass
+        ...

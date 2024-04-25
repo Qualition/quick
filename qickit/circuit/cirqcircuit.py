@@ -271,7 +271,7 @@ class CirqCircuit(Circuit):
     def CS(self,
            control_index: int,
            target_index: int) -> None:
-       # Create a Controlled-S gate
+        # Create a Controlled-S gate
         cs = cirq.ControlledGate(sub_gate=S, num_controls=1)
         # Apply the CS gate to the circuit at the specified control and target qubits
         self.circuit.append(cs(self.qr[control_index], self.qr[target_index]))
@@ -601,7 +601,7 @@ class CirqCircuit(Circuit):
         self.measured = True
 
     def get_statevector(self,
-                        backend: Backend | None=None) -> Collection[float]:
+                        backend: Backend | None = None) -> Collection[float]:
         # Copy the circuit as the operations are applied inplace
         circuit: CirqCircuit = copy.deepcopy(self)
 
@@ -643,7 +643,7 @@ class CirqCircuit(Circuit):
 
     def get_counts(self,
                    num_shots: int,
-                   backend: Backend | None=None) -> dict:
+                   backend: Backend | None = None) -> dict:
         if backend is None:
             # Run the circuit
             state_vector = self.get_statevector()

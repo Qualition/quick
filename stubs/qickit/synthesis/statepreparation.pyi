@@ -11,7 +11,6 @@ __all__ = ['StatePreparation', 'Mottonen', 'Shende']
 
 class StatePreparation(ABC, metaclass=abc.ABCMeta):
     circuit_framework: Incomplete
-    encoder: Incomplete
     def __init__(self, circuit_framework: Type[Circuit]) -> None: ...
     @abstractmethod
     def prepare_state(self, state: NDArray[np.complex128] | Data, compression_percentage: float = 0.0, index_type: str = 'row') -> Circuit: ...

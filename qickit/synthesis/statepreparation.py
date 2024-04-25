@@ -53,8 +53,8 @@ class StatePreparation(ABC):
     @abstractmethod
     def prepare_state(self,
                       state: NDArray[np.complex128] | Data,
-                      compression_percentage: float=0.0,
-                      index_type: str='row') -> Circuit:
+                      compression_percentage: float = 0.0,
+                      index_type: str = 'row') -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
@@ -71,7 +71,7 @@ class StatePreparation(ABC):
         `circuit` : qickit.circuit.Circuit
             The quantum circuit that prepares the state.
         """
-        pass
+        ...
 
 
 class Mottonen(StatePreparation):
@@ -79,8 +79,8 @@ class Mottonen(StatePreparation):
     """
     def prepare_state(self,
                       state: NDArray[np.complex128] | Data,
-                      compression_percentage: float=0.0,
-                      index_type: str='row') -> Circuit:
+                      compression_percentage: float = 0.0,
+                      index_type: str = 'row') -> Circuit:
         # Define a qickit.Data instance
         if not isinstance(state, Data):
             state = Data(state)
@@ -160,8 +160,8 @@ class Shende(StatePreparation):
     """
     def prepare_state(self,
                       state: NDArray[np.complex128] | Data,
-                      compression_percentage: float=0.0,
-                      index_type: str='row') -> Circuit:
+                      compression_percentage: float = 0.0,
+                      index_type: str = 'row') -> Circuit:
         # Define a qickit.Data instance
         if not isinstance(state, Data):
             state = Data(state)
