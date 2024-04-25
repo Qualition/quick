@@ -5,6 +5,10 @@ from qickit.types import NestedCollection
 
 __all__ = ['Data']
 
+
+NumberType = int | float | complex
+
+
 class Data:
     data: Incomplete
     shape: Incomplete
