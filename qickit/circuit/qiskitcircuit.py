@@ -549,7 +549,6 @@ class QiskitCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        # Return the state vector
         return state_vector
 
     def get_counts(self,
@@ -576,7 +575,6 @@ class QiskitCircuit(Circuit):
             # Run the circuit on the specified backend
             counts = backend.get_counts(self, num_shots)
 
-        # Return the counts
         return counts
 
     def get_depth(self) -> int:
@@ -586,7 +584,6 @@ class QiskitCircuit(Circuit):
         # Transpile the circuit to U3 and CX gates
         circuit.transpile()
 
-        # Return
         return circuit.circuit.depth()
 
     def get_unitary(self) -> NDArray[np.number]:
@@ -596,7 +593,6 @@ class QiskitCircuit(Circuit):
         # Get the unitary matrix of the circuit
         unitary = Operator(circuit.circuit).data
 
-        # Return the unitary matrix
         return np.array(unitary)
 
     def transpile(self) -> None:
@@ -626,7 +622,6 @@ class QiskitCircuit(Circuit):
         # Convert the circuit to QASM
         qasm = self.circuit.qasm()
 
-        # Return the QASM
         return qasm
 
     def draw(self) -> matplotlib.figure.Figure:

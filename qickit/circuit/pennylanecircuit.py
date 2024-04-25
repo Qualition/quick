@@ -558,7 +558,6 @@ class PennylaneCircuit(Circuit):
             for op in circuit.circuit:
                 qml.apply(op)
 
-            # Return the measurement
             return qml.state()
 
         if backend is None:
@@ -591,7 +590,6 @@ class PennylaneCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        # Return the state vector
         return state_vector
 
     def get_counts(self,
@@ -623,7 +621,6 @@ class PennylaneCircuit(Circuit):
             for op in circuit.circuit:
                 qml.apply(op)
 
-            # Return the measurement
             return qml.counts(all_outcomes=True)
 
         if backend is None:
@@ -638,14 +635,12 @@ class PennylaneCircuit(Circuit):
             # Run the circuit on the specified backend
             result = backend.get_counts(circuit, num_shots=num_shots)
 
-        # Return the counts
         return counts
 
     def get_depth(self) -> int:
         # Convert the circuit to Qiskit
         circuit = self.convert(QiskitCircuit)
 
-        # Return the effective depth of the circuit (the number of U3 and CX operations)
         return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.number]:
@@ -704,10 +699,8 @@ class PennylaneCircuit(Circuit):
                     # Assign the value from the original matrix to the new position in the reordered matrix
                     reordered_matrix[new_i][new_j] = matrix[i][j]
 
-            # Return the reordered matrix
             return reordered_matrix
 
-        # Return the unitary matrix
         return MSB_to_LSB(unitary)
 
     def transpile(self) -> None:
@@ -740,7 +733,6 @@ class PennylaneCircuit(Circuit):
         # Convert the circuit to QASM
         qasm = self.convert(QiskitCircuit).circuit.qasm()
 
-        # Return the QASM
         return qasm
 
     def draw(self) -> None:

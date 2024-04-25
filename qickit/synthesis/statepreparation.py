@@ -71,7 +71,6 @@ class StatePreparation(ABC):
         `circuit` : qickit.circuit.Circuit
             The quantum circuit that prepares the state.
         """
-        ...
 
 
 class Mottonen(StatePreparation):
@@ -151,7 +150,6 @@ class Mottonen(StatePreparation):
 
         circuit.vertical_reverse()
 
-        # Return the circuit
         return circuit
 
 
@@ -352,7 +350,6 @@ class Shende(StatePreparation):
                     ry_mult.horizontal_reverse(adjoint=False)
                     circuit.add(ry_mult, list(range(i, num_qubits)))
 
-            # Return the circuit
             return circuit
 
         # Define the disentangling circuit
@@ -362,5 +359,4 @@ class Shende(StatePreparation):
         # Add the disentangling circuit to the initial circuit
         circuit.add(disentangling_circuit, list(range(num_qubits)))
 
-        # Return the circuit
         return circuit

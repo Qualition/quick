@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['CircuitOptimizer',
-           'CNOTOptimizer']
+__all__ = ['optimize_cnot']
 
-from qickit.circuitoptimizer.circuitoptimizer import CircuitOptimizer, CNOTOptimizer
+from qickit.circuitoptimizer.circuitoptimizer import optimize_cnot

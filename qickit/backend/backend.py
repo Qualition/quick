@@ -88,10 +88,8 @@ class Backend(ABC):
             if not isinstance(circuit, instance._qc_framework):
                 circuit = circuit.convert(instance._qc_framework)
 
-            # Run the method
             return method(instance, circuit)
 
-        # Return the decorated method
         return wrapped
 
     @abstractmethod
@@ -113,7 +111,6 @@ class Backend(ABC):
         -----
         >>> backed.get_statevector(circuit)
         """
-        ...
 
     @abstractmethod
     def get_operator(self,
@@ -134,7 +131,6 @@ class Backend(ABC):
         -----
         >>> backed.get_operator(circuit)
         """
-        ...
 
     @abstractmethod
     def get_counts(self,
@@ -163,7 +159,6 @@ class Backend(ABC):
         -----
         >>> backed.get_counts(circuit, num_shots=1024)
         """
-        ...
 
 
 class AerBackend(Backend):
@@ -179,7 +174,6 @@ class AerBackend(Backend):
         # Run the circuit to get the statevector
         state_vector = Statevector(circuit.circuit).data
 
-        # Return the statevector
         return state_vector
 
     @Backend.backendmethod
@@ -188,7 +182,6 @@ class AerBackend(Backend):
         # Run the circuit to get the operator
         operator = Operator(circuit.circuit).data
 
-        # Return the operator
         return operator
 
     @Backend.backendmethod
@@ -219,5 +212,4 @@ class AerBackend(Backend):
         # Sort the counts by their keys (basis states)
         counts = dict(sorted(counts.items()))
 
-        # Return the counts
         return counts

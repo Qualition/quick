@@ -559,7 +559,6 @@ class TKETCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        # Return the state vector
         return state_vector
 
     def get_counts(self,
@@ -587,14 +586,12 @@ class TKETCircuit(Circuit):
             # Run the circuit on the specified backend
             counts = backend.get_counts(self.circuit, num_shots=num_shots)
 
-        # Return the counts
         return counts
 
     def get_depth(self) -> int:
         # Convert the circuit to Qiskit
         circuit = self.convert(QiskitCircuit)
 
-        # Return the effective depth of the circuit (the number of U3 and CX operations)
         return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.number]:
@@ -607,7 +604,6 @@ class TKETCircuit(Circuit):
         # Run the circuit and define the unitary matrix
         unitary = circuit.circuit.get_unitary()
 
-        # Return the unitary matrix
         return np.array(unitary)
 
     def transpile(self) -> None:
@@ -640,7 +636,6 @@ class TKETCircuit(Circuit):
         # Convert the circuit to QASM
         qasm = self.convert(QiskitCircuit).circuit.qasm()
 
-        # Return the QASM
         return qasm
 
     def draw(self) -> None:

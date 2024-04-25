@@ -1,9 +1,9 @@
-from qickit.circuit import *
 import abc
 import numpy as np
 from _typeshed import Incomplete
 from abc import ABC, abstractmethod
 from numpy.typing import NDArray
+from qickit.circuit import Circuit
 from typing import Callable
 
 __all__ = ['UnitaryPreparation']

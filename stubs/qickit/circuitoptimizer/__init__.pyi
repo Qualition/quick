@@ -1,3 +1,3 @@
-from qickit.circuitoptimizer.circuitoptimizer import CNOTOptimizer as CNOTOptimizer, CircuitOptimizer as CircuitOptimizer
+from qickit.circuitoptimizer.circuitoptimizer import optimize_cnot as optimize_cnot
 
-__all__ = ['CircuitOptimizer', 'CNOTOptimizer']
+__all__ = ['optimize_cnot']

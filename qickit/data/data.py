@@ -97,7 +97,7 @@ class Data:
         sum_check = np.sum(data_vector**2)
 
         # Check if the sum of squared of the data elements is equal to
-        # 1 with 0.01 tolerance
+        # 1 with 1e-8 tolerance
         return bool(np.isclose(sum_check, 1.0, atol=1e-08))
 
     def is_normalized(self) -> None:
@@ -139,7 +139,6 @@ class Data:
         # Normalize the vector to 2-norm
         normalized_vector = np.multiply(data, 1/norm_scale)
 
-        # Return the normalized data
         return normalized_vector
 
     def normalize(self) -> None:
@@ -177,7 +176,6 @@ class Data:
         # normalization factor
         denormalized_vector = np.multiply(data, norm_scale)
 
-        # Return the denormalized data
         return denormalized_vector
 
     def denormalize(self) -> None:
@@ -259,7 +257,6 @@ class Data:
             # Update data shape
             updated_shape = padded_data.shape
 
-            # Return all info
             return padded_data, updated_shape
 
         # If the data is a matrix
@@ -293,7 +290,6 @@ class Data:
                 # nearest power of 2
                 resized_data = np.asarray(Img.fromarray(data).resize((cols, rows), 0))
 
-                # Return all info
                 return resized_data, resized_data.shape
 
             # Ensure the target rows and columns are int type
@@ -313,7 +309,6 @@ class Data:
             # Update data shape
             updated_shape = padded_data.shape
 
-            # Return all info
             return padded_data, updated_shape
 
         else:
@@ -406,7 +401,6 @@ class Data:
             else:
                 second_data = Data(second_data)
 
-        # Check if the data are close enough
         return bool(np.allclose(first_data.data, second_data.data, tolerance))
 
     def change_indexing(self,

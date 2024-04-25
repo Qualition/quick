@@ -14,9 +14,8 @@
 
 from __future__ import annotations
 
-__all__ = ['CircuitOptimizer', 'CNOTOptimizer']
+__all__ = ['optimize_cnot']
 
-from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 # Import `qickit.circuit.Circuit` instances
@@ -24,41 +23,8 @@ if TYPE_CHECKING:
     from qickit.circuit import Circuit
 
 
-class CircuitOptimizer(ABC):
-    """ `qickit.circuitoptimizer.CircuitOptimizer` is the class for optimizing
-    `qickit.circuit.Circuit` instances.
-    """
-    def __init__(self) -> None:
-        """ Initialize the circuit optimizer.
-        """
-        ...
+def optimize_cnot(circuit: Circuit) -> Circuit:
+    # TODO
+    # Perform optimization
 
-    @abstractmethod
-    def optimize(self,
-                 circuit: Circuit) -> Circuit:
-        """ Optimize the circuit.
-
-        Parameters
-        ----------
-        `circuit` : qickit.circuit.Circuit
-            The circuit to optimize.
-
-        Returns
-        -------
-        `optimized_circuit` : qickit.circuit.Circuit
-            The optimized circuit.
-        """
-        ...
-
-
-class CNOTOptimizer(CircuitOptimizer):
-    """ `qickit.circuitoptimizer.CNOTOptimizer` is the class for optimizing `qickit.circuit.Circuit`
-    instances by reducing the number of CNOT gates.
-    """
-    def optimize(self,
-                 circuit: Circuit) -> Circuit:
-        # TODO
-        # Perform optimization
-
-        # Return the circuit
-        return circuit
+    return circuit

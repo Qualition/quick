@@ -81,10 +81,8 @@ class UnitaryPreparation(ABC):
             if not instance.check_unitary(args[1]):
                 raise ValueError("Input matrix is not a unitary matrix.")
 
-            # Run the method
             return method(instance, *args, **kwargs)
 
-        # Return the decorated method
         return wrapper
 
     @abstractmethod
@@ -102,4 +100,3 @@ class UnitaryPreparation(ABC):
         `circuit` : qickit.circuit.Circuit
             The quantum circuit for preparing the unitary operator.
         """
-        ...

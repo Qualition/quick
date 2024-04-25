@@ -223,7 +223,6 @@ class Circuit(ABC):
             # Append the method log to the instance's circuit log
             instance.circuit_log.append({'gate': method.__name__} | params)
 
-            # Execute the method with the provided arguments
             return method(instance, **params)
 
         return wrapped
@@ -243,7 +242,6 @@ class Circuit(ABC):
         >>> circuit.X(qubit_indices=0)
         >>> circuit.X(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def Y(self,
@@ -260,7 +258,6 @@ class Circuit(ABC):
         >>> circuit.Y(qubit_indices=0)
         >>> circuit.Y(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def Z(self,
@@ -277,7 +274,6 @@ class Circuit(ABC):
         >>> circuit.Z(qubit_indices=0)
         >>> circuit.Z(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def H(self,
@@ -294,7 +290,6 @@ class Circuit(ABC):
         >>> circuit.H(qubit_indices=0)
         >>> circuit.H(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def S(self,
@@ -311,7 +306,6 @@ class Circuit(ABC):
         >>> circuit.S(qubit_indices=0)
         >>> circuit.S(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def T(self,
@@ -328,7 +322,6 @@ class Circuit(ABC):
         >>> circuit.T(qubit_indices=0)
         >>> circuit.T(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def RX(self,
@@ -347,7 +340,6 @@ class Circuit(ABC):
         -----
         >>> circuit.RX(angle=np.pi/2, qubit_index=0)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def RY(self,
@@ -366,7 +358,6 @@ class Circuit(ABC):
         -----
         >>> circuit.RY(angle=np.pi/2, qubit_index=0)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def RZ(self,
@@ -385,7 +376,6 @@ class Circuit(ABC):
         -----
         >>> circuit.RZ(angle=np.pi/2, qubit_index=0)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def U3(self,
@@ -404,7 +394,6 @@ class Circuit(ABC):
         -----
         >>> circuit.U3(angles=[np.pi/2, np.pi/2, np.pi/2], qubit_index=0)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def SWAP(self,
@@ -423,7 +412,6 @@ class Circuit(ABC):
         -----
         >>> circuit.SWAP(first_qubit=0, second_qubit=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CX(self,
@@ -442,7 +430,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CX(control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CY(self,
@@ -461,7 +448,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CY(control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CZ(self,
@@ -480,7 +466,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CZ(control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CH(self,
@@ -499,7 +484,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CH(control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CS(self,
@@ -518,7 +502,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CS(control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CT(self,
@@ -537,7 +520,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CT(control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CRX(self,
@@ -559,7 +541,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CRY(self,
@@ -581,7 +562,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CRZ(self,
@@ -603,7 +583,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CU3(self,
@@ -625,7 +604,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def CSWAP(self,
@@ -647,7 +625,6 @@ class Circuit(ABC):
         -----
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCX(self,
@@ -669,7 +646,6 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCY(self,
@@ -691,7 +667,6 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCZ(self,
@@ -713,7 +688,6 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCH(self,
@@ -735,7 +709,6 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCS(self,
@@ -757,7 +730,6 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCT(self,
@@ -779,7 +751,6 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCRX(self,
@@ -804,7 +775,6 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCRY(self,
@@ -829,7 +799,6 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCRZ(self,
@@ -854,7 +823,6 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCU3(self,
@@ -879,7 +847,6 @@ class Circuit(ABC):
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=2)
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=[2, 3])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def MCSWAP(self,
@@ -902,7 +869,6 @@ class Circuit(ABC):
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
         >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def GlobalPhase(self,
@@ -918,7 +884,6 @@ class Circuit(ABC):
         -----
         >>> circuit.GlobalPhase(angle=np.pi/2)
         """
-        raise NotImplementedError
 
     def unitary(self,
                 unitary_matrix: NDArray[np.number],
@@ -1115,7 +1080,6 @@ class Circuit(ABC):
         >>> circuit.measure(qubit_indices=0)
         >>> circuit.measure(qubit_indices=[0, 1])
         """
-        raise NotImplementedError
 
     @abstractmethod
     def get_statevector(self,
@@ -1137,7 +1101,6 @@ class Circuit(ABC):
         >>> circuit.get_statevector()
         >>> circuit.get_statevector(backend=backend)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def get_counts(self,
@@ -1162,7 +1125,6 @@ class Circuit(ABC):
         >>> circuit.get_counts(num_shots=1024)
         >>> circuit.get_counts(num_shots=1024, backend=backend)
         """
-        raise NotImplementedError
 
     @abstractmethod
     def get_depth(self) -> int:
@@ -1177,7 +1139,6 @@ class Circuit(ABC):
         -----
         >>> circuit.get_depth()
         """
-        raise NotImplementedError
 
     def get_width(self) -> int:
         """ Get the width of the circuit.
@@ -1206,7 +1167,6 @@ class Circuit(ABC):
         -----
         >>> circuit.get_unitary()
         """
-        raise NotImplementedError
 
     @abstractmethod
     def transpile(self) -> None:
@@ -1216,7 +1176,6 @@ class Circuit(ABC):
         -----
         >>> circuit.transpile()
         """
-        raise NotImplementedError
 
     def compress(self,
                  compression_percentage: float) -> None:
@@ -1378,7 +1337,6 @@ class Circuit(ABC):
             # Use the gate mapping to apply the corresponding gate
             gate_mapping[gate_name](**gate_info)
 
-        # Return the converted circuit
         return converted_circuit
 
     @abstractmethod
@@ -1394,7 +1352,6 @@ class Circuit(ABC):
         -----
         >>> circuit.to_qasm()
         """
-        raise NotImplementedError
 
     @staticmethod
     def from_cirq(cirq_circuit: cirq.Circuit,
@@ -1550,7 +1507,6 @@ class Circuit(ABC):
             else:
                 raise ValueError(f"Gate not supported.\n{operation} ")
 
-        # Return the circuit
         return circuit
 
     @staticmethod
@@ -1682,7 +1638,6 @@ class Circuit(ABC):
         -----
         >>> circuit.draw()
         """
-        raise NotImplementedError
 
     def plot_histogram(self,
                        non_zeros_only: bool = False) -> plt.Figure:
