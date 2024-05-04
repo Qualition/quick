@@ -575,9 +575,9 @@ class CirqCircuit(Circuit):
 
     @Circuit.gatemethod
     def MCSWAP(self,
-                control_indices: int | Collection[int],
-                first_target_index: int,
-                second_target_index: int) -> None:
+               control_indices: int | Collection[int],
+               first_target_index: int,
+               second_target_index: int) -> None:
         # Ensure control_indices is always treated as a list
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 

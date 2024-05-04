@@ -20,7 +20,7 @@ from typing import (Iterator, overload, Protocol, TypeVar,
                     TypeAlias, Self, runtime_checkable)
 
 
-T = TypeVar("T", covariant=True)
+T = TypeVar("T")
 
 @runtime_checkable
 class Collection(Protocol[T]):
@@ -33,6 +33,12 @@ class Collection(Protocol[T]):
     ...
   @overload
   def __getitem__(self, idx: slice) -> Self:
+    ...
+  @overload
+  def __setitem__(self, idx: int, value: T) -> None:
+    ...
+  @overload
+  def __setitem__(self, idx: slice, value: Self) -> None:
     ...
   def __add__(self, other: Self) -> Self:
     ...
