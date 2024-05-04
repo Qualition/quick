@@ -1759,70 +1759,83 @@ class Circuit(ABC):
         # Iterate over the operations in the Qiskit circuit
         # TODO: Add Identity gate
         for gate in tket_circuit:
-            if str(gate.op) == 'X':
+            print(gate.op.type)
+            if str(gate.op.type) == 'OpType.X':
                 circuit.X(gate.qubits[0].index)
 
-            elif str(gate.op) == 'Y':
+            elif str(gate.op.type) == 'OpType.Y':
                 circuit.Y(gate.qubits[0].index)
 
-            elif str(gate.op) == 'Z':
+            elif str(gate.op.type) == 'OpType.Z':
                 circuit.Z(gate.qubits[0].index)
 
-            elif str(gate.op) == 'H':
+            elif str(gate.op.type) == 'OpType.H':
                 circuit.H(gate.qubits[0].index)
 
-            elif str(gate.op) == 'S':
+            elif str(gate.op.type) == 'OpType.S':
                 circuit.S(gate.qubits[0].index)
 
-            elif str(gate.op) == 'T':
+            elif str(gate.op.type) == 'OpType.T':
                 circuit.T(gate.qubits[0].index)
 
-            elif str(gate.op) == 'Rx':
-                circuit.RX(gate.op.params[0], gate.qubits[0].index[0])
+            elif str(gate.op.type) == 'OpType.Rx':
+                circuit.RX(float(gate.op.params[0]), gate.qubits[0].index[0])
 
-            elif str(gate.op) == 'Ry':
-                circuit.RY(gate.op.params[0], gate.qubits[0].index[0])
+            elif str(gate.op.type) == 'OpType.Ry':
+                circuit.RY(float(gate.op.params[0]), gate.qubits[0].index[0])
 
-            elif str(gate.op) == 'Rz':
-                circuit.RZ(gate.op.params[0], gate.qubits[0].index[0])
+            elif str(gate.op.type) == 'OpType.Rz':
+                circuit.RZ(float(gate.op.params[0]), gate.qubits[0].index[0])
 
-            elif str(gate.op) == 'U3':
-                circuit.U3(gate.op.params, gate.qubits[0].index[0])
+            elif str(gate.op.type) == 'OpType.U3':
+                circuit.U3([float(param) for param in gate.op.params], gate.qubits[0].index[0])
 
-            elif str(gate.op) == 'SWAP':
+            elif str(gate.op.type) == 'OpType.SWAP':
                 circuit.SWAP(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CX':
+            elif str(gate.op.type) == 'OpType.CX':
                 circuit.CX(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CY':
+            elif str(gate.op.type) == 'OpType.CY':
                 circuit.CY(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CZ':
+            elif str(gate.op.type) == 'OpType.CZ':
                 circuit.CZ(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CH':
+            elif str(gate.op.type) == 'OpType.CH':
                 circuit.CH(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CS':
+            elif str(gate.op.type) == 'OpType.CS':
                 circuit.CS(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CT':
+            elif str(gate.op.type) == 'OpType.CT':
                 circuit.CT(gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CRx':
-                circuit.CRX(gate.op.params[0], gate.qubits[0].index[0], gate.qubits[1].index[0])
+            elif str(gate.op.type) == 'OpType.CRx':
+                circuit.CRX(float(gate.op.params[0]), gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CRy':
-                circuit.CRY(gate.op.params[0], gate.qubits[0].index[0], gate.qubits[1].index[0])
+            elif str(gate.op.type) == 'OpType.CRy':
+                circuit.CRY(float(gate.op.params[0]), gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CRz':
-                circuit.CRZ(gate.op.params[0], gate.qubits[0].index[0], gate.qubits[1].index[0])
+            elif str(gate.op.type) == 'OpType.CRz':
+                circuit.CRZ(float(gate.op.params[0]), gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'CU3':
-                circuit.CU3(gate.op.params, gate.qubits[0].index[0], gate.qubits[1].index[0])
+            elif str(gate.op.type) == 'OpType.CU3':
+                circuit.CU3([float(param) for param in gate.op.params], gate.qubits[0].index[0], gate.qubits[1].index[0])
 
-            elif str(gate.op) == 'QControlBox':
+            elif str(gate.op.type) == 'OpType.CnX':
+                qubits = [qubit.index[0] for qubit in gate.qubits]
+                circuit.MCX(qubits[:-1], qubits[-1])
+
+            elif str(gate.op.type) == 'OpType.CnY':
+                qubits = [qubit.index[0] for qubit in gate.qubits]
+                circuit.MCY(qubits[:-1], qubits[-1])
+
+            elif str(gate.op.type) == 'OpType.CnZ':
+                qubits = [qubit.index[0] for qubit in gate.qubits]
+                circuit.MCZ(qubits[:-1], qubits[-1])
+
+            elif str(gate.op.type) == 'OpType.QControlBox':
                 qubits = [qubit.index[0] for qubit in gate.qubits]
 
                 if str(gate.op.get_op()) == 'X':
@@ -1844,16 +1857,16 @@ class Circuit(ABC):
                     circuit.MCT(qubits[:-1], qubits[-1])
 
                 elif str(gate.op.get_op()) == 'Rx':
-                    circuit.MCRX(gate.op.get_op().params[0], qubits[:-1], qubits[-1])
+                    circuit.MCRX(float(gate.op.get_op().params[0]), qubits[:-1], qubits[-1])
 
                 elif str(gate.op.get_op()) == 'Ry':
-                    circuit.MCRY(gate.op.get_op().params[0], qubits[:-1], qubits[-1])
+                    circuit.MCRY(float(gate.op.get_op().params[0]), qubits[:-1], qubits[-1])
 
                 elif str(gate.op.get_op()) == 'Rz':
-                    circuit.MCRZ(gate.op.get_op().params[0], qubits[:-1], qubits[-1])
+                    circuit.MCRZ(float(gate.op.get_op().params[0]), qubits[:-1], qubits[-1])
 
                 elif str(gate.op.get_op()) == 'U3':
-                    circuit.MCU3(gate.op.get_op().params, qubits[:-1], qubits[-1])
+                    circuit.MCU3([float(param) for param in gate.op.get_op().params], qubits[:-1], qubits[-1])
 
                 elif str(gate.op.get_op()) == 'SWAP':
                     circuit.MCSWAP(qubits[:-2], qubits[-2], qubits[-1])
