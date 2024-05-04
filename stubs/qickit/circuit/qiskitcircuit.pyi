@@ -1,16 +1,17 @@
 import matplotlib.figure
 import numpy as np
-from _typeshed import Incomplete
 from numpy.typing import NDArray
 from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.types import Collection
+from qiskit import QuantumCircuit # type: ignore
 
 __all__ = ['QiskitCircuit']
 
 class QiskitCircuit(Circuit):
-    circuit: Incomplete
+    circuit: QuantumCircuit
     def __init__(self, num_qubits: int, num_clbits: int) -> None: ...
+    def Identity(self, qubit_indices: int | Collection[int]) -> None: ...
     def X(self, qubit_indices: int | Collection[int]) -> None: ...
     def Y(self, qubit_indices: int | Collection[int]) -> None: ...
     def Z(self, qubit_indices: int | Collection[int]) -> None: ...

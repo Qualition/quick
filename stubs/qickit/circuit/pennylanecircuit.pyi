@@ -1,6 +1,6 @@
 import numpy as np
-from _typeshed import Incomplete
 from numpy.typing import NDArray
+import pennylane as qml # type: ignore
 from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.types import Collection
@@ -8,9 +8,10 @@ from qickit.types import Collection
 __all__ = ['PennylaneCircuit']
 
 class PennylaneCircuit(Circuit):
-    device: Incomplete
-    circuit: Incomplete
+    device: qml.Device
+    circuit: list
     def __init__(self, num_qubits: int, num_clbits: int) -> None: ...
+    def Identity(self, qubit_indices: int | Collection[int]) -> None: ...
     def X(self, qubit_indices: int | Collection[int]) -> None: ...
     def Y(self, qubit_indices: int | Collection[int]) -> None: ...
     def Z(self, qubit_indices: int | Collection[int]) -> None: ...

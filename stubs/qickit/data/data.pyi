@@ -1,22 +1,20 @@
 import numpy as np
-from _typeshed import Incomplete
 from numpy.typing import NDArray
 from qickit.types import NestedCollection
 
 __all__ = ['Data']
 
-
 NumberType = int | float | complex
 
 
 class Data:
-    data: Incomplete
-    shape: Incomplete
-    norm_scale: Incomplete
+    data: NestedCollection[NumberType]
+    shape: tuple[int, ...]
+    norm_scale: float
     def __init__(self, data: NestedCollection[NumberType]) -> None: ...
     @staticmethod
     def check_normalization(data: NDArray[np.number]) -> bool: ...
-    normalized: Incomplete
+    normalized: bool
     def is_normalized(self) -> None: ...
     @staticmethod
     def normalize_data(data: NDArray[np.number], norm_scale: np.float64) -> NDArray[np.number]: ...
@@ -26,7 +24,7 @@ class Data:
     def denormalize(self) -> None: ...
     @staticmethod
     def check_padding(data: NDArray[np.number]) -> bool: ...
-    padded: Incomplete
+    padded: bool
     def is_padded(self) -> None: ...
     @staticmethod
     def pad_data(data: NDArray[np.number]) -> tuple[NDArray[np.number], tuple[int, ...]]: ...

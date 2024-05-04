@@ -1,5 +1,5 @@
 import numpy as np
-from _typeshed import Incomplete
+import cirq
 from numpy.typing import NDArray
 from qickit.backend import Backend
 from qickit.circuit import Circuit
@@ -8,9 +8,10 @@ from qickit.types import Collection
 __all__ = ['CirqCircuit']
 
 class CirqCircuit(Circuit):
-    qr: Incomplete
-    circuit: Incomplete
+    qr: cirq.LineQubit
+    circuit: cirq.Circuit
     def __init__(self, num_qubits: int, num_clbits: int) -> None: ...
+    def Identity(self, qubit_indices: int | Collection[int]) -> None: ...
     def X(self, qubit_indices: int | Collection[int]) -> None: ...
     def Y(self, qubit_indices: int | Collection[int]) -> None: ...
     def Z(self, qubit_indices: int | Collection[int]) -> None: ...

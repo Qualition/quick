@@ -28,7 +28,7 @@ from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
                                     ZGate, SGate, TGate, U3Gate, SwapGate, CXGate, # type: ignore
                                     CYGate, CZGate, CHGate, CSGate, CSwapGate, # tyoe: ignore
-                                    GlobalPhaseGate) # type: ignore
+                                    GlobalPhaseGate, IGate) # type: ignore
 from qiskit.primitives import BackendSampler # type: ignore
 from qiskit_aer.aerprovider import AerSimulator # type: ignore
 from qiskit.quantum_info import Statevector, Operator # type: ignore
@@ -80,6 +80,21 @@ class QiskitCircuit(Circuit):
 
         # Define the circuit
         self.circuit = QuantumCircuit(qr, cr)
+
+    @Circuit.gatemethod
+    def Identity(self,
+                 qubit_indices: int | Collection[int]) -> None:
+        # Create an Identity gate
+        identity = IGate()
+
+        # Check if the qubit_indices is a list
+        if isinstance(qubit_indices, Collection):
+            # If it is, apply the Identity gate to each qubit in the list
+            for index in qubit_indices:
+                self.circuit.append(identity, [index])
+        else:
+            # If it's not a list, apply the Identity gate to the single qubit
+            self.circuit.append(identity, [qubit_indices])
 
     @Circuit.gatemethod
     def X(self,

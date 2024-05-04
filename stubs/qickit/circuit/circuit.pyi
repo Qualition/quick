@@ -2,28 +2,29 @@ import abc
 import cirq
 import matplotlib.pyplot as plt
 import numpy as np
-import pennylane as qml
+import pennylane as qml # type: ignore
 import pytket
-import qiskit
-from _typeshed import Incomplete
+import qiskit # type: ignore
 from abc import ABC, abstractmethod
 from numpy.typing import NDArray
 from qickit.backend import Backend
-from qickit.types import Collection
+from qickit.types import Collection, Circuit_Type
 from types import NotImplementedType
 from typing import Callable, Type
 
 __all__ = ['Circuit']
 
 class Circuit(ABC, metaclass=abc.ABCMeta):
-    num_qubits: Incomplete
-    num_clbits: Incomplete
-    circuit: Incomplete
+    num_qubits: int
+    num_clbits: int
+    circuit: Circuit_Type
     measured: bool
-    circuit_log: Incomplete
+    circuit_log: list[dict]
     def __init__(self, num_qubits: int, num_clbits: int) -> None: ...
     @staticmethod
     def gatemethod(method: Callable) -> Callable: ...
+    @abstractmethod
+    def Identity(self, qubit_indices: int | Collection[int]) -> None: ...
     @abstractmethod
     def X(self, qubit_indices: int | Collection[int]) -> None: ...
     @abstractmethod
@@ -118,6 +119,7 @@ class Circuit(ABC, metaclass=abc.ABCMeta):
     def from_cirq(cirq_circuit: cirq.Circuit, output_framework: Type[Circuit]) -> Circuit: ...
     @staticmethod
     def from_pennylane(pennylane_circuit: qml.QNode, output_framework: Type[Circuit]) -> Circuit: ...
+    @staticmethod
     def from_qiskit(qiskit_circuit: qiskit.QuantumCircuit, output_framework: Type[Circuit]) -> Circuit: ...
     @staticmethod
     def from_tket(tket_circuit: pytket.Circuit, output_framework: Type[Circuit]) -> Circuit: ...

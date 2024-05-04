@@ -1,6 +1,6 @@
 import numpy as np
-from _typeshed import Incomplete
 from numpy.typing import NDArray
+import pytket
 from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.types import Collection
@@ -8,8 +8,9 @@ from qickit.types import Collection
 __all__ = ['TKETCircuit']
 
 class TKETCircuit(Circuit):
-    circuit: Incomplete
+    circuit: pytket.Circuit
     def __init__(self, num_qubits: int, num_clbits: int) -> None: ...
+    def Identity(self, qubit_indices: int | Collection[int]) -> None: ...
     def X(self, qubit_indices: int | Collection[int]) -> None: ...
     def Y(self, qubit_indices: int | Collection[int]) -> None: ...
     def Z(self, qubit_indices: int | Collection[int]) -> None: ...

@@ -45,6 +45,19 @@ class Data:
     `shape` : tuple[int, ...]
         The shape of the datapoint.
 
+    Attributes
+    ----------
+    `data` : NDArray
+        The datapoint values.
+    `norm_scale` : float
+        The normalization scale.
+    `normalized` : bool
+        Whether the Data is normalized to 2 norm.
+    `padded` : bool
+        Whether the Data is padded to a power of 2.
+    `shape` : tuple[int, ...]
+        The shape of the datapoint.
+
     Usage
     -----
     >>> data = Data([[1, 2], [3, 4]])

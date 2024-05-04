@@ -80,6 +80,21 @@ class CirqCircuit(Circuit):
         self.circuit.append(I(self.qr[0]))
 
     @Circuit.gatemethod
+    def Identity(self,
+                 qubit_indices: int | Collection[int]) -> None:
+        # Create an Identity gate
+        identity = I
+
+        # Check if the qubit_indices is a list
+        if isinstance(qubit_indices, Collection):
+            # If it is, apply the Identity gate to each qubit in the list
+            for index in qubit_indices:
+                self.circuit.append(identity(self.qr[index]))
+        else:
+            # If it's not a list, apply the Identity gate to the single qubit
+            self.circuit.append(identity(self.qr[qubit_indices]))
+
+    @Circuit.gatemethod
     def X(self,
           qubit_indices: int | Collection[int]) -> None:
         # Create a Pauli-X gate

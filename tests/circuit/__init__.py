@@ -16,12 +16,10 @@ __all__ = ['Template',
            'TestCirqCircuit',
            'TestPennylaneCircuit',
            'TestQiskitCircuit',
-           'TestTKETCircuit',
-           'TestAllCircuits']
+           'TestTKETCircuit',]
 
 from tests.circuit.test_circuit import Template
 from tests.circuit.test_cirq_circuit import TestCirqCircuit
 from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit
 from tests.circuit.test_qiskit_circuit import TestQiskitCircuit
 from tests.circuit.test_tket_circuit import TestTKETCircuit
-from tests.circuit.test_all_circuits import TestAllCircuits

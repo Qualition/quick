@@ -33,6 +33,11 @@ class UnitaryPreparation(ABC):
     ----------
     `circuit_framework` : qickit.circuit.Circuit
         The quantum circuit framework.
+
+    Attributes
+    ----------
+    `circuit_framework` : qickit.circuit.Circuit
+        The quantum circuit framework.
     """
     def __init__(self,
                  circuit_framework: Circuit) -> None:
@@ -40,9 +45,6 @@ class UnitaryPreparation(ABC):
         """
         # Define the QC framework
         self.circuit_framework = circuit_framework
-
-        # Set the encoding schema
-        self.encoder = self.prepare_unitary
 
     def check_unitary(self,
                       unitary: NDArray[np.complex128]) -> bool:

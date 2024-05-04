@@ -42,6 +42,11 @@ class StatePreparation(ABC):
     ----------
     `circuit_framework` : qickit.circuit.Circuit
         The quantum circuit framework.
+
+    Attributes
+    ----------
+    `circuit_framework` : qickit.circuit.Circuit
+        The quantum circuit framework.
     """
     def __init__(self,
                  circuit_framework: Type[Circuit]) -> None:
