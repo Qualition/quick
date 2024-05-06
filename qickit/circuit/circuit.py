@@ -1688,7 +1688,6 @@ class Circuit(ABC):
             elif gate_type == 'cu3':
                 circuit.CU3(gate[0].params, qubit_indices[0], qubit_indices[1])
 
-            # TODO: Check this
             elif gate_type == 'cswap':
                 circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
 
@@ -1762,8 +1761,8 @@ class Circuit(ABC):
             gate_type = str(gate.op.type)
 
             # Extract the qubit indices
-            qubit_indices = [int(qubit.index[0]) for qubit in gate.qubits] if len(gate.qubits) > 1 \
-                                                                           else gate.qubits[0].index[0]
+            qubit_indices = [qubit.index[0] for qubit in gate.qubits] if len(gate.qubits) > 1 \
+                                                                      else gate.qubits[0].index[0]
 
             if gate_type == 'OpType.X':
                 circuit.X(qubit_indices)
