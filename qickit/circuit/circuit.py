@@ -1762,7 +1762,8 @@ class Circuit(ABC):
             gate_type = str(gate.op.type)
 
             # Extract the qubit indices
-            qubit_indices = [qubit.index[0] for qubit in gate.qubits] if len(gate.qubits) > 1 else gate.qubits[0].index[0]
+            qubit_indices = [int(qubit.index[0]) for qubit in gate.qubits] if len(gate.qubits) > 1 \
+                                                                           else gate.qubits[0].index[0]
 
             if gate_type == 'OpType.X':
                 circuit.X(qubit_indices)
