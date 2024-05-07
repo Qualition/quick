@@ -195,7 +195,7 @@ class Data:
         """ Denormalize a `qickit.data.Data` instance from 2-norm.
         """
         # If the data is already denormalized, or simply not normalized
-        if self.normalized is False:
+        if not self.normalized:
             return
 
         # If the data is normalized, denormalize the data
@@ -343,11 +343,11 @@ class Data:
     def to_quantumstate(self) -> None:
         """ Converts a `qickit.data.Data` instance to a quantum state.
         """
-        if self.normalized is False:
+        if not self.normalized:
             # Normalize the data
             self.normalize()
 
-        if self.padded is False:
+        if not self.padded:
             # Pad the data
             self.pad()
 
@@ -423,7 +423,7 @@ class Data:
         Parameters
         ----------
         `index_type` : str
-            The new indexing type.
+            The new indexing type, being "row" or "snake".
         """
         if index_type == 'snake':
             # Ensure the array has two dimensions
