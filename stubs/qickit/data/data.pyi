@@ -11,6 +11,7 @@ class Data:
     data: NestedCollection[NumberType]
     shape: tuple[int, ...]
     norm_scale: float
+    num_qubits: int
     def __init__(self, data: NestedCollection[NumberType]) -> None: ...
     @staticmethod
     def check_normalization(data: NDArray[np.number]) -> bool: ...

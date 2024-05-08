@@ -99,11 +99,11 @@ class Mottonen(StatePreparation):
         # Compress the data
         state.compress(compression_percentage)
 
+        # Define the number of qubits (n qubits, where n = Log2(N), where N is the dimension of the vector)
+        num_qubits = state.num_qubits
+
         # Flatten the data in case it is not 1-dimensional
         state = state.data.flatten()
-
-        # Define the number of qubits (n qubits, where n = Log2(N), where N is the dimension of the vector)
-        num_qubits = int(np.log2(len(state)))
 
         # Construct Mottonen circuit
         circuit: Circuit = self.circuit_framework(num_qubits, num_qubits)
@@ -179,11 +179,11 @@ class Shende(StatePreparation):
         # Compress the data
         state.compress(compression_percentage)
 
+        # Define the number of qubits (n qubits, where n = Log2(N), where N is the dimension of the vector)
+        num_qubits = state.num_qubits
+
         # Flatten the data in case it is not 1-dimensional
         state = state.data.flatten()
-
-        # Define the number of qubits (n qubits, where n = Log2(N), where N is the dimension of the vector)
-        num_qubits = int(np.log2(len(state)))
 
         # Construct Shende circuit
         circuit: Circuit = self.circuit_framework(num_qubits, num_qubits)

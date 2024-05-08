@@ -78,6 +78,9 @@ class Data:
         # Set the norm scale (for normalization and denormalization)
         self.norm_scale = np.linalg.norm(self.data.flatten())
 
+        # Set the number of qubits needed to represent the state
+        self.num_qubits = int(np.ceil(np.log2(len(self.data.flatten()))))
+
         # Set the normalized status
         self.is_normalized()
 

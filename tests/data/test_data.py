@@ -64,3 +64,4 @@ def test_data() -> None:
 
     assert data.padded
     assert data.shape == (2, 4)
+    assert data.num_qubits == 3
