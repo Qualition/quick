@@ -28,6 +28,18 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_num_qubits_value(self) -> None:
+        """ Test to see if the error is raised when the number of qubits
+        is less than or equal to 0.
+        """
+
+    @abstractmethod
+    def test_num_qubits_type(self) -> None:
+        """ Test to see if the error is raised when the number of qubits
+        is not an integer.
+        """
+
+    @abstractmethod
     def test_Identity(self) -> None:
         """ Test the Identity gate.
         """

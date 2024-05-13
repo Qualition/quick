@@ -1414,10 +1414,12 @@ class Circuit(ABC):
             # Extract the parameters of the gate
             parameters = gate._json_dict_() # type: ignore
 
-            # TODO: Add Identity gate
             # TODO: Add U3, CU3, and MCU3 support (Note: Cirq doesn't have built-in U3 gate)
             # TODO: Add GlobalPhase gate support (Note: Cirq doesn't have global phase attribute)
-            if gate_type == '_PauliX':
+            if gate_type == 'IdentityGate':
+                circuit.Identity(qubit_indices)
+
+            elif gate_type == '_PauliX':
                 circuit.X(qubit_indices)
 
             elif gate_type == '_PauliY':
@@ -1592,7 +1594,7 @@ class Circuit(ABC):
         >>> circuit.from_qiskit(qiskit_circuit)
         """
         def match_pattern(string: str,
-                  gate_name: str) -> bool:
+                          gate_name: str) -> bool:
             """ Check if the string matches the pattern.
 
             Parameters
@@ -1625,7 +1627,10 @@ class Circuit(ABC):
             # Extract the qubit indices
             qubit_indices = [qubit._index for qubit in gate[1]] if len(gate[1]) > 1 else gate[1][0]._index
 
-            if gate_type == 'x':
+            if gate_type == 'id':
+                circuit.Identity(qubit_indices)
+
+            elif gate_type == 'x':
                 circuit.X(qubit_indices)
 
             elif gate_type == 'y':
@@ -1755,7 +1760,6 @@ class Circuit(ABC):
         circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
 
         # Iterate over the operations in the Qiskit circuit
-        # TODO: Add Identity gate
         for gate in tket_circuit:
             # Extract the gate type
             gate_type = str(gate.op.type)
@@ -1764,7 +1768,10 @@ class Circuit(ABC):
             qubit_indices = [qubit.index[0] for qubit in gate.qubits] if len(gate.qubits) > 1 \
                                                                       else gate.qubits[0].index[0]
 
-            if gate_type == 'OpType.X':
+            if gate_type == 'OpType.I':
+                circuit.Identity(qubit_indices)
+
+            elif gate_type == 'OpType.X':
                 circuit.X(qubit_indices)
 
             elif gate_type == 'OpType.Y':

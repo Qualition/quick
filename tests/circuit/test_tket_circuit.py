@@ -43,6 +43,40 @@ class TestTKETCircuit(Template):
         # Define the `qickit.circuit.TKETCircuit` instance
         circuit = TKETCircuit(1, 1)
 
+    def test_num_qubits_value(self) -> None:
+        # Ensure the error is raised when the number of qubits is less than or equal to 0
+        try:
+            circuit = TKETCircuit(0, 1)
+        except ValueError:
+            pass
+
+        try:
+            circuit = TKETCircuit(-1, 1)
+        except ValueError:
+            pass
+
+        try:
+            circuit = TKETCircuit(1, 0)
+        except ValueError:
+            pass
+
+        try:
+            circuit = TKETCircuit(1, -1)
+        except ValueError:
+            pass
+
+    def test_num_qubits_type(self) -> None:
+        # Ensure the error is raised when the number of qubits is not an integer
+        try:
+            circuit = TKETCircuit(1.0, 1)
+        except TypeError:
+            pass
+
+        try:
+            circuit = TKETCircuit(1, 1.0)
+        except TypeError:
+            pass
+
     def test_Identity(self) -> None:
         # Define the `qickit.circuit.TKETCircuit` instance
         circuit = TKETCircuit(1, 1)
