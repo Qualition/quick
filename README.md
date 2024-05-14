@@ -7,8 +7,6 @@
 
 ![image](https://github.com/Qualition/QICKIT/assets/73689800/6878b3cd-0bd7-4b11-86db-189cb241a3f8)
 
-NOTE: `Qickit` is still in development, and cannot be pip installed.
-
 `Qickit` is an agnostic gate-based circuit SDK, providing an integrated interface for using any supported quantum circuit framework seamlessly.
 
 ## Getting Started
