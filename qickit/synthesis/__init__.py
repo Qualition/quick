@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Shende',
-           'Mottonen']
+__all__ = ['statepreparation',
+           'unitarypreparation']
 
-from qickit.synthesis.statepreparation import Shende, Mottonen
+from qickit.synthesis import statepreparation, unitarypreparation

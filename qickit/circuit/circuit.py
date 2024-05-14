@@ -32,7 +32,6 @@ from typing import Callable, Type, TYPE_CHECKING
 
 # Qiskit imports
 import qiskit # type: ignore
-from qiskit import QuantumCircuit, transpile # type: ignore
 
 # Cirq imports
 import cirq # type: ignore
@@ -44,8 +43,11 @@ import pennylane as qml # type: ignore
 import pytket
 
 # Import `qickit.backend.Backend`
+# import `qickit.synthesis.unitarypreparation.QiskitTranspiler`
 if TYPE_CHECKING:
     from qickit.backend import Backend
+
+from qickit.synthesis.unitarypreparation import QiskitTranspiler
 
 # Import `qickit.types.collection.Collection` and `qickit.types.circuit_type.Circuit_Type`
 from qickit.types import Collection, Circuit_Type
@@ -919,53 +921,23 @@ class Circuit(ABC):
         Raises
         ------
         ValueError
-            - The unitary matrix must have a size of 2^n x 2^n, where n is the number of qubits.
-            - The unitary matrix must be unitary.
+            The unitary matrix must have a size of 2^n x 2^n, where n is the number of qubits.
+            The unitary matrix must be unitary.
+            The number of qubits passed must be the same as the number of qubits needed to prepare the unitary.
 
         Usage
         -----
         >>> circuit.unitary([[0, 1], [1, 0]], qubit_indices=0)
         >>> circuit.unitary([[0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]], qubit_indices=[0, 1])
         """
-        # Convert the qubit indices to a list if it is a range
-        if isinstance(qubit_indices, range):
-            qubit_indices = list(qubit_indices)
+        # Initialize the unitary preparation schema
+        unitary_preparer = QiskitTranspiler(type(self))
 
-        # Define the size of the operation for checking
-        size = 2 ** len(qubit_indices) if isinstance(qubit_indices, Collection) else 2
+        # Prepare the unitary matrix
+        circuit = unitary_preparer.prepare_unitary(unitary_matrix, qubit_indices)
 
-        # Check if the unitary matrix is the correct size
-        if len(unitary_matrix) != size or len(unitary_matrix[0]) != size:
-            raise ValueError(f"The `unitary_matrix` must have a size of {size} x {size}.")
-
-        # Check if the unitary matrix is unitary
-        if not np.array_equal(unitary_matrix @ unitary_matrix.conj().T, np.eye(size)):
-            raise ValueError("The `unitary_matrix` must be unitary.")
-
-        # Create a qiskit circuit
-        circuit = QuantumCircuit(self.num_qubits, self.num_clbits)
-
-        # Apply the unitary matrix to the circuit
-        circuit.unitary(unitary_matrix, qubit_indices)
-
-        # Transpile the unitary operator to a series of CX and U3 gates
-        transpiled_circuit = transpile(circuit,
-                                       basis_gates=['u3', 'cx'],
-                                       optimization_level=3,
-                                       seed_transpiler=0)
-
-        # Iterate over the gates in the transpiled circuit
-        for gate in transpiled_circuit.data:
-            # Add the U3 gate
-            if gate[0].name == 'u3':
-                self.U3(gate[0].params, gate[1][0]._index)
-
-            # Add the CX gate
-            else:
-                self.CX(gate[1][0]._index, gate[1][1]._index)
-
-        # Update the global phase
-        self.GlobalPhase(transpiled_circuit.global_phase)
+        # Add the circuit to the current circuit
+        self.add(circuit, qubit_indices)
 
     def vertical_reverse(self) -> None:
         """ Perform a vertical reverse operation.
