@@ -20,13 +20,14 @@ from abc import ABC, abstractmethod
 from functools import wraps
 import numpy as np
 from numpy.typing import NDArray
-from typing import Type
+from typing import Type, TYPE_CHECKING
 
 # Qiskit imports
 from qiskit import QuantumCircuit, transpile # type: ignore
 
 # Import `qickit.circuit.Circuit` instances
-from qickit.circuit import Circuit
+if TYPE_CHECKING:
+    from qickit.circuit import Circuit
 
 # Import `qickit.types.collection.Collection`
 from qickit.types import Collection
@@ -90,7 +91,7 @@ class UnitaryPreparation(ABC):
         size = 2 ** num_qubits
 
         # Check if the unitary matrix is the correct size
-        if not len(unitary) == size or len(unitary[0]) == size:
+        if not (len(unitary) == size and len(unitary[0]) == size):
             raise ValueError(f"The `unitary_matrix` must have a size of {size} x {size}.")
 
     @staticmethod
@@ -134,13 +135,13 @@ class UnitaryPreparation(ABC):
         @wraps(method)
         def wrapper(instance, *args, **kwargs):
             # Check if the input matrix is a valid unitary matrix
-            instance.check_unitary(args[1])
+            instance.check_unitary(args[0])
 
             # Check if the unitary matrix is the correct size
-            instance.check_unitary_size(args[1])
+            instance.check_unitary_size(args[0])
 
             # Check if the number of qubits is correct for the unitary matrix
-            instance.check_num_qubits(len(args[2]), args[1])
+            instance.check_num_qubits(len(args[1]), args[0])
 
             return method(instance, *args, **kwargs)
 
