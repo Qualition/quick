@@ -211,7 +211,7 @@ class QiskitTranspiler(UnitaryPreparation):
         circuit = self.circuit_framework(num_qubits, num_qubits)
 
         # Apply the unitary matrix to the circuit
-        circuit.unitary(unitary, qubit_indices)
+        qiskit_circuit.unitary(unitary, qubit_indices)
 
         # Transpile the unitary operator to a series of CX and U3 gates
         transpiled_circuit = transpile(qiskit_circuit,
