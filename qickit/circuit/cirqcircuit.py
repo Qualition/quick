@@ -25,10 +25,6 @@ from typing import TYPE_CHECKING
 import cirq
 from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, SWAP, I
 
-# Qiskit imports
-import qiskit # type: ignore
-from qiskit import transpile # type: ignore
-
 # Import `qickit.circuit.Circuit`
 from qickit.circuit import Circuit, QiskitCircuit
 
@@ -692,32 +688,6 @@ class CirqCircuit(Circuit):
         unitary = cirq.unitary(circuit.circuit)
 
         return np.array(unitary)
-
-    def transpile(self) -> None:
-        # Convert the circuit to QiskitCircuit
-        circuit = self.convert(QiskitCircuit)
-
-        # Use the built-in transpiler from IBM Qiskit to transpile the circuit
-        transpiled_circuit: qiskit.QuantumCircuit = transpile(circuit.circuit,
-                                                              basis_gates = ['cx', 'u3'],
-                                                              optimization_level=3,
-                                                              seed_transpiler=0)
-
-        # Reset the circuit log (as we will be creating a new one given the transpiled circuit)
-        self.reset()
-
-        # Iterate over the gates in the transpiled circuit
-        for gate in transpiled_circuit.data:
-            # Add the U3 gate to circuit log
-            if gate[0].name == 'u3':
-                self.U3(gate[0].params, gate[1][0]._index)
-
-            # Add the CX gate to circuit log
-            else:
-                self.CX(gate[1][0]._index, gate[1][1]._index)
-
-        # Update the global phase
-        self.GlobalPhase(transpiled_circuit.global_phase)
 
     def to_qasm(self) -> str:
         # Convert the circuit to QASM

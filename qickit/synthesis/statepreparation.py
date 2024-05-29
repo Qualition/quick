@@ -40,20 +40,20 @@ class StatePreparation(ABC):
 
     Parameters
     ----------
-    `circuit_framework` : type[qickit.circuit.Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
 
     Attributes
     ----------
-    `circuit_framework` : type[qickit.circuit.Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
     """
     def __init__(self,
-                 circuit_framework: Type[Circuit]) -> None:
+                 output_framework: Type[Circuit]) -> None:
         """ Initalize a State Preparation instance.
         """
         # Define the QC framework
-        self.circuit_framework = circuit_framework
+        self.output_framework = output_framework
 
     @abstractmethod
     def prepare_state(self,
@@ -106,7 +106,7 @@ class Mottonen(StatePreparation):
         state = state.data.flatten()
 
         # Construct Mottonen circuit
-        circuit: Circuit = self.circuit_framework(num_qubits, num_qubits)
+        circuit: Circuit = self.output_framework(num_qubits, num_qubits)
 
         def k_controlled_uniform_rotation_y(circuit: Circuit,
                                             alpha_k: list[float],
@@ -186,7 +186,7 @@ class Shende(StatePreparation):
         state = state.data.flatten()
 
         # Construct Shende circuit
-        circuit: Circuit = self.circuit_framework(num_qubits, num_qubits)
+        circuit: Circuit = self.output_framework(num_qubits, num_qubits)
 
         def multiplex_ry(list_of_angles: list[float],
                          last_cnot=True) -> Circuit:
@@ -211,7 +211,7 @@ class Shende(StatePreparation):
             local_num_qubits = int(np.log2(num_angles)) + 1
 
             # Define the Multiplex circuit
-            circuit: Circuit = self.circuit_framework(local_num_qubits, local_num_qubits)
+            circuit: Circuit = self.output_framework(local_num_qubits, local_num_qubits)
 
             # Define LSB and MSB
             lsb, msb = 0, local_num_qubits - 1
@@ -269,7 +269,7 @@ class Shende(StatePreparation):
             local_num_qubits = int(np.log2(num_angles)) + 1
 
             # Define the Multiplex circuit
-            circuit: Circuit = self.circuit_framework(local_num_qubits, local_num_qubits)
+            circuit: Circuit = self.output_framework(local_num_qubits, local_num_qubits)
 
             # Define LSB and MSB
             lsb = 0
@@ -324,7 +324,7 @@ class Shende(StatePreparation):
                 The circuit that applies the corresponding gates to uncompute the state.
             """
             # Define the circuit
-            circuit: Circuit = self.circuit_framework(num_qubits, num_qubits)
+            circuit: Circuit = self.output_framework(num_qubits, num_qubits)
 
             # Define the remaining parameters
             remaining_param = params

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['UnitaryPreparation', 'QiskitTranspiler']
+__all__ = ['UnitaryPreparation', 'QiskitUnitaryTranspiler']
 
 from abc import ABC, abstractmethod
 from functools import wraps
@@ -38,20 +38,20 @@ class UnitaryPreparation(ABC):
 
     Parameters
     ----------
-    `circuit_framework` : type[qickit.circuit.Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
 
     Attributes
     ----------
-    `circuit_framework` : type[qickit.circuit.Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
     """
     def __init__(self,
-                 circuit_framework: Type[Circuit]) -> None:
+                 output_framework: Type[Circuit]) -> None:
         """ Initalize a Unitary Preparation instance.
         """
         # Define the QC framework
-        self.circuit_framework = circuit_framework
+        self.output_framework = output_framework
 
     @staticmethod
     def check_unitary(unitary: NDArray[np.complex128]) -> None:
@@ -167,17 +167,17 @@ class UnitaryPreparation(ABC):
         """
 
 
-class QiskitTranspiler(UnitaryPreparation):
-    """ `qickit.QiskitTranspiler` is the class for preparing quantum operators using Qiskit transpiler.
+class QiskitUnitaryTranspiler(UnitaryPreparation):
+    """ `qickit.QiskitUnitaryTranspiler` is the class for preparing quantum operators using Qiskit transpiler.
 
     Parameters
     ----------
-    `circuit_framework` : type[qickit.circuit.Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
 
     Attributes
     ----------
-    `circuit_framework` : type[qickit.circuit.Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
 
     Notes
@@ -188,10 +188,10 @@ class QiskitTranspiler(UnitaryPreparation):
     can change the set of gates the circuit is transpiled to, or can change the optimization level.
     """
     def __init__(self,
-                 circuit_framework: Type[Circuit]) -> None:
+                 output_framework: Type[Circuit]) -> None:
         """ Initalize a Qiskit Transpiler instance.
         """
-        super().__init__(circuit_framework)
+        super().__init__(output_framework)
 
     @UnitaryPreparation.unitarymethod
     def prepare_unitary(self,
@@ -208,10 +208,10 @@ class QiskitTranspiler(UnitaryPreparation):
         qiskit_circuit = QuantumCircuit(num_qubits, num_qubits)
 
         # Initialize the qickit circuit
-        circuit = self.circuit_framework(num_qubits, num_qubits)
+        circuit = self.output_framework(num_qubits, num_qubits)
 
         # Apply the unitary matrix to the circuit
-        qiskit_circuit.unitary(unitary, qubit_indices)
+        qiskit_circuit.unitary(unitary, range(num_qubits))
 
         # Transpile the unitary operator to a series of CX and U3 gates
         transpiled_circuit = transpile(qiskit_circuit,
@@ -222,7 +222,7 @@ class QiskitTranspiler(UnitaryPreparation):
         # Iterate over the gates in the transpiled circuit
         for gate in transpiled_circuit.data:
             # Add the U3 gate
-            if gate[0].name == 'u3':
+            if gate[0].name in ['u', 'u3']:
                 circuit.U3(gate[0].params, gate[1][0]._index)
 
             # Add the CX gate

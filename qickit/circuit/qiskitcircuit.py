@@ -23,8 +23,7 @@ from numpy.typing import NDArray
 from typing import TYPE_CHECKING
 
 # Qiskit imports
-import qiskit # type: ignore
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile # type: ignore
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister # type: ignore
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
                                     ZGate, SGate, TGate, U3Gate, SwapGate, CXGate, # type: ignore
                                     CYGate, CZGate, CHGate, CSGate, CSwapGate, # tyoe: ignore
@@ -521,7 +520,7 @@ class QiskitCircuit(Circuit):
         global_phase = GlobalPhaseGate(angle)
 
         # Apply the Global Phase gate to the circuit
-        self.circuit.append(global_phase, [], [])
+        self.circuit.append(global_phase, (), ())
 
     @Circuit.gatemethod
     def measure(self,
@@ -609,29 +608,6 @@ class QiskitCircuit(Circuit):
         unitary = Operator(circuit.circuit).data
 
         return np.array(unitary)
-
-    def transpile(self) -> None:
-        # Use the built-in transpiler from IBM Qiskit to transpile the circuit
-        transpiled_circuit: qiskit.QuantumCircuit = transpile(self.circuit,
-                                                              basis_gates = ['cx', 'u3'],
-                                                              optimization_level=3,
-                                                              seed_transpiler=0)
-
-        # Reset the circuit log (as we will be creating a new one given the transpiled circuit)
-        self.reset()
-
-        # Iterate over the gates in the transpiled circuit
-        for gate in transpiled_circuit.data:
-            # Add the U3 gate to circuit log
-            if gate[0].name == 'u3':
-                self.U3(gate[0].params, gate[1][0]._index)
-
-            # Add the CX gate to circuit log
-            else:
-                self.CX(gate[1][0]._index, gate[1][1]._index)
-
-        # Update the global phase
-        self.GlobalPhase(transpiled_circuit.global_phase)
 
     def to_qasm(self) -> str:
         # Convert the circuit to QASM

@@ -43,11 +43,11 @@ import pennylane as qml # type: ignore
 import pytket
 
 # Import `qickit.backend.Backend`
-# import `qickit.synthesis.unitarypreparation.QiskitTranspiler`
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
-from qickit.synthesis.unitarypreparation import QiskitTranspiler
+# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.synthesis.unitarypreparation import QiskitUnitaryTranspiler
 
 # Import `qickit.types.collection.Collection` and `qickit.types.circuit_type.Circuit_Type`
 from qickit.types import Collection, Circuit_Type
@@ -931,7 +931,7 @@ class Circuit(ABC):
         >>> circuit.unitary([[0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]], qubit_indices=[0, 1])
         """
         # Initialize the unitary preparation schema
-        unitary_preparer = QiskitTranspiler(type(self))
+        unitary_preparer = QiskitUnitaryTranspiler(type(self))
 
         # Prepare the unitary matrix
         circuit = unitary_preparer.prepare_unitary(unitary_matrix, qubit_indices)
@@ -1159,7 +1159,6 @@ class Circuit(ABC):
         >>> circuit.get_unitary()
         """
 
-    @abstractmethod
     def transpile(self) -> None:
         """ Transpile the circuit to U3 and CX gates.
 
@@ -1167,6 +1166,18 @@ class Circuit(ABC):
         -----
         >>> circuit.transpile()
         """
+        # Initialize the unitary preparation schema
+        unitary_preparer = QiskitUnitaryTranspiler(type(self))
+
+        # Get the unitary matrix of the circuit
+        unitary_matrix = self.get_unitary()
+
+        # Prepare the unitary matrix
+        transpiled_circuit = unitary_preparer.prepare_unitary(unitary_matrix, range(self.num_qubits))
+
+        # Update the circuit
+        self.circuit_log = transpiled_circuit.circuit_log
+        self.circuit = self.convert(type(self)).circuit
 
     def compress(self,
                  compression_percentage: float) -> None:
