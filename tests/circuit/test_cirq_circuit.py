@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['TestCirqCircuit']
+__all__ = ["TestCirqCircuit"]
 
 import cirq.ops
 import numpy as np
@@ -410,7 +410,7 @@ class TestCirqCircuit(Template):
         # ensure they are equivalent
         qr = cirq.LineQubit.range(1)
         cirq_circuit = cirq.Circuit(I(qr[0]),
-                                    cirq.measure(qr[0], key='meas'))
+                                    cirq.measure(qr[0], key="meas"))
 
         assert circuit.circuit == cirq_circuit
 

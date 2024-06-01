@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['test_shende', 'test_mottonen']
+__all__ = ["test_shende", "test_mottonen"]
 
 import copy
 import numpy as np

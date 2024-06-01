@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['PennylaneCircuit']
+__all__ = ["PennylaneCircuit"]
 
 from typing import TYPE_CHECKING
 import copy

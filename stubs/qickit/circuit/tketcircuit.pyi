@@ -5,7 +5,7 @@ from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.types import Collection
 
-__all__ = ['TKETCircuit']
+__all__ = ["TKETCircuit"]
 
 class TKETCircuit(Circuit):
     circuit: pytket.Circuit

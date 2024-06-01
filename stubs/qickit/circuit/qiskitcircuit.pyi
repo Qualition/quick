@@ -6,7 +6,7 @@ from qickit.circuit import Circuit
 from qickit.types import Collection
 from qiskit import QuantumCircuit # type: ignore
 
-__all__ = ['QiskitCircuit']
+__all__ = ["QiskitCircuit"]
 
 class QiskitCircuit(Circuit):
     circuit: QuantumCircuit

@@ -96,7 +96,7 @@ def M(k: int) -> NDArray[np.float64]:
 
     for i in range(n):
         for j in range(n):
-            M[i, j] = 2**(-k) * (-1)**(bin(j & grayCode(i)).count('1'))
+            M[i, j] = 2**(-k) * (-1)**(bin(j & grayCode(i)).count("1"))
 
     return M
 

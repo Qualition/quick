@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import NDArray
 from qickit.types import NestedCollection
 
-__all__ = ['Data']
+__all__ = ["Data"]
 
 NumberType = int | float | complex
 

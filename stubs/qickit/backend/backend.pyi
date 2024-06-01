@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 from qickit.circuit import Circuit
 from typing import Callable
 
-__all__ = ['Backend', 'AerBackend']
+__all__ = ["Backend", "AerBackend"]
 
 class Backend(ABC, metaclass=abc.ABCMeta):
     def __init__(self) -> None: ...

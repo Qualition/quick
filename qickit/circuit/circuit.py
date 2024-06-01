@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytket.circuit
 
-__all__ = ['Circuit']
+__all__ = ["Circuit"]
 
 from abc import ABC, abstractmethod
 import copy
@@ -59,10 +59,10 @@ from qickit.types import Collection, Circuit_Type
 - Method `Circuit.add()`
 - Method `Circuit.change_mapping()`
 """
-QUBIT_KEYS = frozenset(['qubit_index', 'control_index', 'target_index', 'first_qubit',
-                        'second_qubit', 'first_target_index', 'second_target_index'])
-QUBIT_LIST_KEYS = frozenset(['qubit_indices', 'control_indices', 'target_indices'])
-ANGLE_KEYS = frozenset(['angle', 'angles'])
+QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_qubit",
+                        "second_qubit", "first_target_index", "second_target_index"])
+QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
+ANGLE_KEYS = frozenset(["angle", "angles"])
 
 
 class Circuit(ABC):
@@ -226,7 +226,7 @@ class Circuit(ABC):
                 params[name] = value
 
             # Append the method log to the instance's circuit log
-            instance.circuit_log.append({'gate': method.__name__} | params)
+            instance.circuit_log.append({"gate": method.__name__} | params)
 
             return method(instance, **params)
 
@@ -988,10 +988,10 @@ class Circuit(ABC):
         # If adjoint is True, then multiply the angles by -1
         if adjoint:
             for operation in self.circuit_log:
-                if 'angle' in operation:
-                    operation['angle'] = -operation['angle']
-                elif 'angles' in operation:
-                    operation['angles'] = [-angle for angle in operation['angles']]
+                if "angle" in operation:
+                    operation["angle"] = -operation["angle"]
+                elif "angles" in operation:
+                    operation["angles"] = [-angle for angle in operation["angles"]]
 
         # Update the circuit
         self.circuit = self.convert(type(self)).circuit
@@ -1203,12 +1203,12 @@ class Circuit(ABC):
         # Iterate over all angles, and set the angles within the
         # compression percentage to 0
         for index, operation in enumerate(self.circuit_log):
-            if 'angle' in operation:
-                if abs(operation['angle']) < threshold:
+            if "angle" in operation:
+                if abs(operation["angle"]) < threshold:
                     indices_to_remove.append(index)
 
-            elif 'angles' in operation:
-                if all([abs(angle) < threshold for angle in operation['angles']]):
+            elif "angles" in operation:
+                if all([abs(angle) < threshold for angle in operation["angles"]]):
                     indices_to_remove.append(index)
 
         # Remove the operations with angles within the compression percentage
@@ -1291,48 +1291,48 @@ class Circuit(ABC):
 
         # Define a mapping between Qiskit gate names and corresponding methods in the target framework
         gate_mapping: dict[str, Callable] = {
-            'Identity': converted_circuit.Identity,
-            'X': converted_circuit.X,
-            'Y': converted_circuit.Y,
-            'Z': converted_circuit.Z,
-            'H': converted_circuit.H,
-            'S': converted_circuit.S,
-            'T': converted_circuit.T,
-            'RX': converted_circuit.RX,
-            'RY': converted_circuit.RY,
-            'RZ': converted_circuit.RZ,
-            'U3': converted_circuit.U3,
-            'SWAP': converted_circuit.SWAP,
-            'CX': converted_circuit.CX,
-            'CY': converted_circuit.CY,
-            'CZ': converted_circuit.CZ,
-            'CH': converted_circuit.CH,
-            'CS': converted_circuit.CS,
-            'CT': converted_circuit.CT,
-            'CRX': converted_circuit.CRX,
-            'CRY': converted_circuit.CRY,
-            'CRZ': converted_circuit.CRZ,
-            'CU3': converted_circuit.CU3,
-            'CSWAP': converted_circuit.CSWAP,
-            'MCX': converted_circuit.MCX,
-            'MCY': converted_circuit.MCY,
-            'MCZ': converted_circuit.MCZ,
-            'MCH': converted_circuit.MCH,
-            'MCS': converted_circuit.MCS,
-            'MCT': converted_circuit.MCT,
-            'MCRX': converted_circuit.MCRX,
-            'MCRY': converted_circuit.MCRY,
-            'MCRZ': converted_circuit.MCRZ,
-            'MCU3': converted_circuit.MCU3,
-            'MCSWAP': converted_circuit.MCSWAP,
-            'GlobalPhase': converted_circuit.GlobalPhase,
-            'measure': converted_circuit.measure
+            "Identity": converted_circuit.Identity,
+            "X": converted_circuit.X,
+            "Y": converted_circuit.Y,
+            "Z": converted_circuit.Z,
+            "H": converted_circuit.H,
+            "S": converted_circuit.S,
+            "T": converted_circuit.T,
+            "RX": converted_circuit.RX,
+            "RY": converted_circuit.RY,
+            "RZ": converted_circuit.RZ,
+            "U3": converted_circuit.U3,
+            "SWAP": converted_circuit.SWAP,
+            "CX": converted_circuit.CX,
+            "CY": converted_circuit.CY,
+            "CZ": converted_circuit.CZ,
+            "CH": converted_circuit.CH,
+            "CS": converted_circuit.CS,
+            "CT": converted_circuit.CT,
+            "CRX": converted_circuit.CRX,
+            "CRY": converted_circuit.CRY,
+            "CRZ": converted_circuit.CRZ,
+            "CU3": converted_circuit.CU3,
+            "CSWAP": converted_circuit.CSWAP,
+            "MCX": converted_circuit.MCX,
+            "MCY": converted_circuit.MCY,
+            "MCZ": converted_circuit.MCZ,
+            "MCH": converted_circuit.MCH,
+            "MCS": converted_circuit.MCS,
+            "MCT": converted_circuit.MCT,
+            "MCRX": converted_circuit.MCRX,
+            "MCRY": converted_circuit.MCRY,
+            "MCRZ": converted_circuit.MCRZ,
+            "MCU3": converted_circuit.MCU3,
+            "MCSWAP": converted_circuit.MCSWAP,
+            "GlobalPhase": converted_circuit.GlobalPhase,
+            "measure": converted_circuit.measure
         }
 
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in self.circuit_log:
             # Find gate name
-            gate_name = gate_info['gate']
+            gate_name = gate_info["gate"]
 
             # Slide dict to keep kwargs only
             gate_info = dict(list(gate_info.items())[1:])
@@ -1399,123 +1399,123 @@ class Circuit(ABC):
 
             # TODO: Add U3, CU3, and MCU3 support (Note: Cirq doesn't have built-in U3 gate)
             # TODO: Add GlobalPhase gate support (Note: Cirq doesn't have global phase attribute)
-            if gate_type == 'IdentityGate':
+            if gate_type == "IdentityGate":
                 circuit.Identity(qubit_indices)
 
-            elif gate_type == '_PauliX':
+            elif gate_type == "_PauliX":
                 circuit.X(qubit_indices)
 
-            elif gate_type == '_PauliY':
+            elif gate_type == "_PauliY":
                 circuit.Y(qubit_indices)
 
-            elif gate_type == '_PauliZ':
+            elif gate_type == "_PauliZ":
                 circuit.Z(qubit_indices)
 
-            elif gate_type == 'HPowGate':
+            elif gate_type == "HPowGate":
                 circuit.H(qubit_indices)
 
-            elif gate_type == 'ZPowGate':
-                if parameters['exponent'] == 0.5:
+            elif gate_type == "ZPowGate":
+                if parameters["exponent"] == 0.5:
                     circuit.S(qubit_indices)
-                elif parameters['exponent'] == 0.25:
+                elif parameters["exponent"] == 0.25:
                     circuit.T(qubit_indices)
 
-            elif gate_type == 'Rx':
+            elif gate_type == "Rx":
                 if isinstance(qubit_indices, list):
                     for qubit_index in qubit_indices:
-                        circuit.RX(parameters['rads'], qubit_index)
+                        circuit.RX(parameters["rads"], qubit_index)
                 else:
-                    circuit.RX(parameters['rads'], qubit_indices)
+                    circuit.RX(parameters["rads"], qubit_indices)
 
-            elif gate_type == 'Ry':
+            elif gate_type == "Ry":
                 if isinstance(qubit_indices, list):
                     for qubit_index in qubit_indices:
-                        circuit.RY(parameters['rads'], qubit_index)
+                        circuit.RY(parameters["rads"], qubit_index)
                 else:
-                    circuit.RY(parameters['rads'], qubit_indices)
+                    circuit.RY(parameters["rads"], qubit_indices)
 
-            elif gate_type == 'Rz':
+            elif gate_type == "Rz":
                 if isinstance(qubit_indices, list):
                     for qubit_index in qubit_indices:
-                        circuit.RZ(parameters['rads'], qubit_index)
+                        circuit.RZ(parameters["rads"], qubit_index)
                 else:
-                    circuit.RZ(parameters['rads'], qubit_indices)
+                    circuit.RZ(parameters["rads"], qubit_indices)
 
-            elif gate_type == 'SWAP':
+            elif gate_type == "SWAP":
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'ControlledGate':
-                if parameters['sub_gate'] == cirq.X:
-                    if len(parameters['control_qid_shape']) > 1:
+            elif gate_type == "ControlledGate":
+                if parameters["sub_gate"] == cirq.X:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCX(control_indices=qubit_indices[:-1],
                                     target_indices=qubit_indices[-1])
                     else:
                         circuit.CX(qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.Y:
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.Y:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCY(control_indices=qubit_indices[:-1],
                                     target_indices=qubit_indices[-1])
                     else:
                         circuit.CY(qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.Z:
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.Z:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCZ(control_indices=qubit_indices[:-1],
                                     target_indices=qubit_indices[-1])
                     else:
                         circuit.CZ(qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.H:
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.H:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCH(control_indices=qubit_indices[:-1],
                                     target_indices=qubit_indices[-1])
                     else:
                         circuit.CH(qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.S:
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.S:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCS(control_indices=qubit_indices[:-1],
                                     target_indices=qubit_indices[-1])
                     else:
                         circuit.CS(qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.T:
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.T:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCT(control_indices=qubit_indices[:-1],
                                     target_indices=qubit_indices[-1])
                     else:
                         circuit.CT(qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.Rx:
-                    angle = parameters['sub_gate']._json_dict_()['rads']
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.Rx:
+                    angle = parameters["sub_gate"]._json_dict_()["rads"]
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCRX(angle,
                                      control_indices=qubit_indices[:-1],
                                      target_indices=qubit_indices[-1])
                     else:
                         circuit.CRX(angle, qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.Ry:
-                    angle = parameters['sub_gate']._json_dict_()['rads']
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.Ry:
+                    angle = parameters["sub_gate"]._json_dict_()["rads"]
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCRY(angle,
                                      control_indices=qubit_indices[:-1],
                                      target_indices=qubit_indices[-1])
                     else:
                         circuit.CRY(angle, qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.Rz:
-                    angle = parameters['sub_gate']._json_dict_()['rads']
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.Rz:
+                    angle = parameters["sub_gate"]._json_dict_()["rads"]
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCRZ(angle,
                                      control_indices=qubit_indices[:-1],
                                      target_indices=qubit_indices[-1])
                     else:
                         circuit.CRZ(angle, qubit_indices[0], qubit_indices[1])
 
-                elif parameters['sub_gate'] == cirq.SWAP:
-                    if len(parameters['control_qid_shape']) > 1:
+                elif parameters["sub_gate"] == cirq.SWAP:
+                    if len(parameters["control_qid_shape"]) > 1:
                         circuit.MCSWAP(control_indices=qubit_indices[:-2],
                                        first_target_index=qubit_indices[-2],
                                        second_target_index=qubit_indices[-1])
@@ -1592,7 +1592,7 @@ class Circuit(ABC):
             `match` : bool
                 Whether or not the string matches the pattern.
             """
-            pattern = re.compile(fr'c\d+{gate_name}')
+            pattern = re.compile(fr"c\d+{gate_name}")
             if pattern.match(string):
                 return True
             return False
@@ -1610,103 +1610,103 @@ class Circuit(ABC):
             # Extract the qubit indices
             qubit_indices = [qubit._index for qubit in gate[1]] if len(gate[1]) > 1 else gate[1][0]._index
 
-            if gate_type == 'id':
+            if gate_type == "id":
                 circuit.Identity(qubit_indices)
 
-            elif gate_type == 'x':
+            elif gate_type == "x":
                 circuit.X(qubit_indices)
 
-            elif gate_type == 'y':
+            elif gate_type == "y":
                 circuit.Y(qubit_indices)
 
-            elif gate_type == 'z':
+            elif gate_type == "z":
                 circuit.Z(qubit_indices)
 
-            elif gate_type == 'h':
+            elif gate_type == "h":
                 circuit.H(qubit_indices)
 
-            elif gate_type == 's':
+            elif gate_type == "s":
                 circuit.S(qubit_indices)
 
-            elif gate_type == 't':
+            elif gate_type == "t":
                 circuit.T(qubit_indices)
 
-            elif gate_type == 'rx':
+            elif gate_type == "rx":
                 circuit.RX(gate[0].params[0], qubit_indices)
 
-            elif gate_type == 'ry':
+            elif gate_type == "ry":
                 circuit.RY(gate[0].params[0], qubit_indices)
 
-            elif gate_type == 'rz':
+            elif gate_type == "rz":
                 circuit.RZ(gate[0].params[0], qubit_indices)
 
-            elif gate_type == 'u3':
+            elif gate_type == "u3":
                 circuit.U3(gate[0].params, qubit_indices)
 
-            elif gate_type == 'swap':
+            elif gate_type == "swap":
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cx':
+            elif gate_type == "cx":
                 circuit.CX(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cy':
+            elif gate_type == "cy":
                 circuit.CY(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cz':
+            elif gate_type == "cz":
                 circuit.CZ(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'ch':
+            elif gate_type == "ch":
                 circuit.CH(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cs':
+            elif gate_type == "cs":
                 circuit.CS(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'ct':
+            elif gate_type == "ct":
                 circuit.CT(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'crx':
+            elif gate_type == "crx":
                 circuit.CRX(gate[0].params[0], qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cry':
+            elif gate_type == "cry":
                 circuit.CRY(gate[0].params[0], qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'crz':
+            elif gate_type == "crz":
                 circuit.CRZ(gate[0].params[0], qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cu3':
+            elif gate_type == "cu3":
                 circuit.CU3(gate[0].params, qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'cswap':
+            elif gate_type == "cswap":
                 circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
 
-            elif gate_type == 'mcx' or gate_type == 'ccx':
+            elif gate_type == "mcx" or gate_type == "ccx":
                 circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'y'):
+            elif match_pattern(gate_type, "y"):
                 circuit.MCY(qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'z'):
+            elif match_pattern(gate_type, "z"):
                 circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'h'):
+            elif match_pattern(gate_type, "h"):
                 circuit.MCH(qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 's'):
+            elif match_pattern(gate_type, "s"):
                 circuit.MCS(qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 't'):
+            elif match_pattern(gate_type, "t"):
                 circuit.MCT(qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'rx'):
+            elif match_pattern(gate_type, "rx"):
                 circuit.MCRX(gate[0].params[0], qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'ry'):
+            elif match_pattern(gate_type, "ry"):
                 circuit.MCRY(gate[0].params[0], qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'rz'):
+            elif match_pattern(gate_type, "rz"):
                 circuit.MCRZ(gate[0].params[0], qubit_indices[:-1], qubit_indices[-1])
 
-            elif match_pattern(gate_type, 'u3'):
+            elif match_pattern(gate_type, "u3"):
                 circuit.MCU3(gate[0].params, qubit_indices[:-1], qubit_indices[-1])
 
             else:
@@ -1751,115 +1751,115 @@ class Circuit(ABC):
             qubit_indices = [qubit.index[0] for qubit in gate.qubits] if len(gate.qubits) > 1 \
                                                                       else gate.qubits[0].index[0]
 
-            if gate_type == 'OpType.I':
+            if gate_type == "OpType.I":
                 circuit.Identity(qubit_indices)
 
-            elif gate_type == 'OpType.X':
+            elif gate_type == "OpType.X":
                 circuit.X(qubit_indices)
 
-            elif gate_type == 'OpType.Y':
+            elif gate_type == "OpType.Y":
                 circuit.Y(qubit_indices)
 
-            elif gate_type == 'OpType.Z':
+            elif gate_type == "OpType.Z":
                 circuit.Z(qubit_indices)
 
-            elif gate_type == 'OpType.H':
+            elif gate_type == "OpType.H":
                 circuit.H(qubit_indices)
 
-            elif gate_type == 'OpType.S':
+            elif gate_type == "OpType.S":
                 circuit.S(qubit_indices)
 
-            elif gate_type == 'OpType.T':
+            elif gate_type == "OpType.T":
                 circuit.T(qubit_indices)
 
-            elif gate_type == 'OpType.Rx':
+            elif gate_type == "OpType.Rx":
                 circuit.RX(float(gate.op.params[0]), qubit_indices)
 
-            elif gate_type == 'OpType.Ry':
+            elif gate_type == "OpType.Ry":
                 circuit.RY(float(gate.op.params[0]), qubit_indices)
 
-            elif gate_type == 'OpType.Rz':
+            elif gate_type == "OpType.Rz":
                 circuit.RZ(float(gate.op.params[0]), qubit_indices)
 
-            elif gate_type == 'OpType.U3':
+            elif gate_type == "OpType.U3":
                 circuit.U3([float(param) for param in gate.op.params], qubit_indices)
 
-            elif gate_type == 'OpType.SWAP':
+            elif gate_type == "OpType.SWAP":
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CX':
+            elif gate_type == "OpType.CX":
                 circuit.CX(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CY':
+            elif gate_type == "OpType.CY":
                 circuit.CY(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CZ':
+            elif gate_type == "OpType.CZ":
                 circuit.CZ(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CH':
+            elif gate_type == "OpType.CH":
                 circuit.CH(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CS':
+            elif gate_type == "OpType.CS":
                 circuit.CS(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CT':
+            elif gate_type == "OpType.CT":
                 circuit.CT(qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CRx':
+            elif gate_type == "OpType.CRx":
                 circuit.CRX(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CRy':
+            elif gate_type == "OpType.CRy":
                 circuit.CRY(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CRz':
+            elif gate_type == "OpType.CRz":
                 circuit.CRZ(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CU3':
+            elif gate_type == "OpType.CU3":
                 circuit.CU3([float(param) for param in gate.op.params], qubit_indices[0], qubit_indices[1])
 
-            elif gate_type == 'OpType.CnX':
+            elif gate_type == "OpType.CnX":
                 circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
 
-            elif gate_type == 'OpType.CnY':
+            elif gate_type == "OpType.CnY":
                 circuit.MCY(qubit_indices[:-1], qubit_indices[-1])
 
-            elif gate_type == 'OpType.CnZ':
+            elif gate_type == "OpType.CnZ":
                 circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
 
-            elif gate_type == 'OpType.QControlBox':
+            elif gate_type == "OpType.QControlBox":
                 qcontrolbox: pytket.circuit.QControlBox = gate.op
 
-                if str(qcontrolbox.get_op()) == 'X':
+                if str(qcontrolbox.get_op()) == "X":
                     circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'Y':
+                elif str(qcontrolbox.get_op()) == "Y":
                     circuit.MCY(qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'Z':
+                elif str(qcontrolbox.get_op()) == "Z":
                     circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'H':
+                elif str(qcontrolbox.get_op()) == "H":
                     circuit.MCH(qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'S':
+                elif str(qcontrolbox.get_op()) == "S":
                     circuit.MCS(qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'T':
+                elif str(qcontrolbox.get_op()) == "T":
                     circuit.MCT(qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'Rx':
+                elif str(qcontrolbox.get_op()) == "Rx":
                     circuit.MCRX(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'Ry':
+                elif str(qcontrolbox.get_op()) == "Ry":
                     circuit.MCRY(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'Rz':
+                elif str(qcontrolbox.get_op()) == "Rz":
                     circuit.MCRZ(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'U3':
+                elif str(qcontrolbox.get_op()) == "U3":
                     circuit.MCU3([float(param) for param in gate.op.get_op().params], qubit_indices[:-1], qubit_indices[-1])
 
-                elif str(qcontrolbox.get_op()) == 'SWAP':
+                elif str(qcontrolbox.get_op()) == "SWAP":
                     circuit.MCSWAP(qubit_indices[:-2], qubit_indices[-2], qubit_indices[-1])
 
             else:
@@ -1946,9 +1946,9 @@ class Circuit(ABC):
         # Plot the histogram
         figure = plt.figure()
         plt.bar(counts.keys(), counts.values(), 0.5) # type: ignore
-        plt.xlabel('State')
-        plt.ylabel('Counts')
-        plt.title('Histogram of the Circuit')
+        plt.xlabel("State")
+        plt.ylabel("Counts")
+        plt.title("Histogram of the Circuit")
         plt.close()
 
         return figure

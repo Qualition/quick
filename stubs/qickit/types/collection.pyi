@@ -1,8 +1,8 @@
 from typing import Iterator, Protocol, Self, TypeVar, overload
 
-__all__ = ['Collection']
+__all__ = ["Collection"]
 
-T = TypeVar('T', covariant=True)
+T = TypeVar("T", covariant=True)
 
 class Collection(Protocol[T]):
     def __len__(self) -> int: ...

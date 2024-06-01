@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['Circuit_Type']
+__all__ = ["Circuit_Type"]
 
 import qiskit # type: ignore
 import cirq # type: ignore

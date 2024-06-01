@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['circuit',
-           'data',
-           'synthesis']
+__all__ = ["circuit",
+           "data",
+           "synthesis"]
 
 from tests import circuit, data, synthesis

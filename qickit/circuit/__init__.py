@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Circuit',
-           'QiskitCircuit',
-           'CirqCircuit',
-           'TKETCircuit',
-           'PennylaneCircuit']
+__all__ = ["Circuit",
+           "QiskitCircuit",
+           "CirqCircuit",
+           "TKETCircuit",
+           "PennylaneCircuit"]
 
 from qickit.circuit.circuit import Circuit
 from qickit.circuit.qiskitcircuit import QiskitCircuit

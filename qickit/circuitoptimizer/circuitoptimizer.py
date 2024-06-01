@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['optimize_cnot']
+__all__ = ["optimize_cnot"]
 
 from typing import TYPE_CHECKING
 

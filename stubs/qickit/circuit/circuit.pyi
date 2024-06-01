@@ -12,7 +12,7 @@ from qickit.types import Collection, Circuit_Type
 from types import NotImplementedType
 from typing import Callable, Type
 
-__all__ = ['Circuit']
+__all__ = ["Circuit"]
 
 class Circuit(ABC, metaclass=abc.ABCMeta):
     num_qubits: int

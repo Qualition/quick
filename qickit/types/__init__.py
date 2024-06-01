@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Collection',
-           'NestedCollection',
-           'Circuit_Type']
+__all__ = ["Collection",
+           "NestedCollection",
+           "Circuit_Type"]
 
 from qickit.types.collection import Collection, NestedCollection
 from qickit.types.circuit_type import Circuit_Type

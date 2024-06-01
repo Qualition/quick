@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['QiskitCircuit']
+__all__ = ["QiskitCircuit"]
 
 import copy
 import matplotlib.figure

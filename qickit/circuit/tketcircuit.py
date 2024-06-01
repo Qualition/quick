@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['TKETCircuit']
+__all__ = ["TKETCircuit"]
 
 import copy
 import numpy as np
@@ -590,7 +590,7 @@ class TKETCircuit(Circuit):
             # Run the circuit
             result = base_backend.get_result(base_backend.process_circuit(circuit.circuit, n_shots=num_shots, seed=0))
             # Get the counts
-            counts = {''.join(map(str, basis_state)): num_counts
+            counts = {"".join(map(str, basis_state)): num_counts
                       for basis_state, num_counts in result.get_counts().items()}
 
         else:

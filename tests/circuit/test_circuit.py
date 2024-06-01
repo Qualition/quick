@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['Template']
+__all__ = ["Template"]
 
 from abc import ABC, abstractmethod
 

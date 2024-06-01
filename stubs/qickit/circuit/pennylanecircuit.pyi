@@ -5,7 +5,7 @@ from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.types import Collection
 
-__all__ = ['PennylaneCircuit']
+__all__ = ["PennylaneCircuit"]
 
 class PennylaneCircuit(Circuit):
     device: qml.Device

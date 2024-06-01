@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['test_data']
+__all__ = ["test_data"]
 
 from collections.abc import MutableSequence
 import numpy as np

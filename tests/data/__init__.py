@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['test_data']
+__all__ = ["test_data"]
 
 from tests.data.test_data import test_data

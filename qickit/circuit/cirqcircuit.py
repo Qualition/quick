@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['CirqCircuit']
+__all__ = ["CirqCircuit"]
 
 import copy
 import numpy as np
@@ -604,7 +604,7 @@ class CirqCircuit(Circuit):
 
         # Measure the qubits
         self.circuit.append(cirq.measure(
-            *map(self.qr.__getitem__, qubit_indices), key='meas'
+            *map(self.qr.__getitem__, qubit_indices), key="meas"
             )
         )
 
@@ -658,7 +658,7 @@ class CirqCircuit(Circuit):
             # Run the circuit
             state_vector = self.get_statevector()
             # Get the counts
-            counts = {format(int(index),'0{}b'.format(self.num_qubits)): int(abs(amplitude)**2 * num_shots) \
+            counts = {format(int(index),"0{}b".format(self.num_qubits)): int(abs(amplitude)**2 * num_shots) \
                       for index, amplitude in enumerate(state_vector)}
 
         else:

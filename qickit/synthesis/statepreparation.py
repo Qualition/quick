@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['StatePreparation', 'Mottonen', 'Shende']
+__all__ = ["StatePreparation", "Mottonen", "Shende"]
 
 from abc import ABC, abstractmethod
 import numpy as np
@@ -59,7 +59,7 @@ class StatePreparation(ABC):
     def prepare_state(self,
                       state: NDArray[np.complex128] | Data,
                       compression_percentage: float = 0.0,
-                      index_type: str = 'row') -> Circuit:
+                      index_type: str = "row") -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
@@ -84,13 +84,13 @@ class Mottonen(StatePreparation):
     def prepare_state(self,
                       state: NDArray[np.complex128] | Data,
                       compression_percentage: float = 0.0,
-                      index_type: str = 'row') -> Circuit:
+                      index_type: str = "row") -> Circuit:
         # Define a qickit.Data instance
         if not isinstance(state, Data):
             state = Data(state)
 
         # Order indexing (if required)
-        if index_type != 'row':
+        if index_type != "row":
             state.change_indexing(index_type)
 
         # Convert the state to a quantum state
@@ -164,13 +164,13 @@ class Shende(StatePreparation):
     def prepare_state(self,
                       state: NDArray[np.complex128] | Data,
                       compression_percentage: float = 0.0,
-                      index_type: str = 'row') -> Circuit:
+                      index_type: str = "row") -> Circuit:
         # Define a qickit.Data instance
         if not isinstance(state, Data):
             state = Data(state)
 
         # Order indexing (if required)
-        if index_type != 'row':
+        if index_type != "row":
             state.change_indexing(index_type)
 
         # Convert the state to a quantum state

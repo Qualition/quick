@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['TestPennylaneCircuit']
+__all__ = ["TestPennylaneCircuit"]
 
 import numpy as np
 from numpy.testing import assert_almost_equal

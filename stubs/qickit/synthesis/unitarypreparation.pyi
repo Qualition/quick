@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 from qickit.circuit import Circuit
 from typing import Callable, Type
 
-__all__ = ['UnitaryPreparation']
+__all__ = ["UnitaryPreparation"]
 
 class UnitaryPreparation(ABC, metaclass=abc.ABCMeta):
     circuit_framework: Type[Circuit]

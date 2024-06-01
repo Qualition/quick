@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['Data']
+__all__ = ["Data"]
 
 import numpy as np
 from numpy.typing import NDArray
@@ -268,7 +268,7 @@ class Data:
             target_size = np.exp2(np.ceil(np.log2(len(data))))
 
             # Pad the vector with 0s
-            padded_data = np.pad(data, (0, target_size - len(data)), mode='constant')
+            padded_data = np.pad(data, (0, target_size - len(data)), mode="constant")
 
             # Update data shape
             updated_shape = padded_data.shape
@@ -428,7 +428,7 @@ class Data:
         `index_type` : str
             The new indexing type, being "row" or "snake".
         """
-        if index_type == 'snake':
+        if index_type == "snake":
             # Ensure the array has two dimensions
             if len(self.shape) != 2:
                 raise ValueError("Data array must be two-dimensional.")
@@ -436,7 +436,7 @@ class Data:
             # Reverse the elements in odd rows
             self.data[1::2, :] = self.data[1::2, ::-1]
 
-        elif index_type == 'row':
+        elif index_type == "row":
             self.data = self.data
 
         else:

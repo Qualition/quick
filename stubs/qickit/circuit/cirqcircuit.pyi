@@ -5,7 +5,7 @@ from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.types import Collection
 
-__all__ = ['CirqCircuit']
+__all__ = ["CirqCircuit"]
 
 class CirqCircuit(Circuit):
     qr: cirq.LineQubit

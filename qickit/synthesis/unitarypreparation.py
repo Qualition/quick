@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ['UnitaryPreparation', 'QiskitUnitaryTranspiler']
+__all__ = ["UnitaryPreparation", "QiskitUnitaryTranspiler"]
 
 from abc import ABC, abstractmethod
 from functools import wraps
@@ -215,14 +215,14 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
 
         # Transpile the unitary operator to a series of CX and U3 gates
         transpiled_circuit = transpile(qiskit_circuit,
-                                       basis_gates=['u3', 'cx'],
+                                       basis_gates=["u3", "cx"],
                                        optimization_level=3,
                                        seed_transpiler=0)
 
         # Iterate over the gates in the transpiled circuit
         for gate in transpiled_circuit.data:
             # Add the U3 gate
-            if gate[0].name in ['u', 'u3']:
+            if gate[0].name in ["u", "u3"]:
                 circuit.U3(gate[0].params, gate[1][0]._index)
 
             # Add the CX gate
