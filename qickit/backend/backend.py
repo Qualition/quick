@@ -14,33 +14,27 @@
 
 from __future__ import annotations
 
-__all__ = ["Backend", "AerBackend"]
+__all__ = ["Backend", "NoisyBackend", "FakeBackend"]
 
 from abc import ABC, abstractmethod
 from functools import wraps
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, Type
-
-# Qiskit imports
-from qiskit.primitives import BackendSampler # type: ignore
-from qiskit_aer.aerprovider import AerSimulator # type: ignore
-from qiskit.quantum_info import Statevector, Operator # type: ignore
+from typing import Type
 
 # Import `qickit.circuit.Circuit` instances
-from qickit.circuit import Circuit, QiskitCircuit
+from qickit.circuit import Circuit
 
 
 class Backend(ABC):
-    """ `qickit.backend.Backend` is the class for running `qickit.circuit.Circuit`
-    instances. This provides both GPU and NISQ hardware support.
+    """ `qickit.backend.Backend` is the abstract base class for
+    running `qickit.circuit.Circuit` instances. This provides both
+    GPU and NISQ hardware support.
 
     Attributes
     ----------
     `_qc_framework` : Type[qickit.circuit.Circuit]
         The quantum computing framework to use.
-    `_sv_only` : bool
-        If True, the backend will only support :func:`get_statevector()`.
 
     Usage
     -----
@@ -50,10 +44,9 @@ class Backend(ABC):
         """ Initialize a `qickit.backend.Backend` instance.
         """
         self._qc_framework: Type[Circuit]
-        self._sv_only: bool
 
     @staticmethod
-    def backendmethod(method: Callable) -> Callable:
+    def backendmethod(method):
         """ Decorator for backend methods.
 
         Parameters
@@ -78,17 +71,22 @@ class Backend(ABC):
         ...     ...
         """
         @wraps(method)
-        def wrapped(instance, circuit: Circuit):
+        def wrapped(instance, circuit: Circuit, **kwargs):
             # Ensure the circuit is of type `qickit.circuit.Circuit`
             if not isinstance(circuit, Circuit):
-                raise TypeError(f"The circuit must be of type `qickit.Circuit`, not {type(circuit)}.")
+                raise TypeError(f"The circuit must be of type `qickit.circuit.Circuit`, not {type(circuit)}.")
+
+            # Check if the instance has attribute `_max_num_queues`, and if so, ensure the circuit is compatible
+            # NOTE: This is used by `FakeBackend` instances as they emulate real-world hardware
+            if hasattr(instance, "_max_num_qubits") and circuit.num_qubits > instance._max_num_qubits:
+                raise ValueError(f"The maximum number of qubits supported by the backend is {instance._max_num_qubits}.")
 
             # If the circuit passed is an instance of `qickit.circuit.Circuit`,
             # then ensure it is compatible with the backend framework
             if not isinstance(circuit, instance._qc_framework):
                 circuit = circuit.convert(instance._qc_framework)
 
-            return method(instance, circuit)
+            return method(instance, circuit, **kwargs)
 
         return wrapped
 
@@ -161,55 +159,62 @@ class Backend(ABC):
         """
 
 
-class AerBackend(Backend):
-    """ `qickit.AerBackend` is the class for running `qickit.Circuit` instances on Aer.
+class NoisyBackend(Backend):
+    """ `qickit.backend.NoisyBackend` is the abstract base class
+    for running `qickit.circuit.Circuit` instances on noisy quantum
+    devices.
+
+    Parameters
+    ----------
+    `single_qubit_error` : float
+        The error rate for single-qubit gates.
+    `two_qubit_error` : float
+        The error rate for two-qubit gates.
+
+    Attributes
+    ----------
+    `_qc_framework` : Type[qickit.circuit.Circuit]
+        The quantum computing framework to use.
+    `single_qubit_error` : float
+        The error rate for single-qubit gates.
+    `two_qubit_error` : float
+        The error rate for two-qubit gates.
+
+    Usage
+    -----
+    >>> backend = NoisyBackend(single_qubit_error=0.01, two_qubit_error=0.02)
+    """
+    def __init__(self,
+                 single_qubit_error: float,
+                 two_qubit_error: float) -> None:
+        """ Initialize a `qickit.backend.NoisyBackend` instance.
+        """
+        self._qc_framework: Type[Circuit]
+        self.single_qubit_error = single_qubit_error
+        self.two_qubit_error = two_qubit_error
+
+
+class FakeBackend(Backend):
+    """ `qickit.backend.FakeBackend` is the abstract base class
+    for running `qickit.circuit.Circuit` instances on real quantum
+    hardware emulators.
+
+    Attributes
+    ----------
+    `_qc_framework` : Type[qickit.circuit.Circuit]
+        The quantum computing framework to use.
+    `_backend_name` : str
+        The name of the backend to use.
+    `_max_num_qubits` : int
+        The maximum number of qubits supported by the backend.
+
+    Usage
+    -----
+    >>> backend = FakeBackend()
     """
     def __init__(self) -> None:
-        self._qc_framework = QiskitCircuit
-        self._sv_only = False
-
-    @Backend.backendmethod
-    def get_statevector(self,
-                        circuit: Circuit) -> NDArray[np.complex128]:
-        # Run the circuit to get the statevector
-        state_vector = Statevector(circuit.circuit).data
-
-        return state_vector
-
-    @Backend.backendmethod
-    def get_operator(self,
-                     circuit: Circuit) -> NDArray[np.complex128]:
-        # Run the circuit to get the operator
-        operator = Operator(circuit.circuit).data
-
-        return operator
-
-    @Backend.backendmethod
-    def get_counts(self,
-                   circuit: Circuit,
-                   num_shots: int) -> dict[str, int]:
-        # Assert the number of shots is valid (an integer greater than 0)
-        if not isinstance(num_shots, int) or num_shots <= 0:
-            raise ValueError("The number of shots must be a positive integer.")
-
-        # Define the backend to run the circuit on
-        backend: BackendSampler = BackendSampler(AerSimulator())
-
-        # Run the circuit on the backend to generate the result
-        result = backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
-
-        # Extract the quasi-probability distribution from the first result
-        quasi_dist = result.quasi_dists[0]
-
-        # Convert the quasi-probability distribution to counts
-        counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) \
-                  for k, v in quasi_dist.items()}
-
-        # Fill the counts dict with zeros for the missing states
-        counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) \
-                  for i in range(2**circuit.num_qubits)}
-
-        # Sort the counts by their keys (basis states)
-        counts = dict(sorted(counts.items()))
-
-        return counts
+        """ Initialize a `qickit.backend.FakeBackend` instance.
+        """
+        self._qc_framework: Type[Circuit]
+        self._backend_name: str
+        self._max_num_qubits: int

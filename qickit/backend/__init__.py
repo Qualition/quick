@@ -13,6 +13,14 @@
 # limitations under the License.
 
 __all__ = ["Backend",
-           "AerBackend"]
+           "NoisyBackend",
+           "FakeBackend",
 
-from qickit.backend.backend import Backend, AerBackend
+           "AerBackend",
+           "NoisyAerBackend",
+           "FakeManila",]
+
+from qickit.backend.backend import Backend, NoisyBackend, FakeBackend
+from qickit.backend.qiskit_backends.aer_backend import AerBackend
+from qickit.backend.qiskit_backends.noisy_aer_backend import NoisyAerBackend
+from qickit.backend.qiskit_backends.fake_ibm_backend import FakeManila

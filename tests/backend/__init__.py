@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["circuit",
-           "data",
-           "synthesis",
-           "backend"]
+__all__ = ["Template",
+           "TestAerBackend",
+           "TestNoisyAerBackend"]
 
-from tests import circuit, data, synthesis, backend
+from tests.backend.test_backend import Template
+from tests.backend.test_aer_backend import TestAerBackend
+from tests.backend.test_noisy_aer_backend import TestNoisyAerBackend

@@ -18,6 +18,7 @@ __all__ = ["TestQiskitCircuit"]
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 # QICKIT imports
 from qickit.circuit import QiskitCircuit
@@ -45,37 +46,25 @@ class TestQiskitCircuit(Template):
 
     def test_num_qubits_value(self) -> None:
         # Ensure the error is raised when the number of qubits is less than or equal to 0
-        try:
+        with pytest.raises(ValueError):
             circuit = QiskitCircuit(0, 1)
-        except ValueError:
-            pass
 
-        try:
+        with pytest.raises(ValueError):
             circuit = QiskitCircuit(-1, 1)
-        except ValueError:
-            pass
 
-        try:
+        with pytest.raises(ValueError):
             circuit = QiskitCircuit(1, 0)
-        except ValueError:
-            pass
 
-        try:
+        with pytest.raises(ValueError):
             circuit = QiskitCircuit(1, -1)
-        except ValueError:
-            pass
 
     def test_num_qubits_type(self) -> None:
         # Ensure the error is raised when the number of qubits is not an integer
-        try:
-            circuit = QiskitCircuit(1.0, 1)
-        except TypeError:
-            pass
+        with pytest.raises(TypeError):
+            circuit = QiskitCircuit(1.0, 1) # type: ignore
 
-        try:
-            circuit = QiskitCircuit(1, 1.0)
-        except TypeError:
-            pass
+        with pytest.raises(TypeError):
+            circuit = QiskitCircuit(1, 1.0) # type: ignore
 
     def test_Identity(self) -> None:
         # Define the `qickit.circuit.QiskitCircuit` instance

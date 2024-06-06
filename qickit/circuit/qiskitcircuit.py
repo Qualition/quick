@@ -568,26 +568,29 @@ class QiskitCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict[str, int]:
-        if self.measured is False:
-            self.measure(range(self.num_qubits))
+        # Copy the circuit as the transpilation operation is inplace
+        circuit: QiskitCircuit = copy.deepcopy(self)
 
         if backend is None:
+            if not circuit.measured:
+                circuit.measure(range(circuit.num_qubits))
+
             # If no backend is provided, use the AerSimualtor
             base_backend: BackendSampler = BackendSampler(AerSimulator())
             # Run the circuit
-            result = base_backend.run(self.circuit, shots=num_shots, seed_simulator=0).result()
+            result = base_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
             # Extract the quasi-probability distribution from the first result
             quasi_dist = result.quasi_dists[0]
             # Convert the quasi-probability distribution to counts
-            counts = {bin(k)[2:].zfill(self.num_qubits): int(v * num_shots) for k, v in quasi_dist.items()}
+            counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) for k, v in quasi_dist.items()}
             # Fill the counts array with zeros for the missing states
-            counts = {f'{i:0{self.num_qubits}b}': counts.get(f'{i:0{self.num_qubits}b}', 0) for i in range(2**self.num_qubits)}
+            counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) for i in range(2**circuit.num_qubits)}
             # Sort the counts by their keys (basis states)
             counts = dict(sorted(counts.items()))
 
         else:
             # Run the circuit on the specified backend
-            counts = backend.get_counts(self, num_shots)
+            counts = backend.get_counts(circuit=circuit, num_shots=num_shots)
 
         return counts
 

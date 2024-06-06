@@ -575,9 +575,6 @@ class TKETCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict[str, int]:
-        if self.measured is False:
-            self.measure(range(self.num_qubits))
-
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -585,6 +582,9 @@ class TKETCircuit(Circuit):
         circuit.vertical_reverse()
 
         if backend is None:
+            if not self.measured:
+                self.measure(range(self.num_qubits))
+
             # If no backend is provided, use the AerBackend
             base_backend: AerBackend = AerBackend()
             # Run the circuit
@@ -595,7 +595,7 @@ class TKETCircuit(Circuit):
 
         else:
             # Run the circuit on the specified backend
-            counts = backend.get_counts(self.circuit, num_shots=num_shots)
+            counts = backend.get_counts(circuit=circuit, num_shots=num_shots)
 
         return counts
 
