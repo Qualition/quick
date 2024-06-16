@@ -40,6 +40,7 @@ from qickit.types import Collection
 
 class TKETCircuit(Circuit):
     """ `qickit.circuit.TKETCircuit` is the wrapper for using Quantinuum's TKET in Qickit SDK.
+    ref: https://arxiv.org/pdf/2003.10611
 
     Parameters
     ----------
@@ -533,7 +534,7 @@ class TKETCircuit(Circuit):
         self.measured = True
 
     def get_statevector(self,
-                        backend: Backend | None = None) -> Collection[float]:
+                        backend: Backend | None = None) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -570,7 +571,7 @@ class TKETCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        return state_vector
+        return np.array(state_vector)
 
     def get_counts(self,
                    num_shots: int,
@@ -617,11 +618,10 @@ class TKETCircuit(Circuit):
 
         return np.array(unitary)
 
-    def to_qasm(self) -> str:
+    def to_qasm(self,
+                qasm_version: int=2) -> str:
         # Convert the circuit to QASM
-        qasm = self.convert(QiskitCircuit).circuit.qasm()
-
-        return qasm
+        return self.convert(QiskitCircuit).to_qasm(qasm_version=qasm_version)
 
     def draw(self) -> None:
         pass

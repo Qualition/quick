@@ -30,6 +30,8 @@ from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate,
                                     GlobalPhaseGate, IGate) # type: ignore
 from qiskit.primitives import BackendSampler # type: ignore
 from qiskit_aer.aerprovider import AerSimulator # type: ignore
+import qiskit.qasm2 as qasm2 # type: ignore
+import qiskit.qasm3 as qasm3 # type: ignore
 from qiskit.quantum_info import Statevector, Operator # type: ignore
 
 # Import `qickit.circuit.Circuit`
@@ -45,6 +47,7 @@ from qickit.types import Collection
 
 class QiskitCircuit(Circuit):
     """ `qickit.circuit.QiskitCircuit` is the wrapper for using IBM Qiskit in Qickit SDK.
+    ref: https://arxiv.org/pdf/2405.08810
 
     Parameters
     ----------
@@ -532,7 +535,7 @@ class QiskitCircuit(Circuit):
         self.measured = True
 
     def get_statevector(self,
-                        backend: Backend | None = None) -> Collection[float]:
+                        backend: Backend | None = None) -> NDArray[np.complex128]:
         if backend is None:
             # Run the circuit and define the state vector
             state_vector = Statevector(self.circuit).data
@@ -563,7 +566,7 @@ class QiskitCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        return state_vector
+        return np.array(state_vector)
 
     def get_counts(self,
                    num_shots: int,
@@ -612,9 +615,15 @@ class QiskitCircuit(Circuit):
 
         return np.array(unitary)
 
-    def to_qasm(self) -> str:
+    def to_qasm(self,
+                qasm_version:int = 2) -> str:
         # Convert the circuit to QASM
-        qasm = self.circuit.qasm()
+        if qasm_version == 2:
+            qasm = qasm2.dumps(self.circuit)
+        elif qasm_version == 3:
+            qasm = qasm3.dumps(self.circuit)
+        else:
+            raise ValueError("The QASM version must be either 2 or 3.")
 
         return qasm
 

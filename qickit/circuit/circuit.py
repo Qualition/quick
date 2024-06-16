@@ -1074,7 +1074,7 @@ class Circuit(ABC):
 
     @abstractmethod
     def get_statevector(self,
-                        backend: Backend | None = None) -> Collection[float]:
+                        backend: Backend | None = None) -> NDArray[np.complex128]:
         """ Get the statevector of the circuit.
 
         Parameters
@@ -1084,7 +1084,7 @@ class Circuit(ABC):
 
         Returns
         -------
-        `statevector` : Collection[float]
+        `statevector` : NDArray[np.complex128]
             The statevector of the circuit.
 
         Usage
@@ -1161,6 +1161,17 @@ class Circuit(ABC):
 
     def transpile(self) -> None:
         """ Transpile the circuit to U3 and CX gates.
+
+        Parameters
+        ----------
+        # TODO: Add the direct_transpile parameter. Must find a way to resolve the circular import issue.
+        `direct_transpile` : bool, optional
+            Whether or not to directly transpile the circuit. When set to True,
+            we wil directly pass a `qickit.circuit.QiskitCircuit` object to the
+            transpiler, which will directly transpile the circuit to U3 and CX
+            gates. This is significantly more efficient as compared to first
+            getting the unitary, applying the unitary to the circuit, and then
+            synthesizing the unitary.
 
         Usage
         -----
@@ -1274,7 +1285,7 @@ class Circuit(ABC):
 
         Parameters
         ----------
-        `circuit_framework` : qickit.circuit.Circuit
+        `circuit_framework` : type[qickit.circuit.Circuit]
             The circuit framework to convert to.
 
         Returns
@@ -1343,13 +1354,24 @@ class Circuit(ABC):
         return converted_circuit
 
     @abstractmethod
-    def to_qasm(self) -> str:
+    def to_qasm(self,
+                qasm_version: int=2) -> str:
         """ Convert the circuit to QASM.
+
+        Parameters
+        ----------
+        `qasm_version` : int, optional
+            The version of QASM to convert to. 2 for QASM 2.0 and 3 for QASM 3.0.
 
         Returns
         -------
         `qasm` : str
             The QASM representation of the circuit.
+
+        Raises
+        ------
+        ValueError
+            QASM version must be either 2 or 3.
 
         Usage
         -----
@@ -1365,7 +1387,7 @@ class Circuit(ABC):
         ----------
         `cirq_circuit` : cirq.Circuit
             The Cirq quantum circuit to convert.
-        `output_framework` : qickit.circuit.Circuit
+        `output_framework` : type[qickit.circuit.Circuit]
             The output framework to convert to.
 
         Returns
@@ -1536,7 +1558,7 @@ class Circuit(ABC):
         ----------
         `pennylane_circuit` : qml.QNode
             The PennyLane quantum circuit to convert.
-        `output_framework` : qickit.circuit.Circuit
+        `output_framework` : type[qickit.circuit.Circuit]
             The output framework to convert to.
 
         Returns
@@ -1564,7 +1586,7 @@ class Circuit(ABC):
         ----------
         `qiskit_circuit` : qiskit.QuantumCircuit
             The Qiskit quantum circuit to convert.
-        `output_framework` : qickit.circuit.Circuit
+        `output_framework` : type[qickit.circuit.Circuit]
             The output framework to convert to.
 
         Returns
@@ -1602,7 +1624,6 @@ class Circuit(ABC):
         circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
 
         # Iterate over the operations in the Qiskit circuit
-        # TODO: Add Identity gate
         for gate in qiskit_circuit.data:
             # Extract the gate type
             gate_type = gate[0].name
@@ -1726,7 +1747,7 @@ class Circuit(ABC):
         ----------
         `tket_circuit` : tket.Circuit
             The TKET quantum circuit to convert.
-        `output_framework` : qickit.circuit.Circuit
+        `output_framework` : type[qickit.circuit.Circuit]
             The output framework to convert to.
 
         Returns
@@ -1748,8 +1769,8 @@ class Circuit(ABC):
             gate_type = str(gate.op.type)
 
             # Extract the qubit indices
-            qubit_indices = [qubit.index[0] for qubit in gate.qubits] if len(gate.qubits) > 1 \
-                                                                      else gate.qubits[0].index[0]
+            qubit_indices = [int(qubit.index[0]) for qubit in gate.qubits] if len(gate.qubits) > 1 \
+                                                                           else [gate.qubits[0].index[0]]
 
             if gate_type == "OpType.I":
                 circuit.Identity(qubit_indices)
@@ -1773,16 +1794,16 @@ class Circuit(ABC):
                 circuit.T(qubit_indices)
 
             elif gate_type == "OpType.Rx":
-                circuit.RX(float(gate.op.params[0]), qubit_indices)
+                circuit.RX(float(gate.op.params[0]), qubit_indices[0])
 
             elif gate_type == "OpType.Ry":
-                circuit.RY(float(gate.op.params[0]), qubit_indices)
+                circuit.RY(float(gate.op.params[0]), qubit_indices[0])
 
             elif gate_type == "OpType.Rz":
-                circuit.RZ(float(gate.op.params[0]), qubit_indices)
+                circuit.RZ(float(gate.op.params[0]), qubit_indices[0])
 
             elif gate_type == "OpType.U3":
-                circuit.U3([float(param) for param in gate.op.params], qubit_indices)
+                circuit.U3([float(param) for param in gate.op.params], qubit_indices[0])
 
             elif gate_type == "OpType.SWAP":
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
@@ -1826,8 +1847,8 @@ class Circuit(ABC):
             elif gate_type == "OpType.CnZ":
                 circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
 
-            elif gate_type == "OpType.QControlBox":
-                qcontrolbox: pytket.circuit.QControlBox = gate.op
+            elif isinstance(gate.op, pytket.circuit.QControlBox):
+                qcontrolbox = gate.op
 
                 if str(qcontrolbox.get_op()) == "X":
                     circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
@@ -1879,7 +1900,7 @@ class Circuit(ABC):
         ----------
         `qasm` : str
             The QASM string to convert.
-        `output_framework` : qickit.circuit.Circuit
+        `output_framework` : type[qickit.circuit.Circuit]
             The output framework to convert to.
 
         Returns

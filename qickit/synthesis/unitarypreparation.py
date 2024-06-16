@@ -24,8 +24,11 @@ from typing import Type, TYPE_CHECKING
 
 # Qiskit imports
 from qiskit import QuantumCircuit, transpile # type: ignore
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager # type: ignore
+from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
+from qiskit_transpiler_service.transpiler_service import TranspilerService # type: ignore
 
-# Import `qickit.circuit.Circuit` instances
+# Import `qickit.circuit.Circuit`
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
 
@@ -174,11 +177,29 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
     ----------
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
+    `ai_transpilation` : bool, optional, default=True
+        Whether to use Qiskit's AI transpiler.
+    `service`: qiskit_ibm_runtime.QiskitRuntimeService, optional
+        The Qiskit Runtime service. Only needed if `ai`=True.
+    `backend_name`: str, optional
+        The name of the backend to use for transpilation. Only needed if `ai`=True.
 
     Attributes
     ----------
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
+    `ai_transpilation` : bool
+        Whether to use Qiskit's AI transpiler.
+    `service`: qiskit_ibm_runtime.QiskitRuntimeService
+        The Qiskit Runtime service.
+    `backend_name`: str
+        The name of the backend to use for transpilation.
+
+    Raises
+    ------
+    ValueError
+        The Qiskit Runtime service must be provided for AI transpilation.
+        The name of the backend must be provided for AI transpilation.
 
     Notes
     -----
@@ -186,12 +207,26 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
     This is also how `qickit.circuit.Circuit` by default implements the `.unitary()` operation. Users
     can customize this class to implement custom transpilers for different hardware. For example, one
     can change the set of gates the circuit is transpiled to, or can change the optimization level.
+
+    A good resource is IBM Quantum Challenge 2024: https://github.com/qiskit-community/ibm-quantum-challenge-2024/tree/main
     """
     def __init__(self,
-                 output_framework: Type[Circuit]) -> None:
+                 output_framework: Type[Circuit],
+                 ai_transpilation: bool=True,
+                 service: QiskitRuntimeService | None = None,
+                 backend_name: str | None = None) -> None:
         """ Initalize a Qiskit Transpiler instance.
         """
         super().__init__(output_framework)
+        self.ai_transpilation = ai_transpilation
+
+        if ai_transpilation and service is None:
+            raise ValueError("The Qiskit Runtime service must be provided for AI transpilation.")
+        self.service = service
+
+        if ai_transpilation and backend_name is None:
+            raise ValueError("The name of the backend must be provided for AI transpilation.")
+        self.backend_name = backend_name
 
     @UnitaryPreparation.unitarymethod
     def prepare_unitary(self,
@@ -214,10 +249,24 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         qiskit_circuit.unitary(unitary, range(num_qubits))
 
         # Transpile the unitary operator to a series of CX and U3 gates
-        transpiled_circuit = transpile(qiskit_circuit,
-                                       basis_gates=["u3", "cx"],
-                                       optimization_level=3,
-                                       seed_transpiler=0)
+        if self.ai_transpilation:
+            # Use the Qiskit AI transpiler
+            ai_transpiler = TranspilerService(
+                backend_name=self.backend_name,
+                optimization_level=3,
+                ai=True,
+                ai_layout_mode="OPTIMIZE"
+            )
+            transpiled_circuit = ai_transpiler.run(qiskit_circuit)
+
+        else:
+            # Use the Qiskit transpiler
+            transpiled_circuit = transpile(
+                qiskit_circuit,
+                basis_gates=["u3", "cx"],
+                optimization_level=3,
+                seed_transpiler=0
+            )
 
         # Iterate over the gates in the transpiled circuit
         for gate in transpiled_circuit.data:

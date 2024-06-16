@@ -14,15 +14,16 @@
 
 from __future__ import annotations
 
-__all__ = ["FakeManila"]
+__all__ = ["FakeIBMBackend"]
 
 import copy
 import numpy as np
 from numpy.typing import NDArray
 
 # Qiskit imports
-from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
+from qiskit.primitives import BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
+from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
 from qiskit.quantum_info import Operator # type: ignore
 
 # Import `qickit.circuit.Circuit` instances
@@ -31,43 +32,71 @@ from qickit.circuit import Circuit, QiskitCircuit
 # Import `qickit.backend.FakeBackend` class
 from qickit.backend import Backend, FakeBackend
 
-IBM_BACKENDS = {
-    "ibmq_algiers": 27,
-    "ibmq_almaden": 20,
-    "ibmq_armonk": 1,
-    "ibmq_athens": 5,
-    "ibmq_auckland": 27,
-    "ibmq_belem": 5,
-    "ibmq_boeblingen": 20,
-    "ibmq_bogota": 5,
-    "ibmq_brisbane": 127,
-    "ibmq_burlington": 5,
-    "ibmq_cairo": 27,
-    "ibmq_cambridge": 28,
-    "ibmq_casablanca": 7,
-    "ibmq_cusco": 127,
-    "ibmq_essex": 5,
-    "ibmq_geneva": 27,
-    "ibmq_guadalupe": 16,
-}
 
+class FakeIBMBackend(FakeBackend):
+    """ `qickit.backend.FakeIBMBackend` is the class for running
+    `qickit.circuit.Circuit` instances on an IBM hardware emulator.
 
-class FakeManila(FakeBackend):
-    """ `qickit.backend.FakeManila` is the class for running
-    `qickit.circuit.Circuit` instances on an IBM Manila emulator.
+    Parameters
+    ----------
+    `hardware_name` : str
+        The name of the IBM hardware to emulate.
+    `qiskit_runtime` : QiskitRuntimeService
+        The Qiskit runtime service to use.
+    `device` : str, optional, default="CPU"
+        The device to use for simulating the circuit.
+
+    Attributes
+    ----------
+    `_qc_framework` : type[qickit.circuit.QiskitCircuit]
+        The quantum computing framework to use.
+    `_backend_name` : str
+        The name of the IBM backend to emulate.
+    `_max_num_qubits` : int
+        The maximum number of qubits the IBM backend can handle.
+    `_counts_backend` : qiskit.primitives.BackendSampler
+        The Aer simulator to use for generating counts.
+    `_op_backend` : qiskit_aer.aerprovider.AerSimulator
+        The Aer simulator to use for generating the operator.
+
+    Raises
+    ------
+    ValueError
+        If the specified IBM backend is not available.
     """
-    def __init__(self) -> None:
+    def __init__(self,
+                 hardware_name: str,
+                 qiskit_runtime: QiskitRuntimeService,
+                 device: str="CPU") -> None:
+        super().__init__(device=device)
         self._qc_framework = QiskitCircuit
-        self._backend_name = "ibmq_manila"
-        self._max_num_qubits = 5
+
+        # Get the names of all available IBM backends for the qiskit runtime
+        all_backend_names = [backend.name() for backend in qiskit_runtime.backends()]
+
+        # Check if the specified backend is available
+        if hardware_name not in all_backend_names:
+            raise ValueError(f"IBM backend '{hardware_name}' is not available.")
 
         # Get the specified backend from the runtime service
-        service = QiskitRuntimeService()
-        backend = service.get_backend(self._backend_name)
+        self._backend_name = hardware_name
+        backend = qiskit_runtime.get_backend(self._backend_name)
+
+        # Set the maximum number of qubits the backend can handle
+        self._max_num_qubits = backend.num_qubits
 
         # Generate a simulator that mimics the real quantum system with
         # the latest calibration results
-        self._backend = AerSimulator.from_backend(backend)
+        if self.device == "GPU" and AerSimulator.available_devices()["GPU"]:
+            self._counts_backend = BackendSampler(AerSimulator.from_backend(backend).set_option(device="GPU"))
+            self._op_backend = AerSimulator.from_backend(backend)
+            self._op_backend.set_option(device="GPU", method="unitary")
+        else:
+            if self.device == "GPU" and AerSimulator.available_devices()["GPU"] is None:
+                print("Warning: GPU acceleration is not available. Defaulted to CPU.")
+            self._counts_backend = BackendSampler(AerSimulator.from_backend(backend))
+            self._op_backend = AerSimulator.from_backend(backend)
+            self._op_backend.set_option(method="unitary")
 
     @Backend.backendmethod
     def get_statevector(self,
@@ -91,7 +120,22 @@ class FakeManila(FakeBackend):
     def get_operator(self,
                      circuit: Circuit) -> NDArray[np.complex128]:
         # Run the circuit to get the operator
-        operator = Operator(circuit.circuit).data
+        # NOTE: Currently, the operator cannot be obtained with noise considered,
+        # so the operator without noise is returned
+        # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
+        # AerSimulator to generate the operator
+        if circuit.num_qubits < 10:
+            operator = Operator(circuit.circuit).data
+
+        else:
+            # Create a copy of the circuit as `.save_unitary()` is applied inplace
+            circuit = copy.deepcopy(circuit)
+
+            # Save the unitary of the circuit
+            circuit.circuit.save_unitary() # type: ignore
+
+            # Run the circuit on the backend to generate the operator
+            operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 
         return operator
 
@@ -102,16 +146,12 @@ class FakeManila(FakeBackend):
         # Create a copy of the circuit as measurement is applied inplace
         circuit = copy.deepcopy(circuit)
 
-        # Assert the number of shots is valid (an integer greater than 0)
-        if not isinstance(num_shots, int) or num_shots <= 0:
-            raise ValueError("The number of shots must be a positive integer.")
-
         # Measure the qubits
         if not circuit.measured:
             circuit.measure(list(range(circuit.num_qubits)))
 
         # Run the circuit on the backend to generate the result
-        result = self._backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
+        result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
 
         # Extract the quasi-probability distribution from the first result
         quasi_dist = result.quasi_dists[0]

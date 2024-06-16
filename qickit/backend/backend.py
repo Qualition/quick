@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 from functools import wraps
 import numpy as np
 from numpy.typing import NDArray
+from types import NotImplementedType
 from typing import Type
 
 # Import `qickit.circuit.Circuit` instances
@@ -28,21 +29,40 @@ from qickit.circuit import Circuit
 
 class Backend(ABC):
     """ `qickit.backend.Backend` is the abstract base class for
-    running `qickit.circuit.Circuit` instances. This provides both
-    GPU and NISQ hardware support.
+    running `qickit.circuit.Circuit` instances. This class provides
+    CPU, GPU and NISQ hardware support.
+
+    Parameters
+    ----------
+    `device` : str, optional, default="CPU"
+        The device to use for simulating the circuit.
+        This can be either "CPU", or "GPU".
 
     Attributes
     ----------
-    `_qc_framework` : Type[qickit.circuit.Circuit]
+    `device` : str
+        The device to use for simulating the circuit.
+        This can be either "CPU", or "GPU".
+    `_qc_framework` : type[qickit.circuit.Circuit]
         The quantum computing framework to use.
+
+    Raises
+    ------
+    ValueError
+        If the device is not "CPU" or "GPU".
 
     Usage
     -----
     >>> backend = Backend()
+    >>> backend = Backend(device="GPU")
     """
-    def __init__(self) -> None:
+    def __init__(self,
+                 device: str="CPU") -> None:
         """ Initialize a `qickit.backend.Backend` instance.
         """
+        if device not in ["CPU", "GPU"]:
+            raise ValueError(f"Invalid device: {device}. Must be either 'CPU' or 'GPU'.")
+        self.device = device
         self._qc_framework: Type[Circuit]
 
     @staticmethod
@@ -63,6 +83,9 @@ class Backend(ABC):
         ------
         TypeError
             If the circuit is not of type `qickit.circuit.Circuit`.
+        ValueError
+            If the number of shots is not a positive integer.
+            If the number of qubits in the circuit is greater than the maximum supported by the backend.
 
         Usage
         -----
@@ -75,6 +98,10 @@ class Backend(ABC):
             # Ensure the circuit is of type `qickit.circuit.Circuit`
             if not isinstance(circuit, Circuit):
                 raise TypeError(f"The circuit must be of type `qickit.circuit.Circuit`, not {type(circuit)}.")
+
+            # Assert the number of shots is valid (an integer greater than 0)
+            if not isinstance(kwargs.get("num_shots", 1), int) or kwargs["num_shots"] <= 0:
+                raise ValueError("The number of shots must be a positive integer.")
 
             # Check if the instance has attribute `_max_num_queues`, and if so, ensure the circuit is compatible
             # NOTE: This is used by `FakeBackend` instances as they emulate real-world hardware
@@ -148,15 +175,87 @@ class Backend(ABC):
         dict[str, int]
             The counts of the circuit.
 
-        Raises
-        ------
-        ValueError
-            If the number of shots is not a positive integer.
-
         Usage
         -----
         >>> backed.get_counts(circuit, num_shots=1024)
         """
+
+    def __str__(self) -> str:
+        """ Return a string representation of the backend.
+
+        Returns
+        -------
+        str
+            The string representation of the backend.
+        """
+        return f"{self.__class__.__name__}(device={self.device})"
+
+    def __repr__(self) -> str:
+        """ Return a string representation of the backend.
+
+        Returns
+        -------
+        str
+            The string representation of the backend.
+        """
+        return str(self)
+
+    @classmethod
+    def __subclasscheck__(cls, C) -> bool:
+        """ Checks if a class is a `qickit.backend.Backend` if the class
+        passed does not directly inherit from `qickit.backend.Backend`.
+
+        Parameters
+        ----------
+        `C` : type
+            The class to check if it is a subclass.
+
+        Returns
+        -------
+        bool
+            Whether or not the class is a subclass.
+        """
+        if cls is Backend:
+            return all(hasattr(C, method) for method in list(cls.__dict__["__abstractmethods__"]))
+        return False
+
+    @classmethod
+    def __subclasshook__(cls, C) -> bool | NotImplementedType:
+        """ Checks if a class is a `qickit.backend.Backend` if the class
+        passed does not directly inherit from `qickit.backend.Backend`.
+
+        Parameters
+        ----------
+        `C` : type
+            The class to check if it is a subclass.
+
+        Returns
+        -------
+        bool | NotImplementedType
+            Whether or not the class is a subclass.
+        """
+        if cls is Backend:
+            return all(hasattr(C, method) for method in list(cls.__dict__["__abstractmethods__"]))
+        return NotImplemented
+
+    @classmethod
+    def __instancecheck__(cls, C) -> bool:
+        """ Checks if an object is a `qickit.backend.Backend` given its
+        interface.
+
+        Parameters
+        ----------
+        `C` : object
+            The instance to check.
+
+        Returns
+        -------
+        bool
+            Whether or not the instance is a `qickit.backend.Backend`.
+        """
+        if cls is Backend:
+            return all(hasattr(C, method) for method in list(cls.__dict__["__abstractmethods__"]))
+        return False
 
 
 class NoisyBackend(Backend):
@@ -166,32 +265,65 @@ class NoisyBackend(Backend):
 
     Parameters
     ----------
-    `single_qubit_error` : float
+    `single_qubit_error` : float, optional, default=0.0
         The error rate for single-qubit gates.
-    `two_qubit_error` : float
+    `two_qubit_error` : float, optional, default=0.0
         The error rate for two-qubit gates.
+    `device` : str, optional, default="CPU"
+        The device to use for simulating the circuit.
+        This can be either "CPU", or "GPU".
 
     Attributes
     ----------
-    `_qc_framework` : Type[qickit.circuit.Circuit]
-        The quantum computing framework to use.
     `single_qubit_error` : float
         The error rate for single-qubit gates.
     `two_qubit_error` : float
         The error rate for two-qubit gates.
+    `device` : str
+        The device to use for simulating the circuit.
+        This can be either "CPU", or "GPU".
+    `_qc_framework` : Type[qickit.circuit.Circuit]
+        The quantum computing framework to use.
+    `noisy` : bool
+        Whether the simulation is noisy or not.
+
+    Raises
+    ------
+    ValueError
+        If the device is not "CPU" or "GPU".
+        If the single-qubit error rate is not between 0 and 1.
+        If the two-qubit error rate is not between 0 and 1.
 
     Usage
     -----
+    >>> backend = NoisyBackend()
     >>> backend = NoisyBackend(single_qubit_error=0.01, two_qubit_error=0.02)
+    >>> backend = NoisyBackend(single_qubit_error=0.01, two_qubit_error=0.02, device="GPU")
     """
     def __init__(self,
                  single_qubit_error: float,
-                 two_qubit_error: float) -> None:
+                 two_qubit_error: float,
+                 device: str="CPU") -> None:
         """ Initialize a `qickit.backend.NoisyBackend` instance.
         """
-        self._qc_framework: Type[Circuit]
+        super().__init__(device=device)
+
+        # Error rates are the probabilities of an error occurring, so they must be between 0 and 1
+        if single_qubit_error < 0 or single_qubit_error > 1:
+            raise ValueError("The single-qubit error rate must be between 0 and 1.")
         self.single_qubit_error = single_qubit_error
+
+        if two_qubit_error < 0 or two_qubit_error > 1:
+            raise ValueError("The two-qubit error rate must be between 0 and 1.")
         self.two_qubit_error = two_qubit_error
+
+        # If the noise rates are non-zero, then define the depolarizing quantum errors
+        # and add them to the noise model
+        if self.single_qubit_error > 0.0 or self.two_qubit_error > 0.0:
+            # Set the noisy status to True
+            self.noisy = True
+
+        self._qc_framework: Type[Circuit]
 
 
 class FakeBackend(Backend):
@@ -199,22 +331,34 @@ class FakeBackend(Backend):
     for running `qickit.circuit.Circuit` instances on real quantum
     hardware emulators.
 
+    Parameters
+    ----------
+    `device` : str, optional, default="CPU"
+        The device to use for simulating the circuit.
+        This can be either "CPU", or "GPU".
+
     Attributes
     ----------
+    `device` : str
+        The device to use for simulating the circuit.
+        This can be either "CPU", or "GPU".
     `_qc_framework` : Type[qickit.circuit.Circuit]
         The quantum computing framework to use.
     `_backend_name` : str
-        The name of the backend to use.
+        The name of the backend to use (usually the name of the backend being emulated).
     `_max_num_qubits` : int
         The maximum number of qubits supported by the backend.
 
     Usage
     -----
     >>> backend = FakeBackend()
+    >>> backend = FakeBackend(device="GPU")
     """
-    def __init__(self) -> None:
+    def __init__(self,
+                 device: str="CPU") -> None:
         """ Initialize a `qickit.backend.FakeBackend` instance.
         """
+        super().__init__(device=device)
         self._qc_framework: Type[Circuit]
         self._backend_name: str
         self._max_num_qubits: int

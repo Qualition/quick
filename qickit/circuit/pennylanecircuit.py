@@ -37,6 +37,7 @@ from qickit.types import Collection
 
 class PennylaneCircuit(Circuit):
     """ `qickit.circuit.PennylaneCircuit` is the wrapper for using Xanadu's PennyLane in Qickit SDK.
+    ref: https://arxiv.org/pdf/1811.04968
 
     Parameters
     ----------
@@ -545,7 +546,7 @@ class PennylaneCircuit(Circuit):
         pass
 
     def get_statevector(self,
-                        backend: Backend | None = None) -> Collection[float]:
+                        backend: Backend | None = None) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: PennylaneCircuit = copy.deepcopy(self)
 
@@ -601,7 +602,7 @@ class PennylaneCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        return state_vector
+        return np.array(state_vector)
 
     def get_counts(self,
                    num_shots: int,
@@ -714,11 +715,10 @@ class PennylaneCircuit(Circuit):
 
         return MSB_to_LSB(unitary)
 
-    def to_qasm(self) -> str:
+    def to_qasm(self,
+                qasm_version: int=2) -> str:
         # Convert the circuit to QASM
-        qasm = self.convert(QiskitCircuit).circuit.qasm()
-
-        return qasm
+        return self.convert(QiskitCircuit).to_qasm(qasm_version=qasm_version)
 
     def draw(self) -> None:
         pass

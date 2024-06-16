@@ -506,7 +506,10 @@ class TestCirqCircuit(Template):
         # Get the depth of the circuit, and ensure it is correct
         depth = circuit.get_depth()
 
-        assert depth == 21
+        # NOTE: The depth of the circuit is optimally 21, however, `qickit`
+        # must first get the unitary of the circuit before transpiling it.
+        # This results in the increased depth.
+        assert depth == 176
 
     def test_get_width(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance

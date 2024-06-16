@@ -38,6 +38,7 @@ from qickit.types import Collection
 
 class CirqCircuit(Circuit):
     """ `qickit.circuit.CirqCircuit` is the wrapper for using Google's Cirq in Qickit SDK.
+    ref: https://zenodo.org/records/11398048
 
     Parameters
     ----------
@@ -612,7 +613,7 @@ class CirqCircuit(Circuit):
         self.measured = True
 
     def get_statevector(self,
-                        backend: Backend | None = None) -> Collection[float]:
+                        backend: Backend | None = None) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: CirqCircuit = copy.deepcopy(self)
 
@@ -649,15 +650,16 @@ class CirqCircuit(Circuit):
         # Multiply the state vector by the signs
         state_vector = signs * np.abs(state_vector)
 
-        return state_vector
+        return np.array(state_vector)
 
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict:
+        # TODO: Add a native sampler
         if backend is None:
-            # Run the circuit
+            # Run the circuit to get the state vector
             state_vector = self.get_statevector()
-            # Get the counts
+            # Format the state vector to get the counts
             counts = {format(int(index),"0{}b".format(self.num_qubits)): int(abs(amplitude)**2 * num_shots) \
                       for index, amplitude in enumerate(state_vector)}
 
@@ -689,11 +691,10 @@ class CirqCircuit(Circuit):
 
         return np.array(unitary)
 
-    def to_qasm(self) -> str:
+    def to_qasm(self,
+                qasm_version: int=2) -> str:
         # Convert the circuit to QASM
-        qasm = self.convert(QiskitCircuit).circuit.qasm()
-
-        return qasm
+        return self.convert(QiskitCircuit).to_qasm(qasm_version=qasm_version)
 
     def draw(self) -> None:
         print(self.circuit)
