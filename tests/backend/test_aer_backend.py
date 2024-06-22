@@ -65,10 +65,10 @@ class TestAerBackend(Template):
         backend = AerBackend()
 
         # Define the `qickit.circuit.Circuit` instances
-        cirq_circuit = CirqCircuit(2, 2)
-        pennylane_circuit = PennylaneCircuit(2, 2)
-        qiskit_circuit = QiskitCircuit(2, 2)
-        tket_circuit = TKETCircuit(2, 2)
+        cirq_circuit = CirqCircuit(2)
+        pennylane_circuit = PennylaneCircuit(2)
+        qiskit_circuit = QiskitCircuit(2)
+        tket_circuit = TKETCircuit(2)
 
         # Prepare the Bell state
         cirq_circuit.H(0)
@@ -82,6 +82,12 @@ class TestAerBackend(Template):
 
         tket_circuit.H(0)
         tket_circuit.CX(0, 1)
+
+        # Measure the circuits
+        cirq_circuit.measure_all()
+        pennylane_circuit.measure_all()
+        qiskit_circuit.measure_all()
+        tket_circuit.measure_all()
 
         # Define the number of shots
         num_shots = 1000
@@ -108,10 +114,10 @@ class TestAerBackend(Template):
         backend = AerBackend()
 
         # Define the `qickit.circuit.Circuit` instances
-        cirq_circuit = CirqCircuit(2, 2)
-        pennylane_circuit = PennylaneCircuit(2, 2)
-        qiskit_circuit = QiskitCircuit(2, 2)
-        tket_circuit = TKETCircuit(2, 2)
+        cirq_circuit = CirqCircuit(2)
+        pennylane_circuit = PennylaneCircuit(2)
+        qiskit_circuit = QiskitCircuit(2)
+        tket_circuit = TKETCircuit(2)
 
         # Prepare the Bell state
         cirq_circuit.H(0)
@@ -125,6 +131,12 @@ class TestAerBackend(Template):
 
         tket_circuit.H(0)
         tket_circuit.CX(0, 1)
+
+        # Measure the circuits
+        cirq_circuit.measure_all()
+        pennylane_circuit.measure_all()
+        qiskit_circuit.measure_all()
+        tket_circuit.measure_all()
 
         # Get the statevector of the circuits
         cirq_statevector = backend.get_statevector(cirq_circuit)
@@ -148,10 +160,10 @@ class TestAerBackend(Template):
         backend = AerBackend()
 
         # Define the `qickit.circuit.Circuit` instances
-        cirq_circuit = CirqCircuit(2, 2)
-        pennylane_circuit = PennylaneCircuit(2, 2)
-        qiskit_circuit = QiskitCircuit(2, 2)
-        tket_circuit = TKETCircuit(2, 2)
+        cirq_circuit = CirqCircuit(2)
+        pennylane_circuit = PennylaneCircuit(2)
+        qiskit_circuit = QiskitCircuit(2)
+        tket_circuit = TKETCircuit(2)
 
         # Prepare the Bell state
         cirq_circuit.H(0)
@@ -165,6 +177,12 @@ class TestAerBackend(Template):
 
         tket_circuit.H(0)
         tket_circuit.CX(0, 1)
+
+        # Measure the circuits
+        cirq_circuit.measure_all()
+        pennylane_circuit.measure_all()
+        qiskit_circuit.measure_all()
+        tket_circuit.measure_all()
 
         # Get the unitary operator of the circuits
         cirq_operator = backend.get_operator(cirq_circuit)

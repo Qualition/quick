@@ -100,10 +100,11 @@ class Backend(ABC):
                 raise TypeError(f"The circuit must be of type `qickit.circuit.Circuit`, not {type(circuit)}.")
 
             # Assert the number of shots is valid (an integer greater than 0)
-            if not isinstance(kwargs.get("num_shots", 1), int) or kwargs["num_shots"] <= 0:
-                raise ValueError("The number of shots must be a positive integer.")
+            if "num_shots" in kwargs:
+                if not isinstance(kwargs.get("num_shots", 1), int) or kwargs["num_shots"] <= 0:
+                    raise ValueError("The number of shots must be a positive integer.")
 
-            # Check if the instance has attribute `_max_num_queues`, and if so, ensure the circuit is compatible
+            # Check if the instance has attribute `_max_num_qubits`, and if so, ensure the circuit is compatible
             # NOTE: This is used by `FakeBackend` instances as they emulate real-world hardware
             if hasattr(instance, "_max_num_qubits") and circuit.num_qubits > instance._max_num_qubits:
                 raise ValueError(f"The maximum number of qubits supported by the backend is {instance._max_num_qubits}.")
@@ -174,6 +175,11 @@ class Backend(ABC):
         -------
         dict[str, int]
             The counts of the circuit.
+
+        Raises
+        ------
+        ValueError
+            The circuit must have at least one qubit that is measured.
 
         Usage
         -----
@@ -319,9 +325,7 @@ class NoisyBackend(Backend):
 
         # If the noise rates are non-zero, then define the depolarizing quantum errors
         # and add them to the noise model
-        if self.single_qubit_error > 0.0 or self.two_qubit_error > 0.0:
-            # Set the noisy status to True
-            self.noisy = True
+        self.noisy = self.single_qubit_error > 0.0 or self.two_qubit_error > 0.0
 
         self._qc_framework: Type[Circuit]
 

@@ -5,7 +5,7 @@ numpy == 1.26.4
 pennylane == 0.34.0
 pennylane-lightning == 0.36.0
 pytket == 1.27.0
-pytket-qiskit == 0.53.0
+pytket-qiskit @ git+https://github.com/CQCL/pytket-qiskit.git@main
 qiskit @ git+https://github.com/Qiskit/qiskit.git@stable/1.1
 qiskit_aer == 0.14.2
 qiskit-aer-gpu == 0.14.2

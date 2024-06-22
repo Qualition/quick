@@ -72,7 +72,7 @@ class FakeIBMBackend(FakeBackend):
         self._qc_framework = QiskitCircuit
 
         # Get the names of all available IBM backends for the qiskit runtime
-        all_backend_names = [backend.name() for backend in qiskit_runtime.backends()]
+        all_backend_names = [backend.name for backend in qiskit_runtime.backends()]
 
         # Check if the specified backend is available
         if hardware_name not in all_backend_names:
@@ -88,15 +88,13 @@ class FakeIBMBackend(FakeBackend):
         # Generate a simulator that mimics the real quantum system with
         # the latest calibration results
         if self.device == "GPU" and AerSimulator.available_devices()["GPU"]:
-            self._counts_backend = BackendSampler(AerSimulator.from_backend(backend).set_option(device="GPU"))
-            self._op_backend = AerSimulator.from_backend(backend)
-            self._op_backend.set_option(device="GPU", method="unitary")
+            self._counts_backend = BackendSampler(AerSimulator.from_backend(backend, device="GPU"))
+            self._op_backend = AerSimulator.from_backend(backend, device="GPU", method="unitary")
         else:
             if self.device == "GPU" and AerSimulator.available_devices()["GPU"] is None:
                 print("Warning: GPU acceleration is not available. Defaulted to CPU.")
             self._counts_backend = BackendSampler(AerSimulator.from_backend(backend))
-            self._op_backend = AerSimulator.from_backend(backend)
-            self._op_backend.set_option(method="unitary")
+            self._op_backend = AerSimulator.from_backend(backend, method="unitary")
 
     @Backend.backendmethod
     def get_statevector(self,
@@ -145,10 +143,6 @@ class FakeIBMBackend(FakeBackend):
                    num_shots: int = 1024) -> dict[str, int]:
         # Create a copy of the circuit as measurement is applied inplace
         circuit = copy.deepcopy(circuit)
-
-        # Measure the qubits
-        if not circuit.measured:
-            circuit.measure(list(range(circuit.num_qubits)))
 
         # Run the circuit on the backend to generate the result
         result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()

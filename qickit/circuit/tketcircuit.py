@@ -34,6 +34,9 @@ from qickit.circuit import Circuit, QiskitCircuit
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
+# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.synthesis.unitarypreparation import UnitaryPreparation
+
 # Import `qickit.types.collection.Collection`
 from qickit.types import Collection
 
@@ -46,30 +49,24 @@ class TKETCircuit(Circuit):
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
 
     Attributes
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
     `circuit` : pytket.Circuit
         The TKET circuit.
-    `measured` : bool
-        The measurement status.
+    `measured_qubits` : list[bool]
+        The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
     """
     def __init__(self,
-                 num_qubits: int,
-                 num_clbits: int) -> None:
-        super().__init__(num_qubits=num_qubits,
-                         num_clbits=num_clbits)
+                 num_qubits: int) -> None:
+        super().__init__(num_qubits=num_qubits)
 
         # Define the circuit
-        self.circuit = TKCircuit(self.num_qubits, self.num_clbits)
+        self.circuit = TKCircuit(self.num_qubits, self.num_qubits)
 
     @Circuit.gatemethod
     def Identity(self,
@@ -522,6 +519,13 @@ class TKETCircuit(Circuit):
     @Circuit.gatemethod
     def measure(self,
                 qubit_indices: int | Collection[int]) -> None:
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        # Check if any of the qubits and classical bits have already been measured
+        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured")
+
         # Measure the qubits
         if isinstance(qubit_indices, int):
             self.circuit.Measure(qubit_indices, qubit_indices)
@@ -531,7 +535,7 @@ class TKETCircuit(Circuit):
                 self.circuit.Measure(index, index)
 
         # Set the measurement as applied
-        self.measured = True
+        list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
 
     def get_statevector(self,
                         backend: Backend | None = None) -> NDArray[np.complex128]:
@@ -576,23 +580,31 @@ class TKETCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict[str, int]:
+        if not(any(self.measured_qubits)):
+            raise ValueError("At least one qubit must be measured.")
+
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        if backend is None:
-            if not self.measured:
-                self.measure(range(self.num_qubits))
+        # Extract what qubits are measured
+        qubits_to_measure = [i for i in range(circuit.num_qubits) if circuit.measured_qubits[i]]
+        num_qubits_to_measure = len(qubits_to_measure)
 
+        if backend is None:
             # If no backend is provided, use the AerBackend
-            base_backend: AerBackend = AerBackend()
+            base_backend = AerBackend()
             # Run the circuit
-            result = base_backend.get_result(base_backend.process_circuit(circuit.circuit, n_shots=num_shots, seed=0))
+            result = base_backend.run_circuit(circuit.circuit, n_shots=num_shots, seed=0)
             # Get the counts
             counts = {"".join(map(str, basis_state)): num_counts
                       for basis_state, num_counts in result.get_counts().items()}
+            # Extract the counts for the measured qubits
+            counts = {str(key[int(self.num_qubits-num_qubits_to_measure):]): value for key, value in counts.items()}
+            # Fill in the missing counts
+            counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) for i in range(2**num_qubits_to_measure)}
 
         else:
             # Run the circuit on the specified backend
@@ -606,7 +618,7 @@ class TKETCircuit(Circuit):
 
         return circuit.get_depth()
 
-    def get_unitary(self) -> NDArray[np.number]:
+    def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -617,6 +629,21 @@ class TKETCircuit(Circuit):
         unitary = circuit.circuit.get_unitary()
 
         return np.array(unitary)
+
+    def transpile(self,
+                  direct_transpile: bool=True,
+                  synthesis_method: UnitaryPreparation | None = None) -> None:
+        # Convert to `qickit.circuit.QiskitCircuit`
+        qiskit_circuit = self.convert(QiskitCircuit)
+
+        # Transpile the circuit
+        qiskit_circuit.transpile(direct_transpile=direct_transpile,
+                                 synthesis_method=synthesis_method)
+
+        # Convert back to `qickit.circuit.TKETCircuit`
+        updated_circuit = qiskit_circuit.convert(TKETCircuit)
+        self.circuit_log = updated_circuit.circuit_log
+        self.circuit = updated_circuit.circuit
 
     def to_qasm(self,
                 qasm_version: int=2) -> str:

@@ -31,6 +31,9 @@ from qickit.circuit import Circuit, QiskitCircuit
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
+# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.synthesis.unitarypreparation import UnitaryPreparation
+
 # Import `qickit.types.collection.Collection`
 from qickit.types import Collection
 
@@ -43,29 +46,23 @@ class PennylaneCircuit(Circuit):
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
 
     Attributes
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
     `circuit` : list[qml.Operation]
         The circuit.
     `device` : qml.Device
         The PennyLane device to use.
-    `measured` : bool
-        The measurement status.
+    `measured_qubits` : list[bool]
+        The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
     """
     def __init__(self,
-                 num_qubits: int,
-                 num_clbits: int) -> None:
-        super().__init__(num_qubits=num_qubits,
-                         num_clbits=num_clbits)
+                 num_qubits: int) -> None:
+        super().__init__(num_qubits=num_qubits)
 
         # Define the device
         self.device = qml.device("default.qubit", wires=self.num_qubits)
@@ -543,7 +540,10 @@ class PennylaneCircuit(Circuit):
         # In PennyLane, we apply measurements in '.get_statevector', and '.get_counts'
         # methods. This is due to the need for PennyLane quantum functions to return measurement results.
         # Therefore, we do not need to do anything here.
-        pass
+        if isinstance(qubit_indices, int):
+            self.measured_qubits[qubit_indices] = True
+        else:
+            list(map(lambda qubit_index: self.measured_qubits.__setitem__(qubit_index, True), qubit_indices))
 
     def get_statevector(self,
                         backend: Backend | None = None) -> NDArray[np.complex128]:
@@ -607,6 +607,9 @@ class PennylaneCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict[str, int]:
+        if not(any(self.measured_qubits)):
+            raise ValueError("At least one qubit must be measured.")
+
         # Set the seed
         np.random.seed(0)
 
@@ -615,6 +618,9 @@ class PennylaneCircuit(Circuit):
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
+
+        # Extract what qubits are measured
+        qubits_to_measure = [i for i in range(circuit.num_qubits) if circuit.measured_qubits[i]]
 
         def compile() -> Collection[qml.ProbabilityMP]:
             """ Compile the circuit.
@@ -633,7 +639,7 @@ class PennylaneCircuit(Circuit):
             for op in circuit.circuit:
                 qml.apply(op)
 
-            return qml.counts(all_outcomes=True)
+            return qml.counts(wires=qubits_to_measure, all_outcomes=True)
 
         if backend is None:
             # Define the device
@@ -641,11 +647,11 @@ class PennylaneCircuit(Circuit):
             # Apply the operations in the circuit
             result = qml.QNode(compile, device)()
             # Get the counts
-            counts = {list(result.keys())[i]: list(result.values())[i] for i in range(len(result))}
+            counts = {list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))}
 
         else:
             # Run the circuit on the specified backend
-            result = backend.get_counts(circuit, num_shots=num_shots)
+            result = backend.get_counts(self, num_shots=num_shots)
 
         return counts
 
@@ -655,7 +661,7 @@ class PennylaneCircuit(Circuit):
 
         return circuit.get_depth()
 
-    def get_unitary(self) -> NDArray[np.number]:
+    def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: PennylaneCircuit = copy.deepcopy(self)
 
@@ -682,17 +688,17 @@ class PennylaneCircuit(Circuit):
 
         # PennyLane's `.matrix` function does not take qubit ordering into account,
         # so we need to manually convert the unitary matrix from MSB to LSB
-        def MSB_to_LSB(matrix: NDArray[np.number]) -> NDArray[np.number]:
+        def MSB_to_LSB(matrix: NDArray[np.complex128]) -> NDArray[np.complex128]:
             """ Convert the MSB to LSB.
 
             Parameters
             ----------
-            `matrix` : NDArray[np.number]
+            `matrix` : NDArray[np.complex128]
                 The matrix to convert.
 
             Returns
             -------
-            `reordered_matrix` : NDArray[np.number]
+            `reordered_matrix` : NDArray[np.complex128]
                 The new matrix with LSB conversion.
             """
             # Determine the size of the matrix (assuming it's a square matrix)
@@ -714,6 +720,21 @@ class PennylaneCircuit(Circuit):
             return reordered_matrix
 
         return MSB_to_LSB(unitary)
+
+    def transpile(self,
+                  direct_transpile: bool=True,
+                  synthesis_method: UnitaryPreparation | None = None) -> None:
+        # Convert to `qickit.circuit.QiskitCircuit`
+        qiskit_circuit = self.convert(QiskitCircuit)
+
+        # Transpile the circuit
+        qiskit_circuit.transpile(direct_transpile=direct_transpile,
+                                 synthesis_method=synthesis_method)
+
+        # Convert back to `qickit.circuit.PennylaneCircuit`
+        updated_circuit = qiskit_circuit.convert(PennylaneCircuit)
+        self.circuit_log = updated_circuit.circuit_log
+        self.circuit = updated_circuit.circuit
 
     def to_qasm(self,
                 qasm_version: int=2) -> str:

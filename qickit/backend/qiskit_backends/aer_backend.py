@@ -91,12 +91,12 @@ class AerBackend(NoisyBackend):
 
             # Add errors to the noise model
             noise_model = noise.NoiseModel()
-            noise_model.add_all_qubit_quantum_error(self.single_qubit_error, ["u", "u3"])
-            noise_model.add_all_qubit_quantum_error(self.two_qubit_error, ["cx"])
+            noise_model.add_all_qubit_quantum_error(single_qubit_error, ["u", "u3"])
+            noise_model.add_all_qubit_quantum_error(two_qubit_error, ["cx"])
 
         # Define the backend to run the circuit on
         # (based on device chosen and if noisy simulation is required)
-        if AerSimulator.available_devices()["GPU"] and self.device == "GPU":
+        if "GPU" in AerSimulator().available_devices() and device == "GPU":
             if self.noisy:
                 self._counts_backend = BackendSampler(AerSimulator(device="GPU", noise_model=noise_model))
                 self._op_backend = AerSimulator(device="GPU", method="unitary", noise_model=noise_model)
@@ -104,7 +104,7 @@ class AerBackend(NoisyBackend):
                 self._counts_backend = BackendSampler(AerSimulator(device="GPU"))
                 self._op_backend = AerSimulator(device="GPU", method="unitary")
         else:
-            if self.device == "GPU" and AerSimulator.available_devices()["GPU"] is None:
+            if self.device == "GPU" and "GPU" not in AerSimulator().available_devices():
                 print("Warning: GPU acceleration is not available. Defaulted to CPU.")
             if self.noisy:
                 self._counts_backend = BackendSampler(AerSimulator(noise_model=noise_model))
@@ -120,6 +120,8 @@ class AerBackend(NoisyBackend):
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the statevector
         if circuit.num_qubits < 10 and self.noisy is False:
+            # Remove the measurements from the circuit
+            circuit.remove_measurements(inplace=True)
             state_vector = Statevector(circuit.circuit).data
 
         else:
@@ -141,6 +143,9 @@ class AerBackend(NoisyBackend):
     @Backend.backendmethod
     def get_operator(self,
                      circuit: Circuit) -> NDArray[np.complex128]:
+        # Remove the measurements from the circuit
+        circuit.remove_measurements(inplace=True)
+
         # Run the circuit to get the operator
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the operator
@@ -163,12 +168,8 @@ class AerBackend(NoisyBackend):
     def get_counts(self,
                    circuit: Circuit,
                    num_shots: int) -> dict[str, int]:
-        # Create a copy of the circuit as measurement is applied inplace
-        circuit = copy.deepcopy(circuit)
-
-        # Measure the qubits
-        if not circuit.measured:
-            circuit.measure(list(range(circuit.num_qubits)))
+        if not any(circuit.measured_qubits):
+            raise ValueError("The circuit must have at least one measured qubit.")
 
         # Run the circuit on the backend to generate the result
         result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()

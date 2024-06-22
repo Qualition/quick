@@ -106,7 +106,7 @@ class Mottonen(StatePreparation):
         state = state.data.flatten()
 
         # Construct Mottonen circuit
-        circuit: Circuit = self.output_framework(num_qubits, num_qubits)
+        circuit: Circuit = self.output_framework(num_qubits)
 
         def k_controlled_uniform_rotation_y(circuit: Circuit,
                                             alpha_k: list[float],
@@ -186,7 +186,7 @@ class Shende(StatePreparation):
         state = state.data.flatten()
 
         # Construct Shende circuit
-        circuit: Circuit = self.output_framework(num_qubits, num_qubits)
+        circuit: Circuit = self.output_framework(num_qubits)
 
         def multiplex_ry(list_of_angles: list[float],
                          last_cnot=True) -> Circuit:
@@ -211,7 +211,7 @@ class Shende(StatePreparation):
             local_num_qubits = int(np.log2(num_angles)) + 1
 
             # Define the Multiplex circuit
-            circuit: Circuit = self.output_framework(local_num_qubits, local_num_qubits)
+            circuit: Circuit = self.output_framework(local_num_qubits)
 
             # Define LSB and MSB
             lsb, msb = 0, local_num_qubits - 1
@@ -269,7 +269,7 @@ class Shende(StatePreparation):
             local_num_qubits = int(np.log2(num_angles)) + 1
 
             # Define the Multiplex circuit
-            circuit: Circuit = self.output_framework(local_num_qubits, local_num_qubits)
+            circuit: Circuit = self.output_framework(local_num_qubits)
 
             # Define LSB and MSB
             lsb = 0
@@ -324,7 +324,7 @@ class Shende(StatePreparation):
                 The circuit that applies the corresponding gates to uncompute the state.
             """
             # Define the circuit
-            circuit: Circuit = self.output_framework(num_qubits, num_qubits)
+            circuit: Circuit = self.output_framework(num_qubits)
 
             # Define the remaining parameters
             remaining_param = params

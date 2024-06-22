@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from qickit.backend import Backend
 
 # import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
-from qickit.synthesis.unitarypreparation import QiskitUnitaryTranspiler
+from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitaryTranspiler
 
 # Import `qickit.types.collection.Collection` and `qickit.types.circuit_type.Circuit_Type`
 from qickit.types import Collection, Circuit_Type
@@ -78,52 +78,45 @@ class Circuit(ABC):
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
 
     Attributes
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
     `circuit` : Circuit_Type
         The circuit framework type.
-    `measured` : bool
-        The measurement status of the circuit.
+    `measured_qubits` : list[bool]
+        The measurement status of the qubits.
     `circuit_log` : list[dict]
         The log of the circuit operations.
 
     Raises
     ------
     TypeError
-        Number of qubits and classical bits must be integers.
+        Number of qubits bits must be integers.
     ValueError
-        Number of qubits and classical bits must be greater than 0.
+        Number of qubits bits must be greater than 0.
 
     Usage
     -----
-    >>> circuit = Circuit(num_qubits=2, num_clbits=2)
+    >>> circuit = Circuit(num_qubits=2)
     """
     def __init__(self,
-                 num_qubits: int,
-                 num_clbits: int) -> None:
+                 num_qubits: int) -> None:
         """ Initialize a `qickit.circuit.Circuit` instance.
         """
-        if not isinstance(num_qubits, int) or not isinstance(num_clbits, int):
-            raise TypeError("Number of qubits and classical bits must be integers.")
+        if not isinstance(num_qubits, int):
+            raise TypeError("Number of qubits must be integers.")
 
-        if num_qubits < 1 or num_clbits < 1:
-            raise ValueError("Number of qubits and classical bits must be greater than 0.")
+        if num_qubits < 1:
+            raise ValueError("Number of qubits must be greater than 0.")
 
         # Define the number of quantum bits
         self.num_qubits = num_qubits
-        # Define the number of classical bits
-        self.num_clbits = num_clbits
         # Define the circuit
         self.circuit = Circuit_Type
         # Define the measurement status
-        self.measured = False
+        self.measured_qubits = [False] * num_qubits
         # Define the circuit log (list[dict])
         self.circuit_log: list[dict] = []
 
@@ -934,10 +927,47 @@ class Circuit(ABC):
         unitary_preparer = QiskitUnitaryTranspiler(type(self))
 
         # Prepare the unitary matrix
-        circuit = unitary_preparer.prepare_unitary(unitary_matrix, qubit_indices)
+        circuit = unitary_preparer.prepare_unitary(unitary_matrix)
 
         # Add the circuit to the current circuit
         self.add(circuit, qubit_indices)
+
+    def clbit_condition(self,
+                        clbit_index: int,
+                        clbit_value: int) -> bool:
+        """ Check if a classical bit meets a condition.
+
+        Parameters
+        ----------
+        `clbit_index` : int
+            The index of the classical bit to check.
+        `clbit_value` : int
+            The value to check the classical bit against.
+
+        Returns
+        -------
+        `condition` : bool
+            Whether the condition is met.
+
+        Notes
+        -----
+        This method measures the classical bit at the specified index, and checks if it matches
+        the specified value. This can be used to perform conditional operations in the circuit.
+
+        Usage
+        -----
+        >>> if circuit.conditional(clbit_index=0, clbit_value=0):
+        ...     circuit.X(qubit_indices=0)
+        """
+        # Measure the specified qubit
+        self.measure(qubit_indices=clbit_index)
+
+        for key, value in self.get_counts(num_shots=1).items():
+            if value == 1:
+                # Check if the value of the measurement matches the specified value
+                condition = int(key[clbit_index]) == clbit_value
+
+        return condition
 
     def vertical_reverse(self) -> None:
         """ Perform a vertical reverse operation.
@@ -957,7 +987,13 @@ class Circuit(ABC):
                         operation[key] = (self.num_qubits - 1 - operation[key])
 
         # Update the circuit
-        self.circuit = self.convert(type(self)).circuit
+        converted_circuit = self.convert(type(self))
+        self.circuit = converted_circuit.circuit
+        self.measured_qubits = converted_circuit.measured_qubits
+
+        # Update the measurement keys (This is for `qickit.circuit.CirqCircuit` only)
+        if hasattr(self, "measurement_keys"):
+            self.measurement_keys = converted_circuit.measurement_keys # type: ignore
 
     def horizontal_reverse(self,
                            adjoint: bool = True) -> None:
@@ -1066,11 +1102,25 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The indices of the qubits to measure.
 
+        Raises
+        ------
+        ValueError
+            If an index in `qubit_indices` has priorly been measured.
+
         Usage
         -----
         >>> circuit.measure(qubit_indices=0)
         >>> circuit.measure(qubit_indices=[0, 1])
         """
+
+    def measure_all(self) -> None:
+        """ Measure all the qubits in the circuit.
+
+        Usage
+        -----
+        >>> circuit.measure_all()
+        """
+        self.measure(qubit_indices=list(range(self.num_qubits)))
 
     @abstractmethod
     def get_statevector(self,
@@ -1111,6 +1161,11 @@ class Circuit(ABC):
         `counts` : dict[str, int]
             The counts of the circuit.
 
+        Raises
+        ------
+        ValueError
+            The circuit must have at least one qubit that is measured.
+
         Usage
         -----
         >>> circuit.get_counts(num_shots=1024)
@@ -1146,12 +1201,12 @@ class Circuit(ABC):
         return self.num_qubits
 
     @abstractmethod
-    def get_unitary(self) -> NDArray[np.number]:
+    def get_unitary(self) -> NDArray[np.complex128]:
         """ Get the unitary matrix of the circuit.
 
         Returns
         -------
-        `unitary` : NDArray[np.number]
+        `unitary` : NDArray[np.complex128]
             The unitary matrix of the circuit.
 
         Usage
@@ -1159,12 +1214,79 @@ class Circuit(ABC):
         >>> circuit.get_unitary()
         """
 
-    def transpile(self) -> None:
+    def get_instructions(self,
+                         include_measurements: bool = True) -> list[dict]:
+        """ Get the instructions of the circuit.
+
+        Parameters
+        ----------
+        `include_measurements` : bool, optional
+            Whether or not to include the measurement instructions.
+
+        Returns
+        -------
+        `instructions` : list[dict]
+            The instructions of the circuit.
+        """
+        if include_measurements:
+            return self.circuit_log
+
+        instructions = []
+
+        # Filter out the measurement instructions
+        for operation in self.circuit_log:
+            if operation["gate"] == "measure":
+                continue
+            instructions.append(operation)
+
+        return instructions
+
+    def remove_measurements(self,
+                            inplace: bool=False) -> Circuit | None:
+        """ Remove the measurement instructions from the circuit.
+
+        Parameters
+        ----------
+        `inplace` : bool, optional, default=False
+            Whether or not to remove the measurement instructions in place.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit | None
+            The circuit without the measurement instructions. None is returned
+            if `inplace` is set to True.
+
+        Usage
+        -----
+        >>> new_circuit = circuit.remove_measurements()
+        """
+        # Filter out the measurement instructions
+        instructions = self.get_instructions(include_measurements=False)
+
+        # Create a new circuit without the measurement instructions
+        circuit = type(self)(self.num_qubits)
+        circuit.circuit_log = instructions
+
+        # Update the circuit
+        updated_circuit = circuit.convert(type(self))
+        if inplace:
+            self.circuit = updated_circuit.circuit
+            self.measured_qubits = updated_circuit.measured_qubits
+            return None
+
+        else:
+            circuit.circuit = updated_circuit.circuit
+            circuit.measured_qubits = updated_circuit.measured_qubits
+            return circuit
+
+    @abstractmethod
+    def transpile(self,
+                  direct_transpile: bool=True,
+                  synthesis_method: UnitaryPreparation | None = None) -> None:
         """ Transpile the circuit to U3 and CX gates.
 
         Parameters
         ----------
-        # TODO: Add the direct_transpile parameter. Must find a way to resolve the circular import issue.
         `direct_transpile` : bool, optional
             Whether or not to directly transpile the circuit. When set to True,
             we wil directly pass a `qickit.circuit.QiskitCircuit` object to the
@@ -1172,23 +1294,14 @@ class Circuit(ABC):
             gates. This is significantly more efficient as compared to first
             getting the unitary, applying the unitary to the circuit, and then
             synthesizing the unitary.
+        `synthesis_method` : qickit.circuit.UnitaryPreparation, optional
+            The method to use for synthesizing the unitary. This is only used
+            when `direct_transpile` is set to False.
 
         Usage
         -----
         >>> circuit.transpile()
         """
-        # Initialize the unitary preparation schema
-        unitary_preparer = QiskitUnitaryTranspiler(type(self))
-
-        # Get the unitary matrix of the circuit
-        unitary_matrix = self.get_unitary()
-
-        # Prepare the unitary matrix
-        transpiled_circuit = unitary_preparer.prepare_unitary(unitary_matrix, range(self.num_qubits))
-
-        # Update the circuit
-        self.circuit_log = transpiled_circuit.circuit_log
-        self.circuit = self.convert(type(self)).circuit
 
     def compress(self,
                  compression_percentage: float) -> None:
@@ -1277,7 +1390,9 @@ class Circuit(ABC):
                         operation[key] = (qubit_indices[operation[key]])
 
         # Convert the circuit to create the updated circuit
-        self.circuit = self.convert(type(self)).circuit
+        converted_circuit = self.convert(type(self))
+        self.circuit = converted_circuit.circuit
+        self.measured_qubits = converted_circuit.measured_qubits
 
     def convert(self,
                 circuit_framework: Type[Circuit]) -> Circuit:
@@ -1298,7 +1413,7 @@ class Circuit(ABC):
         >>> circuit.convert(circuit_framework=QiskitCircuit)
         """
         # Define the new circuit using the provided framework
-        converted_circuit = circuit_framework(self.num_qubits, self.num_clbits)
+        converted_circuit = circuit_framework(self.num_qubits)
 
         # Define a mapping between Qiskit gate names and corresponding methods in the target framework
         gate_mapping: dict[str, Callable] = {
@@ -1401,7 +1516,7 @@ class Circuit(ABC):
         """
         # Define a circuit
         num_qubits = len(cirq_circuit.all_qubits())
-        circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
+        circuit = output_framework(num_qubits=num_qubits)
 
         # Define the list of all circuit operations
         ops = list(cirq_circuit.all_operations())
@@ -1572,7 +1687,7 @@ class Circuit(ABC):
         """
         # Define a circuit
         num_qubits = len(pennylane_circuit.device.wires)
-        circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
+        circuit = output_framework(num_qubits=num_qubits)
 
         # TODO: Implement the conversion from PennyLane to Qickit
         return circuit
@@ -1621,7 +1736,7 @@ class Circuit(ABC):
 
         # Define a circuit
         num_qubits = qiskit_circuit.num_qubits
-        circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
+        circuit = output_framework(num_qubits=num_qubits)
 
         # Iterate over the operations in the Qiskit circuit
         for gate in qiskit_circuit.data:
@@ -1761,7 +1876,7 @@ class Circuit(ABC):
         """
         # Define a circuit
         num_qubits = tket_circuit.n_qubits
-        circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
+        circuit = output_framework(num_qubits=num_qubits)
 
         # Iterate over the operations in the Qiskit circuit
         for gate in tket_circuit:
@@ -1914,7 +2029,7 @@ class Circuit(ABC):
         """
         # Define a circuit
         num_qubits = 0
-        circuit = output_framework(num_qubits=num_qubits, num_clbits=num_qubits)
+        circuit = output_framework(num_qubits=num_qubits)
 
         # TODO: Implement the conversion from QASM to Qickit
         return circuit
@@ -1927,7 +2042,7 @@ class Circuit(ABC):
         >>> circuit.reset()
         """
         self.circuit_log = []
-        self.circuit = type(self)(self.num_qubits, self.num_clbits).circuit
+        self.circuit = type(self)(self.num_qubits).circuit
 
     @abstractmethod
     def draw(self):
@@ -2028,7 +2143,7 @@ class Circuit(ABC):
         str
             The string representation of the circuit.
         """
-        return f"Circuit(num_qubits={self.num_qubits}, num_clbits={self.num_clbits})"
+        return f"Circuit(num_qubits={self.num_qubits})"
 
     @classmethod
     def __subclasscheck__(cls, C) -> bool:

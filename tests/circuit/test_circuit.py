@@ -215,13 +215,33 @@ class Template(ABC):
         """
 
     @abstractmethod
-    def test_measure(self) -> None:
-        """ Test the measurement gate.
+    def test_single_measurement(self) -> None:
+        """ Test the measurement gate for a single index.
+        """
+
+    @abstractmethod
+    def test_multiple_measurement(self) -> None:
+        """ Test the measurement gate for multiple indices.
         """
 
     @abstractmethod
     def test_unitary(self) -> None:
         """ Test the unitary gate.
+        """
+
+    @abstractmethod
+    def test_get_statevector(self) -> None:
+        """ Test the get_statevector operation.
+        """
+
+    @abstractmethod
+    def test_partial_get_counts(self) -> None:
+        """ Test the get_counts operation with only partial measurement.
+        """
+
+    @abstractmethod
+    def test_get_counts(self) -> None:
+        """ Test the get_counts operation.
         """
 
     @abstractmethod

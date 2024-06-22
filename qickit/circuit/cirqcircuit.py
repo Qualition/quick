@@ -32,6 +32,9 @@ from qickit.circuit import Circuit, QiskitCircuit
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
+# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.synthesis.unitarypreparation import UnitaryPreparation
+
 # Import `qickit.types.collection.Collection`
 from qickit.types import Collection
 
@@ -44,32 +47,31 @@ class CirqCircuit(Circuit):
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
 
     Attributes
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
     `qr` : cirq.LineQubit
         The quantum bit register.
+    `measurement_keys`: list[str]
+        The measurement keys.
     `circuit` : cirq.Circuit
         The circuit.
-    `measured` : bool
-        The measurement status.
+    `measured_qubits` : list[bool]
+        The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
     """
     def __init__(self,
-                 num_qubits: int,
-                 num_clbits: int) -> None:
-        super().__init__(num_qubits=num_qubits,
-                         num_clbits=num_clbits)
+                 num_qubits: int) -> None:
+        super().__init__(num_qubits=num_qubits)
 
         # Define the quantum bit register
         self.qr = cirq.LineQubit.range(self.num_qubits)
+
+        # Define the measurement keys
+        self.measurement_keys = []
 
         # Define the circuit (Need to add an identity, otherwise `.get_unitary()`
         # returns the state instead of the operator of the circuit)
@@ -603,14 +605,23 @@ class CirqCircuit(Circuit):
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
+        # Check if any of the qubits and classical bits have already been measured
+        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured.")
+
         # Measure the qubits
-        self.circuit.append(cirq.measure(
-            *map(self.qr.__getitem__, qubit_indices), key="meas"
-            )
-        )
+        # NOTE: We must sort the indices as Cirq doesn't understand that the order of measurements
+        # is irrelevant. This is done to ensure that the measurements are consistent across different
+        # framework.
+        for qubit_index in sorted(qubit_indices):
+            self.circuit.append(cirq.measure(self.qr[qubit_index], key=f"q{qubit_index}"))
+            self.measurement_keys.append(f"q{qubit_index}")
+
+        # Sort the measurement keys (as explained in the NOTE above)
+        self.measurement_keys = sorted(self.measurement_keys)
 
         # Set the measurement as applied
-        self.measured = True
+        list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
 
     def get_statevector(self,
                         backend: Backend | None = None) -> NDArray[np.complex128]:
@@ -655,19 +666,36 @@ class CirqCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict:
-        # TODO: Add a native sampler
+        if not(any(self.measured_qubits)):
+            raise ValueError("At least one qubit must be measured.")
+
+        # Copy the circuit as the operations are applied inplace
+        circuit: CirqCircuit = copy.deepcopy(self)
+
+        # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
+        # Extract what qubits are measured
+        qubits_to_measure = [i for i in range(circuit.num_qubits) if circuit.measured_qubits[i]]
+        num_qubits_to_measure = len(qubits_to_measure)
+
         if backend is None:
-            # Run the circuit to get the state vector
-            state_vector = self.get_statevector()
-            # Format the state vector to get the counts
-            counts = {format(int(index),"0{}b".format(self.num_qubits)): int(abs(amplitude)**2 * num_shots) \
-                      for index, amplitude in enumerate(state_vector)}
+            # If no backend is provided, use the `cirq.Simulator`
+            base_backend = cirq.Simulator()
+            # Run the circuit to get the result
+            result = base_backend.run(circuit.circuit, repetitions=num_shots)
+            # Format the result to get the counts
+            counts = dict(result.multi_measurement_histogram(keys=circuit.measurement_keys))
+            counts = {''.join(map(str, key)): value for key, value in counts.items()}
+            for i in range(2**num_qubits_to_measure):
+                basis = format(int(i),"0{}b".format(num_qubits_to_measure))
+                if basis not in counts:
+                    counts[basis] = 0
+                else:
+                    counts[basis] = int(counts[basis])
+            counts = dict(sorted(counts.items()))
 
         else:
-            # Copy the circuit as the operations are applied inplace
-            circuit: CirqCircuit = copy.deepcopy(self)
-            # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-            circuit.vertical_reverse()
             # Run the circuit on the specified backend
             counts = backend.get_counts(circuit, num_shots)
 
@@ -679,7 +707,7 @@ class CirqCircuit(Circuit):
 
         return circuit.get_depth()
 
-    def get_unitary(self) -> NDArray[np.number]:
+    def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: CirqCircuit = copy.deepcopy(self)
 
@@ -690,6 +718,21 @@ class CirqCircuit(Circuit):
         unitary = cirq.unitary(circuit.circuit)
 
         return np.array(unitary)
+
+    def transpile(self,
+                  direct_transpile: bool=True,
+                  synthesis_method: UnitaryPreparation | None = None) -> None:
+        # Convert to `qickit.circuit.QiskitCircuit`
+        qiskit_circuit = self.convert(QiskitCircuit)
+
+        # Transpile the circuit
+        qiskit_circuit.transpile(direct_transpile=direct_transpile,
+                                 synthesis_method=synthesis_method)
+
+        # Convert back to `qickit.circuit.CirqCircuit`
+        updated_circuit = qiskit_circuit.convert(CirqCircuit)
+        self.circuit_log = updated_circuit.circuit_log
+        self.circuit = updated_circuit.circuit
 
     def to_qasm(self,
                 qasm_version: int=2) -> str:

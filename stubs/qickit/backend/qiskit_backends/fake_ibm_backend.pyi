@@ -1,0 +1,13 @@
+import numpy as np
+from numpy.typing import NDArray
+from qickit.backend import FakeBackend
+from qickit.circuit import Circuit
+from qiskit_ibm_runtime import QiskitRuntimeService
+
+__all__ = ['FakeIBMBackend']
+
+class FakeIBMBackend(FakeBackend):
+    def __init__(self, hardware_name: str, qiskit_runtime: QiskitRuntimeService, device: str = 'CPU') -> None: ...
+    def get_statevector(self, circuit: Circuit) -> NDArray[np.complex128]: ...
+    def get_operator(self, circuit: Circuit) -> NDArray[np.complex128]: ...
+    def get_counts(self, circuit: Circuit, num_shots: int = 1024) -> dict[str, int]: ...

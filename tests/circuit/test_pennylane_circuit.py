@@ -19,6 +19,7 @@ __all__ = ["TestPennylaneCircuit"]
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
+from scipy.spatial import distance # type: ignore
 
 # QICKIT imports
 from qickit.circuit import PennylaneCircuit
@@ -37,38 +38,53 @@ from tests.circuit.gate_utils import (X_unitary_matrix, Y_unitary_matrix, Z_unit
                                       MCU3_unitary_matrix, MCSWAP_unitary_matrix, Identity_unitary_matrix)
 
 
+def cosine_similarity(h1: dict[str, int],
+                      h2: dict[str, int]) -> float:
+    """ Calculate the cosine similarity between two histograms.
+
+    Parameters
+    ----------
+    h1 : dict[str, int]
+        The first histogram.
+    h2 : dict[str, int]
+        The second histogram.
+
+    Returns
+    -------
+    float
+        The cosine similarity between the two histograms.
+    """
+    # Convert dictionaries to lists
+    keys = set(h1.keys()).union(h2.keys())
+    dist_1 = [h1.get(key, 0) for key in keys]
+    dist_2 = [h2.get(key, 0) for key in keys]
+
+    return 1 - distance.cosine(dist_1, dist_2)
+
+
 class TestPennylaneCircuit(Template):
     """ `tests.circuit.TestPennylaneCircuit` is the tester class for `qickit.circuit.PennylaneCircuit` class.
     """
     def test_init(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
     def test_num_qubits_value(self) -> None:
         # Ensure the error is raised when the number of qubits is less than or equal to 0
         with pytest.raises(ValueError):
-            circuit = PennylaneCircuit(0, 1)
+            circuit = PennylaneCircuit(0)
 
         with pytest.raises(ValueError):
-            circuit = PennylaneCircuit(-1, 1)
-
-        with pytest.raises(ValueError):
-            circuit = PennylaneCircuit(1, 0)
-
-        with pytest.raises(ValueError):
-            circuit = PennylaneCircuit(1, -1)
+            circuit = PennylaneCircuit(-1)
 
     def test_num_qubits_type(self) -> None:
         # Ensure the error is raised when the number of qubits is not an integer
         with pytest.raises(TypeError):
-            circuit = PennylaneCircuit(1.0, 1) # type: ignore
-
-        with pytest.raises(TypeError):
-            circuit = PennylaneCircuit(1, 1.0) # type: ignore
+            circuit = PennylaneCircuit(1.0) # type: ignore
 
     def test_Identity(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the Identity gate
         circuit.Identity(0)
@@ -78,7 +94,7 @@ class TestPennylaneCircuit(Template):
 
     def test_X(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the Pauli-X gate
         circuit.X(0)
@@ -88,7 +104,7 @@ class TestPennylaneCircuit(Template):
 
     def test_Y(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the Pauli-Y gate
         circuit.Y(0)
@@ -98,7 +114,7 @@ class TestPennylaneCircuit(Template):
 
     def test_Z(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the Pauli-Z gate
         circuit.Z(0)
@@ -108,7 +124,7 @@ class TestPennylaneCircuit(Template):
 
     def test_H(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the Hadamard gate
         circuit.H(0)
@@ -118,7 +134,7 @@ class TestPennylaneCircuit(Template):
 
     def test_S(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the S gate
         circuit.S(0)
@@ -128,7 +144,7 @@ class TestPennylaneCircuit(Template):
 
     def test_T(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the T gate
         circuit.T(0)
@@ -138,7 +154,7 @@ class TestPennylaneCircuit(Template):
 
     def test_RX(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the RX gate
         circuit.RX(np.pi/4, 0)
@@ -148,7 +164,7 @@ class TestPennylaneCircuit(Template):
 
     def test_RY(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the RY gate
         circuit.RY(np.pi/4, 0)
@@ -158,7 +174,7 @@ class TestPennylaneCircuit(Template):
 
     def test_RZ(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the RZ gate
         circuit.RZ(np.pi/4, 0)
@@ -168,7 +184,7 @@ class TestPennylaneCircuit(Template):
 
     def test_U3(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the U3 gate
         circuit.U3([np.pi/2, np.pi/3, np.pi/4], 0)
@@ -178,7 +194,7 @@ class TestPennylaneCircuit(Template):
 
     def test_SWAP(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the SWAP gate
         circuit.SWAP(0, 1)
@@ -188,7 +204,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CX(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CX gate
         circuit.CX(0, 1)
@@ -198,7 +214,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CY(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CY gate
         circuit.CY(0, 1)
@@ -208,7 +224,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CZ(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CZ gate
         circuit.CZ(0, 1)
@@ -218,7 +234,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CH(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CH gate
         circuit.CH(0, 1)
@@ -228,7 +244,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CS(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CS gate
         circuit.CS(0, 1)
@@ -238,7 +254,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CT(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CT gate
         circuit.CT(0, 1)
@@ -248,7 +264,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CRX(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CRX gate
         circuit.CRX(np.pi/4, 0, 1)
@@ -258,7 +274,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CRY(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CRY gate
         circuit.CRY(np.pi/4, 0, 1)
@@ -268,7 +284,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CRZ(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CRZ gate
         circuit.CRZ(np.pi/4, 0, 1)
@@ -278,7 +294,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CU3(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply the CU3 gate
         circuit.CU3([np.pi/2, np.pi/3, np.pi/4], 0, 1)
@@ -288,7 +304,7 @@ class TestPennylaneCircuit(Template):
 
     def test_CSWAP(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(3, 3)
+        circuit = PennylaneCircuit(3)
 
         # Apply the CSWAP gate
         circuit.CSWAP(0, 1, 2)
@@ -298,7 +314,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCX(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
@@ -308,7 +324,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCY(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCY gate
         circuit.MCY([0, 1], [2, 3])
@@ -318,7 +334,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCZ(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCZ gate
         circuit.MCZ([0, 1], [2, 3])
@@ -328,7 +344,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCH(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCH gate
         circuit.MCH([0, 1], [2, 3])
@@ -338,7 +354,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCS(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCS gate
         circuit.MCS([0, 1], [2, 3])
@@ -348,7 +364,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCT(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCT gate
         circuit.MCT([0, 1], [2, 3])
@@ -358,7 +374,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCRX(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCRX gate
         circuit.MCRX(np.pi/4, [0, 1], [2, 3])
@@ -368,7 +384,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCRY(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCRY gate
         circuit.MCRY(np.pi/4, [0, 1], [2, 3])
@@ -378,7 +394,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCRZ(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCRZ gate
         circuit.MCRZ(np.pi/4, [0, 1], [2, 3])
@@ -388,7 +404,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCU3(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCU3 gate
         circuit.MCU3([np.pi/2, np.pi/3, np.pi/4], [0, 1], [2, 3])
@@ -398,7 +414,7 @@ class TestPennylaneCircuit(Template):
 
     def test_MCSWAP(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCSWAP gate
         circuit.MCSWAP([0, 1], 2, 3)
@@ -408,7 +424,7 @@ class TestPennylaneCircuit(Template):
 
     def test_GlobalPhase(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the global phase gate
         circuit.GlobalPhase(1.8)
@@ -416,13 +432,15 @@ class TestPennylaneCircuit(Template):
         # Ensure the global phase is correct
         assert_almost_equal(circuit.get_unitary(), np.exp(1.8j) * np.eye(2), 8)
 
-    # TODO: Implement
-    def test_measure(self) -> None:
-        return super().test_measure()
+    def test_single_measurement(self) -> None:
+        pass
+
+    def test_multiple_measurement(self) -> None:
+        pass
 
     def test_unitary(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the gate
         circuit.MCX([0, 1], [2, 3])
@@ -432,14 +450,69 @@ class TestPennylaneCircuit(Template):
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        unitary_circuit = PennylaneCircuit(4, 4)
+        unitary_circuit = PennylaneCircuit(4)
         unitary_circuit.unitary(unitary, [0, 1, 2, 3])
 
         assert_almost_equal(unitary_circuit.get_unitary(), unitary, 8)
 
+    def test_get_statevector(self) -> None:
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(2)
+
+        # Apply the GHZ state
+        circuit.H(0)
+        circuit.CX(0, 1)
+
+        # Get the statevector of the circuit, and ensure it is correct
+        statevector = circuit.get_statevector()
+
+        assert_almost_equal(statevector, [np.sqrt(1/2), 0, 0, np.sqrt(1/2)], 8)
+
+    def test_partial_get_counts(self) -> None:
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(2)
+
+        # Apply the Hadamard gate only to the first qubit
+        circuit.H(0)
+
+        # Measure the circuit partially
+        circuit.measure(0)
+
+        # Get the counts of the circuit, and ensure it is correct
+        counts = circuit.get_counts(1024)
+
+        assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
+
+        # Remove the measurement
+        circuit = circuit.remove_measurements()
+
+        # Measure the circuit partially
+        circuit.measure(1)
+
+        # Get the counts of the circuit, and ensure it is correct
+        counts = circuit.get_counts(1024)
+
+        assert cosine_similarity(counts, {"0": 1024, "1": 0}) > 0.95
+
+    def test_get_counts(self) -> None:
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(2)
+
+        # Apply the Bell state
+        circuit.H(0)
+        circuit.CX(0, 1)
+
+        # Measure the circuit
+        circuit.measure_all()
+
+        # Get the counts of the circuit, and ensure it is correct
+        counts = circuit.get_counts(1024)
+
+        assert cosine_similarity(counts, {"00": 512, "01": 0, "10":0, "11": 512}) > 0.95
+
     def test_vertical_reverse(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply GHZ state
         circuit.H(0)
@@ -450,7 +523,7 @@ class TestPennylaneCircuit(Template):
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        updated_circuit = PennylaneCircuit(2, 2)
+        updated_circuit = PennylaneCircuit(2)
         updated_circuit.H(1)
         updated_circuit.CX(1, 0)
 
@@ -459,7 +532,7 @@ class TestPennylaneCircuit(Template):
 
     def test_horizontal_reverse(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2, 2)
+        circuit = PennylaneCircuit(2)
 
         # Apply a RX and CX gate
         circuit.RX(np.pi, 0)
@@ -470,7 +543,7 @@ class TestPennylaneCircuit(Template):
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        updated_circuit = PennylaneCircuit(2, 2)
+        updated_circuit = PennylaneCircuit(2)
         updated_circuit.CX(0, 1)
         updated_circuit.RX(-np.pi, 0)
 
@@ -479,8 +552,8 @@ class TestPennylaneCircuit(Template):
 
     def test_add(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instances
-        circuit1 = PennylaneCircuit(2, 2)
-        circuit2 = PennylaneCircuit(2, 2)
+        circuit1 = PennylaneCircuit(2)
+        circuit2 = PennylaneCircuit(2)
 
         # Apply the Pauli-X gate
         circuit1.CX(0, 1)
@@ -491,7 +564,7 @@ class TestPennylaneCircuit(Template):
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        added_circuit = PennylaneCircuit(2, 2)
+        added_circuit = PennylaneCircuit(2)
         added_circuit.CX(0, 1)
         added_circuit.CY(1, 0)
 
@@ -500,14 +573,14 @@ class TestPennylaneCircuit(Template):
 
     def test_transpile(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        transpiled_circuit = PennylaneCircuit(4, 4)
+        transpiled_circuit = PennylaneCircuit(4)
         transpiled_circuit.MCX([0, 1], [2, 3])
         transpiled_circuit.transpile()
 
@@ -515,7 +588,7 @@ class TestPennylaneCircuit(Template):
 
     def test_get_depth(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
@@ -523,14 +596,11 @@ class TestPennylaneCircuit(Template):
         # Get the depth of the circuit, and ensure it is correct
         depth = circuit.get_depth()
 
-        # NOTE: The depth of the circuit is optimally 21, however, `qickit`
-        # must first get the unitary of the circuit before transpiling it.
-        # This results in the increased depth.
-        assert depth == 176
+        assert depth == 21
 
     def test_get_width(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Get the width of the circuit, and ensure it is correct
         width = circuit.get_width()
@@ -539,7 +609,7 @@ class TestPennylaneCircuit(Template):
 
     def test_compress(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1, 1)
+        circuit = PennylaneCircuit(1)
 
         # Apply the MCX gate
         circuit.RX(np.pi/2, 0)
@@ -549,14 +619,14 @@ class TestPennylaneCircuit(Template):
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        compressed_circuit = PennylaneCircuit(1, 1)
+        compressed_circuit = PennylaneCircuit(1)
 
         assert circuit == compressed_circuit
         assert_almost_equal(circuit.get_unitary(), compressed_circuit.get_unitary(), 8)
 
     def test_change_mapping(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(4, 4)
+        circuit = PennylaneCircuit(4)
 
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
@@ -566,7 +636,7 @@ class TestPennylaneCircuit(Template):
 
         # Define the equivalent `qickit.circuit.PennylaneCircuit` instance, and
         # ensure they are equivalent
-        mapped_circuit = PennylaneCircuit(4, 4)
+        mapped_circuit = PennylaneCircuit(4)
         mapped_circuit.MCX([3, 2], [1, 0])
 
         assert circuit == mapped_circuit

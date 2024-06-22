@@ -31,6 +31,9 @@ from qickit.circuit import Circuit, QiskitCircuit
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
+# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.synthesis.unitarypreparation import UnitaryPreparation
+
 # Import `qickit.types.collection.Collection`
 from qickit.types import Collection
 
@@ -43,29 +46,23 @@ class CUDAQCircuit(Circuit):
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
 
     Attributes
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
     `qr` : cudaq.qvector
         The quantum bit register.
     `circuit` : cudaq.kernel
         The circuit.
-    `measured` : bool
-        The measurement status.
+    `measured_qubits` : list[bool]
+        The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
     """
     def __init__(self,
-                 num_qubits: int,
-                 num_clbits: int) -> None:
-        super().__init__(num_qubits=num_qubits,
-                         num_clbits=num_clbits)
+                 num_qubits: int) -> None:
+        super().__init__(num_qubits=num_qubits)
 
         # Initialize the cudaq kernel
         self.circuit = cudaq.make_kernel()
@@ -434,6 +431,9 @@ class CUDAQCircuit(Circuit):
     @Circuit.gatemethod
     def measure(self,
                 qubit_indices: int | Collection[int]) -> None:
+        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured")
+
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
@@ -442,7 +442,7 @@ class CUDAQCircuit(Circuit):
             self.circuit.mz(self.qr[qubit_index])
 
         # Set the measurement as applied
-        self.measured = True
+        list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
 
     def get_statevector(self,
                         backend: Backend | None = None) -> NDArray[np.complex128]:
@@ -487,6 +487,9 @@ class CUDAQCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict:
+        if not(any(self.measured_qubits)):
+            raise ValueError("At least one qubit must be measured.")
+
         # Copy the circuit as the measurement and vertical reverse operations are applied inplace
         circuit: CUDAQCircuit = copy.deepcopy(self)
 
@@ -494,9 +497,6 @@ class CUDAQCircuit(Circuit):
         circuit.vertical_reverse()
 
         if backend is None:
-            # Measure all the qubits if no measurement is applied
-            if not circuit.measured:
-                circuit.measure(range(circuit.num_qubits))
             # Run the circuit to get the result
             result = str(cudaq.sample(circuit.circuit, num_shots)).split()[1:-1]
             # Format the result as a dictionary to get the counts
@@ -514,7 +514,7 @@ class CUDAQCircuit(Circuit):
 
         return circuit.get_depth()
 
-    def get_unitary(self) -> NDArray[np.number]:
+    def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: CUDAQCircuit = copy.deepcopy(self)
 
@@ -522,9 +522,24 @@ class CUDAQCircuit(Circuit):
         circuit.vertical_reverse()
 
         # Define the unitary matrix
-        unitary = cirq.unitary(circuit.circuit)
+        unitary = []
 
         return np.array(unitary)
+
+    def transpile(self,
+                  direct_transpile: bool=True,
+                  synthesis_method: UnitaryPreparation | None = None) -> None:
+        # Convert to `qickit.circuit.QiskitCircuit`
+        qiskit_circuit = self.convert(QiskitCircuit)
+
+        # Transpile the circuit
+        qiskit_circuit.transpile(direct_transpile=direct_transpile,
+                                 synthesis_method=synthesis_method)
+
+        # Convert back to `qickit.circuit.CUDAQCircuit`
+        updated_circuit = qiskit_circuit.convert(CUDAQCircuit)
+        self.circuit_log = updated_circuit.circuit_log
+        self.circuit = updated_circuit.circuit
 
     def to_qasm(self,
                 qasm_version: int=2) -> str:

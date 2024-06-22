@@ -24,16 +24,12 @@ from typing import Type, TYPE_CHECKING
 
 # Qiskit imports
 from qiskit import QuantumCircuit, transpile # type: ignore
-from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager # type: ignore
 from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
 from qiskit_transpiler_service.transpiler_service import TranspilerService # type: ignore
 
 # Import `qickit.circuit.Circuit`
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
-
-# Import `qickit.types.collection.Collection`
-from qickit.types import Collection
 
 
 class UnitaryPreparation(ABC):
@@ -98,30 +94,6 @@ class UnitaryPreparation(ABC):
             raise ValueError(f"The `unitary_matrix` must have a size of {size} x {size}.")
 
     @staticmethod
-    def check_num_qubits(num_qubits: int,
-                         unitary: NDArray[np.complex128]) -> None:
-        """ Check if the number of qubits is correct for the unitary matrix.
-
-        Parameters
-        ----------
-        `num_qubits` : int
-            The number of qubits passed to implement the operator.
-        `unitary` : NDArray[np.complex128]
-            The quantum unitary operator.
-
-        Raises
-        ------
-        ValueError
-            The number of qubits is not correct for the unitary matrix.
-        """
-        # Calculate the number of qubits needed to implement the operator
-        num_qubits_needed = int(np.log2(unitary.shape[0]))
-
-        # Check if the number of qubits is correct for the unitary matrix
-        if not num_qubits == num_qubits_needed:
-            raise ValueError(f"The number of qubits must be {num_qubits_needed}.")
-
-    @staticmethod
     def unitarymethod(method):
         """ Decorator for unitary methods.
 
@@ -143,25 +115,19 @@ class UnitaryPreparation(ABC):
             # Check if the unitary matrix is the correct size
             instance.check_unitary_size(args[0])
 
-            # Check if the number of qubits is correct for the unitary matrix
-            instance.check_num_qubits(len(args[1]), args[0])
-
             return method(instance, *args, **kwargs)
 
         return wrapper
 
     @abstractmethod
     def prepare_unitary(self,
-                        unitary: NDArray[np.complex128],
-                        qubit_indices: int | Collection[int]) -> Circuit:
+                        unitary: NDArray[np.complex128]) -> Circuit:
         """ Prepare the quantum unitary operator.
 
         Parameters
         ----------
         `unitary` : NDArray[np.complex128]
             The quantum unitary operator.
-        `qubit_indices` : int | Collection[int]
-            The index of the qubit(s) to apply the gate to.
 
         Returns
         -------
@@ -177,7 +143,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
     ----------
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
-    `ai_transpilation` : bool, optional, default=True
+    `ai_transpilation` : bool, optional, default=False
         Whether to use Qiskit's AI transpiler.
     `service`: qiskit_ibm_runtime.QiskitRuntimeService, optional
         The Qiskit Runtime service. Only needed if `ai`=True.
@@ -212,7 +178,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
     """
     def __init__(self,
                  output_framework: Type[Circuit],
-                 ai_transpilation: bool=True,
+                 ai_transpilation: bool=False,
                  service: QiskitRuntimeService | None = None,
                  backend_name: str | None = None) -> None:
         """ Initalize a Qiskit Transpiler instance.
@@ -230,20 +196,15 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
 
     @UnitaryPreparation.unitarymethod
     def prepare_unitary(self,
-                        unitary: NDArray[np.complex128],
-                        qubit_indices: int | Collection[int]) -> Circuit:
-        # Convert the qubit indices to a list if it is a range
-        if isinstance(qubit_indices, range):
-            qubit_indices = list(qubit_indices)
-
+                        unitary: NDArray[np.complex128]) -> Circuit:
         # Get the number of qubits needed to implement the operator
-        num_qubits = len(qubit_indices) if isinstance(qubit_indices, Collection) else 1
+        num_qubits = int(np.log2(unitary.shape[0]))
 
         # Create a qiskit circuit
         qiskit_circuit = QuantumCircuit(num_qubits, num_qubits)
 
         # Initialize the qickit circuit
-        circuit = self.output_framework(num_qubits, num_qubits)
+        circuit = self.output_framework(num_qubits)
 
         # Apply the unitary matrix to the circuit
         qiskit_circuit.unitary(unitary, range(num_qubits))

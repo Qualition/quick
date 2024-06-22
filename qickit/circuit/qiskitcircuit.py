@@ -23,7 +23,7 @@ from numpy.typing import NDArray
 from typing import TYPE_CHECKING
 
 # Qiskit imports
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister # type: ignore
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile # type: ignore
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
                                     ZGate, SGate, TGate, U3Gate, SwapGate, CXGate, # type: ignore
                                     CYGate, CZGate, CHGate, CSGate, CSwapGate, # tyoe: ignore
@@ -41,6 +41,9 @@ from qickit.circuit import Circuit
 if TYPE_CHECKING:
     from qickit.backend import Backend
 
+# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitaryTranspiler
+
 # Import `qickit.types.collection.Collection`
 from qickit.types import Collection
 
@@ -53,32 +56,26 @@ class QiskitCircuit(Circuit):
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
 
     Attributes
     ----------
     `num_qubits` : int
         Number of qubits in the circuit.
-    `num_clbits` : int
-        Number of classical bits in the circuit.
     `circuit` : qiskit.QuantumCircuit
         The circuit.
-    `measured` : bool
-        If the circuit has been measured.
+    `measured_qubits` : list[bool]
+        The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
     """
     def __init__(self,
-                 num_qubits: int,
-                 num_clbits: int) -> None:
-        super().__init__(num_qubits=num_qubits,
-                         num_clbits=num_clbits)
+                 num_qubits: int) -> None:
+        super().__init__(num_qubits=num_qubits)
 
         # Define the quantum bit register
         qr = QuantumRegister(self.num_qubits)
         # Define the classical bit register
-        cr = ClassicalRegister(self.num_clbits)
+        cr = ClassicalRegister(self.num_qubits)
 
         # Define the circuit
         self.circuit = QuantumCircuit(qr, cr)
@@ -528,11 +525,18 @@ class QiskitCircuit(Circuit):
     @Circuit.gatemethod
     def measure(self,
                 qubit_indices: int | Collection[int]) -> None:
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        # Check if any of the qubits and classical bits have already been measured
+        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured")
+
         # Measure the qubits
         self.circuit.measure(qubit_indices, qubit_indices)
 
         # Set the measurement as applied
-        self.measured = True
+        list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
 
     def get_statevector(self,
                         backend: Backend | None = None) -> NDArray[np.complex128]:
@@ -571,13 +575,17 @@ class QiskitCircuit(Circuit):
     def get_counts(self,
                    num_shots: int,
                    backend: Backend | None = None) -> dict[str, int]:
+        if not(any(self.measured_qubits)):
+            raise ValueError("At least one qubit must be measured.")
+
         # Copy the circuit as the transpilation operation is inplace
         circuit: QiskitCircuit = copy.deepcopy(self)
 
-        if backend is None:
-            if not circuit.measured:
-                circuit.measure(range(circuit.num_qubits))
+        # Extract what qubits are measured
+        qubits_to_measure = [i for i in range(circuit.num_qubits) if circuit.measured_qubits[i]]
+        num_qubits_to_measure = len(qubits_to_measure)
 
+        if backend is None:
             # If no backend is provided, use the AerSimualtor
             base_backend: BackendSampler = BackendSampler(AerSimulator())
             # Run the circuit
@@ -585,9 +593,9 @@ class QiskitCircuit(Circuit):
             # Extract the quasi-probability distribution from the first result
             quasi_dist = result.quasi_dists[0]
             # Convert the quasi-probability distribution to counts
-            counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) for k, v in quasi_dist.items()}
+            counts = {bin(k)[2:].zfill(num_qubits_to_measure): int(v * num_shots) for k, v in quasi_dist.items()}
             # Fill the counts array with zeros for the missing states
-            counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) for i in range(2**circuit.num_qubits)}
+            counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) for i in range(2**num_qubits_to_measure)}
             # Sort the counts by their keys (basis states)
             counts = dict(sorted(counts.items()))
 
@@ -606,7 +614,7 @@ class QiskitCircuit(Circuit):
 
         return circuit.circuit.depth()
 
-    def get_unitary(self) -> NDArray[np.number]:
+    def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the transpilation operation is inplace
         circuit: QiskitCircuit = copy.deepcopy(self)
 
@@ -614,6 +622,34 @@ class QiskitCircuit(Circuit):
         unitary = Operator(circuit.circuit).data
 
         return np.array(unitary)
+
+    def transpile(self,
+                  direct_transpile: bool=True,
+                  synthesis_method: UnitaryPreparation | None = None) -> None:
+        if direct_transpile:
+            # Transpile the circuit (this returns a `qiskit.QuantumCircuit` instance)
+            transpiled_circuit = transpile(self.circuit,
+                                           optimization_level=3,
+                                           basis_gates=['u3', 'cx'],
+                                           seed_transpiler=0)
+
+            # Define a `qickit.circuit.QiskitCircuit` instance from the transpiled circuit
+            transpiled_circuit = self.from_qiskit(transpiled_circuit, QiskitCircuit)
+
+        else:
+            if synthesis_method is None:
+                # If no synthesis method is provided, use the default QiskitUnitaryTranspiler
+                synthesis_method = QiskitUnitaryTranspiler(output_framework=type(self))
+
+            # Get the unitary matrix of the circuit
+            unitary_matrix = self.get_unitary()
+
+            # Prepare the unitary matrix
+            transpiled_circuit = synthesis_method.prepare_unitary(unitary_matrix)
+
+        # Update the circuit
+        self.circuit_log = transpiled_circuit.circuit_log
+        self.circuit = transpiled_circuit.circuit
 
     def to_qasm(self,
                 qasm_version:int = 2) -> str:
