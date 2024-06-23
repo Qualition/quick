@@ -29,7 +29,7 @@ from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate,
                                     CYGate, CZGate, CHGate, CSGate, CSwapGate, # tyoe: ignore
                                     GlobalPhaseGate, IGate) # type: ignore
 from qiskit.primitives import BackendSampler # type: ignore
-from qiskit_aer.aerprovider import AerSimulator # type: ignore
+from qiskit_aer import AerSimulator # type: ignore
 import qiskit.qasm2 as qasm2 # type: ignore
 import qiskit.qasm3 as qasm3 # type: ignore
 from qiskit.quantum_info import Statevector, Operator # type: ignore

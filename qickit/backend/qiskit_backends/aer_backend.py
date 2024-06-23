@@ -23,7 +23,7 @@ from numpy.typing import NDArray
 # Qiskit imports
 from qiskit.primitives import BackendSampler # type: ignore
 from qiskit.quantum_info import Statevector, Operator # type: ignore
-from qiskit_aer.aerprovider import AerSimulator # type: ignore
+from qiskit_aer import AerSimulator # type: ignore
 import qiskit_aer.noise as noise # type: ignore
 
 # Import `qickit.circuit.Circuit` instances

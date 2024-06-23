@@ -431,11 +431,11 @@ class CUDAQCircuit(Circuit):
     @Circuit.gatemethod
     def measure(self,
                 qubit_indices: int | Collection[int]) -> None:
-        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
-            raise ValueError("The qubit(s) have already been measured")
-
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
+
+        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured")
 
         # Measure the qubits
         for qubit_index in qubit_indices:
@@ -522,7 +522,7 @@ class CUDAQCircuit(Circuit):
         circuit.vertical_reverse()
 
         # Define the unitary matrix
-        unitary = []
+        unitary: list = []
 
         return np.array(unitary)
 
