@@ -14,31 +14,14 @@
 
 from __future__ import annotations
 
-__all__ = ["Template"]
+__all__ = ["FrameworkTemplate"]
 
 from abc import ABC, abstractmethod
 
 
-class Template(ABC):
-    """ `tests.circuit.Template` is the template for creating circuit testers.
+class FrameworkTemplate(ABC):
+    """ `tests.circuit.FrameworkTemplate` is the template for creating testers for `.from_<PACKAGE>` methods.
     """
-    @abstractmethod
-    def test_init(self) -> None:
-        """ Test the initialization of the circuit.
-        """
-
-    @abstractmethod
-    def test_num_qubits_value(self) -> None:
-        """ Test to see if the error is raised when the number of qubits
-        is less than or equal to 0.
-        """
-
-    @abstractmethod
-    def test_num_qubits_type(self) -> None:
-        """ Test to see if the error is raised when the number of qubits
-        is not an integer.
-        """
-
     @abstractmethod
     def test_Identity(self) -> None:
         """ Test the Identity gate.
@@ -222,84 +205,4 @@ class Template(ABC):
     @abstractmethod
     def test_multiple_measurement(self) -> None:
         """ Test the measurement gate for multiple indices.
-        """
-
-    @abstractmethod
-    def test_remove_measurement(self) -> None:
-        """ Test the removal of measurement gate.
-        """
-
-    @abstractmethod
-    def test_unitary(self) -> None:
-        """ Test the unitary gate.
-        """
-
-    @abstractmethod
-    def test_get_statevector(self) -> None:
-        """ Test the get_statevector operation.
-        """
-
-    @abstractmethod
-    def test_partial_get_counts(self) -> None:
-        """ Test the get_counts operation with only partial measurement.
-        """
-
-    @abstractmethod
-    def test_get_counts(self) -> None:
-        """ Test the get_counts operation.
-        """
-
-    @abstractmethod
-    def test_vertical_reverse(self) -> None:
-        """ Test the vertical reverse operation.
-        """
-
-    @abstractmethod
-    def test_horizontal_reverse(self) -> None:
-        """ Test the horizontal reverse operation.
-        """
-
-    @abstractmethod
-    def test_add(self) -> None:
-        """ Test the addition operation.
-        """
-
-    @abstractmethod
-    def test_add_fail(self) -> None:
-        """ Test the failure of the addition operation.
-        """
-
-    @abstractmethod
-    def test_transpile(self) -> None:
-        """ Test the transpile operation.
-        """
-
-    @abstractmethod
-    def test_get_depth(self) -> None:
-        """ Test the get_depth operation.
-        """
-
-    @abstractmethod
-    def test_get_width(self) -> None:
-        """ Test the get_width operation.
-        """
-
-    @abstractmethod
-    def test_compress(self) -> None:
-        """ Test the compress operation.
-        """
-
-    @abstractmethod
-    def test_compress_fail(self) -> None:
-        """ Test the failure of the compress operation.
-        """
-
-    @abstractmethod
-    def test_change_mapping(self) -> None:
-        """ Test the change_mapping operation.
-        """
-
-    @abstractmethod
-    def test_reset(self) -> None:
-        """ Test the reset operation.
         """

@@ -447,6 +447,29 @@ class TestCirqCircuit(Template):
 
         assert list(circuit.circuit.all_operations()) == list(cirq_circuit.all_operations())
 
+    def test_remove_measurement(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2)
+        no_measurement_circuit = CirqCircuit(2)
+
+        # Apply the measurement gate
+        circuit.measure([0, 1])
+
+        # Ensure the measured status is `True`
+        assert circuit.measured_qubits[0]
+        assert circuit.measured_qubits[1]
+
+        # Remove the measurement gate
+        circuit = circuit.remove_measurements()
+
+        # Ensure the measured status is `False`
+        assert not circuit.measured_qubits[0]
+        assert not circuit.measured_qubits[1]
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        assert circuit == no_measurement_circuit
+
     def test_unitary(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4)
@@ -580,6 +603,20 @@ class TestCirqCircuit(Template):
         assert circuit1 == added_circuit
         assert_almost_equal(circuit1.get_unitary(), added_circuit.get_unitary(), 8)
 
+    def test_add_fail(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instances
+        circuit1 = CirqCircuit(2)
+        circuit2 = CirqCircuit(3)
+        circuit3 = "circuit"
+
+        # Ensure the error is raised when the type of the circuit is not correct
+        with pytest.raises(TypeError):
+            circuit1.add(circuit3, [0, 1])
+
+        # Ensure the error is raised when the number of qubits is not equal
+        with pytest.raises(ValueError):
+            circuit1.add(circuit2, [0, 1])
+
     def test_transpile(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4)
@@ -633,6 +670,18 @@ class TestCirqCircuit(Template):
         assert circuit == compressed_circuit
         assert_almost_equal(circuit.get_unitary(), compressed_circuit.get_unitary(), 8)
 
+    def test_compress_fail(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(1)
+
+        # Ensure the error is raised when the compression factor is less than 0
+        with pytest.raises(ValueError):
+            circuit.compress(-1.0)
+
+        # Ensure the error is raised when the compression factor is greater than 1
+        with pytest.raises(ValueError):
+            circuit.compress(2.0)
+
     def test_change_mapping(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4)
@@ -650,3 +699,19 @@ class TestCirqCircuit(Template):
 
         assert circuit == mapped_circuit
         assert_almost_equal(circuit.get_unitary(), mapped_circuit.get_unitary(), 8)
+
+    def test_reset(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2)
+
+        # Apply the Hadamard gate
+        circuit.H(0)
+
+        # Reset the circuit
+        circuit.reset()
+
+        # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
+        # ensure they are equivalent
+        reset_circuit = CirqCircuit(2)
+
+        assert circuit == reset_circuit

@@ -13,13 +13,26 @@
 # limitations under the License.
 
 __all__ = ["Template",
+           "FrameworkTemplate"
            "TestCirqCircuit",
+           "TestFromCirq",
            "TestPennylaneCircuit",
            "TestQiskitCircuit",
-           "TestTKETCircuit",]
+           "TestFromQiskit",
+           "TestTKETCircuit",
+           "TestFromTKET",
+           "test_eq",
+           "test_len",
+           "test_str",
+           "test_repr"]
 
 from tests.circuit.test_circuit import Template
+from tests.circuit.test_from_framework import FrameworkTemplate
 from tests.circuit.test_cirq_circuit import TestCirqCircuit
+from tests.circuit.test_circuit_from_cirq import TestFromCirq
 from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit
 from tests.circuit.test_qiskit_circuit import TestQiskitCircuit
+from tests.circuit.test_circuit_from_qiskit import TestFromQiskit
 from tests.circuit.test_tket_circuit import TestTKETCircuit
+from tests.circuit.test_circuit_from_tket import TestFromTKET
+from tests.circuit.test_circuit_dunder_methods import test_eq, test_len, test_str, test_repr
