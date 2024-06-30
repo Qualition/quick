@@ -16,6 +16,7 @@ from __future__ import annotations
 
 __all__ = ["Data"]
 
+import copy
 import numpy as np
 from numpy.typing import NDArray
 from PIL import Image as Img # type: ignore
@@ -25,7 +26,7 @@ import matplotlib.pyplot as plt
 from qickit.types import Collection, NestedCollection
 
 # Define the type alias for numbers
-NumberType = int | float | complex
+NumberType = np.int_ | np.float_ | np.complex_ | int | float | complex
 
 
 class Data:
@@ -57,6 +58,14 @@ class Data:
         Whether the Data is padded to a power of 2.
     `shape` : tuple[int, ...]
         The shape of the datapoint.
+    `num_qubits` : int
+        The number of qubits needed to represent the state.
+
+    Raises
+    ------
+    TypeError
+        If the data is not a nested collection.
+        If the data is not a nested collection of numbers.
 
     Usage
     -----
@@ -66,11 +75,17 @@ class Data:
                  data: NestedCollection[NumberType]) -> None:
         """ Initialize a `qickit.data.Data` instance.
         """
+        if not isinstance(data, Collection):
+            raise TypeError("Data must be a nested collection.")
+
         # Convert the data to `np.ndarray`
         if not isinstance(data, np.ndarray):
             self.data: NDArray = np.array(data)
         else:
             self.data = data
+
+        if not all(isinstance(i, NumberType) for i in self.data.flatten()): # type: ignore
+            raise TypeError("Data must be a nested collection of numbers.")
 
         # Save the data shape
         self.shape = self.data.shape
@@ -190,7 +205,7 @@ class Data:
         """
         # Denormalize the vector by applying the inverse of the
         # normalization factor
-        denormalized_vector = np.multiply(data, norm_scale)
+        denormalized_vector = np.asarray(np.multiply(data, norm_scale), dtype=data.dtype)
 
         return denormalized_vector
 
@@ -268,7 +283,7 @@ class Data:
             target_size = np.exp2(np.ceil(np.log2(len(data))))
 
             # Pad the vector with 0s
-            padded_data = np.pad(data, (0, target_size - len(data)), mode="constant")
+            padded_data = np.pad(data, (0, int(target_size - len(data))), mode="constant")
 
             # Update data shape
             updated_shape = padded_data.shape
@@ -304,6 +319,7 @@ class Data:
 
                 # If we cannot pad, we stretch the whole matrix to the
                 # nearest power of 2
+                data = data.astype(np.uint8)
                 resized_data = np.asarray(Img.fromarray(data).resize((cols, rows), 0))
 
                 return resized_data, resized_data.shape
@@ -346,13 +362,13 @@ class Data:
     def to_quantumstate(self) -> None:
         """ Converts a `qickit.data.Data` instance to a quantum state.
         """
-        if not self.normalized:
-            # Normalize the data
-            self.normalize()
-
         if not self.padded:
             # Pad the data
             self.pad()
+
+        if not self.normalized:
+            # Normalize the data
+            self.normalize()
 
     def compress(self,
                  compression_percentage: float) -> None:
@@ -402,18 +418,28 @@ class Data:
         -------
         bool
             Whether the two `qickit.Data` instances are close to each other or not.
+
+        Raises
+        ------
+        TypeError
+            If the data is not a nested collection.
+            If the data is not a nested collection of numbers.
         """
         # Define a `qickit.Data` instance
         if not isinstance(first_data, Data):
             if not isinstance(first_data, Collection):
-                raise TypeError("Data must be a `qickit.Data` instance or a Collection.")
+                raise TypeError("Data must be a `qickit.data.Data` instance or a Collection.")
+            elif any(not isinstance(i, NumberType) for i in first_data): # type: ignore
+                raise TypeError("Data must be a nested collection of numbers.")
             else:
                 first_data = Data(first_data)
 
         # Define a `qickit.Data` instance
         if not isinstance(second_data, Data):
             if not isinstance(second_data, Collection):
-                raise TypeError("Data must be a `qickit.Data` instance or a Collection.")
+                raise TypeError("Data must be a `qickit.data.Data` instance or a Collection.")
+            elif any(not isinstance(i, NumberType) for i in second_data): # type: ignore
+                raise TypeError("Data must be a nested collection of numbers.")
             else:
                 second_data = Data(second_data)
 
@@ -427,6 +453,12 @@ class Data:
         ----------
         `index_type` : str
             The new indexing type, being "row" or "snake".
+
+        Raises
+        ------
+        ValueError
+            If the index type is not supported.
+            If the data array is not two-dimensional when used with `index_type=="snake"`.
         """
         if index_type == "snake":
             # Ensure the array has two dimensions
@@ -465,14 +497,22 @@ class Data:
         -------
         bool
             Whether the two `qickit.Data` instances are equal or not.
+
+        Raises
+        ------
+        TypeError
+            If the data is not a nested collection.
+            If the data is not a nested collection of numbers.
         """
         if not isinstance(other_data, Data):
             if not isinstance(other_data, Collection):
-                raise TypeError("Data must be a `qickit.Data` instance or a Collection.")
+                raise TypeError("Data must be a `qickit.data.Data` instance or a Collection.")
+            elif any(not isinstance(i, NumberType) for i in np.array(other_data).flatten()): # type: ignore
+                raise TypeError("Data must be a nested collection of numbers.")
             else:
                 other_data = Data(other_data)
 
-        return bool(np.all(self.data == other_data.data))
+        return bool(np.all(np.isclose(self.data, other_data.data, atol=1e-10, rtol=0)))
 
     def __len__(self) -> int:
         """ Return the length of the `qickit.data.Data` instance.
@@ -485,13 +525,37 @@ class Data:
         return len(self.data.flatten())
 
     def __mul__(self,
-                multiplier: float) -> None:
+                multiplier: float) -> Data:
         """ Multiply a `qickit.data.Data` instance by a scalar.
 
         Parameters
         ----------
         `multiplier` : float
             The scalar to multiply by.
+
+        Returns
+        -------
+        Data
+            The multiplied `qickit.data.Data` instance.
         """
-        # Multiply the data by the multiplier
-        self.data = np.multiply(self.data, multiplier)
+        data = copy.deepcopy(self)
+        data.data = np.multiply(self.data, multiplier)
+        return data
+
+    def __rmul__(self,
+                 multiplier: float) -> Data:
+        """ Multiply a `qickit.data.Data` instance by a scalar.
+
+        Parameters
+        ----------
+        `multiplier` : float
+            The scalar to multiply by.
+
+        Returns
+        -------
+        Data
+            The multiplied `qickit.data.Data` instance.
+        """
+        data = copy.deepcopy(self)
+        data.data = np.multiply(self.data, multiplier)
+        return data
