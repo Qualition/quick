@@ -86,13 +86,13 @@ class QiskitCircuit(Circuit):
         # Create an Identity gate
         identity = IGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Identity gate to each qubit in the list
+            # If it is, apply the Identity gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(identity, [index])
         else:
-            # If it's not a list, apply the Identity gate to the single qubit
+            # If it's not a collection, apply the Identity gate to the single qubit
             self.circuit.append(identity, [qubit_indices])
 
     @Circuit.gatemethod
@@ -101,13 +101,13 @@ class QiskitCircuit(Circuit):
         # Create a Pauli-X gate
         x = XGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the X gate to each qubit in the list
+            # If it is, apply the X gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(x, [index])
         else:
-            # If it's not a list, apply the X gate to the single qubit
+            # If it's not a collection, apply the X gate to the single qubit
             self.circuit.append(x, [qubit_indices])
 
     @Circuit.gatemethod
@@ -116,13 +116,13 @@ class QiskitCircuit(Circuit):
         # Create a Pauli-Y gate
         y = YGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Y gate to each qubit in the list
+            # If it is, apply the Y gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(y, [index])
         else:
-            # If it's not a list, apply the Y gate to the single qubit
+            # If it's not a collection, apply the Y gate to the single qubit
             self.circuit.append(y, [qubit_indices])
 
     @Circuit.gatemethod
@@ -131,13 +131,13 @@ class QiskitCircuit(Circuit):
         # Create a Pauli-Z gate
         z = ZGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Z gate to each qubit in the list
+            # If it is, apply the Z gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(z, [index])
         else:
-            # If it's not a list, apply the Z gate to the single qubit
+            # If it's not a collection, apply the Z gate to the single qubit
             self.circuit.append(z, [qubit_indices])
 
     @Circuit.gatemethod
@@ -146,13 +146,13 @@ class QiskitCircuit(Circuit):
         # Create a Hadamard gate
         h = HGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the H gate to each qubit in the list
+            # If it is, apply the H gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(h, [index])
         else:
-            # If it's not an list, apply the H gate to the single qubit
+            # If it's not an collection, apply the H gate to the single qubit
             self.circuit.append(h, [qubit_indices])
 
     @Circuit.gatemethod
@@ -161,13 +161,13 @@ class QiskitCircuit(Circuit):
         # Create a Clifford-S gate
         s = SGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the S gate to each qubit in the list
+            # If it is, apply the S gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(s, [index])
         else:
-            # If it's not a list, apply the S gate to the single qubit
+            # If it's not a collection, apply the S gate to the single qubit
             self.circuit.append(s, [qubit_indices])
 
     @Circuit.gatemethod
@@ -176,13 +176,13 @@ class QiskitCircuit(Circuit):
         # Create a Clifford-T gate
         t = TGate()
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the T gate to each qubit in the list
+            # If it is, apply the T gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(t, [index])
         else:
-            # If it's not a list, apply the T gate to the single qubit
+            # If it's not a collection, apply the T gate to the single qubit
             self.circuit.append(t, [qubit_indices])
 
     @Circuit.gatemethod

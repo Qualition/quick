@@ -79,73 +79,73 @@ class CUDAQCircuit(Circuit):
     @Circuit.gatemethod
     def X(self,
           qubit_indices: int | Collection[int]) -> None:
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the X gate to each qubit in the list
+            # If it is, apply the X gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.x(self.qr[index])
         else:
-            # If it's not a list, apply the X gate to the single qubit
+            # If it's not a collection, apply the X gate to the single qubit
             self.circuit.x(self.qr[qubit_indices])
 
     @Circuit.gatemethod
     def Y(self,
           qubit_indices: int | Collection[int]) -> None:
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Y gate to each qubit in the list
+            # If it is, apply the Y gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.y(self.qr[index])
         else:
-            # If it's not a list, apply the Y gate to the single qubit
+            # If it's not a collection, apply the Y gate to the single qubit
             self.circuit.y(self.qr[qubit_indices])
 
     @Circuit.gatemethod
     def Z(self,
           qubit_indices: int | Collection[int]) -> None:
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Z gate to each qubit in the list
+            # If it is, apply the Z gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.z(self.qr[index])
         else:
-            # If it's not a list, apply the Z gate to the single qubit
+            # If it's not a collection, apply the Z gate to the single qubit
             self.circuit.z(self.qr[qubit_indices])
 
     @Circuit.gatemethod
     def H(self,
           qubit_indices: int | Collection[int]) -> None:
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the H gate to each qubit in the list
+            # If it is, apply the H gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.h(self.qr[index])
         else:
-            # If it's not a list, apply the H gate to the single qubit
+            # If it's not a collection, apply the H gate to the single qubit
             self.circuit.h(self.qr[qubit_indices])
 
     @Circuit.gatemethod
     def S(self,
           qubit_indices: int | Collection[int]) -> None:
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the S gate to each qubit in the list
+            # If it is, apply the S gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.s(self.qr[index])
         else:
-            # If it's not a list, apply the S gate to the single qubit
+            # If it's not a collection, apply the S gate to the single qubit
             self.circuit.s(self.qr[qubit_indices])
 
     @Circuit.gatemethod
     def T(self,
           qubit_indices: int | Collection[int]) -> None:
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the T gate to each qubit in the list
+            # If it is, apply the T gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.t(self.qr[index])
         else:
-            # If it's not a list, apply the T gate to the single qubit
+            # If it's not a collection, apply the T gate to the single qubit
             self.circuit.t(self.qr[qubit_indices])
 
     @Circuit.gatemethod

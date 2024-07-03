@@ -33,7 +33,7 @@ from qickit.circuit import Circuit, QiskitCircuit
 from qickit.backend import Backend, FakeBackend
 
 
-class FakeIBMBackend(FakeBackend):
+class FakeIBMBackend(FakeBackend): # pragma: no cover
     """ `qickit.backend.FakeIBMBackend` is the class for running
     `qickit.circuit.Circuit` instances on an IBM hardware emulator.
 

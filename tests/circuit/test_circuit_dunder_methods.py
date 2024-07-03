@@ -100,7 +100,7 @@ def test_str() -> None:
     tket_circuit.CX(0, 1)
 
     # Test the string representation of the circuits
-    check = "[{'gate': 'H', 'qubit_indices': 0}, {'gate': 'CX', 'control_index': 0, 'target_index': 1}]" # noqa: E501
+    check = "[{'gate': 'H', 'qubit_indices': 0}, {'gate': 'CX', 'control_index': 0, 'target_index': 1}]"
     assert str(cirq_circuit) == check
     assert str(pennylane_circuit) == check
     assert str(qiskit_circuit) == check

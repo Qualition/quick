@@ -1,12 +1,16 @@
 cirq-core == 1.4.0
 cuda-quantum == 0.7.1
+mypy == 1.10.0
 numpy == 1.26.4
 pennylane == 0.36.0
 pennylane-lightning == 0.36.0
 pytket == 1.29.2
 pytket-qiskit == 0.54.1
+pytest == 8.2.2
+pytest-mock == 3.14.0
 qiskit == 1.1.1
 qiskit_aer == 0.14.2
 qiskit-aer-gpu == 0.14.2
 qiskit_ibm_runtime == 0.24.1
 qiskit-transpiler-service == 0.4.3
+ruff == 0.4.10

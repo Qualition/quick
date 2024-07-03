@@ -74,13 +74,13 @@ class TKETCircuit(Circuit):
         # Create an Identity gate
         identity = OpType.noop
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Identity gate to each qubit in the list
+            # If it is, apply the Identity gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(identity, [index])
         else:
-            # If it's not a list, apply the Identity gate to the single qubit
+            # If it's not a collection, apply the Identity gate to the single qubit
             self.circuit.add_gate(identity, [qubit_indices])
 
     @Circuit.gatemethod
@@ -89,13 +89,13 @@ class TKETCircuit(Circuit):
         # Create a Pauli-X gate
         x = OpType.X
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the X gate to each qubit in the list
+            # If it is, apply the X gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(x, [index])
         else:
-            # If it's not a list, apply the X gate to the single qubit
+            # If it's not a collection, apply the X gate to the single qubit
             self.circuit.add_gate(x, [qubit_indices])
 
     @Circuit.gatemethod
@@ -104,13 +104,13 @@ class TKETCircuit(Circuit):
         # Create a Pauli-Y gate
         y = OpType.Y
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Y gate to each qubit in the list
+            # If it is, apply the Y gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(y, [index])
         else:
-            # If it's not a list, apply the Y gate to the single qubit
+            # If it's not a collection, apply the Y gate to the single qubit
             self.circuit.add_gate(y, [qubit_indices])
 
     @Circuit.gatemethod
@@ -119,13 +119,13 @@ class TKETCircuit(Circuit):
         # Create a Pauli-Z gate
         z = OpType.Z
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Z gate to each qubit in the list
+            # If it is, apply the Z gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(z, [index])
         else:
-            # If it's not a list, apply the Z gate to the single qubit
+            # If it's not a collection, apply the Z gate to the single qubit
             self.circuit.add_gate(z, [qubit_indices])
 
     @Circuit.gatemethod
@@ -134,13 +134,13 @@ class TKETCircuit(Circuit):
         # Create a Hadamard gate
         h = OpType.H
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the H gate to each qubit in the list
+            # If it is, apply the H gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(h, [index])
         else:
-            # If it's not an list, apply the H gate to the single qubit
+            # If it's not an collection, apply the H gate to the single qubit
             self.circuit.add_gate(h, [qubit_indices])
 
     @Circuit.gatemethod
@@ -149,13 +149,13 @@ class TKETCircuit(Circuit):
         # Create a Clifford-S gate
         s = OpType.S
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the S gate to each qubit in the list
+            # If it is, apply the S gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(s, [index])
         else:
-            # If it's not a list, apply the S gate to the single qubit
+            # If it's not a collection, apply the S gate to the single qubit
             self.circuit.add_gate(s, [qubit_indices])
 
     @Circuit.gatemethod
@@ -164,13 +164,13 @@ class TKETCircuit(Circuit):
         # Create a Clifford-T gate
         t = OpType.T
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the T gate to each qubit in the list
+            # If it is, apply the T gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.add_gate(t, [index])
         else:
-            # If it's not a list, apply the T gate to the single qubit
+            # If it's not a collection, apply the T gate to the single qubit
             self.circuit.add_gate(t, [qubit_indices])
 
     @Circuit.gatemethod

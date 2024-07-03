@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ["Collection"]
+__all__ = ["Collection", "NestedCollection"]
 
 from typing import (Iterator, overload, Protocol, TypeVar,
                     TypeAlias, Self, runtime_checkable)
@@ -23,7 +23,7 @@ from typing import (Iterator, overload, Protocol, TypeVar,
 T = TypeVar("T")
 
 @runtime_checkable
-class Collection(Protocol[T]):
+class Collection(Protocol[T]): # pragma: no cover
   def __len__(self) -> int:
     ...
   def __iter__(self) -> Iterator[T]:

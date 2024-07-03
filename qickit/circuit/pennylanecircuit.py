@@ -76,13 +76,13 @@ class PennylaneCircuit(Circuit):
         # Create an Identity gate
         identity = qml.Identity
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Identity gate to each qubit in the list
+            # If it is, apply the Identity gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(identity(wires=index))
         else:
-            # If it's not a list, apply the Identity gate to the single qubit
+            # If it's not a collection, apply the Identity gate to the single qubit
             self.circuit.append(identity(wires=qubit_indices))
 
     @Circuit.gatemethod
@@ -91,13 +91,13 @@ class PennylaneCircuit(Circuit):
         # Create a Pauli-X gate
         x = qml.PauliX
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the X gate to each qubit in the list
+            # If it is, apply the X gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(x(wires=index))
         else:
-            # If it's not a list, apply the X gate to the single qubit
+            # If it's not a collection, apply the X gate to the single qubit
             self.circuit.append(x(wires=qubit_indices))
 
     @Circuit.gatemethod
@@ -106,13 +106,13 @@ class PennylaneCircuit(Circuit):
         # Create a Pauli-Y gate
         y = qml.PauliY
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Y gate to each qubit in the list
+            # If it is, apply the Y gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(y(wires=index))
         else:
-            # If it's not a list, apply the Y gate to the single qubit
+            # If it's not a collection, apply the Y gate to the single qubit
             self.circuit.append(y(wires=qubit_indices))
 
     @Circuit.gatemethod
@@ -121,13 +121,13 @@ class PennylaneCircuit(Circuit):
         # Create a Pauli-Z gate
         z = qml.PauliZ
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Z gate to each qubit in the list
+            # If it is, apply the Z gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(z(wires=index))
         else:
-            # If it's not a list, apply the Z gate to the single qubit
+            # If it's not a collection, apply the Z gate to the single qubit
             self.circuit.append(z(wires=qubit_indices))
 
     @Circuit.gatemethod
@@ -136,13 +136,13 @@ class PennylaneCircuit(Circuit):
         # Create a Hadamard gate
         h = qml.Hadamard
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the H gate to each qubit in the list
+            # If it is, apply the H gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(h(wires=index))
         else:
-            # If it's not an list, apply the H gate to the single qubit
+            # If it's not an collection, apply the H gate to the single qubit
             self.circuit.append(h(wires=qubit_indices))
 
     @Circuit.gatemethod
@@ -151,13 +151,13 @@ class PennylaneCircuit(Circuit):
         # Create a Clifford-S gate
         s = qml.S
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the S gate to each qubit in the list
+            # If it is, apply the S gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(s(wires=index))
         else:
-            # If it's not a list, apply the S gate to the single qubit
+            # If it's not a collection, apply the S gate to the single qubit
             self.circuit.append(s(wires=qubit_indices))
 
     @Circuit.gatemethod
@@ -166,13 +166,13 @@ class PennylaneCircuit(Circuit):
         # Create a Clifford-T gate
         t = qml.T
 
-        # Check if the qubit_indices is a list
+        # Check if the qubit_indices is a collection
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the T gate to each qubit in the list
+            # If it is, apply the T gate to each qubit in the collection
             for index in qubit_indices:
                 self.circuit.append(t(wires=index))
         else:
-            # If it's not a list, apply the T gate to the single qubit
+            # If it's not a collection, apply the T gate to the single qubit
             self.circuit.append(t(wires=qubit_indices))
 
     @Circuit.gatemethod

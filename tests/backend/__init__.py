@@ -13,7 +13,9 @@
 # limitations under the License.
 
 __all__ = ["Template",
-           "TestAerBackend"]
+           "TestAerBackend",
+           "TestFakeIBMBackend"]
 
 from tests.backend.test_backend import Template
 from tests.backend.test_aer_backend import TestAerBackend
+from tests.backend.test_ibm_backend import TestFakeIBMBackend
