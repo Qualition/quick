@@ -16,25 +16,17 @@ from __future__ import annotations
 
 __all__ = ["PennylaneCircuit"]
 
-from typing import TYPE_CHECKING
 import copy
 import numpy as np
 from numpy.typing import NDArray
+from typing import Literal, TYPE_CHECKING
 
-# Pennylane imports
 import pennylane as qml # type: ignore
 
-# Import `qickit.circuit.Circuit`
-from qickit.circuit import Circuit, QiskitCircuit
-
-# Import `qickit.backend.Backend`
 if TYPE_CHECKING:
     from qickit.backend import Backend
-
-# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
+from qickit.circuit import Circuit, QiskitCircuit
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
-
-# Import `qickit.types.collection.Collection`
 from qickit.types import Collection
 
 
@@ -59,148 +51,49 @@ class PennylaneCircuit(Circuit):
         The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
+
+    Raises
+    ------
+    TypeError
+        Number of qubits bits must be integers.
+    ValueError
+        Number of qubits bits must be greater than 0.
+
+    Usage
+    -----
+    >>> circuit = PennylaneCircuit(num_qubits=2)
     """
     def __init__(self,
                  num_qubits: int) -> None:
         super().__init__(num_qubits=num_qubits)
 
-        # Define the device
         self.device = qml.device("default.qubit", wires=self.num_qubits)
+        self.circuit: list = []
 
-        # Define the circuit
-        self.circuit = []
+    def _single_qubit_gate(self,
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           qubit_indices: int | Collection[int],
+                           angle: float=0) -> None:
+        # Define the gate mapping for the non-parameterized single qubit gates
+        gate_mapping = {
+            "I": qml.Identity(0).matrix(),
+            "X": qml.PauliX(0).matrix(),
+            "Y": qml.PauliY(0).matrix(),
+            "Z": qml.PauliZ(0).matrix(),
+            "H": qml.Hadamard(0).matrix(),
+            "S": qml.S(0).matrix(),
+            "T": qml.T(0).matrix(),
+            "RX": qml.RX(angle, wires=0).matrix(),
+            "RY": qml.RY(angle, wires=0).matrix(),
+            "RZ": qml.RZ(angle, wires=0).matrix()
+        }
 
-    @Circuit.gatemethod
-    def Identity(self,
-                 qubit_indices: int | Collection[int]) -> None:
-        # Create an Identity gate
-        identity = qml.Identity
-
-        # Check if the qubit_indices is a collection
+        # Apply the gate to the specified qubit(s)
         if isinstance(qubit_indices, Collection):
-            # If it is, apply the Identity gate to each qubit in the collection
             for index in qubit_indices:
-                self.circuit.append(identity(wires=index))
+                self.circuit.append(qml.QubitUnitary(gate_mapping[gate], wires=index))
         else:
-            # If it's not a collection, apply the Identity gate to the single qubit
-            self.circuit.append(identity(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def X(self,
-          qubit_indices: int | Collection[int]) -> None:
-        # Create a Pauli-X gate
-        x = qml.PauliX
-
-        # Check if the qubit_indices is a collection
-        if isinstance(qubit_indices, Collection):
-            # If it is, apply the X gate to each qubit in the collection
-            for index in qubit_indices:
-                self.circuit.append(x(wires=index))
-        else:
-            # If it's not a collection, apply the X gate to the single qubit
-            self.circuit.append(x(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def Y(self,
-          qubit_indices: int | Collection[int]) -> None:
-        # Create a Pauli-Y gate
-        y = qml.PauliY
-
-        # Check if the qubit_indices is a collection
-        if isinstance(qubit_indices, Collection):
-            # If it is, apply the Y gate to each qubit in the collection
-            for index in qubit_indices:
-                self.circuit.append(y(wires=index))
-        else:
-            # If it's not a collection, apply the Y gate to the single qubit
-            self.circuit.append(y(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def Z(self,
-          qubit_indices: int | Collection[int]) -> None:
-        # Create a Pauli-Z gate
-        z = qml.PauliZ
-
-        # Check if the qubit_indices is a collection
-        if isinstance(qubit_indices, Collection):
-            # If it is, apply the Z gate to each qubit in the collection
-            for index in qubit_indices:
-                self.circuit.append(z(wires=index))
-        else:
-            # If it's not a collection, apply the Z gate to the single qubit
-            self.circuit.append(z(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def H(self,
-          qubit_indices: int | Collection[int]) -> None:
-        # Create a Hadamard gate
-        h = qml.Hadamard
-
-        # Check if the qubit_indices is a collection
-        if isinstance(qubit_indices, Collection):
-            # If it is, apply the H gate to each qubit in the collection
-            for index in qubit_indices:
-                self.circuit.append(h(wires=index))
-        else:
-            # If it's not an collection, apply the H gate to the single qubit
-            self.circuit.append(h(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def S(self,
-          qubit_indices: int | Collection[int]) -> None:
-        # Create a Clifford-S gate
-        s = qml.S
-
-        # Check if the qubit_indices is a collection
-        if isinstance(qubit_indices, Collection):
-            # If it is, apply the S gate to each qubit in the collection
-            for index in qubit_indices:
-                self.circuit.append(s(wires=index))
-        else:
-            # If it's not a collection, apply the S gate to the single qubit
-            self.circuit.append(s(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def T(self,
-          qubit_indices: int | Collection[int]) -> None:
-        # Create a Clifford-T gate
-        t = qml.T
-
-        # Check if the qubit_indices is a collection
-        if isinstance(qubit_indices, Collection):
-            # If it is, apply the T gate to each qubit in the collection
-            for index in qubit_indices:
-                self.circuit.append(t(wires=index))
-        else:
-            # If it's not a collection, apply the T gate to the single qubit
-            self.circuit.append(t(wires=qubit_indices))
-
-    @Circuit.gatemethod
-    def RX(self,
-           angle: float,
-           qubit_index: int) -> None:
-        # Create an RX gate with the specified angle
-        rx = qml.RX
-        # Apply the RX gate to the circuit at the specified qubit
-        self.circuit.append(rx(angle, wires=qubit_index))
-
-    @Circuit.gatemethod
-    def RY(self,
-           angle: float,
-           qubit_index: int) -> None:
-        # Create an RY gate with the specified angle
-        ry = qml.RY
-        # Apply the RY gate to the circuit at the specified qubit
-        self.circuit.append(ry(angle, wires=qubit_index))
-
-    @Circuit.gatemethod
-    def RZ(self,
-           angle: float,
-           qubit_index: int) -> None:
-        # Create an RZ gate with the specified angle
-        rz = qml.RZ
-        # Apply the RZ gate to the circuit at the specified qubit
-        self.circuit.append(rz(angle, wires=qubit_index))
+            self.circuit.append(qml.QubitUnitary(gate_mapping[gate], wires=qubit_indices))
 
     @Circuit.gatemethod
     def U3(self,
@@ -208,7 +101,7 @@ class PennylaneCircuit(Circuit):
            qubit_index: int) -> None:
         # Create a single qubit unitary gate
         u3 = qml.U3
-        # Apply the U3 gate to the circuit at the specified qubit
+
         self.circuit.append(u3(theta=angles[0], phi=angles[1], delta=angles[2], wires=qubit_index))
 
     @Circuit.gatemethod
@@ -217,273 +110,35 @@ class PennylaneCircuit(Circuit):
              second_qubit: int) -> None:
         # Create a SWAP gate
         swap = qml.SWAP
-        # Apply the SWAP gate to the circuit at the specified qubits
+
         self.circuit.append(swap(wires=[first_qubit, second_qubit]))
 
-    @Circuit.gatemethod
-    def CX(self,
-           control_index: int,
-           target_index: int) -> None:
-        # Create a Controlled-X gate
-        cx = qml.CNOT
-        # Apply the CX gate to the circuit at the specified control and target qubits
-        self.circuit.append(cx(wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CY(self,
-           control_index: int,
-           target_index: int) -> None:
-        # Create a Controlled-Y gate
-        cy = qml.CY
-        # Apply the CY gate to the circuit at the specified control and target qubits
-        self.circuit.append(cy(wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CZ(self,
-           control_index: int,
-           target_index: int) -> None:
-        # Create a Controlled-Z gate
-        cz = qml.CZ
-        # Apply the CZ gate to the circuit at the specified control and target qubits
-        self.circuit.append(cz(wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CH(self,
-           control_index: int,
-           target_index: int) -> None:
-        # Create a Controlled-H gate
-        ch = qml.CH
-        # Apply the CH gate to the circuit at the specified control and target qubits
-        self.circuit.append(ch(wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CS(self,
-           control_index: int,
-           target_index: int) -> None:
-        # Create a Controlled-S gate
-        cs = qml.ControlledQubitUnitary(qml.S(0).matrix(), control_wires=control_index, wires=target_index)
-        # Apply the CS gate to the circuit at the specified control and target qubits
-        self.circuit.append(cs)
-
-    @Circuit.gatemethod
-    def CT(self,
-           control_index: int,
-           target_index: int) -> None:
-        # Create a Controlled-T gate
-        ct = qml.ControlledQubitUnitary(qml.T(0).matrix(), control_wires=control_index, wires=target_index)
-        # Apply the CT gate to the circuit at the specified control and target qubits
-        self.circuit.append(ct)
-
-    @Circuit.gatemethod
-    def CRX(self,
-            angle: float,
-            control_index: int,
-            target_index: int) -> None:
-        # Create a Controlled-RX gate with the specified angle
-        crx = qml.CRX
-        # Apply the CRX gate to the circuit at the specified control and target qubits
-        self.circuit.append(crx(angle, wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CRY(self,
-            angle: float,
-            control_index: int,
-            target_index: int) -> None:
-        # Create a Controlled-RY gate with the specified angle
-        cry = qml.CRY
-        # Apply the CRY gate to the circuit at the specified control and target qubits
-        self.circuit.append(cry(angle, wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CRZ(self,
-            angle: float,
-            control_index: int,
-            target_index: int) -> None:
-        # Create a Controlled-RZ gate with the specified angle
-        crz = qml.CRZ
-        # Apply the CRZ gate to the circuit at the specified control and target qubits
-        self.circuit.append(crz(angle, wires=[control_index, target_index]))
-
-    @Circuit.gatemethod
-    def CU3(self,
-            angles: Collection[float],
-            control_index: int,
-            target_index: int) -> None:
-        # Create a Controlled-U3 gate with the specified angles
-        cu3 = qml.U3(theta=angles[0], phi=angles[1], delta=angles[2],wires=0).matrix()
-        # Apply the CU3 gate to the circuit at the specified control and target qubits
-        self.circuit.append(qml.ControlledQubitUnitary(cu3, control_wires=control_index, wires=target_index))
-
-    @Circuit.gatemethod
-    def CSWAP(self,
-              control_index: int,
-              first_target_index: int,
-              second_target_index: int) -> None:
-        # Create a Controlled-SWAP gate
-        cswap = qml.CSWAP
-        # Apply the CSWAP gate to the circuit at the specified control and target qubits
-        self.circuit.append(cswap(wires=[control_index, first_target_index, second_target_index]))
-
-    @Circuit.gatemethod
-    def MCX(self,
-            control_indices: int | Collection[int],
-            target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
+    def _controlled_qubit_gate(self,
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               control_indices: int | Collection[int],
+                               target_indices: int | Collection[int],
+                               angle: float=0) -> None:
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Apply the MCX gate to the circuit at the control and target qubits
+        # Define the gate mapping for the non-parameterized controlled gates
+        gate_mapping = {
+            "X": qml.PauliX(0).matrix(),
+            "Y": qml.PauliY(0).matrix(),
+            "Z": qml.PauliZ(0).matrix(),
+            "H": qml.Hadamard(0).matrix(),
+            "S": qml.S(0).matrix(),
+            "T": qml.T(0).matrix(),
+            "RX": qml.RX(angle, wires=0).matrix(),
+            "RY": qml.RY(angle, wires=0).matrix(),
+            "RZ": qml.RZ(angle, wires=0).matrix(),
+        }
+
+        # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
             self.circuit.append(
                 qml.ControlledQubitUnitary(
-                    qml.PauliX(0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCY(self,
-            control_indices: int | Collection[int],
-            target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCY gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.PauliY(0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCZ(self,
-            control_indices: int | Collection[int],
-            target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCZ gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.PauliZ(0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCH(self,
-            control_indices: int | Collection[int],
-            target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCH gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.Hadamard(0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCS(self,
-            control_indices: int | Collection[int],
-            target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCS gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.S(0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCT(self,
-            control_indices: int | Collection[int],
-            target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCT gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.T(0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCRX(self,
-             angle: float,
-             control_indices: int | Collection[int],
-             target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCRX gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.RX(angle, wires=0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCRY(self,
-             angle: float,
-             control_indices: int | Collection[int],
-             target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCRY gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.RY(angle, wires=0).matrix(),
-                    control_wires=control_indices,
-                    wires=target_index
-                )
-            )
-
-    @Circuit.gatemethod
-    def MCRZ(self,
-             angle: float,
-             control_indices: int | Collection[int],
-             target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCRZ gate to the circuit at the control and target qubits
-        for target_index in target_indices:
-            self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.RZ(angle, wires=0).matrix(),
+                    gate_mapping[gate],
                     control_wires=control_indices,
                     wires=target_index
                 )
@@ -494,11 +149,10 @@ class PennylaneCircuit(Circuit):
              angles: Collection[float],
              control_indices: int | Collection[int],
              target_indices: int | Collection[int]) -> None:
-        # Ensure control_indices and target_indices are always treated as lists
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Apply the MCU3 gate to the circuit at the control and target qubits
+        # Apply the MCU3 gate controlled by all control indices to each target index
         for target_index in target_indices:
             self.circuit.append(
                 qml.ControlledQubitUnitary(
@@ -513,10 +167,8 @@ class PennylaneCircuit(Circuit):
                control_indices: int | Collection[int],
                first_target_index: int,
                second_target_index: int) -> None:
-        # Ensure control_indices is always treated as a list
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
-        # Apply the MCSWAP gate to the circuit at the control and target qubits
         self.circuit.append(
             qml.ControlledQubitUnitary(
                 qml.SWAP(wires=[0, 1]).matrix(),
@@ -531,7 +183,6 @@ class PennylaneCircuit(Circuit):
         # Create a Global Phase gate
         global_phase = qml.GlobalPhase
 
-        # Apply the GlobalPhase gate to the circuit
         self.circuit.append(global_phase(-angle))
 
     @Circuit.gatemethod
@@ -573,11 +224,8 @@ class PennylaneCircuit(Circuit):
             return qml.state()
 
         if backend is None:
-            # Run the circuit and define the state vector
             state_vector = qml.QNode(compile, circuit.device)()
-
         else:
-            # Run the circuit on the specified backend and define the state vector
             state_vector = backend.get_statevector(circuit)
 
         # Round off the small values to 0 (values below 1e-12 are set to 0)
@@ -642,23 +290,16 @@ class PennylaneCircuit(Circuit):
             return qml.counts(wires=qubits_to_measure, all_outcomes=True)
 
         if backend is None:
-            # Define the device
             device = qml.device(circuit.device.name, wires=circuit.num_qubits, shots=num_shots)
-            # Apply the operations in the circuit
             result = qml.QNode(compile, device)()
-            # Get the counts
             counts = {list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))}
-
         else:
-            # Run the circuit on the specified backend
             result = backend.get_counts(self, num_shots=num_shots)
 
         return counts
 
     def get_depth(self) -> int:
-        # Convert the circuit to Qiskit
         circuit = self.convert(QiskitCircuit)
-
         return circuit.get_depth()
 
     def get_unitary(self) -> NDArray[np.complex128]:
@@ -724,21 +365,18 @@ class PennylaneCircuit(Circuit):
     def transpile(self,
                   direct_transpile: bool=True,
                   synthesis_method: UnitaryPreparation | None = None) -> None:
-        # Convert to `qickit.circuit.QiskitCircuit`
+        # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
         qiskit_circuit = self.convert(QiskitCircuit)
-
-        # Transpile the circuit
         qiskit_circuit.transpile(direct_transpile=direct_transpile,
                                  synthesis_method=synthesis_method)
 
-        # Convert back to `qickit.circuit.PennylaneCircuit`
+        # Convert back to `qickit.circuit.PennylaneCircuit` to update the circuit
         updated_circuit = qiskit_circuit.convert(PennylaneCircuit)
         self.circuit_log = updated_circuit.circuit_log
         self.circuit = updated_circuit.circuit
 
     def to_qasm(self,
                 qasm_version: int=2) -> str:
-        # Convert the circuit to QASM
         return self.convert(QiskitCircuit).to_qasm(qasm_version=qasm_version)
 
     def draw(self) -> None:

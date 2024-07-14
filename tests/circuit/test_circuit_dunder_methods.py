@@ -100,11 +100,10 @@ def test_str() -> None:
     tket_circuit.CX(0, 1)
 
     # Test the string representation of the circuits
-    check = "[{'gate': 'H', 'qubit_indices': 0}, {'gate': 'CX', 'control_index': 0, 'target_index': 1}]"
-    assert str(cirq_circuit) == check
-    assert str(pennylane_circuit) == check
-    assert str(qiskit_circuit) == check
-    assert str(tket_circuit) == check
+    assert str(cirq_circuit) == "CirqCircuit(num_qubits=2)"
+    assert str(pennylane_circuit) == "PennylaneCircuit(num_qubits=2)"
+    assert str(qiskit_circuit) == "QiskitCircuit(num_qubits=2)"
+    assert str(tket_circuit) == "TKETCircuit(num_qubits=2)"
 
 def test_repr() -> None:
     """ Test the `__repr__` dunder method.
@@ -129,8 +128,19 @@ def test_repr() -> None:
     tket_circuit.CX(0, 1)
 
     # Test the string representation of the circuits
-    check = "Circuit(num_qubits=2)"
-    assert repr(cirq_circuit) == check
-    assert repr(pennylane_circuit) == check
-    assert repr(qiskit_circuit) == check
-    assert repr(tket_circuit) == check
+    cirq_check = ("CirqCircuit(num_qubits=2, "
+                  "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
+                  "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
+    pennylane_check = ("PennylaneCircuit(num_qubits=2, "
+                       "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
+                       "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
+    qiskit_check = ("QiskitCircuit(num_qubits=2, "
+                    "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
+                    "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
+    tket_check = ("TKETCircuit(num_qubits=2, "
+                  "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
+                  "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
+    assert repr(cirq_circuit) == cirq_check
+    assert repr(pennylane_circuit) == pennylane_check
+    assert repr(qiskit_circuit) == qiskit_check
+    assert repr(tket_circuit) == tket_check

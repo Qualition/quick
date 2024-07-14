@@ -21,10 +21,8 @@ from numpy.testing import assert_almost_equal
 import pytest
 from scipy.spatial import distance # type: ignore
 
-# Qiskit imports
 from qiskit import QuantumCircuit
 
-# QICKIT imports
 from qickit.circuit import QiskitCircuit
 from tests.circuit import Template
 from tests.circuit.gate_utils import (X_unitary_matrix, Y_unitary_matrix, Z_unitary_matrix,
@@ -62,7 +60,7 @@ def cosine_similarity(h1: dict[str, int],
     dist_1 = [h1.get(key, 0) for key in keys]
     dist_2 = [h2.get(key, 0) for key in keys]
 
-    return 1 - distance.cosine(dist_1, dist_2)
+    return float(1 - distance.cosine(dist_1, dist_2))
 
 
 class TestQiskitCircuit(Template):

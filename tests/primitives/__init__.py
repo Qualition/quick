@@ -12,15 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
+__all__ = ["TestBra",
+           "TestKet",
+           "TestOperator"]
 
-__all__ = ["Circuit_Type"]
-
-import qiskit # type: ignore
-import cirq # type: ignore
-import pytket # type: ignore
-import pennylane as qml # type: ignore
-
-from qickit.types.collection import Collection
-
-Circuit_Type = type(qiskit.QuantumCircuit) | type(cirq.Circuit) | type(pytket.Circuit) | type(qml.QNode) | type(Collection) # type: ignore
+from tests.primitives.test_bra import TestBra
+from tests.primitives.test_ket import TestKet
+# from tests.primitives.test_operator import TestOperator

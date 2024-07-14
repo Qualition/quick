@@ -14,7 +14,9 @@
 
 __all__ = ["Collection",
            "NestedCollection",
-           "Circuit_Type"]
+           "Circuit_Type",
+           "Scalar"]
 
 from qickit.types.collection import Collection, NestedCollection
 from qickit.types.circuit_type import Circuit_Type
+from qickit.types.scalar_type import Scalar

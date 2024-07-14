@@ -18,21 +18,13 @@ __all__ = ["StatePreparation", "Mottonen", "Shende"]
 
 from abc import ABC, abstractmethod
 import numpy as np
-from numpy.typing import NDArray
-from typing import Type
+from typing import Literal, overload, Type
 
-# Import `qickit.data.Data`
-from qickit.data import Data
-
-# Import `qickit.circuit.Circuit`
 from qickit.circuit import Circuit
-
-# Import `qickit.synthesis.statepreparation_utils.py` methods
-from qickit.synthesis.statepreparation_utils import (theta, M, ind, alpha_y,
+from qickit.primitives import Bra, Ket
+from qickit.synthesis.statepreparation_utils import (theta, M, ind, alpha_y, alpha_z,
                                                      rotations_to_disentangle)
-
-# Import `qickit.types.Collection`
-from qickit.types import Collection
+from qickit.types import Collection, Scalar
 
 
 class StatePreparation(ABC):
@@ -47,28 +39,78 @@ class StatePreparation(ABC):
     ----------
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
+
+    Usage
+    -----
+    >>> state_preparer = StatePreparation(output_framework=QiskitCircuit)
     """
     def __init__(self,
                  output_framework: Type[Circuit]) -> None:
         """ Initalize a State Preparation instance.
         """
-        # Define the QC framework
         self.output_framework = output_framework
 
+    @overload
     @abstractmethod
     def prepare_state(self,
-                      state: NDArray[np.complex128] | Data,
+                      state: Collection[Scalar],
+                      compression_percentage: float=0.0,
+                      index_type: str = "row") -> Circuit:
+        """ Prepare the quantum state.
+
+        Parameters
+        ----------
+        `state` : qickit.types.Collection[qickit.types.Scalar]
+            The quantum state to prepare.
+        `compression_percentage` : float, optional, default=0.0
+            Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
+        `index_type` : str, optional, default="row"
+            The indexing type for the data.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit that prepares the state.
+        """
+
+    @overload
+    @abstractmethod
+    def prepare_state(self,
+                      state: Bra,
+                      compression_percentage: float=0.0,
+                      index_type: str = "row") -> Circuit:
+        """ Prepare the quantum state.
+
+        Parameters
+        ----------
+        `state` : qickit.primitives.Bra
+            The quantum state to prepare.
+        `compression_percentage` : float, optional, default=0.0
+            Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
+        `index_type` : str, optional, default="row"
+            The indexing type for the data.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit that prepares the state.
+        """
+
+    @overload
+    @abstractmethod
+    def prepare_state(self,
+                      state: Ket,
                       compression_percentage: float = 0.0,
                       index_type: str = "row") -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
         ----------
-        `state` : NDArray[np.complex128] | qickit.data.Data
+        `state` : qickit.primitives.Ket
             The quantum state to prepare.
-        `compression_percentage` : float
-            Number between 0 an 100, where 0 is no compression and 100 is no image.
-        `index_type` : str
+        `compression_percentage` : float, optional, default=0.0
+            Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
+        `index_type` : str, optional, default="row"
             The indexing type for the data.
 
         Returns
@@ -82,27 +124,22 @@ class Mottonen(StatePreparation):
     """ `qickit.synthesis.statepreparation.Mottonen` is the class for preparing quantum states using the Mottonen method.
     """
     def prepare_state(self,
-                      state: NDArray[np.complex128] | Data,
-                      compression_percentage: float = 0.0,
-                      index_type: str = "row") -> Circuit:
-        # Define a qickit.Data instance
-        if not isinstance(state, Data):
-            state = Data(state)
+                      state: Collection[Scalar] | Bra | Ket,
+                      compression_percentage: float=0.0,
+                      index_type: str="row") -> Circuit:
+        if isinstance(state, Collection):
+            state = Ket(state)
 
         # Order indexing (if required)
         if index_type != "row":
             state.change_indexing(index_type)
 
-        # Convert the state to a quantum state
-        state.to_quantumstate()
-
-        # Compress the data
+        # Compress the statevector values
         state.compress(compression_percentage)
 
-        # Define the number of qubits (n qubits, where n = Log2(N), where N is the dimension of the vector)
+        # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
 
-        # Flatten the data in case it is not 1-dimensional
         state = state.data.flatten()
 
         # Construct Mottonen circuit
@@ -135,23 +172,67 @@ class Mottonen(StatePreparation):
             # If there are no control qubits, apply a RY gate to the target qubit
             if k == 0:
                 circuit.RY(thetas[0], target_qubit)
-            # If there are control qubits
             else :
                 # Define the control index required for the amplitude encoding circuit
                 control_index = ind(k)
-                # Iterate over the parameters
+                # Iterate over the parameters, and apply the RY gate and the CX gate
                 for i in range(n) :
-                    # Apply RY to the target qubit
                     circuit.RY(thetas[i], target_qubit)
-                    # Apply CX between the control qubits and the target qubit
                     circuit.CX(control_qubits[k-1-control_index[i]], target_qubit)
 
-        # Iterate over all qubits
+        def k_controlled_uniform_rotation_z(circuit: Circuit,
+                                            alpha_k: list[float],
+                                            control_qubits: list[int],
+                                            target_qubit: int) -> None:
+            """ Apply a k-controlled rotation about the z-axis.
+
+            Parameters
+            ----------
+            `circuit` : qickit.circuit.Circuit
+                The quantum circuit.
+            `alpha_k` : list[float]
+                The array of alphas.
+            `control_qubits` : list[int]
+                The list of control qubits.
+            `target_qubit` : int
+                The target qubit.
+            """
+            # Define the number of qubits
+            k = len(control_qubits)
+            # Calulate the number of parameters
+            n = 2**k
+            # Define thetas
+            thetas = theta(M(k), alpha_k)
+
+            # If there are no control qubits, apply a RZ gate to the target qubit
+            if k == 0:
+                circuit.RZ(thetas[0], target_qubit)
+            else :
+                # Define the control index required for the amplitude encoding circuit
+                control_index = ind(k)
+                # Iterate over the parameters, and apply the RZ gate and the CX gate
+                for i in range(n) :
+                    circuit.RZ(thetas[i], target_qubit)
+                    circuit.CX(control_qubits[k-1-control_index[i]], target_qubit)
+
+        # Define the magnitude and phase of the state
+        magnitude = np.abs(state)
+        phase = np.angle(state)
+
+        # Prepare the state
         for k in range(num_qubits):
-            # Define Alpha k
-            alpha_k = [alpha_y(state, num_qubits - k, j) for j in range(2 ** k)]
-            # Apply the k controleld rotation about the y-axis
+            alpha_k = [alpha_y(magnitude, num_qubits - k, j) for j in range(2 ** k)]
             k_controlled_uniform_rotation_y(circuit, alpha_k, list(range(k)), k)
+
+        if not np.all(phase == 0):
+            for k in range(num_qubits):
+                alpha_k = [alpha_z(phase, num_qubits - k, j) for j in range(2 ** k)]
+                if len(alpha_k) > 0:
+                    k_controlled_uniform_rotation_z(circuit, alpha_k, list(range(k)), k)
+
+        # Apply the global phase
+        global_phase = sum(np.angle(state) / len(state))
+        circuit.GlobalPhase(global_phase)
 
         circuit.vertical_reverse()
 
@@ -159,50 +240,61 @@ class Mottonen(StatePreparation):
 
 
 class Shende(StatePreparation):
-    """ `qickit.synthesis.statepreparation.Shende` is the class for preparing quantum states using the Shende method.
+    """ `qickit.synthesis.statepreparation.Shende` is the class for preparing quantum states
+    using the Shende method.
+
+    The Shende method is a recursive method that uses multiplexed RY and RZ gates to prepare the state.
+    This method is based on the paper "Synthesis of Quantum Logic Circuits" [1], and scales exponentially
+    with the number of qubits in terms of circuit depth.
+
+    References
+    ----------
+    [1] Shende, Bullock, Markov. Synthesis of Quantum Logic Circuits (2004)
+    [https://arxiv.org/abs/quant-ph/0406176v5]
     """
     def prepare_state(self,
-                      state: NDArray[np.complex128] | Data,
-                      compression_percentage: float = 0.0,
-                      index_type: str = "row") -> Circuit:
-        # Define a qickit.Data instance
-        if not isinstance(state, Data):
-            state = Data(state)
+                      state: Collection[Scalar] | Bra | Ket,
+                      compression_percentage: float=0.0,
+                      index_type: str="row") -> Circuit:
+        if isinstance(state, Collection):
+            state = Ket(state)
 
         # Order indexing (if required)
         if index_type != "row":
             state.change_indexing(index_type)
 
-        # Convert the state to a quantum state
-        state.to_quantumstate()
-
-        # Compress the data
+        # Compress the statevector values
         state.compress(compression_percentage)
 
-        # Define the number of qubits (n qubits, where n = Log2(N), where N is the dimension of the vector)
+        # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
 
-        # Flatten the data in case it is not 1-dimensional
         state = state.data.flatten()
 
         # Construct Shende circuit
         circuit: Circuit = self.output_framework(num_qubits)
 
-        def multiplex_ry(list_of_angles: list[float],
-                         last_cnot=True) -> Circuit:
-            """ Take a list of angles and return a circuit that applies the corresponding multiplexed Ry gate.
+        def multiplexor(list_of_angles: list[float],
+                        gate: Literal["RY", "RZ"],
+                        last_cnot=True) -> Circuit:
+            """ Create the multiplexor circuit, where each instruction itself
+            has a decomposition based on smaller multiplexors.
+
+            The LSB is the multiplexor "data" and the other bits are multiplexor "select".
 
             Parameters
             ----------
             `list_of_angles` : list[float]
-                The list of angles.
+                The list of rotation angles.
+            `gate` : Literal["RY", "RZ"]
+                The type of gate to be applied.
             `last_cnot` : bool
                 Whether to apply the last CNOT gate or not.
 
             Returns
             -------
             `circuit` : qickit.circuit.Circuit
-                The multiplexed Ry gate's circuit.
+                The multiplexor circuit.
             """
             # Calculate the number of angles
             num_angles = len(list_of_angles)
@@ -210,97 +302,49 @@ class Shende(StatePreparation):
             # Define the number of qubits for the local state
             local_num_qubits = int(np.log2(num_angles)) + 1
 
-            # Define the Multiplex circuit
+            # Define the multiplexor circuit
             circuit: Circuit = self.output_framework(local_num_qubits)
 
-            # Define LSB and MSB
+            # Define the gate mapping
+            gate_mapping = {
+                "RY": circuit.RY,
+                "RZ": circuit.RZ
+            }
+
+            # Define least significant bit (LSB) and most significant bit (MSB)
             lsb, msb = 0, local_num_qubits - 1
 
-            # If there is only one qubit, we apply the target gate to that single qubit
+            # Define the base case for the recursion
             if local_num_qubits == 1:
-                circuit.RY(list_of_angles[0], 0)
+                gate_mapping[gate](list_of_angles[0], 0)
                 return circuit
 
-            # If there are two qubits, we apply the target gate to the first qubit and then apply a CNOT gate
-            angle_weight = np.kron([[0.5, 0.5], [0.5, -0.5]], np.identity(2 ** (local_num_qubits - 2)))
+            # Calculate angle weights
+            angle_weight = np.kron([[0.5, 0.5],
+                                    [0.5, -0.5]], np.identity(2 ** (local_num_qubits - 2)))
 
+            # Calculate the dot product of the angle weights and the list of angles
+            # to get the combo angles
             list_of_angles = angle_weight.dot(np.array(list_of_angles)).tolist()
 
-            # Define the first half multiplexed RY circuit
-            multiplex_1 = multiplex_ry(list_of_angles[0 : (num_angles // 2)], False)
+            # Define the first half multiplexed circuit
+            multiplex_1 = multiplexor(list_of_angles[0 : (num_angles // 2)], gate=gate, last_cnot=False)
             circuit.add(multiplex_1, list(range(local_num_qubits-1)))
+
+            # Apply CX to flip the LSB qubit
             circuit.CX(msb, lsb)
 
-            # Define the second half multiplexed RY circuit
-            multiplex_2 = multiplex_ry(list_of_angles[(num_angles // 2) :], False)
-
+            # Optimize the circuit by cancelling adjacent CXs
+            # (by leaving out last CX and reversing (NOT inverting) the
+            # second lower-level multiplex)
+            multiplex_2 = multiplexor(list_of_angles[(num_angles // 2) :], gate=gate, last_cnot=False)
             if num_angles > 1:
                 multiplex_2.horizontal_reverse(adjoint=False)
                 circuit.add(multiplex_2, list(range(local_num_qubits-1)))
             else:
                 circuit.add(multiplex_2, list(range(local_num_qubits-1)))
 
-            # If the last CNOT gate is required, we apply it
-            if last_cnot:
-                circuit.CX(msb, lsb)
-
-            return circuit
-
-        def multiplex_rz(list_of_angles: list[float],
-                         last_cnot=True) -> Circuit:
-            """ Take a list of angles and return a circuit that applies the corresponding multiplexed RZ gate.
-
-            Parameters
-            ----------
-            `list_of_angles` : list[float]
-                The list of angles.
-            `last_cnot` : bool
-                Whether to apply the last CNOT gate or not.
-
-            Returns
-            -------
-            `circuit` : qickit.circuit.Circuit
-                The multiplexed Ry gate's circuit.
-            """
-            # Calculate the number of angles
-            num_angles = len(list_of_angles)
-
-            # Define the number of qubits for the local state
-            local_num_qubits = int(np.log2(num_angles)) + 1
-
-            # Define the Multiplex circuit
-            circuit: Circuit = self.output_framework(local_num_qubits)
-
-            # Define LSB and MSB
-            lsb = 0
-            msb = local_num_qubits - 1
-
-            # If there is only one qubit, we apply the target gate to that single qubit
-            if local_num_qubits == 1:
-                circuit.RZ(list_of_angles[0], 0)
-                return circuit
-
-            # If there are two qubits, we apply the target gate to the first qubit and then apply a CNOT gate
-            angle_weight = np.kron([[0.5, 0.5], [0.5, -0.5]], np.identity(2 ** (local_num_qubits - 2)))
-
-            list_of_angles = angle_weight.dot(np.array(list_of_angles)).tolist()
-
-            # Define the first half multiplexed RZ gate
-            multiplex_1 = multiplex_rz(list_of_angles[0 : (num_angles // 2)], False)
-            circuit.add(multiplex_1, list(range(local_num_qubits-1)))
-            circuit.CX(msb, lsb)
-
-            # Define the second half multiplexed RZ gate
-            multiplex_2 = multiplex_rz(list_of_angles[(num_angles // 2) :], False)
-
-            # If there are more than one angle, apply a horizontal reverse (no adjoint) before adding the multiplex
-            if num_angles > 1:
-                multiplex_2.horizontal_reverse(adjoint=False)
-                circuit.add(multiplex_2, list(range(local_num_qubits-1)))
-            else:
-                circuit.add(multiplex_2, list(range(local_num_qubits-1)))
-
-            # If the last CNOT gate is required, we apply it
+            # Leave out the last cnot
             if last_cnot:
                 circuit.CX(msb, lsb)
 
@@ -308,8 +352,7 @@ class Shende(StatePreparation):
 
         def gates_to_uncompute(params: Collection[complex],
                                num_qubits: int) -> Circuit:
-            """ Take a list of parameters and return a circuit that applies the corresponding gates
-            to uncompute the state.
+            """ Create a circuit with gates that take the desired vector to zero.
 
             Parameters
             ----------
@@ -326,35 +369,31 @@ class Shende(StatePreparation):
             # Define the circuit
             circuit: Circuit = self.output_framework(num_qubits)
 
-            # Define the remaining parameters
+            # Begin the peeling loop, and disentangle one-by-one from LSB to MSB
             remaining_param = params
 
-            # Iterate over all qubits
             for i in range(num_qubits):
-                # Calculate the parameters for disentangling
+                # Define which rotations must be done to disentangle the LSB
+                # qubit (we peel away one qubit at a time)
                 (remaining_param, thetas, phis) = rotations_to_disentangle(remaining_param)
-                # Set the last cnot to true
+
+                # Perform the required rotations to decouple the LSB qubit (so that
+                # it can be "factored" out, leaving a shorter amplitude vector to peel away)
                 add_last_cnot = True
 
-                # Check if the norm of phis and thetas is not 0
                 if np.linalg.norm(phis) != 0 and np.linalg.norm(thetas) != 0:
-                    # Set the last cnot to false
                     add_last_cnot = False
 
-                # Check if the norm of phis is not 0
                 if np.linalg.norm(phis) != 0:
-                    # Apply the multiplexed RZ gate
-                    rz_mult = multiplex_rz(phis, last_cnot=add_last_cnot)
+                    rz_mult = multiplexor(list_of_angles=phis, gate="RZ", last_cnot=add_last_cnot)
                     circuit.add(rz_mult, list(range(i, num_qubits)))
 
-                # Check if the norm of thetas is not 0
                 if np.linalg.norm(thetas) != 0:
-                    # Apply the multiplexed RY gate
-                    ry_mult = multiplex_ry(thetas, last_cnot=add_last_cnot)
-                    # Apply a horizontal reverse (not adjoint)
+                    ry_mult = multiplexor(list_of_angles=thetas, gate="RY", last_cnot=add_last_cnot)
                     ry_mult.horizontal_reverse(adjoint=False)
                     circuit.add(ry_mult, list(range(i, num_qubits)))
 
+            circuit.GlobalPhase(-np.angle(sum(remaining_param)))
             return circuit
 
         # Define the disentangling circuit

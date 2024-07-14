@@ -19,17 +19,14 @@ __all__ = ["AerBackend"]
 import copy
 import numpy as np
 from numpy.typing import NDArray
+import warnings
 
-# Qiskit imports
 from qiskit.primitives import BackendSampler # type: ignore
 from qiskit.quantum_info import Statevector, Operator # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 import qiskit_aer.noise as noise # type: ignore
 
-# Import `qickit.circuit.Circuit` instances
 from qickit.circuit import Circuit, QiskitCircuit
-
-# Import `qickit.backend.NoisyBackend` class
 from qickit.backend import Backend, NoisyBackend
 
 
@@ -72,6 +69,11 @@ class AerBackend(NoisyBackend):
         If the device is not "CPU" or "GPU".
         If the single-qubit error rate is not between 0 and 1.
         If the two-qubit error rate is not between 0 and 1.
+
+    Usage
+    -----
+    >>> from qickit.backend import AerBackend
+    >>> aer_backend = AerBackend(single_qubit_error=0.01, two_qubit_error=0.02, device="GPU")
     """
     def __init__(self,
                  single_qubit_error: float=0.0,
@@ -82,8 +84,6 @@ class AerBackend(NoisyBackend):
                          device=device)
         self._qc_framework = QiskitCircuit
 
-        # If the noise rates are non-zero, then define the depolarizing quantum errors
-        # and add them to the noise model
         if self.noisy:
             # Define depolarizing quantum errors (only on U3 and CX gates)
             single_qubit_error = noise.depolarizing_error(self.single_qubit_error, num_qubits=1)
@@ -105,7 +105,7 @@ class AerBackend(NoisyBackend):
                 self._op_backend = AerSimulator(device="GPU", method="unitary")
         else:
             if self.device == "GPU" and "GPU" not in AerSimulator().available_devices():
-                print("Warning: GPU acceleration is not available. Defaulted to CPU.")
+                warnings.warn("Warning: GPU acceleration is not available. Defaulted to CPU.")
             if self.noisy:
                 self._counts_backend = BackendSampler(AerSimulator(noise_model=noise_model))
                 self._op_backend = AerSimulator(method="unitary", noise_model=noise_model)
@@ -116,26 +116,17 @@ class AerBackend(NoisyBackend):
     @Backend.backendmethod
     def get_statevector(self,
                         circuit: Circuit) -> NDArray[np.complex128]:
-        # Run the circuit to get the statevector
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the statevector
         if circuit.num_qubits < 10 and self.noisy is False:
-            # Remove the measurements from the circuit
             circuit.remove_measurements(inplace=True)
             state_vector = Statevector(circuit.circuit).data
 
         else:
-            # Get the counts of the circuit
             counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
-
-            # Create the state vector from the counts
             state_vector = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
-
-            # Set the state vector elements for the states in the counts
             for state, count in counts.items():
                 state_vector[int(state, 2)] = np.sqrt(count)
-
-            # Normalize the state vector
             state_vector /= np.linalg.norm(state_vector)
 
         return state_vector
@@ -143,10 +134,8 @@ class AerBackend(NoisyBackend):
     @Backend.backendmethod
     def get_operator(self,
                      circuit: Circuit) -> NDArray[np.complex128]:
-        # Remove the measurements from the circuit
         circuit.remove_measurements(inplace=True)
 
-        # Run the circuit to get the operator
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the operator
         if circuit.num_qubits < 10 and self.noisy is False:
@@ -155,11 +144,7 @@ class AerBackend(NoisyBackend):
         else:
             # Create a copy of the circuit as `.save_unitary()` is applied inplace
             circuit = copy.deepcopy(circuit)
-
-            # Save the unitary of the circuit
             circuit.circuit.save_unitary() # type: ignore
-
-            # Run the circuit on the backend to generate the operator
             operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 
         return operator
@@ -171,10 +156,7 @@ class AerBackend(NoisyBackend):
         if not any(circuit.measured_qubits):
             raise ValueError("The circuit must have at least one measured qubit.")
 
-        # Run the circuit on the backend to generate the result
         result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
-
-        # Extract the quasi-probability distribution from the first result
         quasi_dist = result.quasi_dists[0]
 
         # Convert the quasi-probability distribution to counts

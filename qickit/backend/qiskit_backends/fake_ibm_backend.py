@@ -20,16 +20,12 @@ import copy
 import numpy as np
 from numpy.typing import NDArray
 
-# Qiskit imports
 from qiskit.primitives import BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
 from qiskit.quantum_info import Operator # type: ignore
 
-# Import `qickit.circuit.Circuit` instances
 from qickit.circuit import Circuit, QiskitCircuit
-
-# Import `qickit.backend.FakeBackend` class
 from qickit.backend import Backend, FakeBackend
 
 
@@ -62,7 +58,23 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
     Raises
     ------
     ValueError
+        If the device is not "CPU" or "GPU".
+        If the single-qubit error rate is not between 0 and 1.
+        If the two-qubit error rate is not between 0 and 1.
         If the specified IBM backend is not available.
+
+    Warns
+    -----
+    UserWarning
+        If the device is "GPU" but GPU acceleration is not available.
+
+    Usage
+    -----
+    >>> from qiskit.runtime import QiskitRuntimeService
+    >>> qiskit_runtime = QiskitRuntimeService()
+    >>> fake_backend = FakeIBMBackend(hardware_name="ibmq_melbourne",
+    ...                               qiskit_runtime=qiskit_runtime,
+    ...                               device="CPU")
     """
     def __init__(self,
                  hardware_name: str,

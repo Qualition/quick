@@ -21,9 +21,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial import distance # type: ignore
 
-# QICKIT imports
-from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 from qickit.backend import Backend, FakeBackend
+from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 from tests.backend import Template
 
 
@@ -48,7 +47,7 @@ def cosine_similarity(h1: dict[str, int],
     dist_1 = [h1.get(key, 0) for key in keys]
     dist_2 = [h2.get(key, 0) for key in keys]
 
-    return 1 - distance.cosine(dist_1, dist_2)
+    return float(1 - distance.cosine(dist_1, dist_2))
 
 
 class MockIBMBackend(FakeBackend):

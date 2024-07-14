@@ -23,7 +23,6 @@ from numpy.typing import NDArray
 from types import NotImplementedType
 from typing import Type
 
-# Import `qickit.circuit.Circuit` instances
 from qickit.circuit import Circuit
 
 
@@ -50,11 +49,6 @@ class Backend(ABC):
     ------
     ValueError
         If the device is not "CPU" or "GPU".
-
-    Usage
-    -----
-    >>> backend = Backend()
-    >>> backend = Backend(device="GPU")
     """
     def __init__(self,
                  device: str="CPU") -> None:
@@ -95,11 +89,9 @@ class Backend(ABC):
         """
         @wraps(method)
         def wrapped(instance, circuit: Circuit, **kwargs):
-            # Ensure the circuit is of type `qickit.circuit.Circuit`
             if not isinstance(circuit, Circuit):
                 raise TypeError(f"The circuit must be of type `qickit.circuit.Circuit`, not {type(circuit)}.")
 
-            # Assert the number of shots is valid (an integer greater than 0)
             if "num_shots" in kwargs:
                 if not isinstance(kwargs.get("num_shots", 1), int) or kwargs["num_shots"] <= 0:
                     raise ValueError("The number of shots must be a positive integer.")
@@ -133,6 +125,11 @@ class Backend(ABC):
         NDArray[np.complex128]
             The statevector of the circuit.
 
+        Raises
+        ------
+        TypeError
+            The circuit is not of type `qickit.circuit.Circuit`.
+
         Usage
         -----
         >>> backed.get_statevector(circuit)
@@ -152,6 +149,11 @@ class Backend(ABC):
         -------
         NDArray[np.complex128]
             The operator of the circuit.
+
+        Raises
+        ------
+        TypeError
+            The circuit is not of type `qickit.circuit.Circuit`.
 
         Usage
         -----
@@ -178,8 +180,11 @@ class Backend(ABC):
 
         Raises
         ------
+        TypeError
+            The circuit is not of type `qickit.circuit.Circuit`.
         ValueError
             The circuit must have at least one qubit that is measured.
+            The number of shots must be a positive integer.
 
         Usage
         -----
@@ -193,8 +198,12 @@ class Backend(ABC):
         -------
         str
             The string representation of the backend.
+
+        Usage
+        -----
+        >>> str(backend)
         """
-        return f"{self.__class__.__name__}(device={self.device})"
+        return f"{self.__class__.__name__}({', '.join(f'{key}={value}' for key, value in self.__dict__.items())})"
 
     def __repr__(self) -> str:
         """ Return a string representation of the backend.
@@ -203,6 +212,10 @@ class Backend(ABC):
         -------
         str
             The string representation of the backend.
+
+        Usage
+        -----
+        >>> repr(backend)
         """
         return str(self)
 
@@ -264,7 +277,7 @@ class Backend(ABC):
         return False
 
 
-class NoisyBackend(Backend):
+class NoisyBackend(Backend, ABC):
     """ `qickit.backend.NoisyBackend` is the abstract base class
     for running `qickit.circuit.Circuit` instances on noisy quantum
     devices.
@@ -299,12 +312,6 @@ class NoisyBackend(Backend):
         If the device is not "CPU" or "GPU".
         If the single-qubit error rate is not between 0 and 1.
         If the two-qubit error rate is not between 0 and 1.
-
-    Usage
-    -----
-    >>> backend = NoisyBackend()
-    >>> backend = NoisyBackend(single_qubit_error=0.01, two_qubit_error=0.02)
-    >>> backend = NoisyBackend(single_qubit_error=0.01, two_qubit_error=0.02, device="GPU")
     """
     def __init__(self,
                  single_qubit_error: float,
@@ -314,7 +321,6 @@ class NoisyBackend(Backend):
         """
         super().__init__(device=device)
 
-        # Error rates are the probabilities of an error occurring, so they must be between 0 and 1
         if single_qubit_error < 0 or single_qubit_error > 1:
             raise ValueError("The single-qubit error rate must be between 0 and 1.")
         self.single_qubit_error = single_qubit_error
@@ -323,14 +329,12 @@ class NoisyBackend(Backend):
             raise ValueError("The two-qubit error rate must be between 0 and 1.")
         self.two_qubit_error = two_qubit_error
 
-        # If the noise rates are non-zero, then define the depolarizing quantum errors
-        # and add them to the noise model
         self.noisy = self.single_qubit_error > 0.0 or self.two_qubit_error > 0.0
 
         self._qc_framework: Type[Circuit]
 
 
-class FakeBackend(Backend):
+class FakeBackend(Backend, ABC):
     """ `qickit.backend.FakeBackend` is the abstract base class
     for running `qickit.circuit.Circuit` instances on real quantum
     hardware emulators.
@@ -353,10 +357,10 @@ class FakeBackend(Backend):
     `_max_num_qubits` : int
         The maximum number of qubits supported by the backend.
 
-    Usage
-    -----
-    >>> backend = FakeBackend()
-    >>> backend = FakeBackend(device="GPU")
+    Raises
+    ------
+    ValueError
+        If the device is not "CPU" or "GPU".
     """
     def __init__(self,
                  device: str="CPU") -> None:
@@ -366,3 +370,89 @@ class FakeBackend(Backend):
         self._qc_framework: Type[Circuit]
         self._backend_name: str
         self._max_num_qubits: int
+
+    @abstractmethod
+    def get_statevector(self,
+                        circuit: Circuit) -> NDArray[np.complex128]:
+        """ Get the statevector of the circuit.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The circuit to run.
+
+        Returns
+        -------
+        NDArray[np.complex128]
+            The statevector of the circuit.
+
+        Raises
+        ------
+        TypeError
+            The circuit is not of type `qickit.circuit.Circuit`.
+        ValueError
+            The number of qubits in the circuit is greater than the maximum supported by the backend.
+
+        Usage
+        -----
+        >>> backed.get_statevector(circuit)
+        """
+
+    @abstractmethod
+    def get_operator(self,
+                     circuit: Circuit) -> NDArray[np.complex128]:
+        """ Get the operator of the circuit.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The circuit to run.
+
+        Returns
+        -------
+        NDArray[np.complex128]
+            The operator of the circuit.
+
+        Raises
+        ------
+        TypeError
+            The circuit is not of type `qickit.circuit.Circuit`.
+        ValueError
+            The number of qubits in the circuit is greater than the maximum supported by the backend.
+
+        Usage
+        -----
+        >>> backed.get_operator(circuit)
+        """
+
+    @abstractmethod
+    def get_counts(self,
+                   circuit: Circuit,
+                   num_shots: int) -> dict[str, int]:
+        """ Get the counts of the backend.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The circuit to run.
+        `num_shots` : int
+            The number of shots to run.
+
+        Returns
+        -------
+        dict[str, int]
+            The counts of the circuit.
+
+        Raises
+        ------
+        TypeError
+            The circuit is not of type `qickit.circuit.Circuit`.
+        ValueError
+            The number of qubits in the circuit is greater than the maximum supported by the backend.
+            The circuit must have at least one qubit that is measured.
+            The number of shots must be a positive integer.
+
+        Usage
+        -----
+        >>> backed.get_counts(circuit, num_shots=1024)
+        """

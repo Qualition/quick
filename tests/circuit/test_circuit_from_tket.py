@@ -16,12 +16,10 @@ from __future__ import annotations
 
 __all__ = ["TestFromTKET"]
 
-# Pytket imports
 from pytket import Circuit as TKCircuit
 from pytket import OpType
 from pytket.circuit import Op, QControlBox
 
-# QICKIT imports
 from qickit.circuit import Circuit, TKETCircuit
 from tests.circuit import FrameworkTemplate
 
@@ -135,7 +133,7 @@ class TestFromTKET(FrameworkTemplate):
         # Define the equivalent QICKIT circuit, and ensure
         # that the two circuits are equal
         check_circuit = TKETCircuit(1)
-        check_circuit.RX(0.5, [0])
+        check_circuit.RX(0.5, 0)
         print(check_circuit)
         assert qickit_circuit == check_circuit
 
@@ -150,7 +148,7 @@ class TestFromTKET(FrameworkTemplate):
         # Define the equivalent QICKIT circuit, and ensure
         # that the two circuits are equal
         check_circuit = TKETCircuit(1)
-        check_circuit.RY(0.5, [0])
+        check_circuit.RY(0.5, 0)
         assert qickit_circuit == check_circuit
 
     def test_RZ(self) -> None:
@@ -164,7 +162,7 @@ class TestFromTKET(FrameworkTemplate):
         # Define the equivalent QICKIT circuit, and ensure
         # that the two circuits are equal
         check_circuit = TKETCircuit(1)
-        check_circuit.RZ(0.5, [0])
+        check_circuit.RZ(0.5, 0)
         assert qickit_circuit == check_circuit
 
     def test_U3(self) -> None:
@@ -179,7 +177,7 @@ class TestFromTKET(FrameworkTemplate):
         # Define the equivalent QICKIT circuit, and ensure
         # that the two circuits are equal
         check_circuit = TKETCircuit(1)
-        check_circuit.U3(angles, [0])
+        check_circuit.U3(angles, 0)
         assert qickit_circuit == check_circuit
 
     def test_SWAP(self) -> None:

@@ -11,3 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+__all__ = ["StatePreparationTemplate",
+           "TestStatePreparationShende",
+           "TestStatePreparationMottonen",
+           "UnitaryPreparationTemplate",
+           "TestQiskitUnitaryTranspiler"]
+
+from tests.synthesis.test_statepreparation import StatePreparationTemplate
+from tests.synthesis.test_statepreparation_shende import TestStatePreparationShende
+from tests.synthesis.test_statepreparation_mottonen import TestStatePreparationMottonen
+from tests.synthesis.test_unitarypreparation import UnitaryPreparationTemplate
+from tests.synthesis.test_unitarypreparation_qiskitunitarytranspiler import TestQiskitUnitaryTranspiler

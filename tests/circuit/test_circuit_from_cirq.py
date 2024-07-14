@@ -16,13 +16,9 @@ from __future__ import annotations
 
 __all__ = ["TestFromCirq"]
 
-import numpy as np
-
-# Cirq imports
 import cirq
 from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, SWAP, I
 
-# QICKIT imports
 from qickit.circuit import Circuit, QiskitCircuit
 from tests.circuit import FrameworkTemplate
 

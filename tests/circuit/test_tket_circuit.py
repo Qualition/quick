@@ -21,10 +21,8 @@ from numpy.testing import assert_almost_equal
 import pytest
 from scipy.spatial import distance # type: ignore
 
-# Pytket imports
 from pytket import Circuit as TKCircuit
 
-# QICKIT imports
 from qickit.circuit import TKETCircuit
 from tests.circuit import Template
 from tests.circuit.gate_utils import (X_unitary_matrix, Y_unitary_matrix, Z_unitary_matrix,

@@ -14,51 +14,31 @@
 
 from __future__ import annotations
 
-__all__ = ["test_shende", "test_mottonen"]
+__all__ = ["StatePreparationTemplate"]
 
-import copy
-import numpy as np
-from numpy.testing import assert_almost_equal
-import random
-
-# QICKIT imports
-from qickit.data import Data
-from qickit.circuit import QiskitCircuit
-from qickit.synthesis.statepreparation import Shende, Mottonen
+from abc import ABC, abstractmethod
 
 
-# Test data
-generated_data = np.array([random.randint(0, 255) for _ in range(1024)])
-test_data = Data(generated_data)
-checker_data = copy.deepcopy(test_data)
-checker_data.normalize()
-
-def test_shende() -> None:
-    """ Test the `qickit.synthesis.statepreparation.Shende` class.
+class StatePreparationTemplate(ABC):
+    """ `tests.synthesis.StatePreparationTemplate` is the template for creating
+    state preparation testers.
     """
-    # Initialize the Shende encoder
-    shende_encoder = Shende(QiskitCircuit)
+    @abstractmethod
+    def test_init(self) -> None:
+        """ Test the initialization of the state preparation.
+        """
 
-    # Encode the data to a circuit
-    circuit = shende_encoder.prepare_state(test_data)
+    @abstractmethod
+    def test_prepare_state_ket(self) -> None:
+        """ Test the preparation of the state from a `qickit.primitives.Ket` instance.
+        """
 
-    # Get the state of the circuit
-    statevector = circuit.get_statevector()
+    @abstractmethod
+    def test_prepare_state_bra(self) -> None:
+        """ Test the preparation of the state from a `qickit.primitives.Bra` instance.
+        """
 
-    # Ensure that the state vector is close enough to the expected state vector
-    assert_almost_equal(np.array(statevector), checker_data.data, decimal=8)
-
-def test_mottonen() -> None:
-    """ Test the `qickit.synthesis.statepreparation.Mottonen` class.
-    """
-    # Initialize the Mottonen encoder
-    mottonen_encoder = Mottonen(QiskitCircuit)
-
-    # Encode the data to a circuit
-    circuit = mottonen_encoder.prepare_state(test_data)
-
-    # Get the state of the circuit
-    statevector = circuit.get_statevector()
-
-    # Ensure that the state vector is close enough to the expected state vector
-    assert_almost_equal(np.array(statevector), checker_data.data, decimal=8)
+    @abstractmethod
+    def test_prepare_state_ndarray(self) -> None:
+        """ Test the preparation of the state from a numpy array.
+        """

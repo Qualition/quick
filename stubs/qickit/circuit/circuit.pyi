@@ -9,83 +9,94 @@ from abc import ABC, abstractmethod
 from numpy.typing import NDArray
 from qickit.backend import Backend
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
-from qickit.types import Collection, Circuit_Type
+from qickit.types import Collection
 from types import NotImplementedType
-from typing import Callable, Type
+from typing import Any, Callable, Literal, Type
 
 __all__ = ["Circuit"]
 
 class Circuit(ABC, metaclass=abc.ABCMeta):
     num_qubits: int
-    circuit: Circuit_Type
+    circuit: Any
     measured: bool
     circuit_log: list[dict]
     def __init__(self, num_qubits: int) -> None: ...
     @staticmethod
     def gatemethod(method: Callable) -> Callable: ...
     @abstractmethod
+    def _single_qubit_gate(self,
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           qubit_indices: int | Collection[int],
+                           angle: float=0) -> None: ...
+    @abstractmethod
+    def _controlled_qubit_gate(self,
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               control_indices: int | Collection[int],
+                               target_indices: int | Collection[int],
+                               angle: float=0) -> None: ...
+    @gatemethod
     def Identity(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def X(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def Y(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def Z(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def H(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def S(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def T(self, qubit_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def RX(self, angle: float, qubit_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def RY(self, angle: float, qubit_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def RZ(self, angle: float, qubit_index: int) -> None: ...
     @abstractmethod
     def U3(self, angles: Collection[float], qubit_index: int) -> None: ...
     @abstractmethod
     def SWAP(self, first_qubit: int, second_qubit: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CX(self, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CY(self, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CZ(self, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CH(self, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CS(self, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CT(self, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CRX(self, angle: float, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CRY(self, angle: float, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CRZ(self, angle: float, control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CU3(self, angles: Collection[float], control_index: int, target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def CSWAP(self, control_index: int, first_target_index: int, second_target_index: int) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCX(self, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCY(self, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCZ(self, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCH(self, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCS(self, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCT(self, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCRX(self, angle: float, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCRY(self, angle: float, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
-    @abstractmethod
+    @gatemethod
     def MCRZ(self, angle: float, control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...
     @abstractmethod
     def MCU3(self, angles: Collection[float], control_indices: int | Collection[int], target_indices: int | Collection[int]) -> None: ...

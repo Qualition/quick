@@ -11,3 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from __future__ import annotations
+
+__all__ = ["UnitaryPreparationTemplate"]
+
+from abc import ABC, abstractmethod
+
+
+class UnitaryPreparationTemplate(ABC):
+    """ `tests.synthesis.test_unitarypreparation.UnitaryPreparationTemplate` is the template
+    for creating unitary preparation testers.
+    """
+    @abstractmethod
+    def test_init(self) -> None:
+        """ Test the initialization of the unitary preparation.
+        """
+
+    @abstractmethod
+    def test_prepare_unitary_ndarray(self) -> None:
+        """ Test the preparation of the unitary matrix from a numpy array.
+        """
+
+    @abstractmethod
+    def test_prepare_unitary_operator(self) -> None:
+        """ Test the preparation of the unitary matrix from a `qickit.primitives.Operator`.
+        """

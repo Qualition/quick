@@ -14,8 +14,6 @@
 
 from __future__ import annotations
 
-import pytket.circuit
-
 __all__ = ["Circuit"]
 
 from abc import ABC, abstractmethod
@@ -27,28 +25,17 @@ import matplotlib.pyplot as plt # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
-from typing import Callable, Type, TYPE_CHECKING
+from typing import Any, Callable, Literal, Type, TYPE_CHECKING
 
-# Qiskit imports
 import qiskit # type: ignore
-
-# Cirq imports
 import cirq # type: ignore
-
-# Pennylane imports
 import pennylane as qml # type: ignore
-
-# PyTKET imports
 import pytket
+import pytket.circuit
 
-# Import `qickit.backend.Backend`
 if TYPE_CHECKING:
     from qickit.backend import Backend
-
-# import `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler`
 from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitaryTranspiler
-
-# Import `qickit.types.collection.Collection` and `qickit.types.circuit_type.Circuit_Type`
 from qickit.types import Collection, Circuit_Type
 
 """ Set the frozensets for the keys to be used:
@@ -70,6 +57,7 @@ class Circuit(ABC):
     Current supported packages are :
     - IBM Qiskit
     - Google's Cirq
+    - NVIDIA's CUDA-Quantum
     - Quantinuum's PyTKET
     - Xanadu's PennyLane
 
@@ -95,10 +83,6 @@ class Circuit(ABC):
         Number of qubits bits must be integers.
     ValueError
         Number of qubits bits must be greater than 0.
-
-    Usage
-    -----
-    >>> circuit = Circuit(num_qubits=2)
     """
     def __init__(self,
                  num_qubits: int) -> None:
@@ -110,13 +94,9 @@ class Circuit(ABC):
         if num_qubits < 1:
             raise ValueError("Number of qubits must be greater than 0.")
 
-        # Define the number of quantum bits
         self.num_qubits = num_qubits
-        # Define the circuit
-        self.circuit = Circuit_Type
-        # Define the measurement status
+        self.circuit: Any
         self.measured_qubits = [False] * num_qubits
-        # Define the circuit log (list[dict])
         self.circuit_log: list[dict] = []
 
     @staticmethod
@@ -163,15 +143,10 @@ class Circuit(ABC):
 
             # Populate the log dictionary with the method's arguments
             for name, value in islice(bound_args.arguments.items(), 1, None):
-                # Convert range objects to lists
                 if isinstance(value, range):
                     value = list(value)
-
-                # Convert `np.integer` instances to int
                 elif isinstance(value, np.integer):
                     value = int(value)
-
-                # Convert `np.float` instances to float
                 elif isinstance(value, np.floating):
                     value = float(value)
 
@@ -217,14 +192,80 @@ class Circuit(ABC):
 
                 params[name] = value
 
-            # Append the method log to the instance's circuit log
             instance.circuit_log.append({"gate": method.__name__} | params)
-
             return method(instance, **params)
 
         return wrapped
 
     @abstractmethod
+    def _single_qubit_gate(self,
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           qubit_indices: int | Collection[int],
+                           angle: float=0) -> None:
+        """ Apply a single qubit gate to the circuit.
+
+        Parameters
+        ----------
+        `gate` : Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"]
+            The gate to apply to the circuit.
+        `qubit_indices` : int | Collection[int]
+            The index of the qubit(s) to apply the gate to.
+        `angle` : float, optional, default=0
+            The rotation angle in radians.
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Gate not supported.
+            Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit._single_qubit_gate(gate="X", qubit_indices=0)
+        >>> circuit._single_qubit_gate(gate="X", qubit_indices=[0, 1])
+        >>> circuit._single_qubit_gate(gate="RX", qubit_indices=0, angle=np.pi/2)
+        """
+
+    @abstractmethod
+    def _controlled_qubit_gate(self,
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               control_indices: int | Collection[int],
+                               target_indices: int | Collection[int],
+                               angle: float=0) -> None:
+        """ Apply a controlled gate to the circuit.
+
+        Parameters
+        ----------
+        `gate` : Literal["X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"]
+            The gate to apply to the circuit.
+        `control_indices` : int | Collection[int]
+            The index of the control qubit(s).
+        `target_indices` : int | Collection[int]
+            The index of the target qubit(s).
+        `angle` : float, optional, default=0
+            The rotation angle in radians.
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Gate not supported.
+            Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit._non_parameterized_controlled_gate(gate="X", control_indices=0, target_indices=1)
+        >>> circuit._non_parameterized_controlled_gate(gate="X", control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit._parameterized_controlled_gate(gate="RX", angles=np.pi/2, control_indices=0, target_indices=1)
+        >>> circuit._parameterized_controlled_gate(gate="RX", angles=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
+        """
+
+    @gatemethod
     def Identity(self,
                  qubit_indices: int | Collection[int]) -> None:
         """ Apply an Identity gate to the circuit.
@@ -234,13 +275,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.Identity(qubit_indices=0)
         >>> circuit.Identity(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="I", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def X(self,
           qubit_indices: int | Collection[int]) -> None:
         """ Apply a Pauli-X gate to the circuit.
@@ -250,13 +299,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.X(qubit_indices=0)
         >>> circuit.X(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="X", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def Y(self,
           qubit_indices: int | Collection[int]) -> None:
         """ Apply a Pauli-Y gate to the circuit.
@@ -266,13 +323,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.Y(qubit_indices=0)
         >>> circuit.Y(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="Y", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def Z(self,
           qubit_indices: int | Collection[int]) -> None:
         """ Apply a Pauli-Z gate to the circuit.
@@ -282,13 +347,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.Z(qubit_indices=0)
         >>> circuit.Z(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="Z", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def H(self,
           qubit_indices: int | Collection[int]) -> None:
         """ Apply a Hadamard gate to the circuit.
@@ -298,13 +371,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.H(qubit_indices=0)
         >>> circuit.H(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="H", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def S(self,
           qubit_indices: int | Collection[int]) -> None:
         """ Apply a Clifford-S gate to the circuit.
@@ -314,13 +395,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.S(qubit_indices=0)
         >>> circuit.S(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="S", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def T(self,
           qubit_indices: int | Collection[int]) -> None:
         """ Apply a Clifford-T gate to the circuit.
@@ -330,13 +419,21 @@ class Circuit(ABC):
         `qubit_indices` : int | Collection[int]
             The index of the qubit(s) to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.T(qubit_indices=0)
         >>> circuit.T(qubit_indices=[0, 1])
         """
+        self._single_qubit_gate(gate="T", qubit_indices=qubit_indices)
 
-    @abstractmethod
+    @gatemethod
     def RX(self,
            angle: float,
            qubit_index: int) -> None:
@@ -349,12 +446,21 @@ class Circuit(ABC):
         `qubit_index` : int
             The index of the qubit to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.RX(angle=np.pi/2, qubit_index=0)
         """
+        self._single_qubit_gate(gate="RX", angle=angle, qubit_indices=qubit_index)
 
-    @abstractmethod
+    @gatemethod
     def RY(self,
            angle: float,
            qubit_index: int) -> None:
@@ -367,12 +473,21 @@ class Circuit(ABC):
         `qubit_index` : int
             The index of the qubit to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.RY(angle=np.pi/2, qubit_index=0)
         """
+        self._single_qubit_gate(gate="RY", angle=angle, qubit_indices=qubit_index)
 
-    @abstractmethod
+    @gatemethod
     def RZ(self,
            angle: float,
            qubit_index: int) -> None:
@@ -385,10 +500,19 @@ class Circuit(ABC):
         `qubit_index` : int
             The index of the qubit to apply the gate to.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.RZ(angle=np.pi/2, qubit_index=0)
         """
+        self._single_qubit_gate(gate="RZ", angle=angle, qubit_indices=qubit_index)
 
     @abstractmethod
     def U3(self,
@@ -402,6 +526,14 @@ class Circuit(ABC):
             The rotation angles in radians.
         `qubit_index` : int
             The index of the qubit to apply the gate to.
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
 
         Usage
         -----
@@ -421,12 +553,19 @@ class Circuit(ABC):
         `second_qubit` : int
             The index of the second qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.SWAP(first_qubit=0, second_qubit=1)
         """
 
-    @abstractmethod
+    @gatemethod
     def CX(self,
            control_index: int,
            target_index: int) -> None:
@@ -439,12 +578,20 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CX(control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="X", control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CY(self,
            control_index: int,
            target_index: int) -> None:
@@ -457,12 +604,20 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CY(control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="Y", control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CZ(self,
            control_index: int,
            target_index: int) -> None:
@@ -475,12 +630,20 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CZ(control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="Z", control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CH(self,
            control_index: int,
            target_index: int) -> None:
@@ -493,12 +656,20 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CH(control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="H", control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CS(self,
            control_index: int,
            target_index: int) -> None:
@@ -511,12 +682,20 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CS(control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="S", control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CT(self,
            control_index: int,
            target_index: int) -> None:
@@ -529,12 +708,20 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CT(control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="T", control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CRX(self,
             angle: float,
             control_index: int,
@@ -550,12 +737,21 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="RX", angle=angle, control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CRY(self,
             angle: float,
             control_index: int,
@@ -571,12 +767,21 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="RY", angle=angle, control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CRZ(self,
             angle: float,
             control_index: int,
@@ -592,12 +797,21 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
+        self._controlled_qubit_gate(gate="RZ", angle=angle, control_indices=control_index, target_indices=target_index)
 
-    @abstractmethod
+    @gatemethod
     def CU3(self,
             angles: Collection[float],
             control_index: int,
@@ -613,12 +827,23 @@ class Circuit(ABC):
         `target_index` : int
             The index of the target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
+        self.MCU3(angles=angles, control_indices=control_index, target_indices=target_index)
+        # Remove the last operation from the log to avoid duplication (This is to not add MCU3 to the log after CU3)
+        _ = self.circuit_log.pop()
 
-    @abstractmethod
+    @gatemethod
     def CSWAP(self,
               control_index: int,
               first_target_index: int,
@@ -634,12 +859,22 @@ class Circuit(ABC):
         `second_target_index` : int
             The index of the second target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
         """
+        self.MCSWAP(control_indices=control_index, first_target_index=first_target_index, second_target_index=second_target_index)
+        # Remove the last operation from the log to avoid duplication (This is to not add MCSWAP to the log after CSWAP)
+        _ = self.circuit_log.pop()
 
-    @abstractmethod
+    @gatemethod
     def MCX(self,
             control_indices: int | Collection[int],
             target_indices: int | Collection[int]) -> None:
@@ -652,6 +887,13 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCX(control_indices=0, target_indices=1)
@@ -659,8 +901,9 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="X", control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCY(self,
             control_indices: int | Collection[int],
             target_indices: int | Collection[int]) -> None:
@@ -673,6 +916,13 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCY(control_indices=0, target_indices=1)
@@ -680,8 +930,9 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="Y", control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCZ(self,
             control_indices: int | Collection[int],
             target_indices: int | Collection[int]) -> None:
@@ -694,6 +945,13 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCZ(control_indices=0, target_indices=1)
@@ -701,8 +959,9 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="Z", control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCH(self,
             control_indices: int | Collection[int],
             target_indices: int | Collection[int]) -> None:
@@ -715,6 +974,13 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCH(control_indices=0, target_indices=1)
@@ -722,8 +988,9 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="H", control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCS(self,
             control_indices: int | Collection[int],
             target_indices: int | Collection[int]) -> None:
@@ -736,6 +1003,13 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCS(control_indices=0, target_indices=1)
@@ -743,8 +1017,9 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="S", control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCT(self,
             control_indices: int | Collection[int],
             target_indices: int | Collection[int]) -> None:
@@ -757,6 +1032,13 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCT(control_indices=0, target_indices=1)
@@ -764,8 +1046,9 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="T", control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCRX(self,
              angle: float,
              control_indices: int | Collection[int],
@@ -781,6 +1064,14 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCRX(angle=np.pi/2, control_indices=0, target_indices=1)
@@ -788,8 +1079,9 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="RX", angle=angle, control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCRY(self,
              angle: float,
              control_indices: int | Collection[int],
@@ -805,6 +1097,14 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCRY(angle=np.pi/2, control_indices=0, target_indices=1)
@@ -812,8 +1112,9 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="RY", angle=angle, control_indices=control_indices, target_indices=target_indices)
 
-    @abstractmethod
+    @gatemethod
     def MCRZ(self,
              angle: float,
              control_indices: int | Collection[int],
@@ -829,6 +1130,14 @@ class Circuit(ABC):
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=0, target_indices=1)
@@ -836,6 +1145,7 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
+        self._controlled_qubit_gate(gate="RZ", angle=angle, control_indices=control_indices, target_indices=target_indices)
 
     @abstractmethod
     def MCU3(self,
@@ -852,6 +1162,14 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Collection[int]
             The index of the target qubit(s).
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
 
         Usage
         -----
@@ -877,6 +1195,13 @@ class Circuit(ABC):
         `second_target_index` : int
             The index of the second target qubit.
 
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
+
         Usage
         -----
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
@@ -892,6 +1217,14 @@ class Circuit(ABC):
         ----------
         `angle` : float
             The global phase to apply to the circuit.
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
 
         Usage
         -----
@@ -995,7 +1328,7 @@ class Circuit(ABC):
             self.measurement_keys = converted_circuit.measurement_keys # type: ignore
 
     def horizontal_reverse(self,
-                           adjoint: bool = True) -> None:
+                           adjoint: bool=True) -> None:
         """ Perform a horizontal reverse operation.
 
         Parameters
@@ -1013,7 +1346,6 @@ class Circuit(ABC):
         >>> circuit.horizontal_reverse()
         >>> circuit.horizontal_reverse(adjoint=True)
         """
-        # Check if the adjoint is a boolean
         if not isinstance(adjoint, bool):
             raise TypeError("Adjoint must be a boolean.")
 
@@ -1055,20 +1387,17 @@ class Circuit(ABC):
         >>> circuit.add(circuit=circuit2, qubit_indices=0)
         >>> circuit.add(circuit=circuit2, qubit_indices=[0, 1])
         """
-        # Check if the circuit is a Circuit object
         if not isinstance(circuit, Circuit):
             raise TypeError("The circuit must be a Circuit object.")
 
-        # Convert the qubit indices to a list if it is a range
         if isinstance(qubit_indices, range):
             qubit_indices = list(qubit_indices)
 
         if isinstance(qubit_indices, Collection):
-            # The number of qubits must match the number of qubits in the circuit.
             if len(qubit_indices) != circuit.num_qubits:
                 raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
-        # Create a copy of the circuit
+        # Create a copy of the  as the `add` method is applied in-place
         circuit = copy.deepcopy(circuit)
 
         # Update the qubit indices
@@ -1088,7 +1417,7 @@ class Circuit(ABC):
         # Add the other circuit's log to the circuit log
         self.circuit_log.extend(circuit.circuit_log)
 
-        # Create the updated circuit
+        # Update the circuit
         self.circuit = self.convert(type(self)).circuit
 
     @abstractmethod
@@ -1317,6 +1646,7 @@ class Circuit(ABC):
         """
         if not 0 <= compression_percentage <= 1:
             raise ValueError("The compression percentage must be between 0 and 1.")
+
         # Define angle closeness threshold
         threshold = np.pi * compression_percentage
 
@@ -1324,12 +1654,11 @@ class Circuit(ABC):
         indices_to_remove = []
 
         # Iterate over all angles, and set the angles within the
-        # compression percentage to 0
+        # compression percentage to 0 (this means the gate does nothing, and can be removed)
         for index, operation in enumerate(self.circuit_log):
             if "angle" in operation:
                 if abs(operation["angle"]) < threshold:
                     indices_to_remove.append(index)
-
             elif "angles" in operation:
                 if all([abs(angle) < threshold for angle in operation["angles"]]):
                     indices_to_remove.append(index)
@@ -1362,19 +1691,15 @@ class Circuit(ABC):
         -----
         >>> circuit.change_mapping(qubit_indices=[1, 0])
         """
-        # Convert the qubit indices to a list if it is a range
         if isinstance(qubit_indices, range):
             qubit_indices = list(qubit_indices)
 
-        # Check if the qubit indices are a collection
         if not isinstance(qubit_indices, Collection):
             raise TypeError("Qubit indices must be a collection.")
 
-        # Check if all qubit indices are integers
         if not all(isinstance(index, int) for index in qubit_indices):
             raise TypeError("All qubit indices must be integers.")
 
-        # The number of qubits must match the number of qubits in the circuit.
         if self.num_qubits != len(qubit_indices):
             raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
@@ -1522,11 +1847,9 @@ class Circuit(ABC):
 
         # Iterate over the operations in the Cirq circuit
         for operation in ops:
-            # Extract the gate type
             gate = operation.gate
             gate_type = type(gate).__name__
 
-            # Extract the qubit indices
             qubits = operation.qubits
             qubit_indices = [qubit.x for qubit in qubits] if len(qubits) > 1 else qubits[0].x # type: ignore
 
@@ -1739,10 +2062,7 @@ class Circuit(ABC):
 
         # Iterate over the operations in the Qiskit circuit
         for gate in qiskit_circuit.data:
-            # Extract the gate type
             gate_type = gate[0].name
-            print(f"Gate {gate_type}")
-            # Extract the qubit indices
             qubit_indices = [qubit._index for qubit in gate[1]] if len(gate[1]) > 1 else gate[1][0]._index
 
             if gate_type == "id":
@@ -1882,10 +2202,7 @@ class Circuit(ABC):
 
         # Iterate over the operations in the Qiskit circuit
         for gate in tket_circuit:
-            # Extract the gate type
             gate_type = str(gate.op.type)
-
-            # Extract the qubit indices
             qubit_indices = [int(qubit.index[0]) for qubit in gate.qubits] if len(gate.qubits) > 1 \
                                                                            else [gate.qubits[0].index[0]]
 
@@ -2037,7 +2354,7 @@ class Circuit(ABC):
                 raise ValueError(f"Gate not supported.\n{gate_type} ")
 
         # Apply the global phase of the `tket_circuit`
-        circuit.GlobalPhase(tket_circuit.phase/np.pi)
+        circuit.GlobalPhase(float(tket_circuit.phase)/np.pi)
 
         return circuit
 
@@ -2142,12 +2459,13 @@ class Circuit(ABC):
         ------
         TypeError
             Circuits must be compared with other circuits.
+
+        Usage
+        -----
+        >>> circuit1 == circuit2
         """
         if not isinstance(other_circuit, Circuit):
             raise TypeError("Circuits must be compared with other circuits.")
-
-        print(self.circuit_log == other_circuit.circuit_log)
-
         return self.circuit_log == other_circuit.circuit_log
 
     def __len__(self) -> int:
@@ -2157,6 +2475,10 @@ class Circuit(ABC):
         -------
         int
             The number of the circuit operations.
+
+        Usage
+        -----
+        >>> len(circuit)
         """
         return len(self.circuit_log)
 
@@ -2167,8 +2489,12 @@ class Circuit(ABC):
         -------
         str
             The string representation of the circuit.
+
+        Usage
+        -----
+        >>> str(circuit)
         """
-        return str(self.circuit_log)
+        return f"{self.__class__.__name__}(num_qubits={self.num_qubits})"
 
     def __repr__(self) -> str:
         """ Get the string representation of the circuit.
@@ -2177,8 +2503,12 @@ class Circuit(ABC):
         -------
         str
             The string representation of the circuit.
+
+        Usage
+        -----
+        >>> repr(circuit)
         """
-        return f"Circuit(num_qubits={self.num_qubits})"
+        return f"{self.__class__.__name__}(num_qubits={self.num_qubits}, circuit_log={self.circuit_log})"
 
     @classmethod
     def __subclasscheck__(cls, C) -> bool:

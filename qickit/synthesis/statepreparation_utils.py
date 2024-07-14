@@ -17,7 +17,6 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
-# Import `qickit.types.Collection`
 from qickit.types import Collection
 
 
@@ -41,7 +40,7 @@ def grayCode(x: int) -> int:
 
 def alpha_y(angles: Collection[float],
             num_qubits: int,
-            angle_index: int,) -> float:
+            angle_index: int) -> float:
     """ Return the alpha required for the amplitude encoding circuit.
 
     Parameters
@@ -58,25 +57,53 @@ def alpha_y(angles: Collection[float],
     float
         The alpha required for the amplitude encoding circuit.
     """
-    abs_angles = np.abs(list(angles))
     m = int(2**(num_qubits - 1))
     a = 0
 
     for i in range(m):
-        a += abs_angles[(2 * (angle_index + 1) - 1) * m + i]**2
+        a += angles[(2 * (angle_index + 1) - 1) * m + i]**2
 
-    mk = int(2**num_qubits)
+    mk = 2**num_qubits
     b = 0
 
     for i in range(mk):
-        b += abs_angles[angle_index * mk + i]**2
+        b += angles[angle_index * mk + i]**2
 
     if b != 0 :
         ratio = np.sqrt(a / b)
     else :
         ratio = 0.0
 
-    return 2*np.arcsin(ratio)
+    return 2 * np.arcsin(ratio)
+
+def alpha_z(angles: Collection[float],
+            num_qubits: int,
+            angle_index: int) -> float:
+    """ Return the alpha required for the amplitude encoding circuit.
+
+    Parameters
+    ----------
+    `angles` : Collection[float]
+        The array of angles.
+    `num_qubits` : int
+        The number of qubits.
+    `angle_index` : int
+        The index of the angle.
+
+    Returns
+    -------
+    float
+        The alpha required for the amplitude encoding circuit.
+    """
+    numerator = 0
+    for j in range(1, 2 ** (num_qubits - angle_index) + 1):
+        # construct denominator
+        for l in range(1, 2 ** (angle_index-1) + 1):
+            expression1 = (2 * (j) - 1) * (2 ** (angle_index - 1)) + l - 1
+            expression2 = (2 * (j) - 2) * (2 ** (angle_index - 1)) + l - 1
+            numerator += (angles[expression1] - angles[expression2])
+
+    return numerator / 2 ** (angle_index - 1)
 
 def M(k: int) -> NDArray[np.float64]:
     """ Return the matrix M required for the amplitude encoding circuit.
@@ -160,14 +187,16 @@ def bloch_angles(pair_of_complex: Collection[complex]) -> tuple:
     [a_complex, b_complex] = pair_of_complex
     a_complex = complex(a_complex)
     b_complex = complex(b_complex)
-    mag_a = abs(a_complex)
-    final_r = np.sqrt(mag_a**2 + np.absolute(b_complex) ** 2)
+
+    a_magnitude = abs(a_complex)
+    b_magnitude = abs(b_complex)
+
+    final_r = np.sqrt(a_magnitude ** 2 + b_magnitude ** 2)
 
     if final_r < 1e-10:
         theta, phi, final_r, final_t = 0.0, 0.0, 0.0, 0.0
-
     else:
-        theta = 2 * np.arccos(mag_a / final_r)
+        theta = 2 * np.arccos(a_magnitude / final_r)
         a_arg = float(np.angle(a_complex))
         b_arg = float(np.angle(b_complex))
         final_t = a_arg + b_arg
@@ -176,7 +205,9 @@ def bloch_angles(pair_of_complex: Collection[complex]) -> tuple:
     return final_r * np.exp(1.0j * final_t / 2), theta, phi
 
 def rotations_to_disentangle(local_param: Collection[complex]) -> tuple:
-    """ Take a list of local parameters and return a list of global parameters.
+    """ Return Ry and Rz rotation angles used to disentangle the LSB qubit.
+    These rotations make up the block diagonal matrix U (i.e. multiplexor)
+    that disentangles the LSB.
 
     Parameters
     ----------
@@ -194,8 +225,14 @@ def rotations_to_disentangle(local_param: Collection[complex]) -> tuple:
     param_len = len(local_param)
 
     for i in range(param_len // 2):
+        # Apply Ry and Rz rotations to transition the Bloch vector from 0 to the "imaginary" qubit state
+        # This is conceptualized as a qubit state defined by amplitudes at indices 2*i and 2*(i+1),
+        # which correspond to the selected qubits of the multiplexor being in state |i>
         (remains, add_theta, add_phi) = bloch_angles(local_param[2 * i : 2 * (i + 1)])
         remaining_vector.append(remains)
+
+        # Perform rotations on all imaginary qubits of the full vector to transition
+        # their state towards zero, indicated by the negative sign
         thetas.append(-add_theta)
         phis.append(-add_phi)
 

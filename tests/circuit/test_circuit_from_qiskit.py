@@ -16,13 +16,11 @@ from __future__ import annotations
 
 __all__ = ["TestFromQiskit"]
 
-# Qiskit imports
 from qiskit import QuantumCircuit # type: ignore
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
                                     ZGate, SGate, TGate, U3Gate, SwapGate, # type: ignore
                                     GlobalPhaseGate) # type: ignore
 
-# QICKIT imports
 from qickit.circuit import Circuit, QiskitCircuit
 from tests.circuit import FrameworkTemplate
 

@@ -14,13 +14,9 @@
 
 from __future__ import annotations
 
-__all__ = ["Circuit_Type"]
+__all__ = ["Scalar"]
 
-import qiskit # type: ignore
-import cirq # type: ignore
-import pytket # type: ignore
-import pennylane as qml # type: ignore
+import numpy as np
 
-from qickit.types.collection import Collection
 
-Circuit_Type = type(qiskit.QuantumCircuit) | type(cirq.Circuit) | type(pytket.Circuit) | type(qml.QNode) | type(Collection) # type: ignore
+Scalar = np.int_ | np.float_ | np.complex_ | int | float | complex

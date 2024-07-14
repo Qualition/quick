@@ -23,10 +23,7 @@ from PIL import Image as Img # type: ignore
 import matplotlib.pyplot as plt
 
 # Import `qickit.types.collection.Collection`
-from qickit.types import Collection, NestedCollection
-
-# Define the type alias for numbers
-NumberType = np.int_ | np.float_ | np.complex_ | int | float | complex
+from qickit.types import Collection, NestedCollection, Scalar
 
 
 class Data:
@@ -35,7 +32,7 @@ class Data:
 
     Parameters
     ----------
-    `data` : NestedCollection[NumberType]
+    `data` : NestedCollection[qickit.types.Scalar]
         The datapoint values.
     `norm_scale` : float
         The normalization scale.
@@ -72,34 +69,24 @@ class Data:
     >>> data = Data([[1, 2], [3, 4]])
     """
     def __init__(self,
-                 data: NestedCollection[NumberType]) -> None:
+                 data: NestedCollection[Scalar]) -> None:
         """ Initialize a `qickit.data.Data` instance.
         """
         if not isinstance(data, Collection):
             raise TypeError("Data must be a nested collection.")
 
-        # Convert the data to `np.ndarray`
         if not isinstance(data, np.ndarray):
             self.data: NDArray = np.array(data)
         else:
             self.data = data
 
-        if not all(isinstance(i, NumberType) for i in self.data.flatten()): # type: ignore
+        if not all(isinstance(i, Scalar) for i in self.data.flatten()): # type: ignore
             raise TypeError("Data must be a nested collection of numbers.")
 
-        # Save the data shape
         self.shape = self.data.shape
-
-        # Set the norm scale (for normalization and denormalization)
         self.norm_scale = np.linalg.norm(self.data.flatten())
-
-        # Set the number of qubits needed to represent the state
         self.num_qubits = int(np.ceil(np.log2(len(self.data.flatten()))))
-
-        # Set the normalized status
         self.is_normalized()
-
-        # Set the padded status
         self.is_padded()
 
     @staticmethod
@@ -121,11 +108,8 @@ class Data:
         >>> data = np.array([[1, 2], [3, 4]])
         >>> check_normalization(data)
         """
-        # Flatten the data in case it is a 2d array
-        data_vector = data.flatten()
-
         # Check whether the data is normalized to 2-norm
-        sum_check = np.sum(data_vector**2)
+        sum_check = np.sum(np.square(data))
 
         # Check if the sum of squared of the data elements is equal to
         # 1 with 1e-8 tolerance
@@ -138,8 +122,6 @@ class Data:
         -----
         >>> data.is_normalized()
         """
-        # If data is normalized, set `normalized` to True, Otherwise,
-        # set `normalized` False
         self.normalized = self.check_normalization(self.data)
 
     @staticmethod
@@ -164,10 +146,8 @@ class Data:
         -----
         >>> data = np.array([[1, 2], [3, 4]])
         >>> norm_scale = np.linalg.norm(data.flatten())
-        >>> data_shape = data.shape
-        >>> normalize_data(data, norm_scale, data_shape)
+        >>> normalize_data(data, norm_scale)
         """
-        # Normalize the vector to 2-norm
         normalized_vector = np.multiply(data, 1/norm_scale)
 
         return normalized_vector
@@ -175,14 +155,10 @@ class Data:
     def normalize(self) -> None:
         """ Normalize a `qickit.data.Data` instance to 2-norm.
         """
-        # If the data is already normalized
         if self.normalized:
             return
 
-        # If the data is not normalized, normalize the data
         self.data = self.normalize_data(self.data, self.norm_scale)
-
-        # Set normalized to True
         self.normalized = True
 
     @staticmethod
@@ -202,24 +178,28 @@ class Data:
         -------
         NDArray[np.number]
             The denormalized data.
+
+        Usage
+        -----
+        >>> data = np.array([[0.5, 1], [1.5, 2]])
+        >>> norm_scale = np.linalg.norm(data.flatten())
+        >>> denormalize_data(data, norm_scale)
         """
-        # Denormalize the vector by applying the inverse of the
-        # normalization factor
         denormalized_vector = np.asarray(np.multiply(data, norm_scale), dtype=data.dtype)
 
         return denormalized_vector
 
     def denormalize(self) -> None:
         """ Denormalize a `qickit.data.Data` instance from 2-norm.
+
+        Usage
+        -----
+        >>> data.denormalize()
         """
-        # If the data is already denormalized, or simply not normalized
         if not self.normalized:
             return
 
-        # If the data is normalized, denormalize the data
         self.data = self.denormalize_data(self.data, self.norm_scale)
-
-        # Set normalized to False
         self.normalized = False
 
     @staticmethod
@@ -235,6 +215,11 @@ class Data:
         -------
         bool
             Whether the vector is normalized to 2-norm or not.
+
+        Usage
+        -----
+        >>> data = np.array([[1, 2], [3, 4]])
+        >>> check_padding(data)
         """
         # If the data is a vector
         if data.ndim == 1:
@@ -256,6 +241,10 @@ class Data:
 
     def is_padded(self) -> None:
         """ Check if a `qickit.data.Data` instance is padded to a power of 2.
+
+        Usage
+        -----
+        >>> data.is_padded()
         """
         self.padded = self.check_padding(self.data)
 
@@ -276,26 +265,25 @@ class Data:
             The padded data.
         `data_shape` : (tuple[int, ...])
             The updated shape.
+
+        Usage
+        -----
+        >>> data = np.array([[1, 2], [3, 4]])
+        >>> pad_data(data)
         """
         # If the data is a vector
         if data.ndim == 1:
-            # Calculate the target size
             target_size = np.exp2(np.ceil(np.log2(len(data))))
 
             # Pad the vector with 0s
             padded_data = np.pad(data, (0, int(target_size - len(data))), mode="constant")
-
-            # Update data shape
             updated_shape = padded_data.shape
 
             return padded_data, updated_shape
 
         # If the data is a matrix
         elif data.ndim == 2:
-            # Define the rows and columns size
             rows, cols = data.shape
-
-            # Calculate the target size
             target_size = np.exp2(np.ceil(np.log2(rows * cols)))
 
             # Calculate the number of rows and columns needed for the
@@ -306,12 +294,10 @@ class Data:
             # Ensure the target rows and columns are integers (i.e., we
             # can't have 1.5 rows)
             if target_rows != int(target_rows) or target_cols != int(target_cols):
-                # If the data is wider than tall
                 if cols > rows:
                     # Calculate the number of columns needed for the
                     # padded matrix (prioritize wider images)
                     cols = int(np.divide(target_size, rows))
-
                 else:
                     # Calculate the number of rows needed for the
                     # padded matrix (prioritize taller images)
@@ -337,8 +323,6 @@ class Data:
             # Copy the original matrix into the top-left corner of the
             # padded matrix
             padded_data[:rows, :cols] = data
-
-            # Update data shape
             updated_shape = padded_data.shape
 
             return padded_data, updated_shape
@@ -348,26 +332,28 @@ class Data:
 
     def pad(self) -> None:
         """ Pad a `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> data.pad()
         """
-        # Check if the data is already padded or not
         if self.padded:
             return
 
-        # Pad the data
         self.data, self.shape = self.pad_data(self.data)
-
-        # Set padded to True
         self.padded = True
 
     def to_quantumstate(self) -> None:
         """ Converts a `qickit.data.Data` instance to a quantum state.
+
+        Usage
+        -----
+        >>> data.to_quantumstate()
         """
         if not self.padded:
-            # Pad the data
             self.pad()
 
         if not self.normalized:
-            # Normalize the data
             self.normalize()
 
     def compress(self,
@@ -378,11 +364,12 @@ class Data:
         ----------
         `compression_percentage` : float
             The percentage of compression.
-        """
-        # Flatten the data in case it is not 1-dimensional
-        data = self.data.flatten()
 
-        # Sort the data
+        Usage
+        -----
+        >>> data.compress(50)
+        """
+        data = self.data.flatten()
         data_sort_ind = np.argsort(np.abs(data))
 
         # Set the smallest absolute values of data to zero according to compression parameter
@@ -390,11 +377,14 @@ class Data:
         for i in data_sort_ind[:cutoff]:
             data[i] = 0
 
-        # Reshape the data
         self.data = data.reshape(self.shape)
 
     def draw(self) -> None:
         """ Draw the `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> data.draw()
         """
         plt.imshow(self.data)
         plt.show()
@@ -424,21 +414,27 @@ class Data:
         TypeError
             If the data is not a nested collection.
             If the data is not a nested collection of numbers.
+
+        Usage
+        -----
+        >>> data1 = Data([[1, 2], [3, 4]])
+        >>> data2 = Data([[1, 2], [3, 4]])
+        >>> iscloseto(data1, data2)
         """
-        # Define a `qickit.Data` instance
+        # Ensure `first_data` is a `qickit.data.Data` instance
         if not isinstance(first_data, Data):
             if not isinstance(first_data, Collection):
                 raise TypeError("Data must be a `qickit.data.Data` instance or a Collection.")
-            elif any(not isinstance(i, NumberType) for i in first_data): # type: ignore
+            elif any(not isinstance(i, Scalar) for i in np.array(first_data).flatten()): # type: ignore
                 raise TypeError("Data must be a nested collection of numbers.")
             else:
                 first_data = Data(first_data)
 
-        # Define a `qickit.Data` instance
+        # Ensure `second_data` is a `qickit.data.Data` instance
         if not isinstance(second_data, Data):
             if not isinstance(second_data, Collection):
                 raise TypeError("Data must be a `qickit.data.Data` instance or a Collection.")
-            elif any(not isinstance(i, NumberType) for i in second_data): # type: ignore
+            elif any(not isinstance(i, Scalar) for i in np.array(second_data).flatten()): # type: ignore
                 raise TypeError("Data must be a nested collection of numbers.")
             else:
                 second_data = Data(second_data)
@@ -459,6 +455,10 @@ class Data:
         ValueError
             If the index type is not supported.
             If the data array is not two-dimensional when used with `index_type=="snake"`.
+
+        Usage
+        -----
+        >>> data.change_indexing("snake")
         """
         if index_type == "snake":
             # Ensure the array has two dimensions
@@ -474,23 +474,13 @@ class Data:
         else:
             raise ValueError("Index type not supported.")
 
-    def __repr__(self) -> str:
-        """ Return a string representation of the `qickit.data.Data` instance.
-
-        Returns
-        -------
-        str
-            The string representation of the `qickit.data.Data` instance.
-        """
-        return f'Data(data={self.data})'
-
     def __eq__(self,
                other_data: object) -> bool:
         """ Check if two `qickit.data.Data` instances are equal.
 
         Parameters
         ----------
-        `other_data` : qickit.data.Data
+        `other_data` : object
             The other data to compare with.
 
         Returns
@@ -503,11 +493,17 @@ class Data:
         TypeError
             If the data is not a nested collection.
             If the data is not a nested collection of numbers.
+
+        Usage
+        -----
+        >>> data1 = Data([[1, 2], [3, 4]])
+        >>> data2 = Data([[1, 2], [3, 4]])
+        >>> data1 == data2
         """
         if not isinstance(other_data, Data):
             if not isinstance(other_data, Collection):
                 raise TypeError("Data must be a `qickit.data.Data` instance or a Collection.")
-            elif any(not isinstance(i, NumberType) for i in np.array(other_data).flatten()): # type: ignore
+            elif any(not isinstance(i, Scalar) for i in np.array(other_data).flatten()): # type: ignore
                 raise TypeError("Data must be a nested collection of numbers.")
             else:
                 other_data = Data(other_data)
@@ -521,6 +517,10 @@ class Data:
         -------
         int
             The length of the `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> len(data)
         """
         return len(self.data.flatten())
 
@@ -535,8 +535,13 @@ class Data:
 
         Returns
         -------
-        Data
+        `data` : qickit.data.Data
             The multiplied `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> data = Data([[1, 2], [3, 4]])
+        >>> data * 2
         """
         data = copy.deepcopy(self)
         data.data = np.multiply(self.data, multiplier)
@@ -553,9 +558,42 @@ class Data:
 
         Returns
         -------
-        Data
+        `data` : qickit.data.Data
             The multiplied `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> data = Data([[1, 2], [3, 4]])
+        >>> 2 * data
         """
         data = copy.deepcopy(self)
         data.data = np.multiply(self.data, multiplier)
         return data
+
+    def __str__(self) -> str:
+        """ Return a string representation of the `qickit.data.Data` instance.
+
+        Returns
+        -------
+        str
+            The string representation of the `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> str(data)
+        """
+        return f'Data(data={self.data})'
+
+    def __repr__(self) -> str:
+        """ Return a string representation of the `qickit.data.Data` instance.
+
+        Returns
+        -------
+        str
+            The string representation of the `qickit.data.Data` instance.
+
+        Usage
+        -----
+        >>> repr(data)
+        """
+        return f'Data(data={self.data})'

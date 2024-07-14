@@ -17,8 +17,7 @@ from __future__ import annotations
 __all__ = ["Collection", "NestedCollection"]
 
 from typing import (Iterator, overload, Protocol, TypeVar,
-                    TypeAlias, Self, runtime_checkable)
-
+                    Self, TypeAlias, runtime_checkable)
 
 T = TypeVar("T")
 
@@ -29,20 +28,20 @@ class Collection(Protocol[T]): # pragma: no cover
   def __iter__(self) -> Iterator[T]:
     ...
   @overload
-  def __getitem__(self, idx: int) -> T:
+  def __getitem__(self, idx: int, /) -> T:
     ...
   @overload
-  def __getitem__(self, idx: slice) -> Self:
+  def __getitem__(self, idx: slice, /) -> Self:
     ...
   @overload
-  def __setitem__(self, idx: int, value: T) -> None:
+  def __setitem__(self, idx: int, value: T, /) -> None:
     ...
   @overload
-  def __setitem__(self, idx: slice, value: Self) -> None:
+  def __setitem__(self, idx: slice, value: Self, /) -> None:
     ...
-  def __add__(self, other: Self) -> Self:
+  def __add__(self, other: Self, /) -> Self:
     ...
-  def __mul__(self, other: int) -> Self:
+  def __mul__(self, other: int, /) -> Self:
     ...
 
 

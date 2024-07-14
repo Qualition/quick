@@ -215,15 +215,6 @@ class TestData:
         with pytest.raises(TypeError):
             Data.iscloseto(data1, data2)
 
-    def test_repr(self) -> None:
-        """ Test the `__repr__()` method.
-        """
-        data = Data([1, 2, 3])
-        assert repr(data) == "Data(data=[1 2 3])"
-
-        data = Data([[1, 2, 3], [4, 5, 6]])
-        assert repr(data) == "Data(data=[[1 2 3]\n [4 5 6]])"
-
     def test_eq_identical(self) -> None:
         """ Test the `__eq__()` method when the data instances are identical.
         """
@@ -277,8 +268,20 @@ class TestData:
         """
         data = Data([1, 2, 3])
         assert data * 2 == Data([2, 4, 6])
-        assert 2 * data == Data([2, 4, 6])
-
-        data = Data([1, 2, 3])
         assert data * 2.5 == Data([2.5, 5, 7.5])
+
+    def test_rmul(self) -> None:
+        """ Test the `__rmul__()` method.
+        """
+        data = Data([1, 2, 3])
+        assert 2 * data == Data([2, 4, 6])
         assert 2.5 * data == Data([2.5, 5, 7.5])
+
+    def test_repr(self) -> None:
+        """ Test the `__repr__()` method.
+        """
+        data = Data([1, 2, 3])
+        assert repr(data) == "Data(data=[1 2 3])"
+
+        data = Data([[1, 2, 3], [4, 5, 6]])
+        assert repr(data) == "Data(data=[[1 2 3]\n [4 5 6]])"
