@@ -16,10 +16,12 @@ from __future__ import annotations
 
 __all__ = ["TKETCircuit"]
 
+from collections.abc import Sequence
 import copy
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, TYPE_CHECKING
+from typing import Dict, Tuple, Union
 
 from pytket import Circuit as TKCircuit
 from pytket import OpType
@@ -30,7 +32,6 @@ if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit import Circuit, QiskitCircuit
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
-from qickit.types import Collection
 
 
 class TKETCircuit(Circuit):
@@ -72,42 +73,43 @@ class TKETCircuit(Circuit):
 
     def _single_qubit_gate(self,
                            gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
-                           qubit_indices: int | Collection[int],
+                           qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
         # Define the gate mapping for the non-parameterized single qubit gates
         gate_mapping = {
-            "I": [OpType.noop],
-            "X": [OpType.X],
-            "Y": [OpType.Y],
-            "Z": [OpType.Z],
-            "H": [OpType.H],
-            "S": [OpType.S],
-            "T": [OpType.T],
-            "RX": [OpType.Rx, angle/np.pi],
-            "RY": [OpType.Ry, angle/np.pi],
-            "RZ": [OpType.Rz, angle/np.pi]
+            "I": (OpType.noop,),
+            "X": (OpType.X,),
+            "Y": (OpType.Y,),
+            "Z": (OpType.Z,),
+            "H": (OpType.H,),
+            "S": (OpType.S,),
+            "T": (OpType.T,),
+            "RX": (OpType.Rx, angle/np.pi),
+            "RY": (OpType.Ry, angle/np.pi),
+            "RZ": (OpType.Rz, angle/np.pi)
         }
 
         # Apply the gate to the specified qubit(s)
-        if isinstance(qubit_indices, Collection):
-            for index in qubit_indices:
-                self.circuit.add_gate(*gate_mapping[gate], [index])
-        else:
-            self.circuit.add_gate(*gate_mapping[gate], [qubit_indices])
+        for index in qubit_indices:
+            self.circuit.add_gate(*gate_mapping[gate], [index]) # type: ignore
 
-    @Circuit.gatemethod
     def U3(self,
-           angles: Collection[float],
+           angles: Sequence[float],
            qubit_index: int) -> None:
+        self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
+
         # Create a single qubit unitary gate
         u3 = OpType.U3
 
         self.circuit.add_gate(u3, [angles[i]/np.pi for i in range(3)], [qubit_index])
 
-    @Circuit.gatemethod
     def SWAP(self,
              first_qubit: int,
              second_qubit: int) -> None:
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
+
         # Create a SWAP gate
         swap = OpType.SWAP
 
@@ -115,8 +117,8 @@ class TKETCircuit(Circuit):
 
     def _controlled_qubit_gate(self,
                                gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
-                               control_indices: int | Collection[int],
-                               target_indices: int | Collection[int],
+                               control_indices: int | Sequence[int],
+                               target_indices: int | Sequence[int],
                                angle: float=0) -> None:
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -136,13 +138,14 @@ class TKETCircuit(Circuit):
 
         # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
-            self.circuit.add_qcontrolbox(gate_mapping[gate], control_indices[:] + [target_index])
+            self.circuit.add_qcontrolbox(gate_mapping[gate], [*control_indices[:], target_index])
 
-    @Circuit.gatemethod
     def MCU3(self,
-             angles: Collection[float],
-             control_indices: int | Collection[int],
-             target_indices: int | Collection[int]) -> None:
+             angles: Sequence[float],
+             control_indices: int | Sequence[int],
+             target_indices: int | Sequence[int]) -> None:
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals().copy())
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
@@ -153,13 +156,14 @@ class TKETCircuit(Circuit):
 
         # Apply the MCU3 gate controlled by all control indices to each target index
         for target_index in target_indices:
-            self.circuit.add_qcontrolbox(mcu3, control_indices[:] + [target_index])
+            self.circuit.add_qcontrolbox(mcu3, [*control_indices[:], target_index])
 
-    @Circuit.gatemethod
     def MCSWAP(self,
-               control_indices: int | Collection[int],
+               control_indices: int | Sequence[int],
                first_target_index: int,
                second_target_index: int) -> None:
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals().copy())
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
         # Create a Multi-Controlled SWAP gate with the number of control qubits equal to
@@ -167,17 +171,19 @@ class TKETCircuit(Circuit):
         swap = Op.create(OpType.SWAP)
         mcswap = QControlBox(swap, len(control_indices))
 
-        self.circuit.add_gate(mcswap, control_indices[:] + [first_target_index, second_target_index])
+        self.circuit.add_gate(mcswap, [*control_indices[:], first_target_index, second_target_index])
 
-    @Circuit.gatemethod
     def GlobalPhase(self,
                     angle: float) -> None:
+        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
+
         # Create a Global Phase gate, and apply it to the circuit
         self.circuit.add_phase(angle/np.pi)
 
-    @Circuit.gatemethod
     def measure(self,
-                qubit_indices: int | Collection[int]) -> None:
+                qubit_indices: int | Sequence[int]) -> None:
+        self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
+
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
@@ -188,7 +194,7 @@ class TKETCircuit(Circuit):
         # Measure the qubits
         if isinstance(qubit_indices, int):
             self.circuit.Measure(qubit_indices, qubit_indices)
-        elif isinstance(qubit_indices, Collection):
+        elif isinstance(qubit_indices, Sequence):
             for index in qubit_indices:
                 self.circuit.Measure(index, index)
 
@@ -196,7 +202,8 @@ class TKETCircuit(Circuit):
         list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
 
     def get_statevector(self,
-                        backend: Backend | None = None) -> NDArray[np.complex128]:
+                        backend: Backend | None = None,
+                        magnitude_only: bool=False) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: TKETCircuit = copy.deepcopy(self)
 
@@ -208,27 +215,28 @@ class TKETCircuit(Circuit):
         else:
             state_vector = backend.get_statevector(circuit)
 
-        # Round off the small values to 0 (values below 1e-12 are set to 0)
-        state_vector = np.round(state_vector, 12)
+        if magnitude_only:
+            # Round off the small values to 0 (values below 1e-12 are set to 0)
+            state_vector = np.round(state_vector, 12)
 
-        # Create masks for real and imaginary parts
-        real_mask = (state_vector.imag == 0)
-        imag_mask = (state_vector.real == 0)
+            # Create masks for real and imaginary parts
+            real_mask = (state_vector.imag == 0)
+            imag_mask = (state_vector.real == 0)
 
-        # Calculate the sign for each part
-        real_sign = np.sign(state_vector.real) * real_mask
-        imag_sign = np.sign(state_vector.imag) * imag_mask
+            # Calculate the sign for each part
+            real_sign = np.sign(state_vector.real) * real_mask
+            imag_sign = np.sign(state_vector.imag) * imag_mask
 
-        # Calculate the sign for complex numbers
-        complex_sign = np.sign(state_vector.real * (np.abs(state_vector.real) <= np.abs(state_vector.imag)) + \
-                               state_vector.imag * (np.abs(state_vector.imag) < np.abs(state_vector.real))) * \
-                               ~(real_mask | imag_mask)
+            # Calculate the sign for complex numbers
+            complex_sign = np.sign(state_vector.real * (np.abs(state_vector.real) <= np.abs(state_vector.imag)) + \
+                                state_vector.imag * (np.abs(state_vector.imag) < np.abs(state_vector.real))) * \
+                                ~(real_mask | imag_mask)
 
-        # Define the signs for the real and imaginary components
-        signs = real_sign + imag_sign + complex_sign
+            # Define the signs for the real and imaginary components
+            signs = real_sign + imag_sign + complex_sign
 
-        # Multiply the state vector by the signs
-        state_vector = signs * np.abs(state_vector)
+            # Multiply the state vector by the signs
+            state_vector = signs * np.abs(state_vector)
 
         return np.array(state_vector)
 

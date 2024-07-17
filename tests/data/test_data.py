@@ -42,10 +42,10 @@ class TestData:
         assert np_data == data
 
         with pytest.raises(TypeError):
-            Data("not a list")
+            Data("not a list") # type: ignore
 
         with pytest.raises(TypeError):
-            Data(1)
+            Data(1) # type: ignore
 
     @staticmethod
     def is_normalized(state: MutableSequence[MutableSequence[float]] | MutableSequence[float]) -> bool:
@@ -241,7 +241,7 @@ class TestData:
         """
         data1 = [1, 2, 3]
         data2 = Data([1, 2, 3])
-        data1 == data2
+        data1 == data2 # type: ignore
 
     def test_eq_wrong_type(self) -> None:
         """ Test the `__eq__()` method when the data instances are of the wrong type.
@@ -249,7 +249,7 @@ class TestData:
         data1 = "not a data instance"
         data2 = Data([1, 2, 3])
         with pytest.raises(TypeError):
-            data1 == data2
+            data1 == data2 # type: ignore
 
     def test_len_vector(self) -> None:
         """ Test the `__len__()` method for a vector.

@@ -393,7 +393,8 @@ class Shende(StatePreparation):
                     ry_mult.horizontal_reverse(adjoint=False)
                     circuit.add(ry_mult, list(range(i, num_qubits)))
 
-            circuit.GlobalPhase(-np.angle(sum(remaining_param)))
+            global_phase_angle = -np.angle(sum(remaining_param))
+            circuit.GlobalPhase(float(global_phase_angle))
             return circuit
 
         # Define the disentangling circuit

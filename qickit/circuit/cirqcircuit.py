@@ -16,6 +16,7 @@ from __future__ import annotations
 
 __all__ = ["CirqCircuit"]
 
+from collections.abc import Sequence
 import copy
 import numpy as np
 from numpy.typing import NDArray
@@ -28,7 +29,6 @@ if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit import Circuit, QiskitCircuit
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
-from qickit.types import Collection
 
 
 class CirqCircuit(Circuit):
@@ -80,8 +80,10 @@ class CirqCircuit(Circuit):
 
     def _single_qubit_gate(self,
                            gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
-                           qubit_indices: int | Collection[int],
+                           qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
         # Define the gate mapping for the non-parameterized single qubit gates
         gate_mapping = {
             "I": I,
@@ -97,16 +99,14 @@ class CirqCircuit(Circuit):
         }
 
         # Apply the gate to the specified qubit(s)
-        if isinstance(qubit_indices, Collection):
-            for index in qubit_indices:
-                self.circuit.append(gate_mapping[gate](self.qr[index]))
-        else:
-            self.circuit.append(gate_mapping[gate](self.qr[qubit_indices]))
+        for index in qubit_indices:
+            self.circuit.append(gate_mapping[gate](self.qr[index]))
 
-    @Circuit.gatemethod
     def U3(self,
-           angles: Collection[float],
+           angles: Sequence[float],
            qubit_index: int) -> None:
+        self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
+
         # Define the unitary matrix for the U3 gate
         u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
               [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
@@ -128,17 +128,17 @@ class CirqCircuit(Circuit):
 
         self.circuit.append(U3().on(self.qr[qubit_index]))
 
-    @Circuit.gatemethod
     def SWAP(self,
              first_qubit: int,
              second_qubit: int) -> None:
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
         swap = cirq.SWAP
         self.circuit.append(swap(self.qr[first_qubit], self.qr[second_qubit]))
 
     def _controlled_qubit_gate(self,
                                gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
-                               control_indices: int | Collection[int],
-                               target_indices: int | Collection[int],
+                               control_indices: int | Sequence[int],
+                               target_indices: int | Sequence[int],
                                angle: float=0) -> None:
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -162,11 +162,12 @@ class CirqCircuit(Circuit):
                 gate_mapping[gate](*map(self.qr.__getitem__, control_indices), self.qr[target_index])
             )
 
-    @Circuit.gatemethod
     def MCU3(self,
-             angles: Collection[float],
-             control_indices: int | Collection[int],
-             target_indices: int | Collection[int]) -> None:
+             angles: Sequence[float],
+             control_indices: int | Sequence[int],
+             target_indices: int | Sequence[int]) -> None:
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals().copy())
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
@@ -199,11 +200,12 @@ class CirqCircuit(Circuit):
                 mcu3(*map(self.qr.__getitem__, control_indices), self.qr[target_index])
             )
 
-    @Circuit.gatemethod
     def MCSWAP(self,
-               control_indices: int | Collection[int],
+               control_indices: int | Sequence[int],
                first_target_index: int,
                second_target_index: int) -> None:
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals().copy())
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
         # Create a Multi-Controlled SWAP gate with the number of control qubits equal to
@@ -216,17 +218,19 @@ class CirqCircuit(Circuit):
                    self.qr[first_target_index], self.qr[second_target_index])
         )
 
-    @Circuit.gatemethod
     def GlobalPhase(self,
                     angle: float) -> None:
+        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
+
         # Create a Global Phase gate (Cirq takes in e^i*angle as the argument)
         global_phase = cirq.GlobalPhaseGate(np.exp(1j*angle))
 
         self.circuit.append(global_phase())
 
-    @Circuit.gatemethod
     def measure(self,
-                qubit_indices: int | Collection[int]) -> None:
+                qubit_indices: int | Sequence[int]) -> None:
+        self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
+
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
@@ -249,7 +253,8 @@ class CirqCircuit(Circuit):
         list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
 
     def get_statevector(self,
-                        backend: Backend | None = None) -> NDArray[np.complex128]:
+                        backend: Backend | None = None,
+                        magnitude_only: bool=False) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: CirqCircuit = copy.deepcopy(self)
 
@@ -261,27 +266,28 @@ class CirqCircuit(Circuit):
         else:
             state_vector = backend.get_statevector(circuit)
 
-        # Round off the small values to 0 (values below 1e-12 are set to 0)
-        state_vector = np.round(state_vector, 12)
+        if magnitude_only:
+            # Round off the small values to 0 (values below 1e-12 are set to 0)
+            state_vector = np.round(state_vector, 12)
 
-        # Create masks for real and imaginary parts
-        real_mask = (state_vector.imag == 0)
-        imag_mask = (state_vector.real == 0)
+            # Create masks for real and imaginary parts
+            real_mask = (state_vector.imag == 0)
+            imag_mask = (state_vector.real == 0)
 
-        # Calculate the sign for each part
-        real_sign = np.sign(state_vector.real) * real_mask
-        imag_sign = np.sign(state_vector.imag) * imag_mask
+            # Calculate the sign for each part
+            real_sign = np.sign(state_vector.real) * real_mask
+            imag_sign = np.sign(state_vector.imag) * imag_mask
 
-        # Calculate the sign for complex numbers
-        complex_sign = np.sign(state_vector.real * (np.abs(state_vector.real) <= np.abs(state_vector.imag)) + \
-                               state_vector.imag * (np.abs(state_vector.imag) < np.abs(state_vector.real))) * \
-                               ~(real_mask | imag_mask)
+            # Calculate the sign for complex numbers
+            complex_sign = np.sign(state_vector.real * (np.abs(state_vector.real) <= np.abs(state_vector.imag)) + \
+                                state_vector.imag * (np.abs(state_vector.imag) < np.abs(state_vector.real))) * \
+                                ~(real_mask | imag_mask)
 
-        # Define the signs for the real and imaginary components
-        signs = real_sign + imag_sign + complex_sign
+            # Define the signs for the real and imaginary components
+            signs = real_sign + imag_sign + complex_sign
 
-        # Multiply the state vector by the signs
-        state_vector = signs * np.abs(state_vector)
+            # Multiply the state vector by the signs
+            state_vector = signs * np.abs(state_vector)
 
         return np.array(state_vector)
 

@@ -99,11 +99,12 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
 
         # Generate a simulator that mimics the real quantum system with
         # the latest calibration results
-        if self.device == "GPU" and AerSimulator.available_devices()["GPU"]:
+        available_devices = AerSimulator.available_devices() # type: ignore
+        if self.device == "GPU" and available_devices["GPU"]:
             self._counts_backend = BackendSampler(AerSimulator.from_backend(backend, device="GPU"))
             self._op_backend = AerSimulator.from_backend(backend, device="GPU", method="unitary")
         else:
-            if self.device == "GPU" and AerSimulator.available_devices()["GPU"] is None:
+            if self.device == "GPU" and available_devices["GPU"] is None:
                 print("Warning: GPU acceleration is not available. Defaulted to CPU.")
             self._counts_backend = BackendSampler(AerSimulator.from_backend(backend))
             self._op_backend = AerSimulator.from_backend(backend, method="unitary")
@@ -147,7 +148,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             # Run the circuit on the backend to generate the operator
             operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 
-        return operator
+        return np.array(operator, dtype=np.complex128)
 
     @Backend.backendmethod
     def get_counts(self,

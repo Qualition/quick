@@ -86,8 +86,8 @@ class AerBackend(NoisyBackend):
 
         if self.noisy:
             # Define depolarizing quantum errors (only on U3 and CX gates)
-            single_qubit_error = noise.depolarizing_error(self.single_qubit_error, num_qubits=1)
-            two_qubit_error = noise.depolarizing_error(self.two_qubit_error, num_qubits=2)
+            single_qubit_error = noise.depolarizing_error(self.single_qubit_error, num_qubits=1) # type: ignore
+            two_qubit_error = noise.depolarizing_error(self.two_qubit_error, num_qubits=2) # type: ignore
 
             # Add errors to the noise model
             noise_model = noise.NoiseModel()
@@ -96,7 +96,8 @@ class AerBackend(NoisyBackend):
 
         # Define the backend to run the circuit on
         # (based on device chosen and if noisy simulation is required)
-        if "GPU" in AerSimulator().available_devices() and device == "GPU":
+        available_devices: list[str] = AerSimulator().available_devices() # type: ignore
+        if "GPU" in available_devices and device == "GPU":
             if self.noisy:
                 self._counts_backend = BackendSampler(AerSimulator(device="GPU", noise_model=noise_model))
                 self._op_backend = AerSimulator(device="GPU", method="unitary", noise_model=noise_model)
@@ -104,7 +105,7 @@ class AerBackend(NoisyBackend):
                 self._counts_backend = BackendSampler(AerSimulator(device="GPU"))
                 self._op_backend = AerSimulator(device="GPU", method="unitary")
         else:
-            if self.device == "GPU" and "GPU" not in AerSimulator().available_devices():
+            if self.device == "GPU" and "GPU" not in available_devices:
                 warnings.warn("Warning: GPU acceleration is not available. Defaulted to CPU.")
             if self.noisy:
                 self._counts_backend = BackendSampler(AerSimulator(noise_model=noise_model))
@@ -124,7 +125,7 @@ class AerBackend(NoisyBackend):
 
         else:
             counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
-            state_vector = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
+            state_vector: NDArray[np.complex128] = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
             for state, count in counts.items():
                 state_vector[int(state, 2)] = np.sqrt(count)
             state_vector /= np.linalg.norm(state_vector)
@@ -147,7 +148,7 @@ class AerBackend(NoisyBackend):
             circuit.circuit.save_unitary() # type: ignore
             operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 
-        return operator
+        return np.array(operator, dtype=np.complex128)
 
     @Backend.backendmethod
     def get_counts(self,

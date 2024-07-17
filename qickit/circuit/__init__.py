@@ -13,13 +13,16 @@
 # limitations under the License.
 
 __all__ = ["Circuit",
-           "QiskitCircuit",
            "CirqCircuit",
-           "TKETCircuit",
-           "PennylaneCircuit"]
+           "CUDAQCircuit",
+           "PennylaneCircuit",
+           "QiskitCircuit",
+           "TKETCircuit"]
 
 from qickit.circuit.circuit import Circuit
+# Need to import QiskitCircuit before other circuits to avoid circular import
 from qickit.circuit.qiskitcircuit import QiskitCircuit
 from qickit.circuit.cirqcircuit import CirqCircuit
-from qickit.circuit.tketcircuit import TKETCircuit
+from qickit.circuit.cudaqcircuit import CUDAQCircuit
 from qickit.circuit.pennylanecircuit import PennylaneCircuit
+from qickit.circuit.tketcircuit import TKETCircuit

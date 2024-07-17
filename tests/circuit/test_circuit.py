@@ -40,6 +40,21 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_single_qubit_gate_from_range(self) -> None:
+        """ Test the single qubit gate when indices are passed as a range instance.
+        """
+
+    @abstractmethod
+    def test_single_qubit_gate_from_tuple(self) -> None:
+        """ Test the single qubit gate when indices are passed as a tuple instance.
+        """
+
+    @abstractmethod
+    def test_single_qubit_gate_from_ndarray(self) -> None:
+        """ Test the single qubit gate when indices are passed as a numpy.ndarray instance.
+        """
+
+    @abstractmethod
     def test_Identity(self) -> None:
         """ Test the Identity gate.
         """

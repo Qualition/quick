@@ -81,6 +81,60 @@ class TestPennylaneCircuit(Template):
         with pytest.raises(TypeError):
             circuit = PennylaneCircuit(1.0) # type: ignore
 
+    def test_single_qubit_gate_from_range(self) -> None:
+        """ Test the single qubit gate when indices are passed as a range instance.
+        """
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(3)
+
+        # Define the qubit indices as a range of ints
+        qubit_indices = range(3)
+
+        # Apply the Pauli-X gate
+        circuit.X(qubit_indices)
+
+        # Define the checker
+        checker_circuit = PennylaneCircuit(3)
+        checker_circuit.X([0, 1, 2])
+
+        assert circuit == checker_circuit
+
+    def test_single_qubit_gate_from_tuple(self) -> None:
+        """ Test the single qubit gate when indices are passed as a tuple instance.
+        """
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(3)
+
+        # Define the qubit indices as a tuple of ints
+        qubit_indices = (0, 1, 2)
+
+        # Apply the Pauli-X gate
+        circuit.X(qubit_indices)
+
+        # Define the checker
+        checker_circuit = PennylaneCircuit(3)
+        checker_circuit.X([0, 1, 2])
+
+        assert circuit == checker_circuit
+
+    def test_single_qubit_gate_from_ndarray(self) -> None:
+        """ Test the single qubit gate when indices are passed as a numpy.ndarray instance.
+        """
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(3)
+
+        # Define the qubit indices as a ndarray of ints
+        qubit_indices = np.array([0, 1, 2])
+
+        # Apply the Pauli-X gate
+        circuit.X(qubit_indices) # type: ignore
+
+        # Define the checker
+        checker_circuit = PennylaneCircuit(3)
+        checker_circuit.X([0, 1, 2])
+
+        assert circuit == checker_circuit
+
     def test_Identity(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
         circuit = PennylaneCircuit(1)
@@ -449,7 +503,7 @@ class TestPennylaneCircuit(Template):
         assert circuit.measured_qubits[1]
 
         # Remove the measurement gate
-        circuit = circuit.remove_measurements()
+        circuit = circuit._remove_measurements()
 
         # Ensure the measured status is `False`
         assert not circuit.measured_qubits[0]
@@ -474,16 +528,16 @@ class TestPennylaneCircuit(Template):
 
     def test_get_statevector(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(2)
+        circuit = PennylaneCircuit(1)
 
-        # Apply the GHZ state
+        # Create a state with non-zero real and imaginary components
         circuit.H(0)
-        circuit.CX(0, 1)
+        circuit.T(0)
 
         # Get the statevector of the circuit, and ensure it is correct
         statevector = circuit.get_statevector()
 
-        assert_almost_equal(statevector, [np.sqrt(1/2), 0, 0, np.sqrt(1/2)], 8)
+        assert_almost_equal(statevector, [np.sqrt(1/2), 0.5 + 0.5j], 8)
 
     def test_partial_get_counts(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
@@ -501,7 +555,7 @@ class TestPennylaneCircuit(Template):
         assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
 
         # Remove the measurement
-        circuit = circuit.remove_measurements()
+        circuit = circuit._remove_measurements()
 
         # Measure the circuit partially
         circuit.measure(1)
@@ -596,7 +650,7 @@ class TestPennylaneCircuit(Template):
 
         # Ensure the error is raised when the type of the circuit is not correct
         with pytest.raises(TypeError):
-            circuit1.add(circuit3, [0, 1])
+            circuit1.add(circuit3, [0, 1]) # type: ignore
 
         # Ensure the error is raised when the number of qubits is not equal
         with pytest.raises(ValueError):

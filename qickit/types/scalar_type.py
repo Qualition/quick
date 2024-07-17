@@ -18,5 +18,6 @@ __all__ = ["Scalar"]
 
 import numpy as np
 
-
+Integer = np.int_ | int
+Floating = np.float_ | np.int_ | float | int
 Scalar = np.int_ | np.float_ | np.complex_ | int | float | complex
