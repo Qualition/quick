@@ -128,6 +128,24 @@ class TestFromCirq(FrameworkTemplate):
         check_circuit.S(0)
         assert qickit_circuit == check_circuit
 
+    def test_Sdg(self) -> None:
+        # Define the quantum bit register
+        qr = cirq.LineQubit.range(1)
+
+        # Define the Cirq circuit
+        cirq_circuit = cirq.Circuit()
+        sdg = S**-1
+        cirq_circuit.append(sdg(qr[0]))
+
+        # Convert the Cirq circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(1)
+        check_circuit.Sdg(0)
+        assert qickit_circuit == check_circuit
+
     def test_T(self) -> None:
         # Define the quantum bit register
         qr = cirq.LineQubit.range(1)
@@ -143,6 +161,24 @@ class TestFromCirq(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = QiskitCircuit(1)
         check_circuit.T(0)
+        assert qickit_circuit == check_circuit
+
+    def test_Tdg(self) -> None:
+        # Define the quantum bit register
+        qr = cirq.LineQubit.range(1)
+
+        # Define the Cirq circuit
+        cirq_circuit = cirq.Circuit()
+        tdg = T**-1
+        cirq_circuit.append(tdg(qr[0]))
+
+        # Convert the Cirq circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(1)
+        check_circuit.Tdg(0)
         assert qickit_circuit == check_circuit
 
     def test_RX(self) -> None:
@@ -352,6 +388,24 @@ class TestFromCirq(FrameworkTemplate):
         check_circuit.CS(0, 1)
         assert qickit_circuit == check_circuit
 
+    def test_CSdg(self) -> None:
+        # Define the quantum bit register
+        qr = cirq.LineQubit.range(2)
+
+        # Define the Cirq circuit
+        cirq_circuit = cirq.Circuit()
+        cs = cirq.ControlledGate(sub_gate=S**-1, num_controls=1)
+        cirq_circuit.append(cs(qr[0], qr[1]))
+
+        # Convert the Cirq circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(2)
+        check_circuit.CSdg(0, 1)
+        assert qickit_circuit == check_circuit
+
     def test_CT(self) -> None:
         # Define the quantum bit register
         qr = cirq.LineQubit.range(2)
@@ -368,6 +422,24 @@ class TestFromCirq(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = QiskitCircuit(2)
         check_circuit.CT(0, 1)
+        assert qickit_circuit == check_circuit
+
+    def test_CTdg(self) -> None:
+        # Define the quantum bit register
+        qr = cirq.LineQubit.range(2)
+
+        # Define the Cirq circuit
+        cirq_circuit = cirq.Circuit()
+        ct = cirq.ControlledGate(sub_gate=T**-1, num_controls=1)
+        cirq_circuit.append(ct(qr[0], qr[1]))
+
+        # Convert the Cirq circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(2)
+        check_circuit.CTdg(0, 1)
         assert qickit_circuit == check_circuit
 
     def test_CRX(self) -> None:
@@ -580,6 +652,26 @@ class TestFromCirq(FrameworkTemplate):
         check_circuit.MCS([0, 1], 3)
         assert qickit_circuit == check_circuit
 
+    def test_MCSdg(self) -> None:
+        # Define the quantum bit register
+        qr = cirq.LineQubit.range(4)
+
+        # Define the Cirq circuit
+        cirq_circuit = cirq.Circuit()
+        mcsdg = cirq.ControlledGate(sub_gate=S**-1, num_controls=2)
+        cirq_circuit.append(mcsdg(qr[0], qr[1], qr[2]))
+        cirq_circuit.append(mcsdg(qr[0], qr[1], qr[3]))
+
+        # Convert the Cirq circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(4)
+        check_circuit.MCSdg([0, 1], 2)
+        check_circuit.MCSdg([0, 1], 3)
+        assert qickit_circuit == check_circuit
+
     def test_MCT(self) -> None:
         # Define the quantum bit register
         qr = cirq.LineQubit.range(4)
@@ -598,6 +690,26 @@ class TestFromCirq(FrameworkTemplate):
         check_circuit = QiskitCircuit(4)
         check_circuit.MCT([0, 1], 2)
         check_circuit.MCT([0, 1], 3)
+        assert qickit_circuit == check_circuit
+
+    def test_MCTdg(self) -> None:
+        # Define the quantum bit register
+        qr = cirq.LineQubit.range(4)
+
+        # Define the Cirq circuit
+        cirq_circuit = cirq.Circuit()
+        mctdg = cirq.ControlledGate(sub_gate=T**-1, num_controls=2)
+        cirq_circuit.append(mctdg(qr[0], qr[1], qr[2]))
+        cirq_circuit.append(mctdg(qr[0], qr[1], qr[3]))
+
+        # Convert the Cirq circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(4)
+        check_circuit.MCTdg([0, 1], 2)
+        check_circuit.MCTdg([0, 1], 3)
         assert qickit_circuit == check_circuit
 
     def test_MCRX(self) -> None:

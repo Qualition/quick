@@ -192,6 +192,15 @@ class TestCirqCircuit(Template):
 
         assert_almost_equal(circuit.get_unitary(), S_unitary_matrix, 8)
 
+    def test_Sdg(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(1)
+
+        # Apply the Clifford S dagger gate
+        circuit.Sdg(0)
+
+        assert_almost_equal(circuit.get_unitary(), S_unitary_matrix.conj().T, 8)
+
     def test_T(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(1)
@@ -200,6 +209,15 @@ class TestCirqCircuit(Template):
         circuit.T(0)
 
         assert_almost_equal(circuit.get_unitary(), T_unitary_matrix, 8)
+
+    def test_Tdg(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(1)
+
+        # Apply the Clifford T dagger gate
+        circuit.Tdg(0)
+
+        assert_almost_equal(circuit.get_unitary(), T_unitary_matrix.conj().T, 8)
 
     def test_RX(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
@@ -291,6 +309,15 @@ class TestCirqCircuit(Template):
 
         assert_almost_equal(circuit.get_unitary(), CS_unitary_matrix, 8)
 
+    def test_CSdg(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2)
+
+        # Apply the CSdg gate
+        circuit.CSdg(0, 1)
+
+        assert_almost_equal(circuit.get_unitary(), CS_unitary_matrix.conj().T, 8)
+
     def test_CT(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(2)
@@ -299,6 +326,15 @@ class TestCirqCircuit(Template):
         circuit.CT(0, 1)
 
         assert_almost_equal(circuit.get_unitary(), CT_unitary_matrix, 8)
+
+    def test_CTdg(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(2)
+
+        # Apply the CTdg gate
+        circuit.CTdg(0, 1)
+
+        assert_almost_equal(circuit.get_unitary(), CT_unitary_matrix.conj().T, 8)
 
     def test_CRX(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
@@ -390,6 +426,15 @@ class TestCirqCircuit(Template):
 
         assert_almost_equal(circuit.get_unitary(), MCS_unitary_matrix, 8)
 
+    def test_MCSdg(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4)
+
+        # Apply the MCSdg gate
+        circuit.MCSdg([0, 1], [2, 3])
+
+        assert_almost_equal(circuit.get_unitary(), MCS_unitary_matrix.conj().T, 8)
+
     def test_MCT(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
         circuit = CirqCircuit(4)
@@ -398,6 +443,15 @@ class TestCirqCircuit(Template):
         circuit.MCT([0, 1], [2, 3])
 
         assert_almost_equal(circuit.get_unitary(), MCT_unitary_matrix, 8)
+
+    def test_MCTdg(self) -> None:
+        # Define the `qickit.circuit.CirqCircuit` instance
+        circuit = CirqCircuit(4)
+
+        # Apply the MCTdg gate
+        circuit.MCTdg([0, 1], [2, 3])
+
+        assert_almost_equal(circuit.get_unitary(), MCT_unitary_matrix.conj().T, 8)
 
     def test_MCRX(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
@@ -616,10 +670,27 @@ class TestCirqCircuit(Template):
 
     def test_horizontal_reverse(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
-        circuit = CirqCircuit(2)
+        circuit = CirqCircuit(4)
 
-        # Apply a RX and CX gate
+        # Apply gates
         circuit.RX(np.pi, 0)
+        circuit.CRX(np.pi, 0, 1)
+        circuit.MCRX(np.pi, [0, 1], [2, 3])
+        circuit.RY(np.pi, 0)
+        circuit.CRY(np.pi, 0, 1)
+        circuit.MCRY(np.pi, [0, 1], [2, 3])
+        circuit.RZ(np.pi, 0)
+        circuit.CRZ(np.pi, 0, 1)
+        circuit.MCRZ(np.pi, [0, 1], [2, 3])
+        circuit.S(0)
+        circuit.T(0)
+        circuit.CS(0, 1)
+        circuit.CT(0, 1)
+        circuit.MCS([0, 1], [2, 3])
+        circuit.MCT([0, 1], [2, 3])
+        circuit.U3([np.pi/2, np.pi/3, np.pi/4], 0)
+        circuit.CU3([np.pi/2, np.pi/3, np.pi/4], 0, 1)
+        circuit.MCU3([np.pi/2, np.pi/3, np.pi/4], [0, 1], [2, 3])
         circuit.CX(0, 1)
 
         # Apply the horizontal reverse operation
@@ -627,8 +698,25 @@ class TestCirqCircuit(Template):
 
         # Define the equivalent `qickit.circuit.CirqCircuit` instance, and
         # ensure they are equivalent
-        updated_circuit = CirqCircuit(2)
+        updated_circuit = CirqCircuit(4)
         updated_circuit.CX(0, 1)
+        updated_circuit.MCU3([-np.pi/2, -np.pi/4, -np.pi/3], [0, 1], [2, 3])
+        updated_circuit.CU3([-np.pi/2, -np.pi/4, -np.pi/3], 0, 1)
+        updated_circuit.U3([-np.pi/2, -np.pi/4, -np.pi/3], 0)
+        updated_circuit.MCTdg([0, 1], [2, 3])
+        updated_circuit.MCSdg([0, 1], [2, 3])
+        updated_circuit.CTdg(0, 1)
+        updated_circuit.CSdg(0, 1)
+        updated_circuit.Tdg(0)
+        updated_circuit.Sdg(0)
+        updated_circuit.MCRZ(-np.pi, [0, 1], [2, 3])
+        updated_circuit.CRZ(-np.pi, 0, 1)
+        updated_circuit.RZ(-np.pi, 0)
+        updated_circuit.MCRY(-np.pi, [0, 1], [2, 3])
+        updated_circuit.CRY(-np.pi, 0, 1)
+        updated_circuit.RY(-np.pi, 0)
+        updated_circuit.MCRX(-np.pi, [0, 1], [2, 3])
+        updated_circuit.CRX(-np.pi, 0, 1)
         updated_circuit.RX(-np.pi, 0)
 
         assert circuit == updated_circuit

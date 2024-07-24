@@ -20,7 +20,6 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import overload
 
-import qickit.primitives.bra as bra
 import qickit.primitives.ket as ket
 from qickit.types import Scalar
 
@@ -229,11 +228,11 @@ class Operator:
     def __mul__(self,
                 other: Scalar | ket.Ket | Operator) -> Operator | ket.Ket:
         if isinstance(other, Scalar):
-            return Operator(self.data * other)
+            return Operator((self.data * other).astype(np.complex128)) # type: ignore
         elif isinstance(other, ket.Ket):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot multiply an operator with an incompatible ket.")
-            return ket.Ket(self.data @ other.data)
+            return ket.Ket((self.data @ other.data).astype(np.complex128)) # type: ignore
         elif isinstance(other, Operator):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot multiply two incompatible operators.")
@@ -263,11 +262,11 @@ class Operator:
         >>> scalar * operator
         """
         if isinstance(other, Scalar):
-            return Operator(self.data * other)
+            return Operator((self.data * other).astype(np.complex128)) # type: ignore
         else:
             raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
-    def __str__(self) -> None:
+    def __str__(self) -> str:
         """ Return the string representation of the operator.
 
         Usage
@@ -278,7 +277,7 @@ class Operator:
         """
         return f"{self.label}"
 
-    def __repr__(self) -> None:
+    def __repr__(self) -> str:
         """ Return the string representation of the operator.
 
         Usage

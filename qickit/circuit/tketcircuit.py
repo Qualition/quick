@@ -21,7 +21,6 @@ import copy
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, TYPE_CHECKING
-from typing import Dict, Tuple, Union
 
 from pytket import Circuit as TKCircuit
 from pytket import OpType
@@ -72,7 +71,7 @@ class TKETCircuit(Circuit):
         self.circuit: TKCircuit = TKCircuit(self.num_qubits, self.num_qubits)
 
     def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                            qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
@@ -85,7 +84,9 @@ class TKETCircuit(Circuit):
             "Z": (OpType.Z,),
             "H": (OpType.H,),
             "S": (OpType.S,),
+            "Sdg": (OpType.Sdg,),
             "T": (OpType.T,),
+            "Tdg": (OpType.Tdg,),
             "RX": (OpType.Rx, angle/np.pi),
             "RY": (OpType.Ry, angle/np.pi),
             "RZ": (OpType.Rz, angle/np.pi)
@@ -106,17 +107,17 @@ class TKETCircuit(Circuit):
         self.circuit.add_gate(u3, [angles[i]/np.pi for i in range(3)], [qubit_index])
 
     def SWAP(self,
-             first_qubit: int,
-             second_qubit: int) -> None:
+             first_qubit_index: int,
+             second_qubit_index: int) -> None:
         self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
 
         # Create a SWAP gate
         swap = OpType.SWAP
 
-        self.circuit.add_gate(swap, [first_qubit, second_qubit])
+        self.circuit.add_gate(swap, [first_qubit_index, second_qubit_index])
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -130,7 +131,9 @@ class TKETCircuit(Circuit):
             "Z": QControlBox(Op.create(OpType.Z), len(control_indices)),
             "H": QControlBox(Op.create(OpType.H), len(control_indices)),
             "S": QControlBox(Op.create(OpType.S), len(control_indices)),
+            "Sdg": QControlBox(Op.create(OpType.Sdg), len(control_indices)),
             "T": QControlBox(Op.create(OpType.T), len(control_indices)),
+            "Tdg": QControlBox(Op.create(OpType.Tdg), len(control_indices)),
             "RX": QControlBox(Op.create(OpType.Rx, angle/np.pi), len(control_indices)),
             "RY": QControlBox(Op.create(OpType.Ry, angle/np.pi), len(control_indices)),
             "RZ": QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices))

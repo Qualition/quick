@@ -14,99 +14,108 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-
-from qickit.types import Collection
 
 
 """ Helper functions for the Mottonen encoder
 """
 
-def grayCode(x: int) -> int:
-    """ Return the gray code of x.
+def gray_code(index: int) -> int:
+    """ Return Gray code at the specified index.
 
     Parameters
     ----------
-    `x` : int
-        The number.
+    `index`: int
+        The index of the Gray code to return.
 
     Returns
     -------
     int
-        The gray code of x.
+        The Gray code at the specified index.
     """
-    return x ^ (x >> 1)
+    return index ^ (index >> 1)
 
-def alpha_y(angles: Collection[float],
-            num_qubits: int,
-            angle_index: int) -> float:
-    """ Return the alpha required for the amplitude encoding circuit.
+def compute_alpha_y(magnitude: Sequence[float],
+                    k: int,
+                    j: int) -> float:
+    """ Return the rotation angle required for encoding the real components of the state
+    at the specified indices.
+
+    Notes
+    -----
+    This is the implementation of Equation (8) in the reference.
+    Note the off-by-1 issues (the paper is 1-based).
 
     Parameters
     ----------
-    `angles` : Collection[float]
-        The array of angles.
-    `num_qubits` : int
-        The number of qubits.
-    `angle_index` : int
-        The index of the angle.
+    `magnitude` : Sequence[float]
+        The magnitude of the state.
+    `k` : int
+        The index of the current qubit.
+    `j` : int
+        The index of the current angle.
 
     Returns
     -------
     float
-        The alpha required for the amplitude encoding circuit.
+        The rotation angles required for encoding the real components of the state
+        at the specified indices.
     """
-    m = int(2**(num_qubits - 1))
-    a = 0
+    m = 2 ** (k - 1)
+    enumerator = sum(
+        magnitude[(2 * (j + 1) - 1) * m + bit] ** 2 \
+            for bit in range(m)
+    )
 
-    for i in range(m):
-        a += angles[(2 * (angle_index + 1) - 1) * m + i]**2
+    m = 2**k
+    divisor = sum(
+        magnitude[j * m + bit] ** 2 \
+            for bit in range(m)
+    )
 
-    mk = 2**num_qubits
-    b = 0
+    if divisor != 0:
+        return 2 * np.arcsin(np.sqrt(enumerator / divisor))
+    return 0
 
-    for i in range(mk):
-        b += angles[angle_index * mk + i]**2
+def compute_alpha_z(phase: NDArray[np.float64],
+                    k: int,
+                    j: int) -> float:
+    """ Compute the angles alpha_k for the z rotations.
 
-    if b != 0 :
-        ratio = np.sqrt(a / b)
-    else :
-        ratio = 0.0
-
-    return 2 * np.arcsin(ratio)
-
-def alpha_z(angles: Collection[float],
-            num_qubits: int,
-            angle_index: int) -> float:
-    """ Return the alpha required for the amplitude encoding circuit.
+    Notes
+    -----
+    This is the implementation of Equation (5) in the reference.
+    Note the off-by-1 issues (the paper is 1-based).
 
     Parameters
     ----------
-    `angles` : Collection[float]
-        The array of angles.
-    `num_qubits` : int
-        The number of qubits.
-    `angle_index` : int
-        The index of the angle.
+    `phase` : NDArray[np.float64]
+        The phase of the state.
+    `k` : int
+        The index of the current qubit.
+    `j` : int
+        The index of the current angle.
 
     Returns
     -------
     float
-        The alpha required for the amplitude encoding circuit.
+        The rotation angles required for encoding the imaginary components of the state
+        at the specified indices.
     """
-    numerator = 0
-    for j in range(1, 2 ** (num_qubits - angle_index) + 1):
-        # construct denominator
-        for l in range(1, 2 ** (angle_index-1) + 1):
-            expression1 = (2 * (j) - 1) * (2 ** (angle_index - 1)) + l - 1
-            expression2 = (2 * (j) - 2) * (2 ** (angle_index - 1)) + l - 1
-            numerator += (angles[expression1] - angles[expression2])
+    m = 2 ** (k - 1)
+    ind1 = [(2 * (j + 1) - 1) * m + bit for bit in range(m)]
+    ind2 = [(2 * (j + 1) - 2) * m + bit for bit in range(m)]
+    diff = (phase[ind1] - phase[ind2]) / m
+    return sum(diff)
 
-    return numerator / 2 ** (angle_index - 1)
+def compute_m(k: int) -> NDArray[np.float64]:
+    """ Compute matrix M which takes alpha -> theta.
 
-def M(k: int) -> NDArray[np.float64]:
-    """ Return the matrix M required for the amplitude encoding circuit.
+    Notes
+    -----
+    This is the implementation of Equation (3) in the reference.
 
     Parameters
     ----------
@@ -115,68 +124,49 @@ def M(k: int) -> NDArray[np.float64]:
 
     Returns
     -------
-    NDArray[np.float64]
-        The matrix M required for the amplitude encoding circuit.
+    `m` : NDArray[np.float64]
+        The matrix M which takes alpha -> theta.
     """
     n = 2**k
-    M = np.zeros([n, n])
-
+    m = np.zeros([n, n])
     for i in range(n):
         for j in range(n):
-            M[i, j] = 2**(-k) * (-1)**(bin(j & grayCode(i)).count("1"))
+            m[i, j] = (-1) ** bin(j & gray_code(i)).count("1") * 2 ** (-k)
+    return m
 
-    return M
+def compute_control_indices(index: int) -> list[int]:
+    """ Return the control indices for the CX gates.
 
-def theta(M: NDArray[np.float64],
-          alphas: list[float],) -> NDArray[np.float64]:
-    """ Return the theta required for the amplitude encoding circuit.
-
-    Parameters
-    ----------
-    `M` : NDArray[np.float_]
-        The matrix M required for the amplitude encoding circuit.
-    `alphas` : list[float]
-        The array of alphas.
-
-    Returns
-    -------
-    NDArray[np.float64]
-        The theta required for the amplitude encoding circuit.
-    """
-    return M @ alphas
-
-def ind(k: int) -> list[int]:
-    """ Return the index required for the amplitude encoding circuit.
+    Notes
+    -----
+    This code implements the control qubit indices following
+    Fig 2 in the reference in a recursive manner. The secret
+    to success is to 'kill' the last token in the recursive call.
 
     Parameters
     ----------
-    `k` : int
-        The number of qubits.
+    `index` : int
+        The index of the control qubit.
 
     Returns
     -------
     list[int]
-        The indices required for the amplitude encoding circuit.
+        The control indices for the CX gates.
     """
-    n = 2**k
-    code = [grayCode(i) for i in range(n)]
-
-    control = []
-
-    for i in range(n - 1):
-        control.append(int(np.log2(code[i]^code[i + 1])))
-    control.append(int(np.log2(code[n - 1]^code[0])))
-    return control
+    if index == 0:
+        return []
+    side = compute_control_indices(index - 1)[:-1]
+    return side + [index - 1] + side + [index - 1]
 
 """ Helper functions for the Shende encoder
 """
 
-def bloch_angles(pair_of_complex: Collection[complex]) -> tuple:
+def bloch_angles(pair_of_complex: Sequence[complex]) -> tuple:
     """ Take a pair of complex numbers and return the corresponding Bloch angles.
 
     Parameters
     ----------
-    `pair_of_complex` : Collection[complex]
+    `pair_of_complex` : Sequence[complex]
         The list of complex numbers.
 
     Returns
@@ -204,14 +194,14 @@ def bloch_angles(pair_of_complex: Collection[complex]) -> tuple:
 
     return final_r * np.exp(1.0j * final_t / 2), theta, phi
 
-def rotations_to_disentangle(local_param: Collection[complex]) -> tuple:
+def rotations_to_disentangle(local_param: NDArray[np.complex128]) -> tuple:
     """ Return Ry and Rz rotation angles used to disentangle the LSB qubit.
     These rotations make up the block diagonal matrix U (i.e. multiplexor)
     that disentangles the LSB.
 
     Parameters
     ----------
-    `local_param` : Collection[float]
+    `local_param` : NDArray[float]
         The list of local parameters.
 
     Returns
@@ -228,7 +218,7 @@ def rotations_to_disentangle(local_param: Collection[complex]) -> tuple:
         # Apply Ry and Rz rotations to transition the Bloch vector from 0 to the "imaginary" qubit state
         # This is conceptualized as a qubit state defined by amplitudes at indices 2*i and 2*(i+1),
         # which correspond to the selected qubits of the multiplexor being in state |i>
-        (remains, add_theta, add_phi) = bloch_angles(local_param[2 * i : 2 * (i + 1)])
+        (remains, add_theta, add_phi) = bloch_angles(local_param[2 * i : 2 * (i + 1)]) # type: ignore
         remaining_vector.append(remains)
 
         # Perform rotations on all imaginary qubits of the full vector to transition

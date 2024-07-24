@@ -108,6 +108,20 @@ class TestFromTKET(FrameworkTemplate):
         check_circuit.S([0])
         assert qickit_circuit == check_circuit
 
+    def test_Sdg(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(1, 1)
+        tket_circuit.add_gate(OpType.Sdg, [0])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(1)
+        check_circuit.Sdg([0])
+        assert qickit_circuit == check_circuit
+
     def test_T(self) -> None:
         # Define the TKET circuit
         tket_circuit = TKCircuit(1, 1)
@@ -120,6 +134,20 @@ class TestFromTKET(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = TKETCircuit(1)
         check_circuit.T([0])
+        assert qickit_circuit == check_circuit
+
+    def test_Tdg(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(1, 1)
+        tket_circuit.add_gate(OpType.Tdg, [0])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(1)
+        check_circuit.Tdg([0])
         assert qickit_circuit == check_circuit
 
     def test_RX(self) -> None:
@@ -264,6 +292,20 @@ class TestFromTKET(FrameworkTemplate):
         check_circuit.CS(0, 1)
         assert qickit_circuit == check_circuit
 
+    def test_CSdg(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(2, 2)
+        tket_circuit.add_gate(OpType.CSdg, [0, 1])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(2)
+        check_circuit.CSdg(0, 1)
+        assert qickit_circuit == check_circuit
+
     def test_CT(self) -> None:
         # Define the TKET circuit
         tket_circuit = TKCircuit(2, 2)
@@ -278,6 +320,22 @@ class TestFromTKET(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = TKETCircuit(2)
         check_circuit.CT(0, 1)
+        assert qickit_circuit == check_circuit
+
+    def test_CTdg(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(2, 2)
+        tdg = Op.create(OpType.Tdg)
+        ctdg = QControlBox(tdg, 1)
+        tket_circuit.add_qcontrolbox(ctdg, [0, 1])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(2)
+        check_circuit.CTdg(0, 1)
         assert qickit_circuit == check_circuit
 
     def test_CRX(self) -> None:
@@ -436,6 +494,24 @@ class TestFromTKET(FrameworkTemplate):
         check_circuit.MCS([0, 1], 3)
         assert qickit_circuit == check_circuit
 
+    def test_MCSdg(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(4, 4)
+        sdg = Op.create(OpType.Sdg)
+        mcsdg = QControlBox(sdg, 2)
+        tket_circuit.add_qcontrolbox(mcsdg, [0, 1, 2])
+        tket_circuit.add_qcontrolbox(mcsdg, [0, 1, 3])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(4)
+        check_circuit.MCSdg([0, 1], 2)
+        check_circuit.MCSdg([0, 1], 3)
+        assert qickit_circuit == check_circuit
+
     def test_MCT(self) -> None:
         # Define the TKET circuit
         tket_circuit = TKCircuit(4, 4)
@@ -452,6 +528,24 @@ class TestFromTKET(FrameworkTemplate):
         check_circuit = TKETCircuit(4)
         check_circuit.MCT([0, 1], 2)
         check_circuit.MCT([0, 1], 3)
+        assert qickit_circuit == check_circuit
+
+    def test_MCTdg(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(4, 4)
+        tdg = Op.create(OpType.Tdg)
+        mctdg = QControlBox(tdg, 2)
+        tket_circuit.add_qcontrolbox(mctdg, [0, 1, 2])
+        tket_circuit.add_qcontrolbox(mctdg, [0, 1, 3])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(4)
+        check_circuit.MCTdg([0, 1], 2)
+        check_circuit.MCTdg([0, 1], 3)
         assert qickit_circuit == check_circuit
 
     def test_MCRX(self) -> None:

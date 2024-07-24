@@ -1,0 +1,3 @@
+from typing import SupportsFloat, TypeAlias
+
+Scalar: TypeAlias = SupportsFloat | complex

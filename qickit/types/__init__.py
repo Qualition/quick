@@ -14,9 +14,7 @@
 
 __all__ = ["Collection",
            "NestedCollection",
-           "Floating",
-           "Integer",
            "Scalar"]
 
 from qickit.types.collection import Collection, NestedCollection
-from qickit.types.scalar_type import Floating, Integer, Scalar
+from qickit.types.scalar import Scalar

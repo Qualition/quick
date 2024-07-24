@@ -40,7 +40,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
         # Prepare the unitary matrix
-        circuit = qiskit_transpiler.prepare_unitary(unitary_matrix)
+        circuit = qiskit_transpiler.prepare_unitary(unitary_matrix) # type: ignore
 
         # Get the unitary matrix of the circuit
         unitary = circuit.get_unitary()
@@ -53,7 +53,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
         # Prepare the unitary matrix
-        circuit = qiskit_transpiler.prepare_unitary(Operator(unitary_matrix))
+        circuit = qiskit_transpiler.prepare_unitary(Operator(unitary_matrix)) # type: ignore
 
         # Get the unitary matrix of the circuit
         unitary = circuit.get_unitary()

@@ -16,8 +16,8 @@ from __future__ import annotations
 
 __all__ = ["Scalar"]
 
-import numpy as np
+from typing import SupportsFloat, TypeAlias
 
-Integer = np.int_ | int
-Floating = np.float_ | np.int_ | float | int
-Scalar = np.int_ | np.float_ | np.complex_ | int | float | complex
+# `Scalar` is a type alias that represents a scalar value that can be either
+# a real number or a complex number.
+Scalar: TypeAlias = SupportsFloat | complex

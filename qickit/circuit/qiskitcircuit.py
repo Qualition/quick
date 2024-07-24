@@ -25,8 +25,8 @@ from typing import Literal, TYPE_CHECKING
 
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile # type: ignore
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
-                                    ZGate, SGate, TGate, U3Gate, SwapGate, # type: ignore
-                                    GlobalPhaseGate, IGate) # type: ignore
+                                    ZGate, SGate, SdgGate, TGate, TdgGate, U3Gate, # type: ignore
+                                    SwapGate, GlobalPhaseGate, IGate) # type: ignore
 from qiskit.primitives import BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 import qiskit.qasm2 as qasm2 # type: ignore
@@ -79,7 +79,7 @@ class QiskitCircuit(Circuit):
         self.circuit: QuantumCircuit = QuantumCircuit(qr, cr)
 
     def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                            qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
@@ -92,7 +92,9 @@ class QiskitCircuit(Circuit):
             "Z": ZGate(),
             "H": HGate(),
             "S": SGate(),
+            "Sdg": SdgGate(),
             "T": TGate(),
+            "Tdg": TdgGate(),
             "RX": RXGate(angle),
             "RY": RYGate(angle),
             "RZ": RZGate(angle)
@@ -113,17 +115,17 @@ class QiskitCircuit(Circuit):
         self.circuit.append(u3, [qubit_index])
 
     def SWAP(self,
-             first_qubit: int,
-             second_qubit: int) -> None:
+             first_qubit_index: int,
+             second_qubit_index: int) -> None:
         self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
 
         # Create a SWAP gate
         swap = SwapGate()
 
-        self.circuit.append(swap, [first_qubit, second_qubit])
+        self.circuit.append(swap, [first_qubit_index, second_qubit_index])
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -137,7 +139,9 @@ class QiskitCircuit(Circuit):
             "Z": ZGate().control(len(control_indices)),
             "H": HGate().control(len(control_indices)),
             "S": SGate().control(len(control_indices)),
+            "Sdg": SdgGate().control(len(control_indices)),
             "T": TGate().control(len(control_indices)),
+            "Tdg": TdgGate().control(len(control_indices)),
             "RX": RXGate(angle).control(len(control_indices)),
             "RY": RYGate(angle).control(len(control_indices)),
             "RZ": RZGate(angle).control(len(control_indices))

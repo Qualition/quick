@@ -71,7 +71,7 @@ class PennylaneCircuit(Circuit):
         self.circuit: list[qml.Operation] = []
 
     def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                            qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
@@ -84,7 +84,9 @@ class PennylaneCircuit(Circuit):
             "Z": qml.PauliZ(0).matrix(),
             "H": qml.Hadamard(0).matrix(),
             "S": qml.S(0).matrix(),
+            "Sdg": qml.adjoint(qml.S(0)).matrix(), # type: ignore
             "T": qml.T(0).matrix(),
+            "Tdg": qml.adjoint(qml.T(0)).matrix(), # type: ignore
             "RX": qml.RX(angle, wires=0).matrix(),
             "RY": qml.RY(angle, wires=0).matrix(),
             "RZ": qml.RZ(angle, wires=0).matrix()
@@ -105,17 +107,17 @@ class PennylaneCircuit(Circuit):
         self.circuit.append(u3(theta=angles[0], phi=angles[1], delta=angles[2], wires=qubit_index))
 
     def SWAP(self,
-             first_qubit: int,
-             second_qubit: int) -> None:
+             first_qubit_index: int,
+             second_qubit_index: int) -> None:
         self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
 
         # Create a SWAP gate
         swap = qml.SWAP
 
-        self.circuit.append(swap(wires=[first_qubit, second_qubit]))
+        self.circuit.append(swap(wires=[first_qubit_index, second_qubit_index]))
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -129,7 +131,9 @@ class PennylaneCircuit(Circuit):
             "Z": qml.PauliZ(0).matrix(),
             "H": qml.Hadamard(0).matrix(),
             "S": qml.S(0).matrix(),
+            "Sdg": qml.adjoint(qml.S(0)).matrix(), # type: ignore
             "T": qml.T(0).matrix(),
+            "Tdg": qml.adjoint(qml.T(0)).matrix(), # type: ignore
             "RX": qml.RX(angle, wires=0).matrix(),
             "RY": qml.RY(angle, wires=0).matrix(),
             "RZ": qml.RZ(angle, wires=0).matrix(),

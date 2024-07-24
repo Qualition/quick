@@ -18,7 +18,7 @@ __all__ = ["Ket"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import overload
+from typing import Literal, overload
 
 import qickit.primitives.operator as operator
 import qickit.primitives.bra as bra
@@ -71,6 +71,7 @@ class Ket:
             self.label = "\N{GREEK CAPITAL LETTER PSI}"
         else:
             self.label = label
+
         self.norm_scale = np.linalg.norm(data.flatten())
         self.data = data
         self.shape = data.shape
@@ -256,7 +257,6 @@ class Ket:
         -----
         >>> ket.to_ket(data)
         """
-        print(f"HEEYY {data.shape}")
         if data.ndim == 0:
             raise ValueError("Cannot convert a scalar to a ket.")
 
@@ -295,7 +295,7 @@ class Ket:
         -----
         >>> ket.to_bra()
         """
-        return bra.Bra(self.data.conj().reshape(1, -1))
+        return bra.Bra(self.data.conj().reshape(1, -1)) # type: ignore
 
     def compress(self,
                  compression_percentage: float) -> None:
@@ -321,12 +321,12 @@ class Ket:
         self.data = flattened_data.reshape(-1, 1)
 
     def change_indexing(self,
-                        index_type: str) -> None:
+                        index_type: Literal["row", "snake"]) -> None:
         """ Change the indexing of a `qickit.primitives.Ket` instance.
 
         Parameters
         ----------
-        `index_type` : str
+        `index_type` : Literal["row", "snake"]
             The new indexing type, being "row" or "snake".
 
         Raises
@@ -369,7 +369,7 @@ class Ket:
         """
         if isinstance(other, Scalar):
             pass
-        elif isinstance(other, bra.Bra):
+        elif isinstance(other, (bra.Bra, Ket)):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot contract two incompatible vectors.")
         else:
@@ -439,12 +439,12 @@ class Ket:
         -----
         >>> ket1 = Ket(np.array([1+0j, 0+0j]))
         >>> ket2 = Ket(np.array([1+0j, 0+0j]))
-        >>> ket1 + ket2
+        >>> ket3 = ket1 + ket2
         """
         if isinstance(other, Ket):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot add two incompatible vectors.")
-            return Ket(self.data.flatten() + other.data.flatten())
+            return Ket((self.data.flatten() + other.data.flatten()).astype(np.complex128))
         else:
             raise NotImplementedError(f"Addition with {type(other)} is not supported.")
 
@@ -467,7 +467,7 @@ class Ket:
         -----
         >>> scalar = 2
         >>> ket = Ket(np.array([1+0j, 0+0j]))
-        >>> ket * scalar
+        >>> ket = ket * scalar
         """
 
     @overload
@@ -494,18 +494,47 @@ class Ket:
         -----
         >>> bra = Bra(np.array([1+0j, 0+0j]))
         >>> ket = Ket(np.array([1+0j, 0+0j]))
-        >>> ket * bra
+        >>> operator = ket * bra
+        """
+
+    @overload
+    def __mul__(self,
+                other: Ket) -> Ket:
+        """ Multiply the ket by a ket. This is equivalent to the tensor product.
+
+        Parameters
+        ----------
+        `other` : qickit.primitives.Ket
+            The ket to multiply the ket by.
+
+        Returns
+        -------
+        qickit.primitives.Ket
+            The ket resulting from the multiplication.
+
+        Raises
+        ------
+        ValueError
+            If the two vectors are incompatible.
+
+        Usage
+        -----
+        >>> ket1 = Ket(np.array([1+0j, 0+0j]))
+        >>> ket2 = Ket(np.array([1+0j, 0+0j]))
+        >>> ket3 = ket1 * ket2
         """
 
     def __mul__(self,
-                other: Scalar | bra.Bra) -> Ket | operator.Operator:
+                other: Scalar | bra.Bra | Ket) -> Ket | operator.Operator:
         if isinstance(other, Scalar):
-            return Ket(self.data * other)
-        elif isinstance(other, bra.Bra):
+            return Ket((self.data * other).astype(np.complex128)) # type: ignore
+        elif isinstance(other, (bra.Bra, Ket)):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot contract two incompatible vectors.")
-            print(np.outer(self.data, other.data))
-            return operator.Operator(np.outer(self.data, other.data))
+            if isinstance(other, bra.Bra):
+                return operator.Operator(np.outer(self.data, other.data.conj())) # type: ignore
+            else:
+                return Ket(np.kron(self.data, other.data)) # type: ignore
         else:
             raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
@@ -527,10 +556,10 @@ class Ket:
         -----
         >>> scalar = 2
         >>> ket = Ket(np.array([1+0j, 0+0j]))
-        >>> scalar * ket
+        >>> ket = scalar * ket
         """
         if isinstance(other, Scalar):
-            return Ket(self.data * other)
+            return Ket((self.data * other).astype(np.complex128)) # type: ignore
         else:
             raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 

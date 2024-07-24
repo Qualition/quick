@@ -79,7 +79,7 @@ class CirqCircuit(Circuit):
         self.circuit.append(I(self.qr[0]))
 
     def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                            qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
@@ -92,7 +92,9 @@ class CirqCircuit(Circuit):
             "Z": Z,
             "H": H,
             "S": S,
+            "Sdg": S**-1,
             "T": T,
+            "Tdg": T**-1,
             "RX": Rx(rads=angle),
             "RY": Ry(rads=angle),
             "RZ": Rz(rads=angle)
@@ -129,14 +131,14 @@ class CirqCircuit(Circuit):
         self.circuit.append(U3().on(self.qr[qubit_index]))
 
     def SWAP(self,
-             first_qubit: int,
-             second_qubit: int) -> None:
+             first_qubit_index: int,
+             second_qubit_index: int) -> None:
         self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
         swap = cirq.SWAP
-        self.circuit.append(swap(self.qr[first_qubit], self.qr[second_qubit]))
+        self.circuit.append(swap(self.qr[first_qubit_index], self.qr[second_qubit_index]))
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -150,7 +152,9 @@ class CirqCircuit(Circuit):
             "Z": cirq.ControlledGate(sub_gate=Z, num_controls=len(control_indices)),
             "H": cirq.ControlledGate(sub_gate=H, num_controls=len(control_indices)),
             "S": cirq.ControlledGate(sub_gate=S, num_controls=len(control_indices)),
+            "Sdg": cirq.ControlledGate(sub_gate=S**-1, num_controls=len(control_indices)),
             "T": cirq.ControlledGate(sub_gate=T, num_controls=len(control_indices)),
+            "Tdg": cirq.ControlledGate(sub_gate=T**-1, num_controls=len(control_indices)),
             "RX": cirq.ControlledGate(sub_gate=Rx(rads=angle), num_controls=len(control_indices)),
             "RY": cirq.ControlledGate(sub_gate=Ry(rads=angle), num_controls=len(control_indices)),
             "RZ": cirq.ControlledGate(sub_gate=Rz(rads=angle), num_controls=len(control_indices))

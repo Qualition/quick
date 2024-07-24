@@ -71,7 +71,7 @@ class CUDAQCircuit(Circuit):
         self.qr = self.circuit.qalloc(self.num_qubits)
 
     def _non_parameterized_single_qubit_gate(self,
-                                             gate: Literal["I", "X", "Y", "Z", "H", "S", "T"],
+                                             gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"],
                                              qubit_indices: int | Sequence[int]) -> None:
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
@@ -108,7 +108,7 @@ class CUDAQCircuit(Circuit):
             gate_mapping[gate](angle, self.qr[index])
 
     def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                            qubit_indices: int | Sequence[int],
                            angle: float=0) -> None:
         # With cuda-quantum we cannot abstract the single qubit gates as a single method
@@ -132,10 +132,10 @@ class CUDAQCircuit(Circuit):
         self.circuit.rz(angles[1], self.qr[qubit_index])
 
     def SWAP(self,
-             first_qubit: int,
-             second_qubit: int) -> None:
+             first_qubit_index: int,
+             second_qubit_index: int) -> None:
         self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
-        self.circuit.swap(self.qr[first_qubit], self.qr[second_qubit])
+        self.circuit.swap(self.qr[first_qubit_index], self.qr[second_qubit_index])
 
     def _non_parameterized_controlled_gate(self,
                                            gate: Literal["X", "Y", "Z", "H", "S", "T"],
@@ -172,7 +172,7 @@ class CUDAQCircuit(Circuit):
             gate_mapping[gate](angles, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "T", "RX", "RY", "RZ"],
+                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -250,7 +250,7 @@ class CUDAQCircuit(Circuit):
                         backend: Backend | None = None,
                         magnitude_only: bool=False) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: CUDAQCircuit = copy.deepcopy(self)
+        circuit: CUDAQCircuit = self.convert(CUDAQCircuit) # type: ignore
 
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -292,7 +292,7 @@ class CUDAQCircuit(Circuit):
             raise ValueError("At least one qubit must be measured.")
 
         # Copy the circuit as the measurement and vertical reverse operations are applied inplace
-        circuit: CUDAQCircuit = copy.deepcopy(self)
+        circuit: CUDAQCircuit = self.convert(CUDAQCircuit) # type: ignore
 
         # CUDAQ uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -312,12 +312,12 @@ class CUDAQCircuit(Circuit):
 
     def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: CUDAQCircuit = copy.deepcopy(self)
+        circuit: CUDAQCircuit = self.convert(CUDAQCircuit) # type: ignore
 
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        # Define the unitary matrix
+        # TODO: Define the unitary matrix (need 0.8 version of cuda-quantum)
         unitary: list = []
 
         return np.array(unitary)

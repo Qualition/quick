@@ -27,7 +27,7 @@ from qickit.synthesis.statepreparation import Mottonen
 from tests.synthesis.test_statepreparation import StatePreparationTemplate
 
 # Define the test data
-generated_data = np.array([random.randint(0, 255) for _ in range(1024)])
+generated_data = np.array([random.random() + 1j * random.random() for _ in range(128)])
 test_data_bra = Bra(generated_data)
 test_data_ket = Ket(generated_data)
 checker_data_ket = copy.deepcopy(test_data_ket)

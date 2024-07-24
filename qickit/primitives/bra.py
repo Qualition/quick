@@ -18,11 +18,11 @@ __all__ = ["Bra"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import overload
+from typing import Literal, overload
 
 import qickit.primitives.operator as operator
 import qickit.primitives.ket as ket
-from qickit.types import Scalar
+from qickit.types.scalar import Scalar
 
 
 class Bra:
@@ -71,6 +71,7 @@ class Bra:
             self.label = "\N{GREEK CAPITAL LETTER PSI}"
         else:
             self.label = label
+
         self.norm_scale = np.linalg.norm(data)
         self.data = data
         self.shape = data.shape
@@ -318,12 +319,12 @@ class Bra:
             self.data[i] = 0
 
     def change_indexing(self,
-                        index_type: str) -> None:
+                        index_type: Literal["row", "snake"]) -> None:
         """ Change the indexing of a `qickit.primitives.Bra` instance.
 
         Parameters
         ----------
-        `index_type` : str
+        `index_type` : Literal["row", "snake"]
             The new indexing type, being "row" or "snake".
 
         Raises
@@ -443,7 +444,7 @@ class Bra:
         if isinstance(other, Bra):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot add two incompatible vectors.")
-            return Bra(self.data + other.data)
+            return Bra((self.data + other.data).astype(np.complex128))
         else:
             raise NotImplementedError(f"Addition with {type(other)} is not supported.")
 
@@ -527,7 +528,7 @@ class Bra:
     def __mul__(self,
                 other: Scalar | ket.Ket | operator.Operator) -> Scalar | Bra:
         if isinstance(other, Scalar):
-            return Bra(self.data * other)
+            return Bra((self.data * other).astype(np.complex128))
         elif isinstance(other, ket.Ket):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot contract two incompatible vectors.")
@@ -560,7 +561,7 @@ class Bra:
         >>> scalar * bra
         """
         if isinstance(other, Scalar):
-            return Bra(self.data * other)
+            return Bra((self.data * other).astype(np.complex128))
         else:
             raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 

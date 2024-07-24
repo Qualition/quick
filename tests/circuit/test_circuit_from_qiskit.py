@@ -18,8 +18,8 @@ __all__ = ["TestFromQiskit"]
 
 from qiskit import QuantumCircuit # type: ignore
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
-                                    ZGate, SGate, TGate, U3Gate, SwapGate, # type: ignore
-                                    GlobalPhaseGate) # type: ignore
+                                    ZGate, SGate, SdgGate, TGate, TdgGate, U3Gate, # type: ignore
+                                    SwapGate, GlobalPhaseGate) # type: ignore
 
 from qickit.circuit import Circuit, QiskitCircuit
 from tests.circuit import FrameworkTemplate
@@ -112,6 +112,20 @@ class TestFromQiskit(FrameworkTemplate):
         check_circuit.S(0)
         assert qickit_circuit == check_circuit
 
+    def test_Sdg(self) -> None:
+        # Define the Qiskit circuit
+        qiskit_circuit = QuantumCircuit(1, 1)
+        qiskit_circuit.sdg(0)
+
+        # Convert the Qiskit circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_qiskit(qiskit_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(1)
+        check_circuit.Sdg(0)
+        assert qickit_circuit == check_circuit
+
     def test_T(self) -> None:
         # Define the Qiskit circuit
         qiskit_circuit = QuantumCircuit(1, 1)
@@ -124,6 +138,20 @@ class TestFromQiskit(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = QiskitCircuit(1)
         check_circuit.T(0)
+        assert qickit_circuit == check_circuit
+
+    def test_Tdg(self) -> None:
+        # Define the Qiskit circuit
+        qiskit_circuit = QuantumCircuit(1, 1)
+        qiskit_circuit.tdg(0)
+
+        # Convert the Qiskit circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_qiskit(qiskit_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(1)
+        check_circuit.Tdg(0)
         assert qickit_circuit == check_circuit
 
     def test_RX(self) -> None:
@@ -267,6 +295,20 @@ class TestFromQiskit(FrameworkTemplate):
         check_circuit.CS(0, 1)
         assert qickit_circuit == check_circuit
 
+    def test_CSdg(self) -> None:
+        # Define the Qiskit circuit
+        qiskit_circuit = QuantumCircuit(2, 2)
+        qiskit_circuit.csdg(0, 1)
+
+        # Convert the Qiskit circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_qiskit(qiskit_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(2)
+        check_circuit.CSdg(0, 1)
+        assert qickit_circuit == check_circuit
+
     def test_CT(self) -> None:
         # Define the Qiskit circuit
         qiskit_circuit = QuantumCircuit(2, 2)
@@ -280,6 +322,21 @@ class TestFromQiskit(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = QiskitCircuit(2)
         check_circuit.CT(0, 1)
+        assert qickit_circuit == check_circuit
+
+    def test_CTdg(self) -> None:
+        # Define the Qiskit circuit
+        qiskit_circuit = QuantumCircuit(2, 2)
+        ctdg = TdgGate().control(1)
+        qiskit_circuit.append(ctdg, [0, 1])
+
+        # Convert the Qiskit circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_qiskit(qiskit_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(2)
+        check_circuit.CTdg(0, 1)
         assert qickit_circuit == check_circuit
 
     def test_CRX(self) -> None:
@@ -443,6 +500,23 @@ class TestFromQiskit(FrameworkTemplate):
         check_circuit.MCS([0, 1], 3)
         assert qickit_circuit == check_circuit
 
+    def test_MCSdg(self) -> None:
+        # Define the Qiskit circuit
+        qiskit_circuit = QuantumCircuit(4, 4)
+        mcsdg = SdgGate().control(2)
+        qiskit_circuit.append(mcsdg, [0, 1, 2])
+        qiskit_circuit.append(mcsdg, [0, 1, 3])
+
+        # Convert the Qiskit circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_qiskit(qiskit_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(4)
+        check_circuit.MCSdg([0, 1], 2)
+        check_circuit.MCSdg([0, 1], 3)
+        assert qickit_circuit == check_circuit
+
     def test_MCT(self) -> None:
         # Define the Qiskit circuit
         qiskit_circuit = QuantumCircuit(4, 4)
@@ -458,6 +532,23 @@ class TestFromQiskit(FrameworkTemplate):
         check_circuit = QiskitCircuit(4)
         check_circuit.MCT([0, 1], 2)
         check_circuit.MCT([0, 1], 3)
+        assert qickit_circuit == check_circuit
+
+    def test_MCTdg(self) -> None:
+        # Define the Qiskit circuit
+        qiskit_circuit = QuantumCircuit(4, 4)
+        mctdg = TdgGate().control(2)
+        qiskit_circuit.append(mctdg, [0, 1, 2])
+        qiskit_circuit.append(mctdg, [0, 1, 3])
+
+        # Convert the Qiskit circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_qiskit(qiskit_circuit, QiskitCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = QiskitCircuit(4)
+        check_circuit.MCTdg([0, 1], 2)
+        check_circuit.MCTdg([0, 1], 3)
         assert qickit_circuit == check_circuit
 
     def test_MCRX(self) -> None:

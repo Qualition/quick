@@ -18,6 +18,7 @@ __all__ = ["UnitaryPreparation", "QiskitUnitaryTranspiler"]
 
 from abc import ABC, abstractmethod
 import numpy as np
+from numpy.typing import NDArray
 from typing import overload, Type, TYPE_CHECKING
 
 from qiskit import QuantumCircuit, transpile # type: ignore
@@ -27,7 +28,6 @@ from qiskit_transpiler_service.transpiler_service import TranspilerService # typ
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
 from qickit.primitives import Operator
-from qickit.types import Collection, NestedCollection, Scalar
 
 
 class UnitaryPreparation(ABC):
@@ -53,12 +53,12 @@ class UnitaryPreparation(ABC):
     @overload
     @abstractmethod
     def prepare_unitary(self,
-                        unitary: NestedCollection[Scalar]) -> Circuit:
+                        unitary: NDArray[np.complex128]) -> Circuit:
         """ Prepare the quantum unitary operator.
 
         Parameters
         ----------
-        `unitary` : qickit.types.NestedCollection[qickit.types.Scalar]
+        `unitary` : NDArray[np.complex128]
             The quantum unitary operator.
 
         Returns
@@ -152,8 +152,8 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         self.backend_name = backend_name
 
     def prepare_unitary(self,
-                        unitary: NestedCollection[Scalar] | Operator) -> Circuit:
-        if isinstance(unitary, Collection):
+                        unitary: NDArray[np.complex128] | Operator) -> Circuit:
+        if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
         # Get the number of qubits needed to implement the operator
@@ -189,7 +189,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
             )
 
         # Iterate over the gates in the transpiled circuit
-        for gate in transpiled_circuit.data:
+        for gate in transpiled_circuit.data: # type: ignore
             # Add the U3 gate
             if gate[0].name in ["u", "u3"]:
                 circuit.U3(gate[0].params, gate[1][0]._index)
@@ -199,6 +199,6 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
                 circuit.CX(gate[1][0]._index, gate[1][1]._index)
 
         # Update the global phase
-        circuit.GlobalPhase(transpiled_circuit.global_phase)
+        circuit.GlobalPhase(transpiled_circuit.global_phase) # type: ignore
 
         return circuit

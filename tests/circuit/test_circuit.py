@@ -85,8 +85,18 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_Sdg(self) -> None:
+        """ Test the Clifford-S dagger gate.
+        """
+
+    @abstractmethod
     def test_T(self) -> None:
         """ Test the Clifford-T gate.
+        """
+
+    @abstractmethod
+    def test_Tdg(self) -> None:
+        """ Test the Clifford-T dagger gate.
         """
 
     @abstractmethod
@@ -140,8 +150,18 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_CSdg(self) -> None:
+        """ Test the Controlled Clifford-S dagger gate.
+        """
+
+    @abstractmethod
     def test_CT(self) -> None:
         """ Test the Controlled Clifford-T gate.
+        """
+
+    @abstractmethod
+    def test_CTdg(self) -> None:
+        """ Test the Controlled Clifford-T dagger gate.
         """
 
     @abstractmethod
@@ -192,6 +212,16 @@ class Template(ABC):
     @abstractmethod
     def test_MCS(self) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
+        """
+
+    @abstractmethod
+    def test_MCSdg(self) -> None:
+        """ Test the Multi-Controlled Clifford-S dagger gate.
+        """
+
+    @abstractmethod
+    def test_MCTdg(self) -> None:
+        """ Test the Multi-Controlled Clifford-T dagger gate.
         """
 
     @abstractmethod

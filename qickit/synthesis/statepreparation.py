@@ -18,13 +18,14 @@ __all__ = ["StatePreparation", "Mottonen", "Shende"]
 
 from abc import ABC, abstractmethod
 import numpy as np
+from numpy.typing import NDArray
 from typing import Literal, overload, Type
 
 from qickit.circuit import Circuit
 from qickit.primitives import Bra, Ket
-from qickit.synthesis.statepreparation_utils import (theta, M, ind, alpha_y, alpha_z,
+from qickit.synthesis.statepreparation_utils import (compute_alpha_y, compute_alpha_z,
+                                                     compute_m, compute_control_indices,
                                                      rotations_to_disentangle)
-from qickit.types import Collection, Scalar
 
 
 class StatePreparation(ABC):
@@ -53,18 +54,18 @@ class StatePreparation(ABC):
     @overload
     @abstractmethod
     def prepare_state(self,
-                      state: Collection[Scalar],
+                      state: NDArray[np.complex128],
                       compression_percentage: float=0.0,
-                      index_type: str = "row") -> Circuit:
+                      index_type: Literal["row", "snake"]="row") -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
         ----------
-        `state` : qickit.types.Collection[qickit.types.Scalar]
+        `state` : NDArray[np.complex128]
             The quantum state to prepare.
         `compression_percentage` : float, optional, default=0.0
             Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
-        `index_type` : str, optional, default="row"
+        `index_type` : Literal["row", "snake"], optional, default="row"
             The indexing type for the data.
 
         Returns
@@ -78,7 +79,7 @@ class StatePreparation(ABC):
     def prepare_state(self,
                       state: Bra,
                       compression_percentage: float=0.0,
-                      index_type: str = "row") -> Circuit:
+                      index_type: Literal["row", "snake"]="row") -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
@@ -87,7 +88,7 @@ class StatePreparation(ABC):
             The quantum state to prepare.
         `compression_percentage` : float, optional, default=0.0
             Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
-        `index_type` : str, optional, default="row"
+        `index_type` : Literal["row", "snake"], optional, default="row"
             The indexing type for the data.
 
         Returns
@@ -101,7 +102,7 @@ class StatePreparation(ABC):
     def prepare_state(self,
                       state: Ket,
                       compression_percentage: float = 0.0,
-                      index_type: str = "row") -> Circuit:
+                      index_type: Literal["row", "snake"]="row") -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
@@ -110,7 +111,7 @@ class StatePreparation(ABC):
             The quantum state to prepare.
         `compression_percentage` : float, optional, default=0.0
             Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
-        `index_type` : str, optional, default="row"
+        `index_type` : Literal["row", "snake"], optional, default="row"
             The indexing type for the data.
 
         Returns
@@ -121,14 +122,25 @@ class StatePreparation(ABC):
 
 
 class Mottonen(StatePreparation):
-    """ `qickit.synthesis.statepreparation.Mottonen` is the class for preparing quantum states using the Mottonen method.
+    """ `qickit.synthesis.statepreparation.Mottonen` is the class for preparing quantum states
+    using the Möttönen method.
+
+    The Möttönen method uses uniform controlled rotations about the y-axis and z-axis to prepare the state.
+    This method is based on the paper "Transformation of quantum states using uniformly controlled rotations" [1],
+    and scales exponentially with the number of qubits in terms of circuit depth.
+
+    References
+    ----------
+    [1] Möttönen, Vartiainen, Bergholm, Salomaa. Transformation of quantum states using uniformly controlled rotations (2004)
     """
     def prepare_state(self,
-                      state: Collection[Scalar] | Bra | Ket,
+                      state: NDArray[np.complex128] | Bra | Ket,
                       compression_percentage: float=0.0,
-                      index_type: str="row") -> Circuit:
-        if isinstance(state, Collection):
+                      index_type: Literal["row", "snake"]="row") -> Circuit:
+        if isinstance(state, np.ndarray):
             state = Ket(state)
+        if isinstance(state, Bra):
+            state = state.to_ket()
 
         # Order indexing (if required)
         if index_type != "row":
@@ -140,101 +152,68 @@ class Mottonen(StatePreparation):
         # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
 
-        state = state.data.flatten()
+        state = state.data.flatten() # type: ignore
 
         # Construct Mottonen circuit
         circuit: Circuit = self.output_framework(num_qubits)
 
-        def k_controlled_uniform_rotation_y(circuit: Circuit,
-                                            alpha_k: list[float],
-                                            control_qubits: list[int],
-                                            target_qubit: int) -> None:
+        def k_controlled_uniform_rotation(circuit: Circuit,
+                                          alpha_k: list[float],
+                                          control_qubits: list[int],
+                                          target_qubit: int,
+                                          gate: Literal["RY", "RZ"]) -> None:
             """ Apply a k-controlled rotation about the y-axis.
 
             Parameters
             ----------
             `circuit` : qickit.circuit.Circuit
                 The quantum circuit.
-            `alpha_k` : list[float]
+            `alpha_k` : NDArray[np.float64]
                 The array of alphas.
             `control_qubits` : list[int]
                 The list of control qubits.
             `target_qubit` : int
                 The target qubit.
+            `gate` : Literal["RY", "RZ"]
+                The type of gate to be applied.
             """
-            # Define the number of qubits
+            gate_mapping = {
+                "RY": circuit.RY,
+                "RZ": circuit.RZ
+            }
+
             k = len(control_qubits)
-            # Calulate the number of parameters
-            n = 2**k
-            # Define thetas
-            thetas = theta(M(k), alpha_k)
+            thetas = compute_m(k) @ alpha_k
+            ctl = compute_control_indices(k)
 
-            # If there are no control qubits, apply a RY gate to the target qubit
-            if k == 0:
-                circuit.RY(thetas[0], target_qubit)
-            else :
-                # Define the control index required for the amplitude encoding circuit
-                control_index = ind(k)
-                # Iterate over the parameters, and apply the RY gate and the CX gate
-                for i in range(n) :
-                    circuit.RY(thetas[i], target_qubit)
-                    circuit.CX(control_qubits[k-1-control_index[i]], target_qubit)
-
-        def k_controlled_uniform_rotation_z(circuit: Circuit,
-                                            alpha_k: list[float],
-                                            control_qubits: list[int],
-                                            target_qubit: int) -> None:
-            """ Apply a k-controlled rotation about the z-axis.
-
-            Parameters
-            ----------
-            `circuit` : qickit.circuit.Circuit
-                The quantum circuit.
-            `alpha_k` : list[float]
-                The array of alphas.
-            `control_qubits` : list[int]
-                The list of control qubits.
-            `target_qubit` : int
-                The target qubit.
-            """
-            # Define the number of qubits
-            k = len(control_qubits)
-            # Calulate the number of parameters
-            n = 2**k
-            # Define thetas
-            thetas = theta(M(k), alpha_k)
-
-            # If there are no control qubits, apply a RZ gate to the target qubit
-            if k == 0:
-                circuit.RZ(thetas[0], target_qubit)
-            else :
-                # Define the control index required for the amplitude encoding circuit
-                control_index = ind(k)
-                # Iterate over the parameters, and apply the RZ gate and the CX gate
-                for i in range(n) :
-                    circuit.RZ(thetas[i], target_qubit)
-                    circuit.CX(control_qubits[k-1-control_index[i]], target_qubit)
+            for i in range(2**k):
+                gate_mapping[gate](thetas[i], target_qubit)
+                if k > 0:
+                    circuit.CX(control_qubits[k - 1 - ctl[i]], target_qubit)
 
         # Define the magnitude and phase of the state
-        magnitude = np.abs(state)
-        phase = np.angle(state)
+        magnitude = np.abs(state) # type: ignore
+        phase = np.angle(state) # type: ignore
 
         # Prepare the state
         for k in range(num_qubits):
-            alpha_k = [alpha_y(magnitude, num_qubits - k, j) for j in range(2 ** k)]
-            k_controlled_uniform_rotation_y(circuit, alpha_k, list(range(k)), k)
+            alpha_k = [compute_alpha_y(magnitude, num_qubits - k, j) for j in range(2**k)]
+            k_controlled_uniform_rotation(circuit, alpha_k, list(range(k)), k, "RY")
 
         if not np.all(phase == 0):
             for k in range(num_qubits):
-                alpha_k = [alpha_z(phase, num_qubits - k, j) for j in range(2 ** k)]
+                alpha_k = [compute_alpha_z(phase, num_qubits - k, j) for j in range(2**k)]
                 if len(alpha_k) > 0:
-                    k_controlled_uniform_rotation_z(circuit, alpha_k, list(range(k)), k)
+                    k_controlled_uniform_rotation(circuit, alpha_k, list(range(k)), k, "RZ")
 
         # Apply the global phase
-        global_phase = sum(np.angle(state) / len(state))
+        global_phase = sum(phase / len(state))
         circuit.GlobalPhase(global_phase)
 
         circuit.vertical_reverse()
+
+        if isinstance(state, Bra):
+            circuit.horizontal_reverse()
 
         return circuit
 
@@ -253,11 +232,13 @@ class Shende(StatePreparation):
     [https://arxiv.org/abs/quant-ph/0406176v5]
     """
     def prepare_state(self,
-                      state: Collection[Scalar] | Bra | Ket,
+                      state: NDArray[np.complex128] | Bra | Ket,
                       compression_percentage: float=0.0,
-                      index_type: str="row") -> Circuit:
-        if isinstance(state, Collection):
+                      index_type: Literal["row", "snake"]="row") -> Circuit:
+        if isinstance(state, np.ndarray):
             state = Ket(state)
+        if isinstance(state, Bra):
+            state = state.to_ket()
 
         # Order indexing (if required)
         if index_type != "row":
@@ -269,7 +250,7 @@ class Shende(StatePreparation):
         # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
 
-        state = state.data.flatten()
+        statevector = state.data.flatten() # type: ignore
 
         # Construct Shende circuit
         circuit: Circuit = self.output_framework(num_qubits)
@@ -350,13 +331,13 @@ class Shende(StatePreparation):
 
             return circuit
 
-        def gates_to_uncompute(params: Collection[complex],
+        def gates_to_uncompute(params: NDArray[np.complex128],
                                num_qubits: int) -> Circuit:
             """ Create a circuit with gates that take the desired vector to zero.
 
             Parameters
             ----------
-            `params` : Collection[complex]
+            `params` : NDArray[np.complex128]
                 The list of parameters.
             `num_qubits` : int
                 The number of qubits.
@@ -398,7 +379,7 @@ class Shende(StatePreparation):
             return circuit
 
         # Define the disentangling circuit
-        disentangling_circuit = gates_to_uncompute(state, num_qubits)
+        disentangling_circuit = gates_to_uncompute(statevector, num_qubits) # type: ignore
         # Apply a horizontal reverse (adjoint)
         disentangling_circuit.horizontal_reverse()
         # Add the disentangling circuit to the initial circuit

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["Template",
-           "FrameworkTemplate"
+__all__ = ["TestConvert",
+           "TestControlled",
+           "Template",
+           "FrameworkTemplate",
            "TestCirqCircuit",
            "TestFromCirq",
            "TestPennylaneCircuit",
@@ -26,6 +28,8 @@ __all__ = ["Template",
            "test_str",
            "test_repr"]
 
+from tests.circuit.test_circuit_convert import TestConvert
+from tests.circuit.test_circuit_to_controlled import TestControlled
 from tests.circuit.test_circuit import Template
 from tests.circuit.test_from_framework import FrameworkTemplate
 from tests.circuit.test_cirq_circuit import TestCirqCircuit
