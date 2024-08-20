@@ -25,7 +25,7 @@ from typing import Literal, TYPE_CHECKING
 from pytket import Circuit as TKCircuit
 from pytket import OpType
 from pytket.circuit import Op, QControlBox
-from pytket.extensions.qiskit import AerBackend
+from pytket.extensions.qiskit import AerBackend, AerStateBackend
 
 if TYPE_CHECKING:
     from qickit.backend import Backend
@@ -77,24 +77,62 @@ class TKETCircuit(Circuit):
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         # Define the gate mapping for the non-parameterized single qubit gates
-        gate_mapping = {
-            "I": (OpType.noop,),
-            "X": (OpType.X,),
-            "Y": (OpType.Y,),
-            "Z": (OpType.Z,),
-            "H": (OpType.H,),
-            "S": (OpType.S,),
-            "Sdg": (OpType.Sdg,),
-            "T": (OpType.T,),
-            "Tdg": (OpType.Tdg,),
-            "RX": (OpType.Rx, angle/np.pi),
-            "RY": (OpType.Ry, angle/np.pi),
-            "RZ": (OpType.Rz, angle/np.pi)
-        }
+        # gate_mapping = {
+        #     "I": (OpType.noop,),
+        #     "X": (OpType.X,),
+        #     "Y": (OpType.Y,),
+        #     "Z": (OpType.Z,),
+        #     "H": (OpType.H,),
+        #     "S": (OpType.S,),
+        #     "Sdg": (OpType.Sdg,),
+        #     "T": (OpType.T,),
+        #     "Tdg": (OpType.Tdg,),
+        #     "RX": (OpType.Rx, angle/np.pi),
+        #     "RY": (OpType.Ry, angle/np.pi),
+        #     "RZ": (OpType.Rz, angle/np.pi)
+        # }
+
+        match gate:
+            case "I":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.noop, [index]) # type: ignore
+            case "X":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.X, [index]) # type: ignore
+            case "Y":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Y, [index]) # type: ignore
+            case "Z":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Z, [index]) # type: ignore
+            case "H":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.H, [index]) # type: ignore
+            case "S":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.S, [index]) # type: ignore
+            case "Sdg":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Sdg, [index]) # type: ignore
+            case "T":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.T, [index]) # type: ignore
+            case "Tdg":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Tdg, [index]) # type: ignore
+            case "RX":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Rx, angle/np.pi, [index]) # type: ignore
+            case "RY":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Ry, angle/np.pi, [index]) # type: ignore
+            case "RZ":
+                for index in qubit_indices:
+                    self.circuit.add_gate(OpType.Rz, angle/np.pi, [index]) # type: ignore
 
         # Apply the gate to the specified qubit(s)
-        for index in qubit_indices:
-            self.circuit.add_gate(*gate_mapping[gate], [index]) # type: ignore
+        # for index in qubit_indices:
+        #     self.circuit.add_gate(*gate_mapping[gate], [index]) # type: ignore
 
     def U3(self,
            angles: Sequence[float],
@@ -117,7 +155,7 @@ class TKETCircuit(Circuit):
         self.circuit.add_gate(swap, [first_qubit_index, second_qubit_index])
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -125,23 +163,69 @@ class TKETCircuit(Circuit):
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
         # Define the gate mapping for the non-parameterized controlled gates
-        gate_mapping = {
-            "X": QControlBox(Op.create(OpType.X), len(control_indices)),
-            "Y": QControlBox(Op.create(OpType.Y), len(control_indices)),
-            "Z": QControlBox(Op.create(OpType.Z), len(control_indices)),
-            "H": QControlBox(Op.create(OpType.H), len(control_indices)),
-            "S": QControlBox(Op.create(OpType.S), len(control_indices)),
-            "Sdg": QControlBox(Op.create(OpType.Sdg), len(control_indices)),
-            "T": QControlBox(Op.create(OpType.T), len(control_indices)),
-            "Tdg": QControlBox(Op.create(OpType.Tdg), len(control_indices)),
-            "RX": QControlBox(Op.create(OpType.Rx, angle/np.pi), len(control_indices)),
-            "RY": QControlBox(Op.create(OpType.Ry, angle/np.pi), len(control_indices)),
-            "RZ": QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices))
-        }
+        # gate_mapping = {
+        #     "X": QControlBox(Op.create(OpType.X), len(control_indices)),
+        #     "Y": QControlBox(Op.create(OpType.Y), len(control_indices)),
+        #     "Z": QControlBox(Op.create(OpType.Z), len(control_indices)),
+        #     "H": QControlBox(Op.create(OpType.H), len(control_indices)),
+        #     "S": QControlBox(Op.create(OpType.S), len(control_indices)),
+        #     "Sdg": QControlBox(Op.create(OpType.Sdg), len(control_indices)),
+        #     "T": QControlBox(Op.create(OpType.T), len(control_indices)),
+        #     "Tdg": QControlBox(Op.create(OpType.Tdg), len(control_indices)),
+        #     "RX": QControlBox(Op.create(OpType.Rx, angle/np.pi), len(control_indices)),
+        #     "RY": QControlBox(Op.create(OpType.Ry, angle/np.pi), len(control_indices)),
+        #     "RZ": QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices))
+        # }
+
+        match gate:
+            case "X":
+                mcx = QControlBox(Op.create(OpType.X), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcx, [*control_indices[:], target_index])
+            case "Y":
+                mcy = QControlBox(Op.create(OpType.Y), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcy, [*control_indices[:], target_index])
+            case "Z":
+                mcz = QControlBox(Op.create(OpType.Z), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcz, [*control_indices[:], target_index])
+            case "H":
+                mch = QControlBox(Op.create(OpType.H), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mch, [*control_indices[:], target_index])
+            case "S":
+                mcs = QControlBox(Op.create(OpType.S), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcs, [*control_indices[:], target_index])
+            case "Sdg":
+                mcsdg = QControlBox(Op.create(OpType.Sdg), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcsdg, [*control_indices[:], target_index])
+            case "T":
+                mct = QControlBox(Op.create(OpType.T), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mct, [*control_indices[:], target_index])
+            case "Tdg":
+                mctdg = QControlBox(Op.create(OpType.Tdg), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mctdg, [*control_indices[:], target_index])
+            case "RX":
+                mcrx = QControlBox(Op.create(OpType.Rx, angle/np.pi), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcrx, [*control_indices[:], target_index])
+            case "RY":
+                mcry = QControlBox(Op.create(OpType.Ry, angle/np.pi), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcry, [*control_indices[:], target_index])
+            case "RZ":
+                mcrz = QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices))
+                for target_index in target_indices:
+                    self.circuit.add_qcontrolbox(mcrz, [*control_indices[:], target_index])
 
         # Apply the controlled gate controlled by all control indices to each target index
-        for target_index in target_indices:
-            self.circuit.add_qcontrolbox(gate_mapping[gate], [*control_indices[:], target_index])
+        # for target_index in target_indices:
+        #     self.circuit.add_qcontrolbox(gate_mapping[gate], [*control_indices[:], target_index])
 
     def MCU3(self,
              angles: Sequence[float],
@@ -195,11 +279,8 @@ class TKETCircuit(Circuit):
             raise ValueError("The qubit(s) have already been measured")
 
         # Measure the qubits
-        if isinstance(qubit_indices, int):
-            self.circuit.Measure(qubit_indices, qubit_indices)
-        elif isinstance(qubit_indices, Sequence):
-            for index in qubit_indices:
-                self.circuit.Measure(index, index)
+        for index in qubit_indices:
+            self.circuit.Measure(index, index)
 
         # Set the measurement as applied
         list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
@@ -214,7 +295,9 @@ class TKETCircuit(Circuit):
         circuit.vertical_reverse()
 
         if backend is None:
-            state_vector = circuit.circuit.get_statevector()
+            base_backend = AerStateBackend()
+            circuit = base_backend.get_compiled_circuits([circuit.circuit]) # type: ignore
+            state_vector = base_backend.run_circuit(circuit[0]).get_state() # type: ignore
         else:
             state_vector = backend.get_statevector(circuit)
 

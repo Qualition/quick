@@ -46,6 +46,7 @@ QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_q
                         "second_qubit", "first_target_index", "second_target_index"])
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
+ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
 
 
 class Circuit(ABC):
@@ -96,54 +97,63 @@ class Circuit(ABC):
         self.measured_qubits = [False] * num_qubits
         self.circuit_log: list[dict] = []
 
-    def convert_param_type(self,
-                           value: Any) -> list | int | float:
+    def _convert_param_type(self,
+                            value: Any) -> list | int | float:
         """ Convert parameter types for consistency.
         """
-        if isinstance(value, (range, tuple, Sequence)):
-            return list(value)
-        elif isinstance(value, np.ndarray):
-            return value.tolist()
-        elif isinstance(value, SupportsIndex):
-            return int(value)
-        elif isinstance(value, SupportsFloat):
-            return float(value)
+        match value:
+            case range() | tuple() | Sequence():
+                value = list(value)
+            case np.ndarray():
+                value = value.tolist()
+            case SupportsIndex():
+                value = int(value)
+            case SupportsFloat():
+                value = float(value)
         return value
 
-    def validate_qubit_index(self,
+    def _validate_qubit_index(self,
                              name: str,
                              value: Any) -> Any:
         """ Validate qubit indices are within the valid range.
         """
-        if name in QUBIT_KEYS or name in QUBIT_LIST_KEYS:
-            if isinstance(value, list):
-                for i, index in enumerate(value):
-                    if not isinstance(index, int):
-                        raise TypeError("Qubit index must be an integer.")
-                    if index >= self.num_qubits or index < -self.num_qubits:
-                        raise ValueError("Qubit index out of range.")
-                    value[i] = index if index >= 0 else self.num_qubits + index
-                if len(value) == 1:
-                    value = value[0]
-            elif isinstance(value, int):
-                if value >= self.num_qubits or value < -self.num_qubits:
-                    raise ValueError("Qubit index out of range.")
-                value = value if value >= 0 else self.num_qubits + value
+        if name in ALL_QUBIT_KEYS:
+            match value:
+                case list():
+                    for i, index in enumerate(value):
+                        if not isinstance(index, int):
+                            raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
+
+                        if index >= self.num_qubits or index < -self.num_qubits:
+                            raise ValueError(f"Qubit index {index} out of range {self.num_qubits-1}.")
+
+                        value[i] = index if index >= 0 else self.num_qubits + index
+                        value = value[0] if len(value) == 1 else value
+
+                case int():
+                    if value >= self.num_qubits or value < -self.num_qubits:
+                        raise ValueError(f"Qubit index {value} out of range {self.num_qubits-1}.")
+                    value = value if value >= 0 else self.num_qubits + value
+
         return value
 
-    def validate_angle(self, name, value):
+    def _validate_angle(self,
+                        name: str,
+                        value: Any) -> Any:
         """ Ensure angles are valid and not effectively zero.
         """
         if name in ANGLE_KEYS:
-            if isinstance(value, list):
-                for angle in value:
-                    if not isinstance(angle, (int, float)):
-                        raise TypeError("Angle must be a number.")
-            else:
-                if not isinstance(value, (int, float)):
-                    raise TypeError("Angle must be a number.")
-                if value == 0 or np.isclose(value % (2 * np.pi), 0):
-                    return None  # Indicate no operation needed
+            match value:
+                case Sequence():
+                    for angle in value:
+                        if not isinstance(angle, (int, float)):
+                            raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
+                case _:
+                    if not isinstance(value, (int, float)):
+                        raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
+                    if value == 0 or np.isclose(value % (2 * np.pi), 0):
+                        return None  # Indicate no operation needed
+
         return value
 
     def process_gate_params(self,
@@ -167,11 +177,15 @@ class Circuit(ABC):
         params.pop("self", None)
 
         for name, value in params.items():
-            value = self.convert_param_type(value)
-            value = self.validate_qubit_index(name, value)
+            value = self._convert_param_type(value)
+            value = self._validate_qubit_index(name, value)
+
             if value is None:
                 continue
-            value = self.validate_angle(name, value)
+
+            value = self._validate_angle(name, value)
+
+            # Indicate no operation needed
             if value is None:
                 return
 
@@ -213,7 +227,7 @@ class Circuit(ABC):
 
     @abstractmethod
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -1441,6 +1455,7 @@ class Circuit(ABC):
             if value == 1:
                 # Check if the value of the measurement matches the specified value
                 condition = int(key[clbit_index]) == clbit_value
+                break
 
         return condition
 
@@ -1453,12 +1468,11 @@ class Circuit(ABC):
         """
         # Iterate over every operation, and change the index accordingly
         for operation in self.circuit_log:
-            keys = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
-            for key in keys:
-                if key in operation:
-                    if isinstance(operation[key], Sequence):
+            for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
+                match operation[key]:
+                    case Sequence():
                         operation[key] = [(self.num_qubits - 1 - index) for index in operation[key]]
-                    else:
+                    case _:
                         operation[key] = (self.num_qubits - 1 - operation[key])
 
         # Update the circuit
@@ -1540,29 +1554,20 @@ class Circuit(ABC):
         if not isinstance(circuit, Circuit):
             raise TypeError("The circuit must be a Circuit object.")
 
-        if isinstance(qubit_indices, range):
-            qubit_indices = list(qubit_indices)
-
         if isinstance(qubit_indices, Sequence):
             if len(qubit_indices) != circuit.num_qubits:
                 raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
-        # Create a copy of the  as the `add` method is applied in-place
+        # Create a copy of the as the `add` method is applied in-place
         circuit = copy.deepcopy(circuit)
 
-        # Update the qubit indices
         for operation in circuit.circuit_log:
-            keys = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
-            for key in keys:
-                if key in operation:
-                    if isinstance(operation[key], Sequence):
-                        if isinstance(qubit_indices, Sequence):
-                            operation[key] = [(qubit_indices[index]) for index in operation[key]]
-                    else:
-                        if isinstance(qubit_indices, Sequence):
-                            operation[key] = (qubit_indices[operation[key]])
-                        else:
-                            operation[key] = (qubit_indices)
+            for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
+                match operation[key]:
+                    case Sequence():
+                        operation[key] = [qubit_indices[index] for index in operation[key]] # type: ignore
+                    case _:
+                        operation[key] = list(qubit_indices)[operation[key]] # type: ignore
 
         # Add the other circuit's log to the circuit log
         self.circuit_log.extend(circuit.circuit_log)
@@ -1698,7 +1703,7 @@ class Circuit(ABC):
         """
 
     def get_instructions(self,
-                         include_measurements: bool = True) -> list[dict]:
+                         include_measurements: bool=True) -> list[dict]:
         """ Get the instructions of the circuit.
 
         Parameters
@@ -1762,6 +1767,7 @@ class Circuit(ABC):
         updated_circuit = circuit.convert(type(self))
         circuit.circuit = updated_circuit.circuit
         circuit.measured_qubits = updated_circuit.measured_qubits
+
         return circuit
 
     @overload
@@ -1798,6 +1804,7 @@ class Circuit(ABC):
         if inplace:
             self._remove_measurements_inplace()
             return None
+
         return self._remove_measurements()
 
     @abstractmethod
@@ -1884,10 +1891,11 @@ class Circuit(ABC):
         -----
         >>> circuit.change_mapping(qubit_indices=[1, 0])
         """
-        if isinstance(qubit_indices, (range, tuple)):
-            qubit_indices = list(qubit_indices)
-        elif isinstance(qubit_indices, np.ndarray):
-            qubit_indices = qubit_indices.tolist()
+        match qubit_indices:
+            case Sequence():
+                qubit_indices = list(qubit_indices)
+            case np.ndarray():
+                qubit_indices = qubit_indices.tolist()
 
         if not isinstance(qubit_indices, Sequence):
             raise TypeError("Qubit indices must be a collection.")
@@ -1900,13 +1908,12 @@ class Circuit(ABC):
 
         # Update the qubit indices
         for operation in self.circuit_log:
-            keys = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
-            for key in keys:
-                if key in operation:
-                    if isinstance(operation[key], Sequence):
-                        operation[key] = [(qubit_indices[index]) for index in operation[key]]
-                    else:
-                        operation[key] = (qubit_indices[operation[key]])
+            for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
+                match operation[key]:
+                    case list():
+                        operation[key] = [qubit_indices[index] for index in operation[key]]
+                    case _:
+                        operation[key] = qubit_indices[operation[key]]
 
         # Convert the circuit to create the updated circuit
         converted_circuit = self.convert(type(self))

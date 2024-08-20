@@ -34,9 +34,11 @@ description = "Qickit is an agnostic gate-based circuit SDK, providing an integr
 readme = "README.md"
 license = {file = "LICENSE.txt"}
 keywords = ["quantum computing", "quantum circuit"]
+
 classifiers = [
-  "Development Status :: 1 - Alpha",
-  "Programming Language :: Python"
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: POSIX :: Linux"
 ]
 
 [project.urls]

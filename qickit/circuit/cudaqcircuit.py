@@ -17,7 +17,6 @@ from __future__ import annotations
 __all__ = ["CUDAQCircuit"]
 
 from collections.abc import Sequence
-import copy
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, TYPE_CHECKING
@@ -73,11 +72,14 @@ class CUDAQCircuit(Circuit):
     def _non_parameterized_single_qubit_gate(self,
                                              gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"],
                                              qubit_indices: int | Sequence[int]) -> None:
+        # Cudaq does not support the identity gate
+        if gate == "I":
+            return
+
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         # Define the gate mapping for the non-parameterized single qubit gates
         gate_mapping = {
-            "I": None,
             "X": self.circuit.x,
             "Y": self.circuit.y,
             "Z": self.circuit.z,
@@ -123,13 +125,7 @@ class CUDAQCircuit(Circuit):
            angles: Sequence[float],
            qubit_index: int) -> None:
         self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
-
-        # NOTE: CUDAQ version 0.8 will provide native support of U3 gates
-        self.circuit.rz(angles[2], self.qr[qubit_index])
-        self.circuit.rx(np.pi/2, self.qr[qubit_index])
-        self.circuit.rz(angles[0], self.qr[qubit_index])
-        self.circuit.rx(-np.pi/2, self.qr[qubit_index])
-        self.circuit.rz(angles[1], self.qr[qubit_index])
+        self.circuit.u3(angles[0], angles[1], angles[2], self.qr[qubit_index])
 
     def SWAP(self,
              first_qubit_index: int,
@@ -172,7 +168,7 @@ class CUDAQCircuit(Circuit):
             gate_mapping[gate](angles, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -182,7 +178,7 @@ class CUDAQCircuit(Circuit):
         # With cuda-quantum we cannot abstract the controlled gates as a single method
         # without committing wrong abstraction, hence we will simply wrap the gates in
         # the `_controlled_qubit_gate` method
-        if gate in ["I", "X", "Y", "Z", "H", "S", "T"]:
+        if gate in ["X", "Y", "Z", "H", "S", "T"]:
             self._non_parameterized_controlled_gate(gate, control_indices, target_indices) # type: ignore
         elif gate in ["RX", "RY", "RZ"]:
             self._parameterized_controlled_gate(gate, angle, control_indices, target_indices) # type: ignore
@@ -199,15 +195,7 @@ class CUDAQCircuit(Circuit):
         # Apply the Multi-Controlled U3 gate controlled by all control indices to each target index
         # NOTE: CUDAQ version 0.8 will provide native support of U3 gates
         for target_index in target_indices:
-            self.circuit.crz(angles[2],
-                             *map(self.qr.__getitem__, control_indices), self.qr[target_index])
-            self.circuit.crx(np.pi/2,
-                             *map(self.qr.__getitem__, control_indices), self.qr[target_index])
-            self.circuit.crz(angles[0],
-                             *map(self.qr.__getitem__, control_indices), self.qr[target_index])
-            self.circuit.crx(-np.pi/2,
-                             *map(self.qr.__getitem__, control_indices), self.qr[target_index])
-            self.circuit.crz(angles[1],
+            self.circuit.cu3(angles[0], angles[1], angles[2],
                              *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
     def MCSWAP(self,
@@ -226,8 +214,11 @@ class CUDAQCircuit(Circuit):
                     angle: float) -> None:
         self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
 
-        # TODO: Apply the Global Phase gate to the circuit
-        self.circuit
+        global_phase = np.array([[np.exp(1j * angle), 0],
+                                 [0, np.exp(1j * angle)]], dtype=np.complex128)
+
+        cudaq.register_operation("global_phase", global_phase)
+        self.circuit.global_phase(self.qr[0])
 
     def measure(self,
                 qubit_indices: int | Sequence[int]) -> None:
@@ -317,7 +308,7 @@ class CUDAQCircuit(Circuit):
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        # TODO: Define the unitary matrix (need 0.8 version of cuda-quantum)
+        # TODO: Define the unitary matrix (need 0.9 version of cuda-quantum)
         unitary: list = []
 
         return np.array(unitary)

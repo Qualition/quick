@@ -117,7 +117,7 @@ class PennylaneCircuit(Circuit):
         self.circuit.append(swap(wires=[first_qubit_index, second_qubit_index]))
 
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None:
@@ -197,7 +197,7 @@ class PennylaneCircuit(Circuit):
                 qubit_indices: int | Sequence[int]) -> None:
         self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
 
-        # In PennyLane, we apply measurements in '.get_statevector', and '.get_counts'
+        # NOTE: In PennyLane, we apply measurements in '.get_statevector', and '.get_counts'
         # methods. This is due to the need for PennyLane quantum functions to return measurement results.
         # Therefore, we do not need to do anything here.
         if isinstance(qubit_indices, int):

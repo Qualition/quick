@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 from qickit.backend import Backend
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
 from types import NotImplementedType
-from typing import Any, Callable, Literal, Type
+from typing import Any, Literal, Type
 
 __all__ = ["Circuit"]
 
@@ -23,7 +23,7 @@ class Circuit(ABC, metaclass=abc.ABCMeta):
     def __init__(self, num_qubits: int) -> None: ...
     def convert_param_type(self, value: Any) -> list | int | float: ...
     def validate_qubit_index(self, name: str, value: Any) -> Any: ...
-    def validate_angle(self, name, value): ...
+    def validate_angle(self, name: str, value: Any) -> Any: ...
     def process_gate_params(self, gate: str, params: dict) -> None: ...
     @abstractmethod
     def _single_qubit_gate(self,
@@ -32,7 +32,7 @@ class Circuit(ABC, metaclass=abc.ABCMeta):
                            angle: float=0) -> None: ...
     @abstractmethod
     def _controlled_qubit_gate(self,
-                               gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
                                control_indices: int | Sequence[int],
                                target_indices: int | Sequence[int],
                                angle: float=0) -> None: ...

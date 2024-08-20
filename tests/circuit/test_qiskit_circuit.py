@@ -724,18 +724,20 @@ class TestQiskitCircuit(Template):
         circuit1 = QiskitCircuit(2)
         circuit2 = QiskitCircuit(2)
 
-        # Apply the Pauli-X gate
+        # Apply the gates
         circuit1.CX(0, 1)
-        circuit2.CY(1, 0)
+        circuit2.CY(0, 1)
+        circuit2.H(0)
 
         # Add the two circuits
-        circuit1.add(circuit2, [0, 1])
+        circuit1.add(circuit2, [1, 0])
 
         # Define the equivalent `qickit.circuit.QiskitCircuit` instance, and
         # ensure they are equivalent
         added_circuit = QiskitCircuit(2)
         added_circuit.CX(0, 1)
         added_circuit.CY(1, 0)
+        added_circuit.H(1)
 
         assert circuit1 == added_circuit
         assert_almost_equal(circuit1.get_unitary(), added_circuit.get_unitary(), 8)
