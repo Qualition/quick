@@ -16,7 +16,6 @@ from __future__ import annotations
 
 __all__ = ["TestControlled"]
 
-import pytest
 from typing import Type
 
 from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit

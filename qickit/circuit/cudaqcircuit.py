@@ -50,6 +50,8 @@ class CUDAQCircuit(Circuit):
         The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
+    `process_gate_params_flag` : bool
+        The flag to process the gate parameters.
 
     Raises
     ------
@@ -241,7 +243,7 @@ class CUDAQCircuit(Circuit):
                         backend: Backend | None = None,
                         magnitude_only: bool=False) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: CUDAQCircuit = self.convert(CUDAQCircuit) # type: ignore
+        circuit: CUDAQCircuit = self.copy() # type: ignore
 
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -283,7 +285,7 @@ class CUDAQCircuit(Circuit):
             raise ValueError("At least one qubit must be measured.")
 
         # Copy the circuit as the measurement and vertical reverse operations are applied inplace
-        circuit: CUDAQCircuit = self.convert(CUDAQCircuit) # type: ignore
+        circuit: CUDAQCircuit = self.copy() # type: ignore
 
         # CUDAQ uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -332,3 +334,6 @@ class CUDAQCircuit(Circuit):
 
     def draw(self) -> None:
         print(cudaq.draw(self.circuit))
+
+    def copy(self) -> Circuit:
+        return self.convert(CUDAQCircuit)

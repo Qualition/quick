@@ -16,7 +16,6 @@ from __future__ import annotations
 
 __all__ = ["AerBackend"]
 
-import copy
 import numpy as np
 from numpy.typing import NDArray
 import warnings
@@ -144,7 +143,7 @@ class AerBackend(NoisyBackend):
 
         else:
             # Create a copy of the circuit as `.save_unitary()` is applied inplace
-            circuit = copy.deepcopy(circuit)
+            circuit = circuit.copy()
             circuit.circuit.save_unitary() # type: ignore
             operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 

@@ -17,7 +17,6 @@ from __future__ import annotations
 __all__ = ["TKETCircuit"]
 
 from collections.abc import Sequence
-import copy
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, TYPE_CHECKING
@@ -52,6 +51,8 @@ class TKETCircuit(Circuit):
         The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
+    `process_gate_params_flag` : bool
+        The flag to process the gate parameters.
 
     Raises
     ------
@@ -289,7 +290,7 @@ class TKETCircuit(Circuit):
                         backend: Backend | None = None,
                         magnitude_only: bool=False) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: TKETCircuit = copy.deepcopy(self)
+        circuit: TKETCircuit = self.copy() # type: ignore
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -333,7 +334,7 @@ class TKETCircuit(Circuit):
             raise ValueError("At least one qubit must be measured.")
 
         # Copy the circuit as the operations are applied inplace
-        circuit: TKETCircuit = copy.deepcopy(self)
+        circuit: TKETCircuit = self.copy() # type: ignore
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -365,7 +366,7 @@ class TKETCircuit(Circuit):
 
     def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: TKETCircuit = copy.deepcopy(self)
+        circuit: TKETCircuit = self.copy() # type: ignore
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()

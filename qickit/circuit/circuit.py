@@ -47,6 +47,7 @@ QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_q
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
 ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
+CX_count = 0
 
 
 class Circuit(ABC):
@@ -74,6 +75,8 @@ class Circuit(ABC):
         The measurement status of the qubits.
     `circuit_log` : list[dict]
         The log of the circuit operations.
+    `process_gate_params_flag` : bool
+        The flag to process the gate parameters.
 
     Raises
     ------
@@ -96,10 +99,21 @@ class Circuit(ABC):
         self.circuit: Any
         self.measured_qubits = [False] * num_qubits
         self.circuit_log: list[dict] = []
+        self.process_gate_params_flag: bool = True
 
     def _convert_param_type(self,
-                            value: Any) -> list | int | float:
+                            value: Any) -> int | float | list:
         """ Convert parameter types for consistency.
+
+        Parameters
+        ----------
+        `value` : Any
+            The value to convert.
+
+        Returns
+        -------
+        `value` : int | float | list
+            The converted value.
         """
         match value:
             case range() | tuple() | Sequence():
@@ -113,9 +127,27 @@ class Circuit(ABC):
         return value
 
     def _validate_qubit_index(self,
-                             name: str,
-                             value: Any) -> Any:
+                              name: str,
+                              value: Any) -> int | list[int]:
         """ Validate qubit indices are within the valid range.
+
+        Parameters
+        ----------
+        `name` : str
+            The name of the parameter.
+        `value` : Any
+            The value of the parameter.
+
+        Returns
+        -------
+        `value` : int | list[int]
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+        ValueError
+            Qubit index out of range.
         """
         if name in ALL_QUBIT_KEYS:
             match value:
@@ -139,12 +171,30 @@ class Circuit(ABC):
 
     def _validate_angle(self,
                         name: str,
-                        value: Any) -> Any:
+                        value: Any) -> None | float | list[float]:
         """ Ensure angles are valid and not effectively zero.
+
+        Parameters
+        ----------
+        `name` : str
+            The name of the parameter.
+        `value` : Any
+            The value of the parameter.
+
+        Returns
+        -------
+        `value` : None | float | list[float]
+            The value of the parameter. If the value is effectively zero, return None.
+            This is to indicate that no operation is needed.
+
+        Raises
+        ------
+        TypeError
+            Angle must be a number.
         """
         if name in ANGLE_KEYS:
             match value:
-                case Sequence():
+                case list():
                     for angle in value:
                         if not isinstance(angle, (int, float)):
                             raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
@@ -172,6 +222,9 @@ class Circuit(ABC):
         -----
         >>> self.process_gate_params(gate="X", params={"qubit_indices": 0})
         """
+        if not self.process_gate_params_flag:
+            return
+
         # Remove the "self" key from the dictionary to avoid the inclusion of str(circuit)
         # in the circuit log
         params.pop("self", None)
@@ -635,6 +688,8 @@ class Circuit(ABC):
         -----
         >>> circuit.CX(control_index=0, target_index=1)
         """
+        global CX_count
+        CX_count += 1
         self.process_gate_params(gate=self.CX.__name__, params=locals().copy())
         self._controlled_qubit_gate(gate="X", control_indices=control_index, target_indices=target_index)
 
@@ -940,7 +995,8 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.CU3.__name__, params=locals().copy())
         self.MCU3(angles=angles, control_indices=control_index, target_indices=target_index)
         # Remove the last operation from the log to avoid duplication (This is to not add MCU3 to the log after CU3)
-        _ = self.circuit_log.pop()
+        if self.process_gate_params_flag:
+            _ = self.circuit_log.pop()
 
     def CSWAP(self,
               control_index: int,
@@ -971,7 +1027,8 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.CSWAP.__name__, params=locals().copy())
         self.MCSWAP(control_indices=control_index, first_target_index=first_target_index, second_target_index=second_target_index)
         # Remove the last operation from the log to avoid duplication (This is to not add MCSWAP to the log after CSWAP)
-        _ = self.circuit_log.pop()
+        if self.process_gate_params_flag:
+            _ = self.circuit_log.pop()
 
     def MCX(self,
             control_indices: int | Sequence[int],
@@ -1416,10 +1473,10 @@ class Circuit(ABC):
         unitary_preparer = QiskitUnitaryTranspiler(type(self))
 
         # Prepare the unitary matrix
-        circuit = unitary_preparer.prepare_unitary(unitary_matrix)
+        circuit = unitary_preparer.apply_unitary(self, unitary_matrix, qubit_indices)
 
-        # Add the circuit to the current circuit
-        self.add(circuit, qubit_indices)
+        # Update the circuit
+        self.__dict__.update(circuit.__dict__)
 
     def clbit_condition(self,
                         clbit_index: int,
@@ -1476,13 +1533,7 @@ class Circuit(ABC):
                         operation[key] = (self.num_qubits - 1 - operation[key])
 
         # Update the circuit
-        converted_circuit = self.convert(type(self))
-        self.circuit = converted_circuit.circuit
-        self.measured_qubits = converted_circuit.measured_qubits
-
-        # Update the measurement keys (This is for `qickit.circuit.CirqCircuit` only)
-        if hasattr(self, "measurement_keys"):
-            self.measurement_keys: list[str] = converted_circuit.measurement_keys
+        self.update()
 
     def horizontal_reverse(self,
                            adjoint: bool=True) -> None:
@@ -1525,7 +1576,7 @@ class Circuit(ABC):
                     operation["gate"] = operation["gate"] + "dg"
 
         # Update the circuit
-        self.circuit = self.convert(type(self)).circuit
+        self.update()
 
     def add(self,
             circuit: Circuit,
@@ -1559,9 +1610,9 @@ class Circuit(ABC):
                 raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
         # Create a copy of the as the `add` method is applied in-place
-        circuit = copy.deepcopy(circuit)
+        circuit_log = copy.deepcopy(circuit.circuit_log)
 
-        for operation in circuit.circuit_log:
+        for operation in circuit_log:
             for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
                 match operation[key]:
                     case Sequence():
@@ -1569,11 +1620,16 @@ class Circuit(ABC):
                     case _:
                         operation[key] = list(qubit_indices)[operation[key]] # type: ignore
 
-        # Add the other circuit's log to the circuit log
-        self.circuit_log.extend(circuit.circuit_log)
+        # Iterate over the gate log and apply corresponding gates in the new framework
+        for gate_info in circuit_log:
+            # Extract gate name and remove it from gate_info for kwargs
+            gate_name = gate_info.pop("gate", None)
 
-        # Update the circuit
-        self.circuit = self.convert(type(self)).circuit
+            # Use the gate mapping to apply the corresponding gate with remaining kwargs
+            getattr(self, gate_name)(**gate_info)
+
+            # Re-insert gate name into gate_info if needed elsewhere
+            gate_info["gate"] = gate_name
 
     @abstractmethod
     def measure(self,
@@ -1740,13 +1796,10 @@ class Circuit(ABC):
         instructions = self.get_instructions(include_measurements=False)
 
         # Create a new circuit without the measurement instructions
-        circuit = type(self)(self.num_qubits)
-        circuit.circuit_log = instructions
+        self.circuit_log = instructions
 
         # Update the circuit
-        updated_circuit = circuit.convert(type(self))
-        self.circuit = updated_circuit.circuit
-        self.measured_qubits = updated_circuit.measured_qubits
+        self.update()
 
     def _remove_measurements(self) -> Circuit:
         """ Remove the measurement instructions from the circuit
@@ -1764,9 +1817,7 @@ class Circuit(ABC):
         circuit.circuit_log = instructions
 
         # Update the circuit
-        updated_circuit = circuit.convert(type(self))
-        circuit.circuit = updated_circuit.circuit
-        circuit.measured_qubits = updated_circuit.measured_qubits
+        circuit.update()
 
         return circuit
 
@@ -1868,7 +1919,7 @@ class Circuit(ABC):
             del self.circuit_log[index]
 
         # Update the circuit
-        self.circuit = self.convert(type(self)).circuit
+        self.update()
 
     def change_mapping(self,
                        qubit_indices: Sequence[int]) -> None:
@@ -1915,10 +1966,8 @@ class Circuit(ABC):
                     case _:
                         operation[key] = qubit_indices[operation[key]]
 
-        # Convert the circuit to create the updated circuit
-        converted_circuit = self.convert(type(self))
-        self.circuit = converted_circuit.circuit
-        self.measured_qubits = converted_circuit.measured_qubits
+        # Update the circuit
+        self.update()
 
     def convert(self,
                 circuit_framework: Type[Circuit]) -> Circuit:
@@ -1941,6 +1990,12 @@ class Circuit(ABC):
         # Define the new circuit using the provided framework
         converted_circuit = circuit_framework(self.num_qubits)
 
+        # Set the circuit log of the new circuit to the current circuit log
+        # We do this so that we can disable the processing of gate parameters
+        # and directly apply the gates in the new framework
+        converted_circuit.circuit_log = self.circuit_log
+        converted_circuit.process_gate_params_flag = False
+
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in self.circuit_log:
             # Extract gate name and remove it from gate_info for kwargs
@@ -1951,6 +2006,9 @@ class Circuit(ABC):
 
             # Re-insert gate name into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
+
+        # Re-enable the processing of gate parameters
+        converted_circuit.process_gate_params_flag = True
 
         return converted_circuit
 
@@ -1976,7 +2034,7 @@ class Circuit(ABC):
             The circuit as a controlled gate.
         """
         # Create a copy of the circuit
-        circuit = self.convert(type(self))
+        circuit = self.copy()
 
         # Define a controlled circuit
         controlled_circuit = type(circuit)(num_qubits=circuit.num_qubits + num_controls)
@@ -1987,12 +2045,13 @@ class Circuit(ABC):
             gate_name = gate_info.pop("gate", None)
 
             # Change the gate name from single qubit and controlled to multi-controlled
-            if gate_name[0] == "C":
-                gate_name = f"M{gate_name}"
-            elif gate_name[0] == "M":
-                pass
-            else:
-                gate_name = f"MC{gate_name}"
+            match gate_name[0]:
+                case "C":
+                    gate_name = f"M{gate_name}"
+                case "M":
+                    pass
+                case _:
+                    gate_name = f"MC{gate_name}"
 
             if not any(key in gate_info for key in ["control_index", "control_indices"]):
                 # For single qubit gates
@@ -2045,6 +2104,16 @@ class Circuit(ABC):
             gate_info["gate"] = gate_name
 
         return controlled_circuit
+
+    def update(self) -> None:
+        """ Update the circuit given the modified circuit log.
+
+        Usage
+        -----
+        >>> circuit.update()
+        """
+        converted_circuit = self.convert(type(self))
+        self.__dict__.update(converted_circuit.__dict__)
 
     @abstractmethod
     def to_qasm(self,
@@ -2700,6 +2769,20 @@ class Circuit(ABC):
         # TODO: Implement the conversion from QASM to Qickit
         return circuit
 
+    def copy(self) -> Circuit:
+        """ Copy the circuit.
+
+        Returns
+        -------
+        qickit.circuit.Circuit
+            The copied circuit.
+
+        Usage
+        -----
+        >>> copied_circuit = circuit.copy()
+        """
+        return copy.deepcopy(self)
+
     def reset(self) -> None:
         """ Reset the circuit to an empty circuit.
 
@@ -2879,3 +2962,6 @@ class Circuit(ABC):
         if cls is Circuit:
             return all(hasattr(C, method) for method in list(cls.__dict__["__abstractmethods__"]))
         return False
+
+    def return_cx_count(self) -> int:
+        return CX_count

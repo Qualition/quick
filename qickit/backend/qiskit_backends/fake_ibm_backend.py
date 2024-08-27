@@ -16,7 +16,6 @@ from __future__ import annotations
 
 __all__ = ["FakeIBMBackend"]
 
-import copy
 import numpy as np
 from numpy.typing import NDArray
 
@@ -140,7 +139,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
 
         else:
             # Create a copy of the circuit as `.save_unitary()` is applied inplace
-            circuit = copy.deepcopy(circuit)
+            circuit = circuit.copy()
 
             # Save the unitary of the circuit
             circuit.circuit.save_unitary() # type: ignore
@@ -155,7 +154,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
                    circuit: Circuit,
                    num_shots: int = 1024) -> dict[str, int]:
         # Create a copy of the circuit as measurement is applied inplace
-        circuit = copy.deepcopy(circuit)
+        circuit = circuit.copy()
 
         # Run the circuit on the backend to generate the result
         result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()

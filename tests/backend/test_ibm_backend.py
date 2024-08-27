@@ -16,7 +16,6 @@ from __future__ import annotations
 
 __all__ = ["TestFakeIBMBackend"]
 
-import copy
 import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial import distance # type: ignore
@@ -89,7 +88,7 @@ class MockIBMBackend(FakeBackend):
                    circuit: Circuit,
                    num_shots: int = 1024) -> dict[str, int]:
         # Create a copy of the circuit as measurement is applied inplace
-        circuit = copy.deepcopy(circuit)
+        circuit = circuit.copy()
 
         # Extract the quasi-probability distribution from the first result
         # This is a mock implementation, so we will return the expected result without

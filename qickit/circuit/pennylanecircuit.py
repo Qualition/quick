@@ -17,7 +17,6 @@ from __future__ import annotations
 __all__ = ["PennylaneCircuit"]
 
 from collections.abc import Sequence
-import copy
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, TYPE_CHECKING
@@ -51,6 +50,8 @@ class PennylaneCircuit(Circuit):
         The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
+    `process_gate_params_flag` : bool
+        The flag to process the gate parameters.
 
     Raises
     ------
@@ -209,7 +210,7 @@ class PennylaneCircuit(Circuit):
                         backend: Backend | None = None,
                         magnitude_only: bool=False) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: PennylaneCircuit = copy.deepcopy(self)
+        circuit: PennylaneCircuit = self.copy() # type: ignore
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -273,7 +274,7 @@ class PennylaneCircuit(Circuit):
         np.random.seed(0)
 
         # Copy the circuit as the operations are applied inplace
-        circuit: PennylaneCircuit = copy.deepcopy(self)
+        circuit: PennylaneCircuit = self.copy() # type: ignore
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
@@ -315,7 +316,7 @@ class PennylaneCircuit(Circuit):
 
     def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
-        circuit: PennylaneCircuit = copy.deepcopy(self)
+        circuit: PennylaneCircuit = self.copy() # type: ignore
 
         def compile() -> None:
             """ Compile the circuit.

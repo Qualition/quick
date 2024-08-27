@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ["UnitaryPreparation", "QiskitUnitaryTranspiler"]
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
 from typing import overload, Type, TYPE_CHECKING
@@ -92,6 +93,52 @@ class UnitaryPreparation(ABC):
             The quantum circuit for preparing the unitary operator.
         """
 
+    @overload
+    @abstractmethod
+    def apply_unitary(self,
+                      circuit: Circuit,
+                      unitary: NDArray[np.complex128],
+                      qubit_indices: int | Sequence[int]) -> Circuit:
+        """ Apply the quantum unitary operator to a quantum circuit.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit.
+        `unitary` : NDArray[np.complex128]
+            The quantum unitary operator.
+        `qubit_indices` : int | Sequence[int]
+            The qubit indices to apply the unitary operator to.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit with the unitary operator applied.
+        """
+
+    @overload
+    @abstractmethod
+    def apply_unitary(self,
+                      circuit: Circuit,
+                      unitary: Operator,
+                      qubit_indices: int | Sequence[int]) -> Circuit:
+        """ Apply the quantum unitary operator to a quantum circuit.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit.
+        `unitary` : qickit.primitives.Operator
+            The quantum unitary operator.
+        `qubit_indices` : int | Sequence[int]
+            The qubit indices to apply the unitary operator to.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit with the unitary operator applied.
+        """
+
 
 class QiskitUnitaryTranspiler(UnitaryPreparation):
     """ `qickit.QiskitUnitaryTranspiler` is the class for preparing quantum operators using Qiskit transpiler.
@@ -159,11 +206,28 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         # Get the number of qubits needed to implement the operator
         num_qubits = unitary.num_qubits
 
-        # Create a qiskit circuit
-        qiskit_circuit = QuantumCircuit(num_qubits, num_qubits)
-
         # Initialize the qickit circuit
         circuit = self.output_framework(num_qubits)
+
+        # Apply the unitary matrix to the circuit
+        # and return the circuit
+        return self.apply_unitary(circuit, unitary, range(num_qubits))
+
+    def apply_unitary(self,
+                      circuit: Circuit,
+                      unitary: NDArray[np.complex128] | Operator,
+                      qubit_indices: int | Sequence[int]) -> Circuit:
+        if isinstance(unitary, np.ndarray):
+            unitary = Operator(unitary)
+
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        # Get the number of qubits needed to implement the operator
+        num_qubits = unitary.num_qubits
+
+        # Create a qiskit circuit
+        qiskit_circuit = QuantumCircuit(num_qubits, num_qubits)
 
         # Apply the unitary matrix to the circuit
         qiskit_circuit.unitary(unitary.data, range(num_qubits))
@@ -192,11 +256,11 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         for gate in transpiled_circuit.data: # type: ignore
             # Add the U3 gate
             if gate[0].name in ["u", "u3"]:
-                circuit.U3(gate[0].params, gate[1][0]._index)
+                circuit.U3(gate[0].params, qubit_indices[gate[1][0]._index])
 
             # Add the CX gate
             else:
-                circuit.CX(gate[1][0]._index, gate[1][1]._index)
+                circuit.CX(qubit_indices[gate[1][0]._index], qubit_indices[gate[1][1]._index])
 
         # Update the global phase
         circuit.GlobalPhase(transpiled_circuit.global_phase) # type: ignore

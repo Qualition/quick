@@ -17,8 +17,6 @@ from __future__ import annotations
 __all__ = ["QiskitCircuit"]
 
 from collections.abc import Sequence
-import copy
-import matplotlib.figure
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, TYPE_CHECKING
@@ -58,6 +56,8 @@ class QiskitCircuit(Circuit):
         The measurement status of the qubits.
     `circuit_log` : list[dict]
         The circuit log.
+    `process_gate_params_flag` : bool
+        The flag to process the gate parameters.
 
     Raises
     ------
@@ -247,7 +247,7 @@ class QiskitCircuit(Circuit):
             raise ValueError("At least one qubit must be measured.")
 
         # Copy the circuit as the transpilation operation is inplace
-        circuit: QiskitCircuit = copy.deepcopy(self)
+        circuit: QiskitCircuit = self.copy() # type: ignore
 
         # Extract what qubits are measured
         qubits_to_measure = [i for i in range(circuit.num_qubits) if circuit.measured_qubits[i]]
@@ -272,7 +272,7 @@ class QiskitCircuit(Circuit):
 
     def get_depth(self) -> int:
         # Copy the circuit as the transpilation operation is inplace
-        circuit: QiskitCircuit = copy.deepcopy(self)
+        circuit: QiskitCircuit = self.copy() # type: ignore
 
         # Transpile the circuit to U3 and CX gates
         circuit.transpile()
@@ -281,7 +281,7 @@ class QiskitCircuit(Circuit):
 
     def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the transpilation operation is inplace
-        circuit: QiskitCircuit = copy.deepcopy(self)
+        circuit: QiskitCircuit = self.copy() # type: ignore
 
         # Get the unitary matrix of the circuit
         unitary = Operator(circuit.circuit).data
