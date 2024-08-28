@@ -126,13 +126,13 @@ class CUDAQCircuit(Circuit):
     def U3(self,
            angles: Sequence[float],
            qubit_index: int) -> None:
-        self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.U3.__name__, params=locals())
         self.circuit.u3(angles[0], angles[1], angles[2], self.qr[qubit_index])
 
     def SWAP(self,
              first_qubit_index: int,
              second_qubit_index: int) -> None:
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
         self.circuit.swap(self.qr[first_qubit_index], self.qr[second_qubit_index])
 
     def _non_parameterized_controlled_gate(self,
@@ -189,7 +189,7 @@ class CUDAQCircuit(Circuit):
              angles: Sequence[float],
              control_indices: int | Sequence[int],
              target_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -204,7 +204,7 @@ class CUDAQCircuit(Circuit):
                control_indices: int | Sequence[int],
                first_target_index: int,
                second_target_index: int) -> None:
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
@@ -214,7 +214,7 @@ class CUDAQCircuit(Circuit):
 
     def GlobalPhase(self,
                     angle: float) -> None:
-        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
         global_phase = np.array([[np.exp(1j * angle), 0],
                                  [0, np.exp(1j * angle)]], dtype=np.complex128)
@@ -224,7 +224,7 @@ class CUDAQCircuit(Circuit):
 
     def measure(self,
                 qubit_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.measure.__name__, params=locals())
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]

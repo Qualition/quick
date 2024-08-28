@@ -138,7 +138,7 @@ class TKETCircuit(Circuit):
     def U3(self,
            angles: Sequence[float],
            qubit_index: int) -> None:
-        self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.U3.__name__, params=locals())
 
         # Create a single qubit unitary gate
         u3 = OpType.U3
@@ -148,7 +148,7 @@ class TKETCircuit(Circuit):
     def SWAP(self,
              first_qubit_index: int,
              second_qubit_index: int) -> None:
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
 
         # Create a SWAP gate
         swap = OpType.SWAP
@@ -232,7 +232,7 @@ class TKETCircuit(Circuit):
              angles: Sequence[float],
              control_indices: int | Sequence[int],
              target_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -250,7 +250,7 @@ class TKETCircuit(Circuit):
                control_indices: int | Sequence[int],
                first_target_index: int,
                second_target_index: int) -> None:
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
@@ -263,14 +263,14 @@ class TKETCircuit(Circuit):
 
     def GlobalPhase(self,
                     angle: float) -> None:
-        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
         # Create a Global Phase gate, and apply it to the circuit
         self.circuit.add_phase(angle/np.pi)
 
     def measure(self,
                 qubit_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.measure.__name__, params=locals())
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]

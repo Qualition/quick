@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 from qickit.circuit import Circuit
 from qickit.primitives import Operator
 from qiskit_ibm_runtime import QiskitRuntimeService
-from typing import overload, Type
+from typing import Type
 
 
 __all__ = ["UnitaryPreparation", "QiskitUnitaryTranspiler"]
@@ -15,18 +15,10 @@ __all__ = ["UnitaryPreparation", "QiskitUnitaryTranspiler"]
 class UnitaryPreparation(ABC, metaclass=abc.ABCMeta):
     output_framework: Type[Circuit]
     def __init__(self, output_framework: type[Circuit]) -> None: ...
-    @overload
     @abstractmethod
-    def prepare_unitary(self, unitary: NDArray[np.complex128]) -> Circuit: ...
-    @overload
+    def prepare_unitary(self, unitary: NDArray[np.complex128] | Operator) -> Circuit: ...
     @abstractmethod
-    def prepare_unitary(self, unitary: Operator) -> Circuit: ...
-    @overload
-    @abstractmethod
-    def apply_unitary(self, circuit: Circuit, unitary: NDArray[np.complex128], qubit_indices: int | Sequence[int]) -> Circuit: ...
-    @overload
-    @abstractmethod
-    def apply_unitary(self, circuit: Circuit, unitary: Operator, qubit_indices: int | Sequence[int]) -> Circuit: ...
+    def apply_unitary(self, circuit: Circuit, unitary: NDArray[np.complex128] | Operator, qubit_indices: int | Sequence[int]) -> Circuit: ...
 
 
 class QiskitUnitaryTranspiler(UnitaryPreparation):

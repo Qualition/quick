@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
-from typing import Any, Literal, overload, SupportsIndex, SupportsFloat, Type, TYPE_CHECKING
+from typing import Any, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
 
 import qiskit # type: ignore
 import cirq # type: ignore
@@ -152,19 +152,31 @@ class Circuit(ABC):
         if name in ALL_QUBIT_KEYS:
             match value:
                 case list():
-                    for i, index in enumerate(value):
-                        if not isinstance(index, int):
+                    if len(value) == 1:
+                        value = value[0]
+
+                        if not isinstance(value, int):
                             raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
 
-                        if index >= self.num_qubits or index < -self.num_qubits:
-                            raise ValueError(f"Qubit index {index} out of range {self.num_qubits-1}.")
+                        if value >= self.num_qubits or value < -self.num_qubits:
+                            raise ValueError(f"Qubit index {value} out of range {self.num_qubits-1}.")
 
-                        value[i] = index if index >= 0 else self.num_qubits + index
-                        value = value[0] if len(value) == 1 else value
+                        value = value if value >= 0 else self.num_qubits + value
+
+                    else:
+                        for i, index in enumerate(value):
+                            if not isinstance(index, int):
+                                raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
+
+                            if index >= self.num_qubits or index < -self.num_qubits:
+                                raise ValueError(f"Qubit index {index} out of range {self.num_qubits-1}.")
+
+                            value[i] = index if index >= 0 else self.num_qubits + index
 
                 case int():
                     if value >= self.num_qubits or value < -self.num_qubits:
                         raise ValueError(f"Qubit index {value} out of range {self.num_qubits-1}.")
+
                     value = value if value >= 0 else self.num_qubits + value
 
         return value
@@ -202,7 +214,8 @@ class Circuit(ABC):
                     if not isinstance(value, (int, float)):
                         raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
                     if value == 0 or np.isclose(value % (2 * np.pi), 0):
-                        return None  # Indicate no operation needed
+                        # Indicate no operation needed
+                        return None
 
         return value
 
@@ -335,7 +348,7 @@ class Circuit(ABC):
         >>> circuit.Identity(qubit_indices=0)
         >>> circuit.Identity(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Identity.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.Identity.__name__, params=locals())
         self._single_qubit_gate(gate="I", qubit_indices=qubit_indices)
 
     def X(self,
@@ -359,7 +372,7 @@ class Circuit(ABC):
         >>> circuit.X(qubit_indices=0)
         >>> circuit.X(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.X.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.X.__name__, params=locals())
         self._single_qubit_gate(gate="X", qubit_indices=qubit_indices)
 
     def Y(self,
@@ -383,7 +396,7 @@ class Circuit(ABC):
         >>> circuit.Y(qubit_indices=0)
         >>> circuit.Y(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Y.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.Y.__name__, params=locals())
         self._single_qubit_gate(gate="Y", qubit_indices=qubit_indices)
 
     def Z(self,
@@ -407,7 +420,7 @@ class Circuit(ABC):
         >>> circuit.Z(qubit_indices=0)
         >>> circuit.Z(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Z.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.Z.__name__, params=locals())
         self._single_qubit_gate(gate="Z", qubit_indices=qubit_indices)
 
     def H(self,
@@ -431,7 +444,7 @@ class Circuit(ABC):
         >>> circuit.H(qubit_indices=0)
         >>> circuit.H(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.H.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.H.__name__, params=locals())
         self._single_qubit_gate(gate="H", qubit_indices=qubit_indices)
 
     def S(self,
@@ -455,7 +468,7 @@ class Circuit(ABC):
         >>> circuit.S(qubit_indices=0)
         >>> circuit.S(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.S.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.S.__name__, params=locals())
         self._single_qubit_gate(gate="S", qubit_indices=qubit_indices)
 
     def Sdg(self,
@@ -479,7 +492,7 @@ class Circuit(ABC):
         >>> circuit.Sdg(qubit_indices=0)
         >>> circuit.Sdg(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Sdg.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.Sdg.__name__, params=locals())
         self._single_qubit_gate(gate="Sdg", qubit_indices=qubit_indices)
 
     def T(self,
@@ -503,7 +516,7 @@ class Circuit(ABC):
         >>> circuit.T(qubit_indices=0)
         >>> circuit.T(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.T.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.T.__name__, params=locals())
         self._single_qubit_gate(gate="T", qubit_indices=qubit_indices)
 
     def Tdg(self,
@@ -527,7 +540,7 @@ class Circuit(ABC):
         >>> circuit.Tdg(qubit_indices=0)
         >>> circuit.Tdg(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Tdg.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.Tdg.__name__, params=locals())
         self._single_qubit_gate(gate="Tdg", qubit_indices=qubit_indices)
 
     def RX(self,
@@ -555,7 +568,7 @@ class Circuit(ABC):
         >>> circuit.RX(angle=np.pi/2, qubit_indices=0)
         >>> circuit.RX(angle=np.pi/2, qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.RX.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.RX.__name__, params=locals())
         self._single_qubit_gate(gate="RX", angle=angle, qubit_indices=qubit_indices)
 
     def RY(self,
@@ -583,7 +596,7 @@ class Circuit(ABC):
         >>> circuit.RY(angle=np.pi/2, qubit_index=0)
         >>> circuit.RY(angle=np.pi/2, qubit_index=[0, 1])
         """
-        self.process_gate_params(gate=self.RY.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.RY.__name__, params=locals())
         self._single_qubit_gate(gate="RY", angle=angle, qubit_indices=qubit_indices)
 
     def RZ(self,
@@ -611,7 +624,7 @@ class Circuit(ABC):
         >>> circuit.RZ(angle=np.pi/2, qubit_indices=0)
         >>> circuit.RZ(angle=np.pi/2, qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.RZ.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.RZ.__name__, params=locals())
         self._single_qubit_gate(gate="RZ", angle=angle, qubit_indices=qubit_indices)
 
     @abstractmethod
@@ -690,7 +703,7 @@ class Circuit(ABC):
         """
         global CX_count
         CX_count += 1
-        self.process_gate_params(gate=self.CX.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CX.__name__, params=locals())
         self._controlled_qubit_gate(gate="X", control_indices=control_index, target_indices=target_index)
 
     def CY(self,
@@ -716,7 +729,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CY(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CY.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CY.__name__, params=locals())
         self._controlled_qubit_gate(gate="Y", control_indices=control_index, target_indices=target_index)
 
     def CZ(self,
@@ -742,7 +755,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CZ(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CZ.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CZ.__name__, params=locals())
         self._controlled_qubit_gate(gate="Z", control_indices=control_index, target_indices=target_index)
 
     def CH(self,
@@ -768,7 +781,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CH(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CH.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CH.__name__, params=locals())
         self._controlled_qubit_gate(gate="H", control_indices=control_index, target_indices=target_index)
 
     def CS(self,
@@ -794,7 +807,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CS(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CS.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CS.__name__, params=locals())
         self._controlled_qubit_gate(gate="S", control_indices=control_index, target_indices=target_index)
 
     def CSdg(self,
@@ -820,7 +833,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CSdg(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CSdg.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CSdg.__name__, params=locals())
         self._controlled_qubit_gate(gate="Sdg", control_indices=control_index, target_indices=target_index)
 
     def CT(self,
@@ -846,7 +859,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CT(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CT.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CT.__name__, params=locals())
         self._controlled_qubit_gate(gate="T", control_indices=control_index, target_indices=target_index)
 
     def CTdg(self,
@@ -872,7 +885,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CTdg(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CTdg.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CTdg.__name__, params=locals())
         self._controlled_qubit_gate(gate="Tdg", control_indices=control_index, target_indices=target_index)
 
     def CRX(self,
@@ -902,7 +915,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CRX.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CRX.__name__, params=locals())
         self._controlled_qubit_gate(gate="RX", angle=angle, control_indices=control_index, target_indices=target_index)
 
     def CRY(self,
@@ -932,7 +945,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CRY.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CRY.__name__, params=locals())
         self._controlled_qubit_gate(gate="RY", angle=angle, control_indices=control_index, target_indices=target_index)
 
     def CRZ(self,
@@ -962,7 +975,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CRZ.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CRZ.__name__, params=locals())
         self._controlled_qubit_gate(gate="RZ", angle=angle, control_indices=control_index, target_indices=target_index)
 
     def CU3(self,
@@ -992,7 +1005,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CU3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CU3.__name__, params=locals())
         self.MCU3(angles=angles, control_indices=control_index, target_indices=target_index)
         # Remove the last operation from the log to avoid duplication (This is to not add MCU3 to the log after CU3)
         if self.process_gate_params_flag:
@@ -1024,7 +1037,7 @@ class Circuit(ABC):
         -----
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
         """
-        self.process_gate_params(gate=self.CSWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.CSWAP.__name__, params=locals())
         self.MCSWAP(control_indices=control_index, first_target_index=first_target_index, second_target_index=second_target_index)
         # Remove the last operation from the log to avoid duplication (This is to not add MCSWAP to the log after CSWAP)
         if self.process_gate_params_flag:
@@ -1056,7 +1069,7 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCX.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCX.__name__, params=locals())
         self._controlled_qubit_gate(gate="X", control_indices=control_indices, target_indices=target_indices)
 
     def MCY(self,
@@ -1085,7 +1098,7 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCY.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCY.__name__, params=locals())
         self._controlled_qubit_gate(gate="Y", control_indices=control_indices, target_indices=target_indices)
 
     def MCZ(self,
@@ -1114,7 +1127,7 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCZ.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCZ.__name__, params=locals())
         self._controlled_qubit_gate(gate="Z", control_indices=control_indices, target_indices=target_indices)
 
     def MCH(self,
@@ -1143,7 +1156,7 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCH.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCH.__name__, params=locals())
         self._controlled_qubit_gate(gate="H", control_indices=control_indices, target_indices=target_indices)
 
     def MCS(self,
@@ -1172,7 +1185,7 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCS.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCS.__name__, params=locals())
         self._controlled_qubit_gate(gate="S", control_indices=control_indices, target_indices=target_indices)
 
     def MCSdg(self,
@@ -1201,7 +1214,7 @@ class Circuit(ABC):
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCSdg.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCSdg.__name__, params=locals())
         self._controlled_qubit_gate(gate="Sdg", control_indices=control_indices, target_indices=target_indices)
 
     def MCT(self,
@@ -1230,7 +1243,7 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCT.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCT.__name__, params=locals())
         self._controlled_qubit_gate(gate="T", control_indices=control_indices, target_indices=target_indices)
 
     def MCTdg(self,
@@ -1259,7 +1272,7 @@ class Circuit(ABC):
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCTdg.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCTdg.__name__, params=locals())
         self._controlled_qubit_gate(gate="Tdg", control_indices=control_indices, target_indices=target_indices)
 
     def MCRX(self,
@@ -1292,7 +1305,7 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCRX.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCRX.__name__, params=locals())
         self._controlled_qubit_gate(gate="RX", angle=angle, control_indices=control_indices, target_indices=target_indices)
 
     def MCRY(self,
@@ -1325,7 +1338,7 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCRY.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCRY.__name__, params=locals())
         self._controlled_qubit_gate(gate="RY", angle=angle, control_indices=control_indices, target_indices=target_indices)
 
     def MCRZ(self,
@@ -1358,7 +1371,7 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCRZ.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCRZ.__name__, params=locals())
         self._controlled_qubit_gate(gate="RZ", angle=angle, control_indices=control_indices, target_indices=target_indices)
 
     @abstractmethod
@@ -1473,10 +1486,7 @@ class Circuit(ABC):
         unitary_preparer = QiskitUnitaryTranspiler(type(self))
 
         # Prepare the unitary matrix
-        circuit = unitary_preparer.apply_unitary(self, unitary_matrix, qubit_indices)
-
-        # Update the circuit
-        self.__dict__.update(circuit.__dict__)
+        self = unitary_preparer.apply_unitary(self, unitary_matrix, qubit_indices)
 
     def clbit_condition(self,
                         clbit_index: int,

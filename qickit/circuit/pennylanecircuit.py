@@ -100,7 +100,7 @@ class PennylaneCircuit(Circuit):
     def U3(self,
            angles: Sequence[float],
            qubit_index: int) -> None:
-        self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.U3.__name__, params=locals())
 
         # Create a single qubit unitary gate
         u3 = qml.U3
@@ -110,7 +110,7 @@ class PennylaneCircuit(Circuit):
     def SWAP(self,
              first_qubit_index: int,
              second_qubit_index: int) -> None:
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
 
         # Create a SWAP gate
         swap = qml.SWAP
@@ -154,7 +154,7 @@ class PennylaneCircuit(Circuit):
              angles: Sequence[float],
              control_indices: int | Sequence[int],
              target_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -173,7 +173,7 @@ class PennylaneCircuit(Circuit):
                control_indices: int | Sequence[int],
                first_target_index: int,
                second_target_index: int) -> None:
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
@@ -187,7 +187,7 @@ class PennylaneCircuit(Circuit):
 
     def GlobalPhase(self,
                     angle: float) -> None:
-        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
         # Create a Global Phase gate
         global_phase = qml.GlobalPhase
@@ -196,7 +196,7 @@ class PennylaneCircuit(Circuit):
 
     def measure(self,
                 qubit_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.measure.__name__, params=locals())
 
         # NOTE: In PennyLane, we apply measurements in '.get_statevector', and '.get_counts'
         # methods. This is due to the need for PennyLane quantum functions to return measurement results.

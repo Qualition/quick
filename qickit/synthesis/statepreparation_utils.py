@@ -37,7 +37,7 @@ def gray_code(index: int) -> int:
     """
     return index ^ (index >> 1)
 
-def compute_alpha_y(magnitude: Sequence[float],
+def compute_alpha_y(magnitude: NDArray[np.float64],
                     k: int,
                     j: int) -> float:
     """ Return the rotation angle required for encoding the real components of the state
@@ -50,7 +50,7 @@ def compute_alpha_y(magnitude: Sequence[float],
 
     Parameters
     ----------
-    `magnitude` : Sequence[float]
+    `magnitude` : NDArray[np.float64]
         The magnitude of the state.
     `k` : int
         The index of the current qubit.
@@ -76,7 +76,7 @@ def compute_alpha_y(magnitude: Sequence[float],
     )
 
     if divisor != 0:
-        return 2 * np.arcsin(np.sqrt(enumerator / divisor))
+        return 2 * np.arcsin(np.sqrt(enumerator / divisor)) # type: ignore
     return 0
 
 def compute_alpha_z(phase: NDArray[np.float64],
@@ -201,7 +201,7 @@ def rotations_to_disentangle(local_param: NDArray[np.complex128]) -> tuple:
 
     Parameters
     ----------
-    `local_param` : NDArray[float]
+    `local_param` : NDArray[np.complex128]
         The list of local parameters.
 
     Returns

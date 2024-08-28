@@ -19,7 +19,7 @@ __all__ = ["StatePreparation", "Mottonen", "Shende"]
 from abc import ABC, abstractmethod
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, overload, Type
+from typing import Literal, Type
 
 from qickit.circuit import Circuit
 from qickit.primitives import Bra, Ket
@@ -51,53 +51,6 @@ class StatePreparation(ABC):
         """
         self.output_framework = output_framework
 
-    @overload
-    @abstractmethod
-    def prepare_state(self,
-                      state: NDArray[np.complex128],
-                      compression_percentage: float=0.0,
-                      index_type: Literal["row", "snake"]="row") -> Circuit:
-        """ Prepare the quantum state.
-
-        Parameters
-        ----------
-        `state` : NDArray[np.complex128]
-            The quantum state to prepare.
-        `compression_percentage` : float, optional, default=0.0
-            Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
-        `index_type` : Literal["row", "snake"], optional, default="row"
-            The indexing type for the data.
-
-        Returns
-        -------
-        `circuit` : qickit.circuit.Circuit
-            The quantum circuit that prepares the state.
-        """
-
-    @overload
-    @abstractmethod
-    def prepare_state(self,
-                      state: Bra,
-                      compression_percentage: float=0.0,
-                      index_type: Literal["row", "snake"]="row") -> Circuit:
-        """ Prepare the quantum state.
-
-        Parameters
-        ----------
-        `state` : qickit.primitives.Bra
-            The quantum state to prepare.
-        `compression_percentage` : float, optional, default=0.0
-            Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
-        `index_type` : Literal["row", "snake"], optional, default="row"
-            The indexing type for the data.
-
-        Returns
-        -------
-        `circuit` : qickit.circuit.Circuit
-            The quantum circuit that prepares the state.
-        """
-
-    @overload
     @abstractmethod
     def prepare_state(self,
                       state: Ket,
@@ -107,7 +60,7 @@ class StatePreparation(ABC):
 
         Parameters
         ----------
-        `state` : qickit.primitives.Ket
+        `state` : NDArray[np.complex128] | qickit.primitives.Bra | qickit.primitives.Ket
             The quantum state to prepare.
         `compression_percentage` : float, optional, default=0.0
             Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.

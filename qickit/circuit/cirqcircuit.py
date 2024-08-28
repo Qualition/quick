@@ -72,7 +72,7 @@ class CirqCircuit(Circuit):
         super().__init__(num_qubits=num_qubits)
 
         self.qr = cirq.LineQubit.range(self.num_qubits)
-        self.measurement_keys = []
+        self.measurement_keys: list[str] = []
 
         # Define the circuit (Need to add an identity, otherwise `.get_unitary()`
         # returns the state instead of the operator of the circuit)
@@ -108,7 +108,7 @@ class CirqCircuit(Circuit):
     def U3(self,
            angles: Sequence[float],
            qubit_index: int) -> None:
-        self.process_gate_params(gate=self.U3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.U3.__name__, params=locals())
 
         # Define the unitary matrix for the U3 gate
         u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
@@ -134,7 +134,7 @@ class CirqCircuit(Circuit):
     def SWAP(self,
              first_qubit_index: int,
              second_qubit_index: int) -> None:
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
         swap = cirq.SWAP
         self.circuit.append(swap(self.qr[first_qubit_index], self.qr[second_qubit_index]))
 
@@ -171,7 +171,7 @@ class CirqCircuit(Circuit):
              angles: Sequence[float],
              control_indices: int | Sequence[int],
              target_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -209,7 +209,7 @@ class CirqCircuit(Circuit):
                control_indices: int | Sequence[int],
                first_target_index: int,
                second_target_index: int) -> None:
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
@@ -225,7 +225,7 @@ class CirqCircuit(Circuit):
 
     def GlobalPhase(self,
                     angle: float) -> None:
-        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
         # Create a Global Phase gate (Cirq takes in e^i*angle as the argument)
         global_phase = cirq.GlobalPhaseGate(np.exp(1j*angle))
@@ -234,7 +234,7 @@ class CirqCircuit(Circuit):
 
     def measure(self,
                 qubit_indices: int | Sequence[int]) -> None:
-        self.process_gate_params(gate=self.measure.__name__, params=locals().copy())
+        self.process_gate_params(gate=self.measure.__name__, params=locals())
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]

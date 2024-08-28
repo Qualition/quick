@@ -120,7 +120,7 @@ class AerBackend(NoisyBackend):
         # AerSimulator to generate the statevector
         if circuit.num_qubits < 10 and self.noisy is False:
             circuit.remove_measurements(inplace=True)
-            state_vector = Statevector(circuit.circuit).data
+            return Statevector(circuit.circuit).data
 
         else:
             counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
