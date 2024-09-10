@@ -1,7 +1,7 @@
 # Qickit
 [![License](https://img.shields.io/github/license/Qiskit/qiskit.svg?)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
 [![Tests](https://github.com/qualition/qickit/actions/workflows/tests.yml/badge.svg)](https://github.com/qualition/qickit/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/qualition/qickit/graph/badge.svg?token=IHWJZG8VJT)](https://codecov.io/gh/qualition/qickit)
+[![codecov](https://codecov.io/github/Qualition/QICKIT/branch/main/graph/badge.svg?token=IHWJZG8VJT)](https://codecov.io/github/Qualition/QICKIT)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e287a2eed9e24d5e9d4a3ffe911ce6a5)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![PyPI version](https://img.shields.io/pypi/v/qoin)](//pypi.org/project/qickit)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
