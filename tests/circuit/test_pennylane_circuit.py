@@ -70,20 +70,20 @@ class TestPennylaneCircuit(Template):
     """
     def test_init(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
-        circuit = PennylaneCircuit(1)
+        PennylaneCircuit(1)
 
     def test_num_qubits_value(self) -> None:
         # Ensure the error is raised when the number of qubits is less than or equal to 0
         with pytest.raises(ValueError):
-            circuit = PennylaneCircuit(0)
+            PennylaneCircuit(0)
 
         with pytest.raises(ValueError):
-            circuit = PennylaneCircuit(-1)
+            PennylaneCircuit(-1)
 
     def test_num_qubits_type(self) -> None:
         # Ensure the error is raised when the number of qubits is not an integer
         with pytest.raises(TypeError):
-            circuit = PennylaneCircuit(1.0) # type: ignore
+            PennylaneCircuit(1.0) # type: ignore
 
     def test_single_qubit_gate_from_range(self) -> None:
         """ Test the single qubit gate when indices are passed as a range instance.

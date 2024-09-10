@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ["TestAerBackend"]
 
 import numpy as np # type: ignore
+from numpy.typing import NDArray
 from scipy.spatial import distance # type: ignore
 
 from qickit.backend import AerBackend
@@ -216,6 +217,78 @@ class TestAerBackend(Template):
         assert 1 - distance.cosine(qiskit_statevector, output_statevector) > 0.99
         assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
 
+    def test_get_large_statevector(self) -> None:
+        # Define the `qickit.backend.AerBackend` instance
+        backend = AerBackend()
+
+        # Define the `qickit.circuit.Circuit` instances
+        cirq_circuit = CirqCircuit(10)
+        pennylane_circuit = PennylaneCircuit(10)
+        qiskit_circuit = QiskitCircuit(10)
+        tket_circuit = TKETCircuit(10)
+
+        # Prepare the Bell state
+        cirq_circuit.H(0)
+        cirq_circuit.CX(0, 1)
+        cirq_circuit.CX(1, 2)
+        cirq_circuit.CX(2, 3)
+        cirq_circuit.CX(3, 4)
+        cirq_circuit.CX(4, 5)
+        cirq_circuit.CX(5, 6)
+        cirq_circuit.CX(6, 7)
+        cirq_circuit.CX(7, 8)
+        cirq_circuit.CX(8, 9)
+
+        pennylane_circuit.H(0)
+        pennylane_circuit.CX(0, 1)
+        pennylane_circuit.CX(1, 2)
+        pennylane_circuit.CX(2, 3)
+        pennylane_circuit.CX(3, 4)
+        pennylane_circuit.CX(4, 5)
+        pennylane_circuit.CX(5, 6)
+        pennylane_circuit.CX(6, 7)
+        pennylane_circuit.CX(7, 8)
+        pennylane_circuit.CX(8, 9)
+
+        qiskit_circuit.H(0)
+        qiskit_circuit.CX(0, 1)
+        qiskit_circuit.CX(1, 2)
+        qiskit_circuit.CX(2, 3)
+        qiskit_circuit.CX(3, 4)
+        qiskit_circuit.CX(4, 5)
+        qiskit_circuit.CX(5, 6)
+        qiskit_circuit.CX(6, 7)
+        qiskit_circuit.CX(7, 8)
+        qiskit_circuit.CX(8, 9)
+
+        tket_circuit.H(0)
+        tket_circuit.CX(0, 1)
+        tket_circuit.CX(1, 2)
+        tket_circuit.CX(2, 3)
+        tket_circuit.CX(3, 4)
+        tket_circuit.CX(4, 5)
+        tket_circuit.CX(5, 6)
+        tket_circuit.CX(6, 7)
+        tket_circuit.CX(7, 8)
+        tket_circuit.CX(8, 9)
+
+        # Get the statevector of the circuits
+        cirq_statevector = backend.get_statevector(cirq_circuit)
+        pennylane_statevector = backend.get_statevector(pennylane_circuit)
+        qiskit_statevector = backend.get_statevector(qiskit_circuit)
+        tket_statevector = backend.get_statevector(tket_circuit)
+
+        # Define the output statevector for checking purposes
+        output_statevector = np.zeros(2 ** 10, dtype=complex)
+        output_statevector[0] = np.sqrt(1/2)
+        output_statevector[1023] = np.sqrt(1/2)
+
+        # Ensure the resulting statevectors are close enough (99 percent fidelity)
+        assert 1 - distance.cosine(cirq_statevector, output_statevector) > 0.99
+        assert 1 - distance.cosine(pennylane_statevector, output_statevector) > 0.99
+        assert 1 - distance.cosine(qiskit_statevector, output_statevector) > 0.99
+        assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
+
     def test_get_unitary(self) -> None:
         # Define the `qickit.backend.AerBackend` instance
         backend = AerBackend()
@@ -258,6 +331,76 @@ class TestAerBackend(Template):
                                     [0.70710678+0.j, -0.70710678+0.j, 0.+0.j, 0.+0.j]])
 
         # Ensure the resulting statevectors are close enough (99 percent fidelity)
+        assert 1 - distance.cosine(cirq_operator.flatten(), output_operator.flatten()) > 0.99
+        assert 1 - distance.cosine(pennylane_operator.flatten(), output_operator.flatten()) > 0.99
+        assert 1 - distance.cosine(qiskit_operator.flatten(), output_operator.flatten()) > 0.99
+        assert 1 - distance.cosine(tket_operator.flatten(), output_operator.flatten()) > 0.99
+
+    def test_get_large_unitary(self) -> None:
+        # Define the `qickit.backend.AerBackend` instance
+        backend = AerBackend()
+
+        # Define the `qickit.circuit.Circuit` instances
+        cirq_circuit = CirqCircuit(10)
+        pennylane_circuit = PennylaneCircuit(10)
+        qiskit_circuit = QiskitCircuit(10)
+        tket_circuit = TKETCircuit(10)
+
+        # Prepare the Bell state
+        cirq_circuit.H(0)
+        cirq_circuit.CX(0, 1)
+        cirq_circuit.CX(1, 2)
+        cirq_circuit.CX(2, 3)
+        cirq_circuit.CX(3, 4)
+        cirq_circuit.CX(4, 5)
+        cirq_circuit.CX(5, 6)
+        cirq_circuit.CX(6, 7)
+        cirq_circuit.CX(7, 8)
+        cirq_circuit.CX(8, 9)
+
+        pennylane_circuit.H(0)
+        pennylane_circuit.CX(0, 1)
+        pennylane_circuit.CX(1, 2)
+        pennylane_circuit.CX(2, 3)
+        pennylane_circuit.CX(3, 4)
+        pennylane_circuit.CX(4, 5)
+        pennylane_circuit.CX(5, 6)
+        pennylane_circuit.CX(6, 7)
+        pennylane_circuit.CX(7, 8)
+        pennylane_circuit.CX(8, 9)
+
+        qiskit_circuit.H(0)
+        qiskit_circuit.CX(0, 1)
+        qiskit_circuit.CX(1, 2)
+        qiskit_circuit.CX(2, 3)
+        qiskit_circuit.CX(3, 4)
+        qiskit_circuit.CX(4, 5)
+        qiskit_circuit.CX(5, 6)
+        qiskit_circuit.CX(6, 7)
+        qiskit_circuit.CX(7, 8)
+        qiskit_circuit.CX(8, 9)
+
+        tket_circuit.H(0)
+        tket_circuit.CX(0, 1)
+        tket_circuit.CX(1, 2)
+        tket_circuit.CX(2, 3)
+        tket_circuit.CX(3, 4)
+        tket_circuit.CX(4, 5)
+        tket_circuit.CX(5, 6)
+        tket_circuit.CX(6, 7)
+        tket_circuit.CX(7, 8)
+        tket_circuit.CX(8, 9)
+
+        # Get the unitary operator of the circuits
+        cirq_operator = backend.get_operator(cirq_circuit)
+        pennylane_operator = backend.get_operator(pennylane_circuit)
+        qiskit_operator = backend.get_operator(qiskit_circuit)
+        tket_operator = backend.get_operator(tket_circuit)
+
+        # Define the output operator for checking purposes
+        output_operator: NDArray[np.complex128] = np.load("tests/backend/aer_backend_large_unitary_checker.npy")
+
+        # Ensure the resulting operators are close enough (99 percent fidelity)
         assert 1 - distance.cosine(cirq_operator.flatten(), output_operator.flatten()) > 0.99
         assert 1 - distance.cosine(pennylane_operator.flatten(), output_operator.flatten()) > 0.99
         assert 1 - distance.cosine(qiskit_operator.flatten(), output_operator.flatten()) > 0.99

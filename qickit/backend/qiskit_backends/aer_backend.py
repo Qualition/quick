@@ -121,6 +121,8 @@ class AerBackend(NoisyBackend):
             self,
             circuit: Circuit
         ) -> NDArray[np.complex128]:
+        # Create a copy of the circuit as `.remove_measurements()` is applied inplace
+        circuit = circuit.copy()
 
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the statevector
@@ -129,6 +131,8 @@ class AerBackend(NoisyBackend):
             return Statevector(circuit.circuit).data
 
         else:
+            # Measure all qubits to get the statevector
+            circuit.measure_all()
             counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
             state_vector: NDArray[np.complex128] = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
             for state, count in counts.items():
@@ -143,6 +147,9 @@ class AerBackend(NoisyBackend):
             circuit: Circuit
         ) -> NDArray[np.complex128]:
 
+        # Create a copy of the circuit as `.remove_measurements()` is applied inplace
+        circuit = circuit.copy()
+
         circuit.remove_measurements(inplace=True)
 
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
@@ -151,8 +158,6 @@ class AerBackend(NoisyBackend):
             operator = Operator(circuit.circuit).data
 
         else:
-            # Create a copy of the circuit as `.save_unitary()` is applied inplace
-            circuit = circuit.copy()
             circuit.circuit.save_unitary() # type: ignore
             operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 

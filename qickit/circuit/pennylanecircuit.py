@@ -255,7 +255,7 @@ class PennylaneCircuit(Circuit):
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        def compile() -> qml.StateMP:
+        def compile_circuit() -> qml.StateMP:
             """ Compile the circuit.
 
             Parameters
@@ -275,7 +275,7 @@ class PennylaneCircuit(Circuit):
             return qml.state()
 
         if backend is None:
-            state_vector = qml.QNode(compile, circuit.device)()
+            state_vector = qml.QNode(compile_circuit, circuit.device)()
         else:
             state_vector = backend.get_statevector(circuit)
 
@@ -298,7 +298,7 @@ class PennylaneCircuit(Circuit):
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        def compile() -> qml.CountsMp:
+        def compile_circuit() -> qml.CountsMp:
             """ Compile the circuit.
 
             Parameters
@@ -319,7 +319,7 @@ class PennylaneCircuit(Circuit):
 
         if backend is None:
             device = qml.device(circuit.device.name, wires=circuit.num_qubits, shots=num_shots)
-            result = qml.QNode(compile, device)()
+            result = qml.QNode(compile_circuit, device)()
             counts = {list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))}
         else:
             result = backend.get_counts(self, num_shots=num_shots)
@@ -334,7 +334,7 @@ class PennylaneCircuit(Circuit):
         # Copy the circuit as the operations are applied inplace
         circuit: PennylaneCircuit = self.copy() # type: ignore
 
-        def compile() -> None:
+        def compile_circuit() -> None:
             """ Compile the circuit.
 
             Parameters
@@ -353,7 +353,7 @@ class PennylaneCircuit(Circuit):
                 qml.apply(op)
 
         # Run the circuit and define the unitary matrix
-        unitary = np.array(qml.matrix(compile, wire_order=range(self.num_qubits))(), dtype=complex) # type: ignore
+        unitary = np.array(qml.matrix(compile_circuit, wire_order=range(self.num_qubits))(), dtype=complex) # type: ignore
 
         # PennyLane's `.matrix` function does not take qubit ordering into account,
         # so we need to manually convert the unitary matrix from MSB to LSB

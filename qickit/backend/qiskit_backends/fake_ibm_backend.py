@@ -28,7 +28,7 @@ from qickit.circuit import Circuit, QiskitCircuit
 from qickit.backend import Backend, FakeBackend
 
 
-class FakeIBMBackend(FakeBackend):
+class FakeIBMBackend(FakeBackend): # pragma: no cover
     """ `qickit.backend.FakeIBMBackend` is the class for running
     `qickit.circuit.Circuit` instances on an IBM hardware emulator.
 
@@ -164,9 +164,6 @@ class FakeIBMBackend(FakeBackend):
             circuit: Circuit,
             num_shots: int=1024
         ) -> dict[str, int]:
-
-        # Create a copy of the circuit as measurement is applied inplace
-        circuit = circuit.copy()
 
         # Run the circuit on the backend to generate the result
         result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()

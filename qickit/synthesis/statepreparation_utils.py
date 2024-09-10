@@ -162,6 +162,7 @@ def compute_control_indices(index: int) -> list[int]:
     side = compute_control_indices(index - 1)[:-1]
     return side + [index - 1] + side + [index - 1]
 
+
 """ Helper functions for the Shende encoder
 """
 

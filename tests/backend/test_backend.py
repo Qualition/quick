@@ -43,6 +43,16 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_get_large_statevector(self) -> None:
+        """ Test the `.get_statevector()` method with a large statevector.
+        """
+
+    @abstractmethod
     def test_get_unitary(self) -> None:
         """ Test the `.get_unitary()` method.
+        """
+
+    @abstractmethod
+    def test_get_large_unitary(self) -> None:
+        """ Test the `.get_unitary()` method with a large unitary.
         """

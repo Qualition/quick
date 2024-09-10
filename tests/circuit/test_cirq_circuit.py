@@ -73,20 +73,20 @@ class TestCirqCircuit(Template):
     """
     def test_init(self) -> None:
         # Define the `qickit.circuit.CirqCircuit` instance
-        circuit = CirqCircuit(1)
+        CirqCircuit(1)
 
     def test_num_qubits_value(self) -> None:
         # Ensure the error is raised when the number of qubits is less than or equal to 0
         with pytest.raises(ValueError):
-            circuit = CirqCircuit(0)
+            CirqCircuit(0)
 
         with pytest.raises(ValueError):
-            circuit = CirqCircuit(-1)
+            CirqCircuit(-1)
 
     def test_num_qubits_type(self) -> None:
         # Ensure the error is raised when the number of qubits is not an integer
         with pytest.raises(TypeError):
-            circuit = CirqCircuit(1.0) # type: ignore
+            CirqCircuit(1.0) # type: ignore
 
     def test_single_qubit_gate_from_range(self) -> None:
         """ Test the single qubit gate when indices are passed as a range instance.

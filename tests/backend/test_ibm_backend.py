@@ -294,6 +294,11 @@ class TestFakeIBMBackend(Template):
         assert 1 - distance.cosine(qiskit_statevector, output_statevector) > 0.99
         assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
 
+    def test_get_large_statevector(self) -> None:
+        # This test is not required for the `MockIBMBackend` class, so we will let it
+        # pass without any implementation
+        pass
+
     def test_get_unitary(self) -> None:
         # Define the `qickit.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
@@ -340,3 +345,8 @@ class TestFakeIBMBackend(Template):
         assert 1 - distance.cosine(pennylane_operator.flatten(), output_operator.flatten()) > 0.99
         assert 1 - distance.cosine(qiskit_operator.flatten(), output_operator.flatten()) > 0.99
         assert 1 - distance.cosine(tket_operator.flatten(), output_operator.flatten()) > 0.99
+
+    def test_get_large_unitary(self) -> None:
+        # This test is not required for the `MockIBMBackend` class, so we will let it
+        # pass without any implementation
+        pass
