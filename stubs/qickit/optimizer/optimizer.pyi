@@ -12,19 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
+import abc
+from abc import ABC, abstractmethod
+from qickit.circuit import Circuit
 
-__all__ = ["optimize_cnot"]
+__all__ = ["Optimizer"]
 
-from typing import TYPE_CHECKING
-
-# Import `qickit.circuit.Circuit` instances
-if TYPE_CHECKING:
-    from qickit.circuit import Circuit
-
-
-def optimize_cnot(circuit: Circuit) -> Circuit:
-    # TODO
-    # Perform optimization
-
-    return circuit
+class Optimizer(ABC, metaclass=abc.ABCMeta):
+    @abstractmethod
+    def optimize(self, circuit: Circuit) -> Circuit: ...

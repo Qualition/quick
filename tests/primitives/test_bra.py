@@ -36,13 +36,13 @@ class TestBra:
         """ Test the failure of defining a `qickit.primitives.Bra` object from a scalar.
         """
         with pytest.raises(AttributeError):
-            Bra(1)
+            Bra(1) # type: ignore
 
     def test_from_operator_fail(self) -> None:
         """ Test the failure of defining a `qickit.primitives.Bra` object from an operator.
         """
         with pytest.raises(ValueError):
-            Bra(np.eye(4))
+            Bra(np.eye(4, dtype=complex))
 
     def test_check_normalization(self) -> None:
         """ Test the normalization of the `qickit.primitives.Bra` object.
@@ -109,7 +109,7 @@ class TestBra:
         """
         bra = Bra(np.array([1, 0, 0, 0]))
         with pytest.raises(ValueError):
-            bra.change_indexing("invalid")
+            bra.change_indexing("invalid") # type: ignore
 
     def test_check_mul(self) -> None:
         """ Test the multiplication of the `qickit.primitives.Bra` object.
@@ -120,7 +120,7 @@ class TestBra:
         ket = Ket(np.array([1, 0, 0, 0]))
         bra._check__mul__(ket)
 
-        operator = Operator(np.eye(4))
+        operator = Operator(np.eye(4, dtype=complex))
         bra._check__mul__(operator)
 
     def test_check_mul_fail(self) -> None:
@@ -131,7 +131,7 @@ class TestBra:
         with pytest.raises(ValueError):
             bra._check__mul__(ket)
 
-        operator = Operator(np.eye(4))
+        operator = Operator(np.eye(4, dtype=complex))
         with pytest.raises(ValueError):
             bra._check__mul__(operator)
 
@@ -153,7 +153,7 @@ class TestBra:
         assert bra1 != bra2
 
         with pytest.raises(NotImplementedError):
-            bra1 == "invalid"
+            bra1 == "invalid" # type: ignore
 
     def test_len(self) -> None:
         """ Test the length of the `qickit.primitives.Bra` object.
@@ -175,10 +175,10 @@ class TestBra:
         bra2 = Bra(np.array([1, 0]))
 
         with pytest.raises(ValueError):
-            bra1 + bra2
+            bra1 + bra2 # type: ignore
 
         with pytest.raises(NotImplementedError):
-            bra1 + "invalid"
+            bra1 + "invalid" # type: ignore
 
     def test_mul_scalar(self) -> None:
         """ Test the multiplication of the `qickit.primitives.Bra` object with a scalar.
@@ -191,7 +191,7 @@ class TestBra:
         """
         ket = Ket(np.array([1, 0, 0, 0]))
         bra = Bra(np.array([1, 0, 0, 0]))
-        assert_allclose((bra * ket).data, np.array(1+0j))
+        assert bra * ket == 1.0 + 0j
 
     def test_mul_fail(self) -> None:
         """ Test the failure of the multiplication of the `qickit.primitives.Bra` object.
@@ -199,10 +199,10 @@ class TestBra:
         ket = Ket(np.array([1, 0, 0, 0]))
         bra = Bra(np.array([1, 0]))
         with pytest.raises(ValueError):
-            bra * ket
+            bra * ket # type: ignore
 
         with pytest.raises(NotImplementedError):
-            bra * "invalid"
+            bra * "invalid" # type: ignore
 
     def test_rmul_scalar(self) -> None:
         """ Test the multiplication of a `qickit.primitives.Bra` object with a scalar.

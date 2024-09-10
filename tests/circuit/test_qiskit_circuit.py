@@ -25,22 +25,26 @@ from qiskit import QuantumCircuit
 
 from qickit.circuit import QiskitCircuit
 from tests.circuit import Template
-from tests.circuit.gate_utils import (X_unitary_matrix, Y_unitary_matrix, Z_unitary_matrix,
-                                      H_unitary_matrix, S_unitary_matrix, T_unitary_matrix,
-                                      RX_unitary_matrix, RY_unitary_matrix, RZ_unitary_matrix,
-                                      U3_unitary_matrix, SWAP_unitary_matrix,
-                                      CX_unitary_matrix, CY_unitary_matrix, CZ_unitary_matrix,
-                                      CH_unitary_matrix, CS_unitary_matrix, CT_unitary_matrix,
-                                      CRX_unitary_matrix, CRY_unitary_matrix, CRZ_unitary_matrix,
-                                      CU3_unitary_matrix, CSWAP_unitary_matrix,
-                                      MCX_unitary_matrix, MCY_unitary_matrix, MCZ_unitary_matrix,
-                                      MCH_unitary_matrix, MCS_unitary_matrix, MCT_unitary_matrix,
-                                      MCRX_unitary_matrix, MCRY_unitary_matrix, MCRZ_unitary_matrix,
-                                      MCU3_unitary_matrix, MCSWAP_unitary_matrix, Identity_unitary_matrix)
+from tests.circuit.gate_utils import (
+    X_unitary_matrix, Y_unitary_matrix, Z_unitary_matrix,
+    H_unitary_matrix, S_unitary_matrix, T_unitary_matrix,
+    RX_unitary_matrix, RY_unitary_matrix, RZ_unitary_matrix,
+    U3_unitary_matrix, SWAP_unitary_matrix,
+    CX_unitary_matrix, CY_unitary_matrix, CZ_unitary_matrix,
+    CH_unitary_matrix, CS_unitary_matrix, CT_unitary_matrix,
+    CRX_unitary_matrix, CRY_unitary_matrix, CRZ_unitary_matrix,
+    CU3_unitary_matrix, CSWAP_unitary_matrix,
+    MCX_unitary_matrix, MCY_unitary_matrix, MCZ_unitary_matrix,
+    MCH_unitary_matrix, MCS_unitary_matrix, MCT_unitary_matrix,
+    MCRX_unitary_matrix, MCRY_unitary_matrix, MCRZ_unitary_matrix,
+    MCU3_unitary_matrix, MCSWAP_unitary_matrix, Identity_unitary_matrix
+)
 
 
-def cosine_similarity(h1: dict[str, int],
-                      h2: dict[str, int]) -> float:
+def cosine_similarity(
+        h1: dict[str, int],
+        h2: dict[str, int]
+    ) -> float:
     """ Calculate the cosine similarity between two histograms.
 
     Parameters
@@ -511,14 +515,14 @@ class TestQiskitCircuit(Template):
         # Define `qickit.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(1)
 
-        # Ensure the measured status is `False`
-        assert not circuit.measured_qubits[0]
+        # Ensure no qubits are measured initially
+        assert len(circuit.measured_qubits) == 0
 
         # Apply the measurement gate
         circuit.measure(0)
 
-        # Ensure the measured status is `True`
-        assert circuit.measured_qubits[0]
+        # Ensure only the first qubit is measured
+        assert circuit.measured_qubits == {0}
 
         # Define the equivalent `qiskit.QuantumCircuit` instance, and
         # ensure they are equivalent
@@ -531,16 +535,14 @@ class TestQiskitCircuit(Template):
         # Define `qickit.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(2)
 
-        # Ensure the measured status is `False`
-        assert not circuit.measured_qubits[0]
-        assert not circuit.measured_qubits[1]
+        # Ensure no qubits are measured initially
+        assert len(circuit.measured_qubits) == 0
 
         # Apply the measurement gate
         circuit.measure([0, 1])
 
-        # Ensure the measured status is `True`
-        assert circuit.measured_qubits[0]
-        assert circuit.measured_qubits[1]
+        # Ensure both qubits are measured
+        assert circuit.measured_qubits == {0, 1}
 
         # Define the equivalent `qiskit.QuantumCircuit` instance, and
         # ensure they are equivalent
@@ -558,16 +560,14 @@ class TestQiskitCircuit(Template):
         # Apply the measurement gate
         circuit.measure([0, 1])
 
-        # Ensure the measured status is `True`
-        assert circuit.measured_qubits[0]
-        assert circuit.measured_qubits[1]
+        # Ensure both qubits are measured
+        assert circuit.measured_qubits == {0, 1}
 
         # Remove the measurement gate
         circuit = circuit._remove_measurements()
 
-        # Ensure the measured status is `False`
-        assert not circuit.measured_qubits[0]
-        assert not circuit.measured_qubits[1]
+        # Ensure no qubits are measured
+        assert len(circuit.measured_qubits) == 0
 
         # Define the equivalent `qickit.circuit.QiskitCircuit` instance, and
         # ensure they are equivalent
@@ -605,29 +605,44 @@ class TestQiskitCircuit(Template):
 
     def test_partial_get_counts(self) -> None:
         # Define the `qickit.circuit.QiskitCircuit` instance
-        circuit = QiskitCircuit(2)
+        circuit = QiskitCircuit(3)
 
-        # Apply the Hadamard gate only to the first qubit
+        # Prepare the Bell state
         circuit.H(0)
+        circuit.CX(0, 1)
 
-        # Measure the circuit partially
+        # Perform partial measurement on the first qubit and ensure the counts are correct
         circuit.measure(0)
-
-        # Get the counts of the circuit, and ensure it is correct
         counts = circuit.get_counts(1024)
-
         assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
 
-        # Remove the measurement
         circuit = circuit._remove_measurements()
 
-        # Measure the circuit partially
+        # Perform partial measurement on the second qubit and ensure the counts are correct
         circuit.measure(1)
-
-        # Get the counts of the circuit, and ensure it is correct
         counts = circuit.get_counts(1024)
+        assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
 
+        circuit = circuit._remove_measurements()
+
+        # Perform partial measurement on the third qubit and ensure the counts are correct
+        circuit.measure(2)
+        counts = circuit.get_counts(1024)
         assert cosine_similarity(counts, {"0": 1024, "1": 0}) > 0.95
+
+        circuit = circuit._remove_measurements()
+
+        # Perform partial measurement on the first and second qubits and ensure the counts are correct
+        circuit.measure([0, 1])
+        counts = circuit.get_counts(1024)
+        assert cosine_similarity(counts, {'00': 512, '01': 0, '10': 0, '11': 512}) > 0.95
+
+        circuit = circuit._remove_measurements()
+
+        # Perform partial measurement on the first and third qubits and ensure the counts are correct
+        circuit.measure([0, 2])
+        counts = circuit.get_counts(1024)
+        assert cosine_similarity(counts, {'00': 512, '01': 512, '10': 0, '11': 0}) > 0.95
 
     def test_get_counts(self) -> None:
         # Define the `qickit.circuit.QiskitCircuit` instance

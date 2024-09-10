@@ -39,13 +39,13 @@ class TestKet:
         """ Test the failure of defining a `qickit.primitives.Ket` object from a scalar.
         """
         with pytest.raises(AttributeError):
-            Ket(1)
+            Ket(1) # type: ignore
 
     def test_from_operator_fail(self) -> None:
         """ Test the failure of defining a `qickit.primitives.Ket` object from an operator.
         """
         with pytest.raises(ValueError):
-            Ket(np.eye(4))
+            Ket(np.eye(4, dtype=complex))
 
     def test_check_normalization(self) -> None:
         """ Test the normalization of the `qickit.primitives.Ket` object.
@@ -121,7 +121,7 @@ class TestKet:
         """
         ket = Ket(np.array([1, 0, 0, 0]))
         with pytest.raises(ValueError):
-            ket.change_indexing("invalid")
+            ket.change_indexing("invalid") # type: ignore
 
     def test_check_mul(self) -> None:
         """ Test the multiplication of the `qickit.primitives.Ket` object.
@@ -158,7 +158,7 @@ class TestKet:
         assert ket1 != ket2
 
         with pytest.raises(NotImplementedError):
-            ket1 == "invalid"
+            ket1 == "invalid" # type: ignore
 
     def test_len(self) -> None:
         """ Test the length of the `qickit.primitives.Ket` object.
@@ -184,10 +184,10 @@ class TestKet:
         ket2 = Ket(np.array([1, 0]))
 
         with pytest.raises(ValueError):
-            ket1 + ket2
+            ket1 + ket2 # type: ignore
 
         with pytest.raises(NotImplementedError):
-            ket1 + "invalid"
+            ket1 + "invalid" # type: ignore
 
     def test_mul_scalar(self) -> None:
         """ Test the multiplication of the `qickit.primitives.Ket` object with a scalar.
@@ -215,10 +215,10 @@ class TestKet:
         ket = Ket(np.array([1, 0, 0, 0]))
         bra = Bra(np.array([1, 0]))
         with pytest.raises(ValueError):
-            ket * bra
+            ket * bra # type: ignore
 
         with pytest.raises(NotImplementedError):
-            ket * "invalid"
+            ket * "invalid" # type: ignore
 
     def test_rmul_scalar(self) -> None:
         """ Test the multiplication of a `qickit.primitives.Ket` object with a scalar.

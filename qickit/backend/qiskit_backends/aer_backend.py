@@ -20,7 +20,7 @@ import numpy as np
 from numpy.typing import NDArray
 import warnings
 
-from qiskit.primitives import BackendSampler # type: ignore
+from qiskit.primitives import BackendSamplerV2 as BackendSampler # type: ignore
 from qiskit.quantum_info import Statevector, Operator # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 import qiskit_aer.noise as noise # type: ignore
@@ -74,10 +74,13 @@ class AerBackend(NoisyBackend):
     >>> from qickit.backend import AerBackend
     >>> aer_backend = AerBackend(single_qubit_error=0.01, two_qubit_error=0.02, device="GPU")
     """
-    def __init__(self,
-                 single_qubit_error: float=0.0,
-                 two_qubit_error: float=0.0,
-                 device: str="CPU") -> None:
+    def __init__(
+            self,
+            single_qubit_error: float=0.0,
+            two_qubit_error: float=0.0,
+            device: str="CPU"
+        ) -> None:
+
         super().__init__(single_qubit_error=single_qubit_error,
                          two_qubit_error=two_qubit_error,
                          device=device)
@@ -98,24 +101,27 @@ class AerBackend(NoisyBackend):
         available_devices: list[str] = AerSimulator().available_devices() # type: ignore
         if "GPU" in available_devices and device == "GPU":
             if self.noisy:
-                self._counts_backend = BackendSampler(AerSimulator(device="GPU", noise_model=noise_model))
+                self._counts_backend = BackendSampler(backend=AerSimulator(device="GPU", noise_model=noise_model))
                 self._op_backend = AerSimulator(device="GPU", method="unitary", noise_model=noise_model)
             else:
-                self._counts_backend = BackendSampler(AerSimulator(device="GPU"))
+                self._counts_backend = BackendSampler(backend=AerSimulator(device="GPU"))
                 self._op_backend = AerSimulator(device="GPU", method="unitary")
         else:
             if self.device == "GPU" and "GPU" not in available_devices:
                 warnings.warn("Warning: GPU acceleration is not available. Defaulted to CPU.")
             if self.noisy:
-                self._counts_backend = BackendSampler(AerSimulator(noise_model=noise_model))
+                self._counts_backend = BackendSampler(backend=AerSimulator(noise_model=noise_model))
                 self._op_backend = AerSimulator(method="unitary", noise_model=noise_model)
             else:
-                self._counts_backend = BackendSampler(AerSimulator())
+                self._counts_backend = BackendSampler(backend=AerSimulator())
                 self._op_backend = AerSimulator(method="unitary")
 
     @Backend.backendmethod
-    def get_statevector(self,
-                        circuit: Circuit) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
+
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the statevector
         if circuit.num_qubits < 10 and self.noisy is False:
@@ -132,8 +138,11 @@ class AerBackend(NoisyBackend):
         return state_vector
 
     @Backend.backendmethod
-    def get_operator(self,
-                     circuit: Circuit) -> NDArray[np.complex128]:
+    def get_operator(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
+
         circuit.remove_measurements(inplace=True)
 
         # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
@@ -150,22 +159,35 @@ class AerBackend(NoisyBackend):
         return np.array(operator, dtype=np.complex128)
 
     @Backend.backendmethod
-    def get_counts(self,
-                   circuit: Circuit,
-                   num_shots: int) -> dict[str, int]:
-        if not any(circuit.measured_qubits):
+    def get_counts(
+            self,
+            circuit: Circuit,
+            num_shots: int=1024
+        ) -> dict[str, int]:
+
+        if len(circuit.measured_qubits) == 0:
             raise ValueError("The circuit must have at least one measured qubit.")
 
-        result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
-        quasi_dist = result.quasi_dists[0]
+        # Run the circuit on the backend to generate the result
+        result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()
 
-        # Convert the quasi-probability distribution to counts
-        counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) \
-                  for k, v in quasi_dist.items()}
+        # Extract the counts from the result
+        counts = result[0].join_data().get_counts() # type: ignore
+
+        partial_counts = {}
+
+        # Parse the binary strings to filter out the unmeasured qubits
+        for key in counts.keys():
+            new_key = ''.join(key[::-1][i] for i in range(len(key)) if i in circuit.measured_qubits)
+            partial_counts[new_key[::-1]] = counts[key]
+
+        counts = partial_counts
 
         # Fill the counts dict with zeros for the missing states
-        counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) \
-                  for i in range(2**circuit.num_qubits)}
+        num_qubits_to_measure = len(circuit.measured_qubits)
+
+        counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
+                  for i in range(2**num_qubits_to_measure)}
 
         # Sort the counts by their keys (basis states)
         counts = dict(sorted(counts.items()))

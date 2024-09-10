@@ -19,7 +19,7 @@ __all__ = ["FakeIBMBackend"]
 import numpy as np
 from numpy.typing import NDArray
 
-from qiskit.primitives import BackendSampler # type: ignore
+from qiskit.primitives import BackendSamplerV2 as BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
 from qiskit.quantum_info import Operator # type: ignore
@@ -28,7 +28,7 @@ from qickit.circuit import Circuit, QiskitCircuit
 from qickit.backend import Backend, FakeBackend
 
 
-class FakeIBMBackend(FakeBackend): # pragma: no cover
+class FakeIBMBackend(FakeBackend):
     """ `qickit.backend.FakeIBMBackend` is the class for running
     `qickit.circuit.Circuit` instances on an IBM hardware emulator.
 
@@ -75,10 +75,13 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
     ...                               qiskit_runtime=qiskit_runtime,
     ...                               device="CPU")
     """
-    def __init__(self,
-                 hardware_name: str,
-                 qiskit_runtime: QiskitRuntimeService,
-                 device: str="CPU") -> None:
+    def __init__(
+            self,
+            hardware_name: str,
+            qiskit_runtime: QiskitRuntimeService,
+            device: str="CPU"
+        ) -> None:
+
         super().__init__(device=device)
         self._qc_framework = QiskitCircuit
 
@@ -100,17 +103,20 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
         # the latest calibration results
         available_devices = AerSimulator.available_devices() # type: ignore
         if self.device == "GPU" and available_devices["GPU"]:
-            self._counts_backend = BackendSampler(AerSimulator.from_backend(backend, device="GPU"))
+            self._counts_backend = BackendSampler(backend=AerSimulator.from_backend(backend, device="GPU"))
             self._op_backend = AerSimulator.from_backend(backend, device="GPU", method="unitary")
         else:
             if self.device == "GPU" and available_devices["GPU"] is None:
                 print("Warning: GPU acceleration is not available. Defaulted to CPU.")
-            self._counts_backend = BackendSampler(AerSimulator.from_backend(backend))
+            self._counts_backend = BackendSampler(backend=AerSimulator.from_backend(backend))
             self._op_backend = AerSimulator.from_backend(backend, method="unitary")
 
     @Backend.backendmethod
-    def get_statevector(self,
-                        circuit: Circuit) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
+
         # Get the counts of the circuit
         counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
 
@@ -127,8 +133,11 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
         return state_vector
 
     @Backend.backendmethod
-    def get_operator(self,
-                     circuit: Circuit) -> NDArray[np.complex128]:
+    def get_operator(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
+
         # Run the circuit to get the operator
         # NOTE: Currently, the operator cannot be obtained with noise considered,
         # so the operator without noise is returned
@@ -150,25 +159,35 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
         return np.array(operator, dtype=np.complex128)
 
     @Backend.backendmethod
-    def get_counts(self,
-                   circuit: Circuit,
-                   num_shots: int = 1024) -> dict[str, int]:
+    def get_counts(
+            self,
+            circuit: Circuit,
+            num_shots: int=1024
+        ) -> dict[str, int]:
+
         # Create a copy of the circuit as measurement is applied inplace
         circuit = circuit.copy()
 
         # Run the circuit on the backend to generate the result
-        result = self._counts_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
+        result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()
 
-        # Extract the quasi-probability distribution from the first result
-        quasi_dist = result.quasi_dists[0]
+        # Extract the counts from the result
+        counts = result[0].join_data().get_counts() # type: ignore
 
-        # Convert the quasi-probability distribution to counts
-        counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) \
-                  for k, v in quasi_dist.items()}
+        partial_counts = {}
+
+        # Parse the binary strings to filter out the unmeasured qubits
+        for key in counts.keys():
+            new_key = ''.join(key[::-1][i] for i in range(len(key)) if i in circuit.measured_qubits)
+            partial_counts[new_key[::-1]] = counts[key]
+
+        counts = partial_counts
 
         # Fill the counts dict with zeros for the missing states
-        counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) \
-                  for i in range(2**circuit.num_qubits)}
+        num_qubits_to_measure = len(circuit.measured_qubits)
+
+        counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
+                  for i in range(2**num_qubits_to_measure)}
 
         # Sort the counts by their keys (basis states)
         counts = dict(sorted(counts.items()))

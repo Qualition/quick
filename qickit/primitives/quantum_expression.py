@@ -82,12 +82,14 @@ class QuantumExpression:
     >>> expression = [bra, operator, ket]
     >>> quantum_expression = QuantumExpression(expression, backend)
     """
-    def __init__(self,
-                 expression: list[Bra | Ket | Operator],
-                 circuit_framework: Type[Circuit],
-                 backend: Backend,
-                 state_preparation_method: Type[StatePreparation] | None = None,
-                 unitary_preparation_method: Type[UnitaryPreparation] | None = None) -> None:
+    def __init__(
+            self,
+            expression: list[Bra | Ket | Operator],
+            circuit_framework: Type[Circuit],
+            backend: Backend,
+            state_preparation_method: Type[StatePreparation] | None = None,
+            unitary_preparation_method: Type[UnitaryPreparation] | None = None
+        ) -> None:
         """ Initialize a `QuantumExpression` instance.
         """
         self.check_expression(expression)
@@ -96,14 +98,16 @@ class QuantumExpression:
 
         if state_preparation_method is None:
             state_preparation_method = Mottonen
-        self.state_preparation_method = state_preparation_method
+        self.state_preparation_method = state_preparation_method(circuit_framework)
 
         if unitary_preparation_method is None:
             unitary_preparation_method = QiskitUnitaryTranspiler
         self.unitary_preparation_method = unitary_preparation_method(circuit_framework)
 
-    def check_expression(self,
-                         expression: list[Bra | Ket | Operator]) -> None:
+    def check_expression(
+            self,
+            expression: list[Bra | Ket | Operator]
+        ) -> None:
         """ Check if the quantum expression is valid.
 
         Parameters
@@ -132,9 +136,11 @@ class QuantumExpression:
 
         self.expression = expression
 
-    def innerproduct(self,
-                     bra: Bra,
-                     ket: Ket) -> float:
+    def innerproduct(
+            self,
+            bra: Bra,
+            ket: Ket
+        ) -> float:
         """ Calculate the inner product between a bra and a ket.
 
         innerproduct = <bra|ket>
@@ -208,18 +214,20 @@ class QuantumExpression:
         qubit_indices = list(range(self.expression[0].num_qubits))
         first_expression_term = self.expression[0]
 
-        if isinstance(first_expression_term, (Bra, Ket)):
-            circuit: Circuit = self.state_preparation_method.prepare_state(first_expression_term) # type: ignore
-        elif isinstance(first_expression_term, Operator):
-            circuit: Circuit = self.unitary_preparation_method.prepare_unitary(first_expression_term)
+        match first_expression_term:
+            case Bra() | Ket():
+                circuit: Circuit = self.state_preparation_method.prepare_state(first_expression_term)
+            case Operator():
+                circuit: Circuit = self.unitary_preparation_method.prepare_unitary(first_expression_term) # type: ignore
 
         for expr in self.expression:
-            if isinstance(expr, (Bra, Ket)):
-                braket_circuit: Circuit = self.state_preparation_method.prepare_state(expr) # type: ignore
-                circuit.add(braket_circuit, qubit_indices)
-            elif isinstance(expr, Operator):
-                operator_circuit: Circuit = self.unitary_preparation_method.prepare_unitary(expr)
-                circuit.add(operator_circuit, qubit_indices)
+            match expr:
+                case Bra() | Ket():
+                    braket_circuit: Circuit = self.state_preparation_method.prepare_state(expr) # type: ignore
+                    circuit.add(braket_circuit, qubit_indices)
+                case Operator():
+                    operator_circuit: Circuit = self.unitary_preparation_method.prepare_unitary(expr)
+                    circuit.add(operator_circuit, qubit_indices)
 
         statevector = self.backend.get_statevector(circuit)
         return statevector

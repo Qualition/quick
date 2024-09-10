@@ -14,10 +14,9 @@
 
 __all__ = ["backend",
            "circuit",
-           "circuitoptimizer",
-           "data",
+           "optimizer",
            "primitives",
            "synthesis",
            "types",]
 
-from qickit import backend, circuit, circuitoptimizer, data, primitives, synthesis, types
+from qickit import backend, circuit, optimizer, primitives, synthesis, types

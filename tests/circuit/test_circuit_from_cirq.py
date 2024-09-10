@@ -281,11 +281,6 @@ class TestFromCirq(FrameworkTemplate):
         cirq_circuit = cirq.Circuit()
         cirq_circuit.append(SWAP(qr[0], qr[1]))
 
-        for operation in list(cirq_circuit.all_operations()):
-            gate = operation.gate
-            gate_type = type(gate).__name__
-            print(gate_type)
-
         # Convert the Cirq circuit to a QICKIT circuit
         qickit_circuit = Circuit.from_cirq(cirq_circuit, QiskitCircuit)
 

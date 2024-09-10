@@ -16,8 +16,10 @@ from __future__ import annotations
 
 __all__ = ["Collection", "NestedCollection"]
 
-from typing import (Iterator, overload, Protocol, TypeVar,
-                    Self, TypeAlias, runtime_checkable)
+from typing import (
+  Iterator, overload, Protocol, TypeVar,
+  Self, TypeAlias, runtime_checkable
+)
 
 T = TypeVar("T")
 

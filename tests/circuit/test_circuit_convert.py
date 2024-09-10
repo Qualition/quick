@@ -24,8 +24,10 @@ from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit
 class TestConvert:
     """ `tests.circuit.TestConvert` is the tester for the `.convert()` method.
     """
-    def from_circuit(self,
-                     framework: Type[Circuit]) -> None:
+    def from_circuit(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the conversion from `qickit.circuit.CirqCircuit`.
 
         Parameters

@@ -25,7 +25,7 @@ from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
                                     ZGate, SGate, SdgGate, TGate, TdgGate, U3Gate, # type: ignore
                                     SwapGate, GlobalPhaseGate, IGate) # type: ignore
-from qiskit.primitives import BackendSampler # type: ignore
+from qiskit.primitives import BackendSamplerV2 as BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 import qiskit.qasm2 as qasm2 # type: ignore
 import qiskit.qasm3 as qasm3 # type: ignore
@@ -52,8 +52,8 @@ class QiskitCircuit(Circuit):
         Number of qubits in the circuit.
     `circuit` : qiskit.QuantumCircuit
         The circuit.
-    `measured_qubits` : list[bool]
-        The measurement status of the qubits.
+    `measured_qubits` : set[int]
+        The set of measured qubits indices.
     `circuit_log` : list[dict]
         The circuit log.
     `process_gate_params_flag` : bool
@@ -70,91 +70,115 @@ class QiskitCircuit(Circuit):
     -----
     >>> circuit = QiskitCircuit(num_qubits=2)
     """
-    def __init__(self,
-                 num_qubits: int) -> None:
+    def __init__(
+            self,
+            num_qubits: int
+        ) -> None:
+
         super().__init__(num_qubits=num_qubits)
 
         qr = QuantumRegister(self.num_qubits)
         cr = ClassicalRegister(self.num_qubits)
         self.circuit: QuantumCircuit = QuantumCircuit(qr, cr)
 
-    def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                           qubit_indices: int | Sequence[int],
-                           angle: float=0) -> None:
+    def _single_qubit_gate(
+            self,
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            qubit_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None:
+
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
-        # Define the gate mapping for the non-parameterized single qubit gates
+        # Define a mapping for the single qubit gates
         gate_mapping = {
-            "I": IGate(),
-            "X": XGate(),
-            "Y": YGate(),
-            "Z": ZGate(),
-            "H": HGate(),
-            "S": SGate(),
-            "Sdg": SdgGate(),
-            "T": TGate(),
-            "Tdg": TdgGate(),
-            "RX": RXGate(angle),
-            "RY": RYGate(angle),
-            "RZ": RZGate(angle)
+            "I": lambda: IGate(),
+            "X": lambda: XGate(),
+            "Y": lambda: YGate(),
+            "Z": lambda: ZGate(),
+            "H": lambda: HGate(),
+            "S": lambda: SGate(),
+            "Sdg": lambda: SdgGate(),
+            "T": lambda: TGate(),
+            "Tdg": lambda: TdgGate(),
+            "RX": lambda: RXGate(angle),
+            "RY": lambda: RYGate(angle),
+            "RZ": lambda: RZGate(angle)
         }
 
-        # Apply the gate to the specified qubit(s)
-        for index in qubit_indices:
-            self.circuit.append(gate_mapping[gate], [index])
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the abstraction
+        single_qubit_gate = gate_mapping[gate]()
 
-    def U3(self,
-           angles: Sequence[float],
-           qubit_index: int) -> None:
+        # Apply the single qubit gate to each qubit index
+        for qubit_index in qubit_indices:
+            self.circuit.append(single_qubit_gate, [qubit_index])
+
+    def U3(
+            self,
+            angles: Sequence[float],
+            qubit_index: int
+        ) -> None:
+
         self.process_gate_params(gate=self.U3.__name__, params=locals())
 
         # Create a single qubit unitary gate
         u3 = U3Gate(theta=angles[0], phi=angles[1], lam=angles[2])
-
         self.circuit.append(u3, [qubit_index])
 
-    def SWAP(self,
-             first_qubit_index: int,
-             second_qubit_index: int) -> None:
+    def SWAP(
+            self,
+            first_qubit_index: int,
+            second_qubit_index: int
+        ) -> None:
+
         self.process_gate_params(gate=self.SWAP.__name__, params=locals())
 
         # Create a SWAP gate
         swap = SwapGate()
-
         self.circuit.append(swap, [first_qubit_index, second_qubit_index])
 
-    def _controlled_qubit_gate(self,
-                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                               control_indices: int | Sequence[int],
-                               target_indices: int | Sequence[int],
-                               angle: float=0) -> None:
+    def _controlled_qubit_gate(
+            self,
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None:
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Define the gate mapping for the non-parameterized controlled gates
+        # Define a mapping for the controlled qubit gates
         gate_mapping = {
-            "X": XGate().control(len(control_indices)),
-            "Y": YGate().control(len(control_indices)),
-            "Z": ZGate().control(len(control_indices)),
-            "H": HGate().control(len(control_indices)),
-            "S": SGate().control(len(control_indices)),
-            "Sdg": SdgGate().control(len(control_indices)),
-            "T": TGate().control(len(control_indices)),
-            "Tdg": TdgGate().control(len(control_indices)),
-            "RX": RXGate(angle).control(len(control_indices)),
-            "RY": RYGate(angle).control(len(control_indices)),
-            "RZ": RZGate(angle).control(len(control_indices))
+            "X": lambda: XGate().control(len(control_indices)),
+            "Y": lambda: YGate().control(len(control_indices)),
+            "Z": lambda: ZGate().control(len(control_indices)),
+            "H": lambda: HGate().control(len(control_indices)),
+            "S": lambda: SGate().control(len(control_indices)),
+            "Sdg": lambda: SdgGate().control(len(control_indices)),
+            "T": lambda: TGate().control(len(control_indices)),
+            "Tdg": lambda: TdgGate().control(len(control_indices)),
+            "RX": lambda: RXGate(angle).control(len(control_indices)),
+            "RY": lambda: RYGate(angle).control(len(control_indices)),
+            "RZ": lambda: RZGate(angle).control(len(control_indices))
         }
+
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the abstraction
+        controlled_gate = gate_mapping[gate]()
 
         # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
-            self.circuit.append(gate_mapping[gate], [*control_indices[:], target_index])
+            self.circuit.append(controlled_gate, [*control_indices[:], target_index])
 
-    def MCU3(self,
-             angles: Sequence[float],
-             control_indices: int | Sequence[int],
-             target_indices: int | Sequence[int]) -> None:
+    def MCU3(
+            self,
+            angles: Sequence[float],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
+
         self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
@@ -168,10 +192,13 @@ class QiskitCircuit(Circuit):
         for target_index in target_indices:
             self.circuit.append(mcu3, [*control_indices[:], target_index])
 
-    def MCSWAP(self,
-               control_indices: int | Sequence[int],
-               first_target_index: int,
-               second_target_index: int) -> None:
+    def MCSWAP(
+            self,
+            control_indices: int | Sequence[int],
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+
         self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
@@ -182,89 +209,87 @@ class QiskitCircuit(Circuit):
 
         self.circuit.append(mcswap, [*control_indices[:], first_target_index, second_target_index])
 
-    def GlobalPhase(self,
-                    angle: float) -> None:
+    def GlobalPhase(
+            self,
+            angle: float
+        ) -> None:
+
         self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
         # Create a Global Phase gate
         global_phase = GlobalPhaseGate(angle)
-
         self.circuit.append(global_phase, (), ())
 
-    def measure(self,
-                qubit_indices: int | Sequence[int]) -> None:
+    def measure(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
         # Check if any of the qubits have already been measured
-        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
-            raise ValueError("The qubit(s) have already been measured")
+        if any(qubit_index in self.measured_qubits for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured.")
 
         self.circuit.measure(qubit_indices, qubit_indices)
 
         # Set the measurement as applied
-        list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
+        for qubit_index in qubit_indices:
+            self.measured_qubits.add(qubit_index)
 
-    def get_statevector(self,
-                        backend: Backend | None = None,
-                        magnitude_only: bool=False) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            backend: Backend | None = None,
+        ) -> NDArray[np.complex128]:
+
         if backend is None:
             state_vector = Statevector(self.circuit).data
         else:
             state_vector = backend.get_statevector(self)
 
-        if magnitude_only:
-            # Round off the small values to 0 (values below 1e-12 are set to 0)
-            state_vector = np.round(state_vector, 12)
-
-            # Create masks for real and imaginary parts
-            real_mask = (state_vector.imag == 0)
-            imaginary_mask = (state_vector.real == 0)
-
-            # Calculate the sign for each part
-            real_sign = np.sign(state_vector.real) * real_mask
-            imaginary_sign = np.sign(state_vector.imag) * imaginary_mask
-
-            # Calculate the sign for complex numbers
-            complex_sign = np.sign(state_vector.real * (np.abs(state_vector.real) <= np.abs(state_vector.imag)) + \
-                                state_vector.imag * (np.abs(state_vector.imag) < np.abs(state_vector.real))) * \
-                                ~(real_mask | imaginary_mask)
-
-            # Define the signs for the real and imaginary components
-            signs = real_sign + imaginary_sign + complex_sign
-
-            # Multiply the state vector by the signs
-            state_vector = signs * np.abs(state_vector)
-
         return np.array(state_vector)
 
-    def get_counts(self,
-                   num_shots: int,
-                   backend: Backend | None = None) -> dict[str, int]:
-        if not(any(self.measured_qubits)):
+    def get_counts(
+            self,
+            num_shots: int,
+            backend: Backend | None = None
+        ) -> dict[str, int]:
+
+        num_qubits_to_measure = len(self.measured_qubits)
+
+        if len(self.measured_qubits) == 0:
             raise ValueError("At least one qubit must be measured.")
 
         # Copy the circuit as the transpilation operation is inplace
         circuit: QiskitCircuit = self.copy() # type: ignore
 
-        # Extract what qubits are measured
-        qubits_to_measure = [i for i in range(circuit.num_qubits) if circuit.measured_qubits[i]]
-        num_qubits_to_measure = len(qubits_to_measure)
-
         if backend is None:
             # If no backend is provided, use the AerSimualtor
-            base_backend: BackendSampler = BackendSampler(AerSimulator())
-            result = base_backend.run(circuit.circuit, shots=num_shots, seed_simulator=0).result()
-            # Extract the quasi-probability distribution from the first result
-            quasi_dist = result.quasi_dists[0]
-            # Convert the quasi-probability distribution to counts
-            counts = {bin(k)[2:].zfill(num_qubits_to_measure): int(v * num_shots) for k, v in quasi_dist.items()}
+            base_backend: BackendSampler = BackendSampler(backend=AerSimulator())
+            result = base_backend.run([circuit.circuit], shots=num_shots).result()
+
+            # Extract the counts from the result
+            counts = result[0].join_data().get_counts() # type: ignore
+
+            partial_counts = {}
+
+            # Parse the binary strings to filter out the unmeasured qubits
+            for key in counts.keys():
+                new_key = ''.join(key[::-1][i] for i in range(len(key)) if i in circuit.measured_qubits)
+                partial_counts[new_key[::-1]] = counts[key]
+
+            counts = partial_counts
+
             # Fill the counts array with zeros for the missing states
-            counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) for i in range(2**num_qubits_to_measure)}
+            counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
+                      for i in range(2**num_qubits_to_measure)}
+
             # Sort the counts by their keys (basis states)
             counts = dict(sorted(counts.items()))
+
         else:
             counts = backend.get_counts(circuit=circuit, num_shots=num_shots)
 
@@ -288,9 +313,12 @@ class QiskitCircuit(Circuit):
 
         return np.array(unitary)
 
-    def transpile(self,
-                  direct_transpile: bool=True,
-                  synthesis_method: UnitaryPreparation | None = None) -> None:
+    def transpile(
+            self,
+            direct_transpile: bool=True,
+            synthesis_method: UnitaryPreparation | None = None
+        ) -> None:
+
         if direct_transpile:
             # Transpile the circuit (this returns a `qiskit.QuantumCircuit` instance)
             transpiled_circuit = transpile(self.circuit,
@@ -316,8 +344,11 @@ class QiskitCircuit(Circuit):
         self.circuit_log = transpiled_circuit.circuit_log
         self.circuit = transpiled_circuit.circuit
 
-    def to_qasm(self,
-                qasm_version:int = 2) -> str:
+    def to_qasm(
+            self,
+            qasm_version: int=2
+        ) -> str:
+
         if qasm_version == 2:
             qasm = qasm2.dumps(self.circuit)
         elif qasm_version == 3:

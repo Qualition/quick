@@ -44,16 +44,20 @@ class UnitaryPreparation(ABC):
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
     """
-    def __init__(self,
-                 output_framework: Type[Circuit]) -> None:
+    def __init__(
+            self,
+            output_framework: Type[Circuit]
+        ) -> None:
         """ Initalize a Unitary Preparation instance.
         """
         # Define the QC framework
         self.output_framework = output_framework
 
     @abstractmethod
-    def prepare_unitary(self,
-                        unitary: NDArray[np.complex128] | Operator) -> Circuit:
+    def prepare_unitary(
+            self,
+            unitary: NDArray[np.complex128] | Operator
+        ) -> Circuit:
         """ Prepare the quantum unitary operator.
 
         Parameters
@@ -68,10 +72,12 @@ class UnitaryPreparation(ABC):
         """
 
     @abstractmethod
-    def apply_unitary(self,
-                      circuit: Circuit,
-                      unitary: NDArray[np.complex128] | Operator,
-                      qubit_indices: int | Sequence[int]) -> Circuit:
+    def apply_unitary(
+            self,
+            circuit: Circuit,
+            unitary: NDArray[np.complex128] | Operator,
+            qubit_indices: int | Sequence[int]
+        ) -> Circuit:
         """ Apply the quantum unitary operator to a quantum circuit.
 
         Parameters
@@ -130,13 +136,14 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
 
     A good resource is IBM Quantum Challenge 2024: https://github.com/qiskit-community/ibm-quantum-challenge-2024/tree/main
     """
-    def __init__(self,
-                 output_framework: Type[Circuit],
-                 ai_transpilation: bool=False,
-                 service: QiskitRuntimeService | None = None,
-                 backend_name: str | None = None) -> None:
-        """ Initalize a Qiskit Transpiler instance.
-        """
+    def __init__(
+            self,
+            output_framework: Type[Circuit],
+            ai_transpilation: bool=False,
+            service: QiskitRuntimeService | None = None,
+            backend_name: str | None = None
+        ) -> None:
+
         super().__init__(output_framework)
         self.ai_transpilation = ai_transpilation
 
@@ -148,8 +155,11 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
             raise ValueError("The name of the backend must be provided for AI transpilation.")
         self.backend_name = backend_name
 
-    def prepare_unitary(self,
-                        unitary: NDArray[np.complex128] | Operator) -> Circuit:
+    def prepare_unitary(
+            self,
+            unitary: NDArray[np.complex128] | Operator
+        ) -> Circuit:
+
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
@@ -163,10 +173,13 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         # and return the circuit
         return self.apply_unitary(circuit, unitary, range(num_qubits))
 
-    def apply_unitary(self,
-                      circuit: Circuit,
-                      unitary: NDArray[np.complex128] | Operator,
-                      qubit_indices: int | Sequence[int]) -> Circuit:
+    def apply_unitary(
+            self,
+            circuit: Circuit,
+            unitary: NDArray[np.complex128] | Operator,
+            qubit_indices: int | Sequence[int]
+        ) -> Circuit:
+
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
@@ -188,7 +201,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
             ai_transpiler = TranspilerService(
                 backend_name=self.backend_name,
                 optimization_level=3,
-                ai=True,
+                ai="true",
                 ai_layout_mode="OPTIMIZE"
             )
             transpiled_circuit = ai_transpiler.run(qiskit_circuit)
@@ -202,15 +215,12 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
                 seed_transpiler=0
             )
 
-        # Iterate over the gates in the transpiled circuit
+        # Apply the U3 and CX gates to the qickit circuit
         for gate in transpiled_circuit.data: # type: ignore
-            # Add the U3 gate
-            if gate[0].name in ["u", "u3"]:
-                circuit.U3(gate[0].params, qubit_indices[gate[1][0]._index])
-
-            # Add the CX gate
+            if gate.operation.name in ["u", "u3"]:
+                circuit.U3(gate.operation.params, qubit_indices[gate.qubits[0]._index])
             else:
-                circuit.CX(qubit_indices[gate[1][0]._index], qubit_indices[gate[1][1]._index])
+                circuit.CX(qubit_indices[gate.qubits[0]._index], qubit_indices[gate.qubits[1]._index])
 
         # Update the global phase
         circuit.GlobalPhase(transpiled_circuit.global_phase) # type: ignore

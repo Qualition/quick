@@ -28,6 +28,11 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_get_partial_counts(self) -> None:
+        """ Test the `.get_counts()` method with partial measurement.
+        """
+
+    @abstractmethod
     def test_get_counts(self) -> None:
         """ Test the `.get_counts()` method.
         """

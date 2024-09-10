@@ -45,17 +45,21 @@ class StatePreparation(ABC):
     -----
     >>> state_preparer = StatePreparation(output_framework=QiskitCircuit)
     """
-    def __init__(self,
-                 output_framework: Type[Circuit]) -> None:
+    def __init__(
+            self,
+            output_framework: Type[Circuit]
+        ) -> None:
         """ Initalize a State Preparation instance.
         """
         self.output_framework = output_framework
 
     @abstractmethod
-    def prepare_state(self,
-                      state: Ket,
-                      compression_percentage: float = 0.0,
-                      index_type: Literal["row", "snake"]="row") -> Circuit:
+    def prepare_state(
+            self,
+            state: NDArray[np.complex128] | Bra | Ket,
+            compression_percentage: float = 0.0,
+            index_type: Literal["row", "snake"]="row"
+        ) -> Circuit:
         """ Prepare the quantum state.
 
         Parameters
@@ -71,6 +75,11 @@ class StatePreparation(ABC):
         -------
         `circuit` : qickit.circuit.Circuit
             The quantum circuit that prepares the state.
+
+        Raises
+        ------
+        TypeError
+            If the state is not a numpy array or a Bra/Ket object.
         """
 
 
@@ -86,14 +95,24 @@ class Mottonen(StatePreparation):
     ----------
     [1] Möttönen, Vartiainen, Bergholm, Salomaa. Transformation of quantum states using uniformly controlled rotations (2004)
     """
-    def prepare_state(self,
-                      state: NDArray[np.complex128] | Bra | Ket,
-                      compression_percentage: float=0.0,
-                      index_type: Literal["row", "snake"]="row") -> Circuit:
-        if isinstance(state, np.ndarray):
-            state = Ket(state)
-        if isinstance(state, Bra):
-            state = state.to_ket()
+    def prepare_state(
+            self,
+            state: NDArray[np.complex128] | Bra | Ket,
+            compression_percentage: float=0.0,
+            index_type: Literal["row", "snake"]="row"
+        ) -> Circuit:
+
+        if not isinstance(state, (np.ndarray, Bra, Ket)):
+            try:
+                state = np.array(state)
+            except Exception as e:
+                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.") from e
+
+        match state:
+            case np.ndarray():
+                state = Ket(state)
+            case Bra():
+                state = state.to_ket()
 
         # Order indexing (if required)
         if index_type != "row":
@@ -110,11 +129,13 @@ class Mottonen(StatePreparation):
         # Construct Mottonen circuit
         circuit: Circuit = self.output_framework(num_qubits)
 
-        def k_controlled_uniform_rotation(circuit: Circuit,
-                                          alpha_k: list[float],
-                                          control_qubits: list[int],
-                                          target_qubit: int,
-                                          gate: Literal["RY", "RZ"]) -> None:
+        def k_controlled_uniform_rotation(
+                circuit: Circuit,
+                alpha_k: list[float],
+                control_qubits: list[int],
+                target_qubit: int,
+                gate: Literal["RY", "RZ"]
+            ) -> None:
             """ Apply a k-controlled rotation about the y-axis.
 
             Parameters
@@ -184,14 +205,24 @@ class Shende(StatePreparation):
     [1] Shende, Bullock, Markov. Synthesis of Quantum Logic Circuits (2004)
     [https://arxiv.org/abs/quant-ph/0406176v5]
     """
-    def prepare_state(self,
-                      state: NDArray[np.complex128] | Bra | Ket,
-                      compression_percentage: float=0.0,
-                      index_type: Literal["row", "snake"]="row") -> Circuit:
-        if isinstance(state, np.ndarray):
-            state = Ket(state)
-        if isinstance(state, Bra):
-            state = state.to_ket()
+    def prepare_state(
+            self,
+            state: NDArray[np.complex128] | Bra | Ket,
+            compression_percentage: float=0.0,
+            index_type: Literal["row", "snake"]="row"
+        ) -> Circuit:
+
+        if not isinstance(state, (np.ndarray, Bra, Ket)):
+            try:
+                state = np.array(state)
+            except Exception as e:
+                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.") from e
+
+        match state:
+            case np.ndarray():
+                state = Ket(state)
+            case Bra():
+                state = state.to_ket()
 
         # Order indexing (if required)
         if index_type != "row":
@@ -208,9 +239,11 @@ class Shende(StatePreparation):
         # Construct Shende circuit
         circuit: Circuit = self.output_framework(num_qubits)
 
-        def multiplexor(list_of_angles: list[float],
-                        gate: Literal["RY", "RZ"],
-                        last_cnot=True) -> Circuit:
+        def multiplexor(
+                list_of_angles: list[float],
+                gate: Literal["RY", "RZ"],
+                last_cnot=True
+            ) -> Circuit:
             """ Create the multiplexor circuit, where each instruction itself
             has a decomposition based on smaller multiplexors.
 
@@ -284,8 +317,10 @@ class Shende(StatePreparation):
 
             return circuit
 
-        def gates_to_uncompute(params: NDArray[np.complex128],
-                               num_qubits: int) -> Circuit:
+        def gates_to_uncompute(
+                params: NDArray[np.complex128],
+                num_qubits: int
+            ) -> Circuit:
             """ Create a circuit with gates that take the desired vector to zero.
 
             Parameters

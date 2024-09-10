@@ -47,7 +47,6 @@ QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_q
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
 ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
-CX_count = 0
 
 
 class Circuit(ABC):
@@ -71,8 +70,8 @@ class Circuit(ABC):
         Number of qubits in the circuit.
     `circuit` : Circuit_Type
         The circuit framework type.
-    `measured_qubits` : list[bool]
-        The measurement status of the qubits.
+    `measured_qubits` : set[int]
+        The set of measured qubits indices.
     `circuit_log` : list[dict]
         The log of the circuit operations.
     `process_gate_params_flag` : bool
@@ -85,8 +84,10 @@ class Circuit(ABC):
     ValueError
         Number of qubits must be greater than 0.
     """
-    def __init__(self,
-                 num_qubits: int) -> None:
+    def __init__(
+            self,
+            num_qubits: int
+        ) -> None:
         """ Initialize a `qickit.circuit.Circuit` instance.
         """
         if not isinstance(num_qubits, int):
@@ -97,12 +98,14 @@ class Circuit(ABC):
 
         self.num_qubits = num_qubits
         self.circuit: Any
-        self.measured_qubits = [False] * num_qubits
+        self.measured_qubits: set[int] = set()
         self.circuit_log: list[dict] = []
         self.process_gate_params_flag: bool = True
 
-    def _convert_param_type(self,
-                            value: Any) -> int | float | list:
+    def _convert_param_type(
+            self,
+            value: Any
+        ) -> int | float | list:
         """ Convert parameter types for consistency.
 
         Parameters
@@ -126,9 +129,11 @@ class Circuit(ABC):
                 value = float(value)
         return value
 
-    def _validate_qubit_index(self,
-                              name: str,
-                              value: Any) -> int | list[int]:
+    def _validate_qubit_index(
+            self,
+            name: str,
+            value: Any
+        ) -> int | list[int]:
         """ Validate qubit indices are within the valid range.
 
         Parameters
@@ -181,9 +186,11 @@ class Circuit(ABC):
 
         return value
 
-    def _validate_angle(self,
-                        name: str,
-                        value: Any) -> None | float | list[float]:
+    def _validate_angle(
+            self,
+            name: str,
+            value: Any
+        ) -> None | float | list[float]:
         """ Ensure angles are valid and not effectively zero.
 
         Parameters
@@ -219,9 +226,11 @@ class Circuit(ABC):
 
         return value
 
-    def process_gate_params(self,
-                            gate: str,
-                            params: dict) -> None:
+    def process_gate_params(
+            self,
+            gate: str,
+            params: dict
+        ) -> None:
         """ Process the gate parameters for the circuit.
 
         Parameters
@@ -260,10 +269,12 @@ class Circuit(ABC):
         self.circuit_log.append({"gate": gate, **params})
 
     @abstractmethod
-    def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                           qubit_indices: int | Sequence[int],
-                           angle: float=0) -> None:
+    def _single_qubit_gate(
+            self,
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            qubit_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None:
         """ Apply a single qubit gate to the circuit.
 
         Parameters
@@ -292,11 +303,13 @@ class Circuit(ABC):
         """
 
     @abstractmethod
-    def _controlled_qubit_gate(self,
-                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                               control_indices: int | Sequence[int],
-                               target_indices: int | Sequence[int],
-                               angle: float=0) -> None:
+    def _controlled_qubit_gate(
+            self,
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None:
         """ Apply a controlled gate to the circuit.
 
         Parameters
@@ -327,8 +340,10 @@ class Circuit(ABC):
         >>> circuit._parameterized_controlled_gate(gate="RX", angles=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
 
-    def Identity(self,
-                 qubit_indices: int | Sequence[int]) -> None:
+    def Identity(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply an Identity gate to the circuit.
 
         Parameters
@@ -351,8 +366,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.Identity.__name__, params=locals())
         self._single_qubit_gate(gate="I", qubit_indices=qubit_indices)
 
-    def X(self,
-          qubit_indices: int | Sequence[int]) -> None:
+    def X(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Pauli-X gate to the circuit.
 
         Parameters
@@ -375,8 +392,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.X.__name__, params=locals())
         self._single_qubit_gate(gate="X", qubit_indices=qubit_indices)
 
-    def Y(self,
-          qubit_indices: int | Sequence[int]) -> None:
+    def Y(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Pauli-Y gate to the circuit.
 
         Parameters
@@ -399,8 +418,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.Y.__name__, params=locals())
         self._single_qubit_gate(gate="Y", qubit_indices=qubit_indices)
 
-    def Z(self,
-          qubit_indices: int | Sequence[int]) -> None:
+    def Z(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Pauli-Z gate to the circuit.
 
         Parameters
@@ -423,8 +444,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.Z.__name__, params=locals())
         self._single_qubit_gate(gate="Z", qubit_indices=qubit_indices)
 
-    def H(self,
-          qubit_indices: int | Sequence[int]) -> None:
+    def H(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Hadamard gate to the circuit.
 
         Parameters
@@ -447,8 +470,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.H.__name__, params=locals())
         self._single_qubit_gate(gate="H", qubit_indices=qubit_indices)
 
-    def S(self,
-          qubit_indices: int | Sequence[int]) -> None:
+    def S(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Clifford-S gate to the circuit.
 
         Parameters
@@ -471,8 +496,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.S.__name__, params=locals())
         self._single_qubit_gate(gate="S", qubit_indices=qubit_indices)
 
-    def Sdg(self,
-            qubit_indices: int | Sequence[int]) -> None:
+    def Sdg(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Clifford-S^{dagger} gate to the circuit.
 
         Parameters
@@ -495,8 +522,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.Sdg.__name__, params=locals())
         self._single_qubit_gate(gate="Sdg", qubit_indices=qubit_indices)
 
-    def T(self,
-          qubit_indices: int | Sequence[int]) -> None:
+    def T(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Clifford-T gate to the circuit.
 
         Parameters
@@ -519,8 +548,10 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.T.__name__, params=locals())
         self._single_qubit_gate(gate="T", qubit_indices=qubit_indices)
 
-    def Tdg(self,
-            qubit_indices: int | Sequence[int]) -> None:
+    def Tdg(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Clifford-T^{dagger} gate to the circuit.
 
         Parameters
@@ -543,9 +574,11 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.Tdg.__name__, params=locals())
         self._single_qubit_gate(gate="Tdg", qubit_indices=qubit_indices)
 
-    def RX(self,
-           angle: float,
-           qubit_indices: int | Sequence[int]) -> None:
+    def RX(
+            self,
+            angle: float,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a RX gate to the circuit.
 
         Parameters
@@ -569,11 +602,17 @@ class Circuit(ABC):
         >>> circuit.RX(angle=np.pi/2, qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.RX.__name__, params=locals())
-        self._single_qubit_gate(gate="RX", angle=angle, qubit_indices=qubit_indices)
+        self._single_qubit_gate(
+            gate="RX",
+            angle=angle,
+            qubit_indices=qubit_indices
+        )
 
-    def RY(self,
-           angle: float,
-           qubit_indices: int | Sequence[int]) -> None:
+    def RY(
+            self,
+            angle: float,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a RY gate to the circuit.
 
         Parameters
@@ -597,11 +636,17 @@ class Circuit(ABC):
         >>> circuit.RY(angle=np.pi/2, qubit_index=[0, 1])
         """
         self.process_gate_params(gate=self.RY.__name__, params=locals())
-        self._single_qubit_gate(gate="RY", angle=angle, qubit_indices=qubit_indices)
+        self._single_qubit_gate(
+            gate="RY",
+            angle=angle,
+            qubit_indices=qubit_indices
+        )
 
-    def RZ(self,
-           angle: float,
-           qubit_indices: int | Sequence[int]) -> None:
+    def RZ(
+            self,
+            angle: float,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a RZ gate to the circuit.
 
         Parameters
@@ -625,12 +670,18 @@ class Circuit(ABC):
         >>> circuit.RZ(angle=np.pi/2, qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.RZ.__name__, params=locals())
-        self._single_qubit_gate(gate="RZ", angle=angle, qubit_indices=qubit_indices)
+        self._single_qubit_gate(
+            gate="RZ",
+            angle=angle,
+            qubit_indices=qubit_indices
+        )
 
     @abstractmethod
-    def U3(self,
-           angles: Sequence[float],
-           qubit_index: int) -> None:
+    def U3(
+            self,
+            angles: Sequence[float],
+            qubit_index: int
+        ) -> None:
         """ Apply a U3 gate to the circuit.
 
         Parameters
@@ -654,9 +705,11 @@ class Circuit(ABC):
         """
 
     @abstractmethod
-    def SWAP(self,
-             first_qubit_index: int,
-             second_qubit_index: int) -> None:
+    def SWAP(
+            self,
+            first_qubit_index: int,
+            second_qubit_index: int
+        ) -> None:
         """ Apply a SWAP gate to the circuit.
 
         Parameters
@@ -678,9 +731,11 @@ class Circuit(ABC):
         >>> circuit.SWAP(first_qubit_index=0, second_qubit_index=1)
         """
 
-    def CX(self,
-           control_index: int,
-           target_index: int) -> None:
+    def CX(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Pauli-X gate to the circuit.
 
         Parameters
@@ -701,14 +756,18 @@ class Circuit(ABC):
         -----
         >>> circuit.CX(control_index=0, target_index=1)
         """
-        global CX_count
-        CX_count += 1
         self.process_gate_params(gate=self.CX.__name__, params=locals())
-        self._controlled_qubit_gate(gate="X", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="X",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CY(self,
-           control_index: int,
-           target_index: int) -> None:
+    def CY(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Pauli-Y gate to the circuit.
 
         Parameters
@@ -730,11 +789,17 @@ class Circuit(ABC):
         >>> circuit.CY(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CY.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Y", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="Y",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CZ(self,
-           control_index: int,
-           target_index: int) -> None:
+    def CZ(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Pauli-Z gate to the circuit.
 
         Parameters
@@ -756,11 +821,17 @@ class Circuit(ABC):
         >>> circuit.CZ(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CZ.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Z", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="Z",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CH(self,
-           control_index: int,
-           target_index: int) -> None:
+    def CH(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Hadamard gate to the circuit.
 
         Parameters
@@ -782,11 +853,17 @@ class Circuit(ABC):
         >>> circuit.CH(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CH.__name__, params=locals())
-        self._controlled_qubit_gate(gate="H", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="H",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CS(self,
-           control_index: int,
-           target_index: int) -> None:
+    def CS(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Clifford-S gate to the circuit.
 
         Parameters
@@ -808,11 +885,17 @@ class Circuit(ABC):
         >>> circuit.CS(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CS.__name__, params=locals())
-        self._controlled_qubit_gate(gate="S", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="S",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CSdg(self,
-              control_index: int,
-              target_index: int) -> None:
+    def CSdg(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Clifford-S^{dagger} gate to the circuit.
 
         Parameters
@@ -834,11 +917,17 @@ class Circuit(ABC):
         >>> circuit.CSdg(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CSdg.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Sdg", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="Sdg",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CT(self,
-           control_index: int,
-           target_index: int) -> None:
+    def CT(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Clifford-T gate to the circuit.
 
         Parameters
@@ -860,11 +949,17 @@ class Circuit(ABC):
         >>> circuit.CT(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CT.__name__, params=locals())
-        self._controlled_qubit_gate(gate="T", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="T",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CTdg(self,
-              control_index: int,
-              target_index: int) -> None:
+    def CTdg(
+            self,
+            control_index: int,
+            target_index: int
+        ) -> None:
         """ Apply a Controlled Clifford-T^{dagger} gate to the circuit.
 
         Parameters
@@ -886,12 +981,18 @@ class Circuit(ABC):
         >>> circuit.CTdg(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CTdg.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Tdg", control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="Tdg",
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CRX(self,
+    def CRX(
+            self,
             angle: float,
             control_index: int,
-            target_index: int) -> None:
+            target_index: int
+        ) -> None:
         """ Apply a Controlled RX gate to the circuit.
 
         Parameters
@@ -916,12 +1017,19 @@ class Circuit(ABC):
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CRX.__name__, params=locals())
-        self._controlled_qubit_gate(gate="RX", angle=angle, control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="RX",
+            angle=angle,
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CRY(self,
+    def CRY(
+            self,
             angle: float,
             control_index: int,
-            target_index: int) -> None:
+            target_index: int
+        ) -> None:
         """ Apply a Controlled RY gate to the circuit.
 
         Parameters
@@ -946,12 +1054,19 @@ class Circuit(ABC):
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CRY.__name__, params=locals())
-        self._controlled_qubit_gate(gate="RY", angle=angle, control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="RY",
+            angle=angle,
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CRZ(self,
+    def CRZ(
+            self,
             angle: float,
             control_index: int,
-            target_index: int) -> None:
+            target_index: int
+        ) -> None:
         """ Apply a Controlled RZ gate to the circuit.
 
         Parameters
@@ -976,12 +1091,19 @@ class Circuit(ABC):
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CRZ.__name__, params=locals())
-        self._controlled_qubit_gate(gate="RZ", angle=angle, control_indices=control_index, target_indices=target_index)
+        self._controlled_qubit_gate(
+            gate="RZ",
+            angle=angle,
+            control_indices=control_index,
+            target_indices=target_index
+        )
 
-    def CU3(self,
+    def CU3(
+            self,
             angles: Sequence[float],
             control_index: int,
-            target_index: int) -> None:
+            target_index: int
+        ) -> None:
         """ Apply a Controlled U3 gate to the circuit.
 
         Parameters
@@ -1006,15 +1128,21 @@ class Circuit(ABC):
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CU3.__name__, params=locals())
-        self.MCU3(angles=angles, control_indices=control_index, target_indices=target_index)
+        self.MCU3(
+            angles=angles,
+            control_indices=control_index,
+            target_indices=target_index
+        )
         # Remove the last operation from the log to avoid duplication (This is to not add MCU3 to the log after CU3)
         if self.process_gate_params_flag:
             _ = self.circuit_log.pop()
 
-    def CSWAP(self,
-              control_index: int,
-              first_target_index: int,
-              second_target_index: int) -> None:
+    def CSWAP(
+            self,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
         """ Apply a Controlled SWAP gate to the circuit.
 
         Parameters
@@ -1038,14 +1166,19 @@ class Circuit(ABC):
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
         """
         self.process_gate_params(gate=self.CSWAP.__name__, params=locals())
-        self.MCSWAP(control_indices=control_index, first_target_index=first_target_index, second_target_index=second_target_index)
+        self.MCSWAP(
+            control_indices=control_index,
+            first_target_index=first_target_index,
+            second_target_index=second_target_index)
         # Remove the last operation from the log to avoid duplication (This is to not add MCSWAP to the log after CSWAP)
         if self.process_gate_params_flag:
             _ = self.circuit_log.pop()
 
-    def MCX(self,
+    def MCX(
+            self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]) -> None:
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Parameters
@@ -1070,11 +1203,17 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCX.__name__, params=locals())
-        self._controlled_qubit_gate(gate="X", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="X",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCY(self,
+    def MCY(
+            self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]) -> None:
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Parameters
@@ -1099,11 +1238,17 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCY.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Y", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="Y",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCZ(self,
+    def MCZ(
+            self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]) -> None:
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Parameters
@@ -1128,11 +1273,17 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCZ.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Z", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="Z",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCH(self,
+    def MCH(
+            self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]) -> None:
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Parameters
@@ -1157,11 +1308,17 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCH.__name__, params=locals())
-        self._controlled_qubit_gate(gate="H", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="H",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCS(self,
+    def MCS(
+            self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]) -> None:
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Parameters
@@ -1186,11 +1343,17 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCS.__name__, params=locals())
-        self._controlled_qubit_gate(gate="S", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="S",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCSdg(self,
-               control_indices: int | Sequence[int],
-               target_indices: int | Sequence[int]) -> None:
+    def MCSdg(
+            self,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Clifford-S^{dagger} gate to the circuit.
 
         Parameters
@@ -1215,11 +1378,17 @@ class Circuit(ABC):
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCSdg.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Sdg", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="Sdg",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCT(self,
+    def MCT(
+            self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]) -> None:
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Parameters
@@ -1244,11 +1413,17 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCT.__name__, params=locals())
-        self._controlled_qubit_gate(gate="T", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="T",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCTdg(self,
-               control_indices: int | Sequence[int],
-               target_indices: int | Sequence[int]) -> None:
+    def MCTdg(
+            self,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled Clifford-T^{dagger} gate to the circuit.
 
         Parameters
@@ -1273,12 +1448,18 @@ class Circuit(ABC):
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCTdg.__name__, params=locals())
-        self._controlled_qubit_gate(gate="Tdg", control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="Tdg",
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCRX(self,
-             angle: float,
-             control_indices: int | Sequence[int],
-             target_indices: int | Sequence[int]) -> None:
+    def MCRX(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled RX gate to the circuit.
 
         Parameters
@@ -1306,12 +1487,19 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCRX.__name__, params=locals())
-        self._controlled_qubit_gate(gate="RX", angle=angle, control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="RX",
+            angle=angle,
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCRY(self,
-             angle: float,
-             control_indices: int | Sequence[int],
-             target_indices: int | Sequence[int]) -> None:
+    def MCRY(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled RY gate to the circuit.
 
         Parameters
@@ -1339,12 +1527,19 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCRY.__name__, params=locals())
-        self._controlled_qubit_gate(gate="RY", angle=angle, control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="RY",
+            angle=angle,
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
-    def MCRZ(self,
-             angle: float,
-             control_indices: int | Sequence[int],
-             target_indices: int | Sequence[int]) -> None:
+    def MCRZ(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled RZ gate to the circuit.
 
         Parameters
@@ -1372,13 +1567,20 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCRZ.__name__, params=locals())
-        self._controlled_qubit_gate(gate="RZ", angle=angle, control_indices=control_indices, target_indices=target_indices)
+        self._controlled_qubit_gate(
+            gate="RZ",
+            angle=angle,
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
 
     @abstractmethod
-    def MCU3(self,
-             angles: Sequence[float],
-             control_indices: int | Sequence[int],
-             target_indices: int | Sequence[int]) -> None:
+    def MCU3(
+            self,
+            angles: Sequence[float],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
         """ Apply a Multi-Controlled U3 gate to the circuit.
 
         Parameters
@@ -1407,10 +1609,12 @@ class Circuit(ABC):
         """
 
     @abstractmethod
-    def MCSWAP(self,
-               control_indices: int | Sequence[int],
-               first_target_index: int,
-               second_target_index: int) -> None:
+    def MCSWAP(
+            self,
+            control_indices: int | Sequence[int],
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
         """ Apply a Controlled SWAP gate to the circuit.
 
         Parameters
@@ -1436,8 +1640,10 @@ class Circuit(ABC):
         """
 
     @abstractmethod
-    def GlobalPhase(self,
-                    angle: float) -> None:
+    def GlobalPhase(
+            self,
+            angle: float
+        ) -> None:
         """ Apply a global phase to the circuit.
 
         Parameters
@@ -1458,9 +1664,11 @@ class Circuit(ABC):
         >>> circuit.GlobalPhase(angle=np.pi/2)
         """
 
-    def unitary(self,
-                unitary_matrix: NDArray[np.complex128],
-                qubit_indices:  int | Sequence[int]) -> None:
+    def unitary(
+            self,
+            unitary_matrix: NDArray[np.complex128],
+            qubit_indices:  int | Sequence[int]
+        ) -> None:
         """ Apply a unitary gate to the circuit.
 
         Parameters
@@ -1488,9 +1696,11 @@ class Circuit(ABC):
         # Prepare the unitary matrix
         self = unitary_preparer.apply_unitary(self, unitary_matrix, qubit_indices)
 
-    def clbit_condition(self,
-                        clbit_index: int,
-                        clbit_value: int) -> bool:
+    def clbit_condition(
+            self,
+            clbit_index: int,
+            clbit_value: int
+        ) -> bool:
         """ Check if a classical bit meets a condition.
 
         Parameters
@@ -1545,8 +1755,10 @@ class Circuit(ABC):
         # Update the circuit
         self.update()
 
-    def horizontal_reverse(self,
-                           adjoint: bool=True) -> None:
+    def horizontal_reverse(
+            self,
+            adjoint: bool=True
+        ) -> None:
         """ Perform a horizontal reverse operation. This is equivalent
         to the adjoint of the circuit if `adjoint=True`. Otherwise, it
         simply reverses the order of the operations.
@@ -1588,9 +1800,11 @@ class Circuit(ABC):
         # Update the circuit
         self.update()
 
-    def add(self,
+    def add(
+            self,
             circuit: Circuit,
-            qubit_indices: int | Sequence[int]) -> None:
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Append two circuits together in a sequence.
 
         Parameters
@@ -1642,8 +1856,10 @@ class Circuit(ABC):
             gate_info["gate"] = gate_name
 
     @abstractmethod
-    def measure(self,
-                qubit_indices: int | Sequence[int]) -> None:
+    def measure(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
         """ Measure the qubits in the circuit.
 
         Parameters
@@ -1672,19 +1888,16 @@ class Circuit(ABC):
         self.measure(qubit_indices=list(range(self.num_qubits)))
 
     @abstractmethod
-    def get_statevector(self,
-                        backend: Backend | None = None,
-                        magnitude_only: bool=False) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            backend: Backend | None = None,
+        ) -> NDArray[np.complex128]:
         """ Get the statevector of the circuit.
 
         Parameters
         ----------
         `backend` : qickit.backend.Backend, optional
             The backend to run the circuit on.
-        `magnitude_only` : bool, optional
-            Whether or not to return the magnitude of the statevector.
-            Setting this to True will combine the real and imaginary parts
-            of the statevector to return the magnitude.
 
         Returns
         -------
@@ -1698,9 +1911,11 @@ class Circuit(ABC):
         """
 
     @abstractmethod
-    def get_counts(self,
-                   num_shots: int,
-                   backend: Backend | None = None) -> dict[str, int]:
+    def get_counts(
+            self,
+            num_shots: int,
+            backend: Backend | None = None
+        ) -> dict[str, int]:
         """ Get the counts of the circuit.
 
         Parameters
@@ -1768,8 +1983,10 @@ class Circuit(ABC):
         >>> circuit.get_unitary()
         """
 
-    def get_instructions(self,
-                         include_measurements: bool=True) -> list[dict]:
+    def get_instructions(
+            self,
+            include_measurements: bool=True
+        ) -> list[dict]:
         """ Get the instructions of the circuit.
 
         Parameters
@@ -1832,19 +2049,25 @@ class Circuit(ABC):
         return circuit
 
     @overload
-    def remove_measurements(self,
-                            inplace: Literal[False]) -> Circuit:
+    def remove_measurements(
+            self,
+            inplace: Literal[False]
+        ) -> Circuit:
         """ Overload of `.remove_measurements` method.
         """
 
     @overload
-    def remove_measurements(self,
-                            inplace: Literal[True]) -> None:
+    def remove_measurements(
+            self,
+            inplace: Literal[True]
+        ) -> None:
         """ Overload of `.remove_measurements` method.
         """
 
-    def remove_measurements(self,
-                            inplace: bool=False) -> Circuit | None:
+    def remove_measurements(
+            self,
+            inplace: bool=False
+        ) -> Circuit | None:
         """ Remove the measurement instructions from the circuit.
 
         Parameters
@@ -1869,9 +2092,11 @@ class Circuit(ABC):
         return self._remove_measurements()
 
     @abstractmethod
-    def transpile(self,
-                  direct_transpile: bool=True,
-                  synthesis_method: UnitaryPreparation | None = None) -> None:
+    def transpile(
+            self,
+            direct_transpile: bool=True,
+            synthesis_method: UnitaryPreparation | None = None
+        ) -> None:
         """ Transpile the circuit to U3 and CX gates.
 
         Parameters
@@ -1892,8 +2117,10 @@ class Circuit(ABC):
         >>> circuit.transpile()
         """
 
-    def compress(self,
-                 compression_percentage: float) -> None:
+    def compress(
+            self,
+            compression_percentage: float
+        ) -> None:
         """ Compresses the circuit angles.
 
         Parameters
@@ -1931,8 +2158,10 @@ class Circuit(ABC):
         # Update the circuit
         self.update()
 
-    def change_mapping(self,
-                       qubit_indices: Sequence[int]) -> None:
+    def change_mapping(
+            self,
+            qubit_indices: Sequence[int]
+        ) -> None:
         """ Change the mapping of the circuit.
 
         Parameters
@@ -1979,8 +2208,10 @@ class Circuit(ABC):
         # Update the circuit
         self.update()
 
-    def convert(self,
-                circuit_framework: Type[Circuit]) -> Circuit:
+    def convert(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> Circuit:
         """ Convert the circuit to another circuit framework.
 
         Parameters
@@ -2022,8 +2253,10 @@ class Circuit(ABC):
 
         return converted_circuit
 
-    def control(self,
-                num_controls: int) -> Circuit:
+    def control(
+            self,
+            num_controls: int
+        ) -> Circuit:
         """ Make the circuit into a controlled operation.
 
         Note
@@ -2126,8 +2359,10 @@ class Circuit(ABC):
         self.__dict__.update(converted_circuit.__dict__)
 
     @abstractmethod
-    def to_qasm(self,
-                qasm_version: int=2) -> str:
+    def to_qasm(
+            self,
+            qasm_version: int=2
+        ) -> str:
         """ Convert the circuit to QASM.
 
         Parameters
@@ -2151,8 +2386,10 @@ class Circuit(ABC):
         """
 
     @staticmethod
-    def from_cirq(cirq_circuit: cirq.Circuit,
-                  output_framework: Type[Circuit]) -> Circuit:
+    def from_cirq(
+            cirq_circuit: cirq.Circuit,
+            output_framework: Type[Circuit]
+        ) -> Circuit:
         """ Create a `qickit.Circuit` from a `cirq.Circuit`.
 
         Parameters
@@ -2344,8 +2581,10 @@ class Circuit(ABC):
         return circuit
 
     @staticmethod
-    def from_pennylane(pennylane_circuit: qml.QNode,
-                       output_framework: Type[Circuit]) -> Circuit:
+    def from_pennylane(
+            pennylane_circuit: qml.QNode,
+            output_framework: Type[Circuit]
+        ) -> Circuit:
         """ Create a `qickit.circuit.Circuit` from a `qml.QNode`.
 
         Parameters
@@ -2372,8 +2611,10 @@ class Circuit(ABC):
         return circuit
 
     @staticmethod
-    def from_qiskit(qiskit_circuit: qiskit.QuantumCircuit,
-                    output_framework: Type[Circuit]) -> Circuit:
+    def from_qiskit(
+            qiskit_circuit: qiskit.QuantumCircuit,
+            output_framework: Type[Circuit]
+        ) -> Circuit:
         """ Create a `qickit.circuit.Circuit` from a `qiskit.QuantumCircuit`.
 
         Parameters
@@ -2392,8 +2633,10 @@ class Circuit(ABC):
         -----
         >>> circuit.from_qiskit(qiskit_circuit)
         """
-        def match_pattern(string: str,
-                  gate_name: str) -> bool:
+        def match_pattern(
+                string: str,
+                gate_name: str
+            ) -> bool:
             """ Check if the string matches the pattern.
 
             Parameters
@@ -2419,8 +2662,8 @@ class Circuit(ABC):
 
         # Iterate over the operations in the Qiskit circuit
         for gate in qiskit_circuit.data:
-            gate_type = gate[0].name
-            qubit_indices = [int(qubit._index) for qubit in gate[1]] if len(gate[1]) > 1 else [int(gate[1][0]._index)]
+            gate_type = gate.operation.name
+            qubit_indices = [int(qubit._index) for qubit in gate.qubits] if len(gate.qubits) > 1 else [int(gate.qubits[0]._index)]
 
             if gate_type == "id":
                 circuit.Identity(qubit_indices)
@@ -2450,16 +2693,16 @@ class Circuit(ABC):
                 circuit.Tdg(qubit_indices)
 
             elif gate_type == "rx":
-                circuit.RX(gate[0].params[0], qubit_indices)
+                circuit.RX(gate.operation.params[0], qubit_indices)
 
             elif gate_type == "ry":
-                circuit.RY(gate[0].params[0], qubit_indices)
+                circuit.RY(gate.operation.params[0], qubit_indices)
 
             elif gate_type == "rz":
-                circuit.RZ(gate[0].params[0], qubit_indices)
+                circuit.RZ(gate.operation.params[0], qubit_indices)
 
             elif gate_type in ["u", "u3"]:
-                circuit.U3(gate[0].params, qubit_indices[0])
+                circuit.U3(gate.operation.params, qubit_indices[0])
 
             elif gate_type == "swap":
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
@@ -2489,16 +2732,16 @@ class Circuit(ABC):
                 circuit.CTdg(qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "crx":
-                circuit.CRX(gate[0].params[0], qubit_indices[0], qubit_indices[1])
+                circuit.CRX(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "cry":
-                circuit.CRY(gate[0].params[0], qubit_indices[0], qubit_indices[1])
+                circuit.CRY(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "crz":
-                circuit.CRZ(gate[0].params[0], qubit_indices[0], qubit_indices[1])
+                circuit.CRZ(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "cu3":
-                circuit.CU3(gate[0].params, qubit_indices[0], qubit_indices[1])
+                circuit.CU3(gate.operation.params, qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "cswap":
                 circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
@@ -2528,16 +2771,16 @@ class Circuit(ABC):
                 circuit.MCTdg(qubit_indices[:-1], qubit_indices[-1])
 
             elif match_pattern(gate_type, "rx"):
-                circuit.MCRX(gate[0].params[0], qubit_indices[:-1], qubit_indices[-1])
+                circuit.MCRX(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
 
             elif match_pattern(gate_type, "ry"):
-                circuit.MCRY(gate[0].params[0], qubit_indices[:-1], qubit_indices[-1])
+                circuit.MCRY(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
 
             elif match_pattern(gate_type, "rz"):
-                circuit.MCRZ(gate[0].params[0], qubit_indices[:-1], qubit_indices[-1])
+                circuit.MCRZ(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
 
             elif match_pattern(gate_type, "u3"):
-                circuit.MCU3(gate[0].params, qubit_indices[:-1], qubit_indices[-1])
+                circuit.MCU3(gate.operation.params, qubit_indices[:-1], qubit_indices[-1])
 
             elif match_pattern(gate_type, "swap"):
                 circuit.MCSWAP(qubit_indices[:-2], qubit_indices[-2], qubit_indices[-1])
@@ -2551,8 +2794,10 @@ class Circuit(ABC):
         return circuit
 
     @staticmethod
-    def from_tket(tket_circuit: pytket.Circuit,
-                  output_framework: Type[Circuit]) -> Circuit:
+    def from_tket(
+            tket_circuit: pytket.Circuit,
+            output_framework: Type[Circuit]
+        ) -> Circuit:
         """ Create a `qickit.circuit.Circuit` from a `tket.Circuit`.
 
         Parameters
@@ -2752,8 +2997,10 @@ class Circuit(ABC):
         return circuit
 
     @staticmethod
-    def from_qasm(qasm: str,
-                  output_framework: Type[Circuit]) -> Circuit:
+    def from_qasm(
+            qasm: str,
+            output_framework: Type[Circuit]
+        ) -> Circuit:
         """ Create a `qickit.circuit.Circuit` from a QASM string.
 
         Parameters
@@ -2811,8 +3058,10 @@ class Circuit(ABC):
         >>> circuit.draw()
         """
 
-    def plot_histogram(self,
-                       non_zeros_only: bool = False) -> plt.Figure:
+    def plot_histogram(
+            self,
+            non_zeros_only: bool=False
+        ) -> plt.Figure:
         """ Plot the histogram of the circuit.
 
         Parameters
@@ -2847,8 +3096,10 @@ class Circuit(ABC):
 
         return figure
 
-    def __eq__(self,
-               other_circuit: object) -> bool:
+    def __eq__(
+            self,
+            other_circuit: object
+        ) -> bool:
         """ Compare two circuits for equality.
 
         Parameters
@@ -2972,6 +3223,3 @@ class Circuit(ABC):
         if cls is Circuit:
             return all(hasattr(C, method) for method in list(cls.__dict__["__abstractmethods__"]))
         return False
-
-    def return_cx_count(self) -> int:
-        return CX_count

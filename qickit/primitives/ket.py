@@ -18,7 +18,7 @@ __all__ = ["Ket"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, overload
+from typing import Any, Literal, overload, SupportsFloat
 
 import qickit.primitives.operator as operator
 import qickit.primitives.bra as bra
@@ -62,9 +62,11 @@ class Ket:
     >>> data = np.array([1, 2, 3, 4])
     >>> ket = Ket(data)
     """
-    def __init__(self,
-                    data: NDArray[np.complex128],
-                    label: str | None = None) -> None:
+    def __init__(
+            self,
+            data: NDArray[np.complex128],
+            label: str | None = None
+        ) -> None:
         """ Initialize a `qickit.primitives.Ket` instance.
         """
         if label is None:
@@ -81,12 +83,12 @@ class Ket:
         self.to_ket(data)
 
     @staticmethod
-    def check_normalization(data: NDArray[np.number]) -> bool:
+    def check_normalization(data: NDArray[np.complex128]) -> bool:
         """ Check if a data is normalized to 2-norm.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
 
         Returns
@@ -116,20 +118,22 @@ class Ket:
         self.normalized = self.check_normalization(self.data)
 
     @staticmethod
-    def normalize_data(data: NDArray[np.number],
-                       norm_scale: np.float64) -> NDArray[np.number]:
+    def normalize_data(
+            data: NDArray[np.complex128],
+            norm_scale: np.float64
+        ) -> NDArray[np.complex128]:
         """ Normalize the data to 2-norm, and return the normalized data.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
         `norm_scale` : np.float64
             The normalization scale.
 
         Returns
         -------
-        NDArray[np.number]
+        NDArray[np.complex128]
             The 2-norm normalized data.
 
         Usage
@@ -151,12 +155,12 @@ class Ket:
         self.normalized = True
 
     @staticmethod
-    def check_padding(data: NDArray[np.number]) -> bool:
+    def check_padding(data: NDArray[np.complex128]) -> bool:
         """ Check if a data is normalized to 2-norm.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
 
         Returns
@@ -181,22 +185,23 @@ class Ket:
         self.padded = self.check_padding(self.data)
 
     @staticmethod
-    def pad_data(data: NDArray[np.number],
-                 target_size: int) -> tuple[NDArray[np.number],
-                                                    tuple[int, ...]]:
+    def pad_data(
+            data: NDArray[np.complex128],
+            target_size: int
+        ) -> tuple[NDArray[np.complex128], tuple[int, ...]]:
         """ Pad data with zeros up to the nearest power of 2, and return
         the padded data.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data to be padded.
         `target_size` : int
             The target size to pad the data to.
 
         Returns
         -------
-        `padded_data` : NDArray[np.number]
+        `padded_data` : NDArray[np.complex128]
             The padded data.
         `data_shape` : (tuple[int, ...])
             The updated shape.
@@ -207,8 +212,12 @@ class Ket:
         >>> pad_data(data)
         """
         flattened_data = data.flatten()
-        padded_data = np.pad(flattened_data, (0, int(target_size - len(flattened_data))),
-                             mode="constant").reshape(-1, 1)
+
+        padded_data = np.pad(
+            flattened_data, (0, int(target_size - len(flattened_data))),
+            mode="constant"
+        ).reshape(-1, 1)
+
         updated_shape = padded_data.shape
 
         return padded_data, updated_shape
@@ -239,13 +248,15 @@ class Ket:
         if not self.padded:
             self.pad()
 
-    def to_ket(self,
-               data: NDArray[np.number]) -> None:
+    def to_ket(
+            self,
+            data: NDArray[np.complex128]
+        ) -> None:
         """ Convert the data to a ket vector.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
 
         Raises
@@ -257,26 +268,24 @@ class Ket:
         -----
         >>> ket.to_ket(data)
         """
-        if data.ndim == 0:
-            raise ValueError("Cannot convert a scalar to a ket.")
-
-        elif data.ndim == 1:
-            if data.shape[0] == 1:
+        match data.ndim:
+            case 0:
                 raise ValueError("Cannot convert a scalar to a ket.")
-            else:
-                self.data = data.reshape(-1, 1)
-
-        elif data.ndim == 2:
-            if data.shape[1] == 1:
+            case 1:
                 if data.shape[0] == 1:
                     raise ValueError("Cannot convert a scalar to a ket.")
                 else:
-                    self.data = data
-            else:
-                raise ValueError("Cannot convert an operator to a ket.")
-
-        else:
-            raise ValueError("Cannot convert a N-dimensional array to a ket.")
+                    self.data = data.reshape(-1, 1)
+            case 2:
+                if data.shape[1] == 1:
+                    if data.shape[0] == 1:
+                        raise ValueError("Cannot convert a scalar to a ket.")
+                    else:
+                        self.data = data
+                else:
+                    raise ValueError("Cannot convert an operator to a ket.")
+            case _:
+                raise ValueError("Cannot convert a N-dimensional array to a ket.")
 
         self.data = self.data.astype(np.complex128)
 
@@ -297,8 +306,10 @@ class Ket:
         """
         return bra.Bra(self.data.conj().reshape(1, -1)) # type: ignore
 
-    def compress(self,
-                 compression_percentage: float) -> None:
+    def compress(
+            self,
+            compression_percentage: float
+        ) -> None:
         """ Compress a `qickit.data.Data` instance.
 
         Parameters
@@ -320,8 +331,10 @@ class Ket:
 
         self.data = flattened_data.reshape(-1, 1)
 
-    def change_indexing(self,
-                        index_type: Literal["row", "snake"]) -> None:
+    def change_indexing(
+            self,
+            index_type: Literal["row", "snake"]
+        ) -> None:
         """ Change the indexing of a `qickit.primitives.Ket` instance.
 
         Parameters
@@ -351,8 +364,10 @@ class Ket:
         else:
             raise ValueError("Index type not supported.")
 
-    def _check__mul__(self,
-                      other) -> None:
+    def _check__mul__(
+            self,
+            other: Any
+        ) -> None:
         """ Check if the multiplication is valid.
 
         Parameters
@@ -367,16 +382,19 @@ class Ket:
         NotImplementedError
             If the `other` type is incompatible.
         """
-        if isinstance(other, Scalar):
-            pass
-        elif isinstance(other, (bra.Bra, Ket)):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot contract two incompatible vectors.")
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        match other:
+            case SupportsFloat() | complex():
+                pass
+            case bra.Bra() | Ket():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot contract two incompatible vectors.")
+            case _:
+                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
-    def __eq__(self,
-               other: object) -> bool:
+    def __eq__(
+            self,
+            other: object
+        ) -> bool:
         """ Check if two ket vectors are equal.
 
         Parameters
@@ -397,8 +415,8 @@ class Ket:
         """
         if isinstance(other, Ket):
             return bool(np.all(np.isclose(self.data.flatten(), other.data.flatten(), atol=1e-10, rtol=0)))
-        else:
-            raise NotImplementedError(f"Equality with {type(other)} is not supported.")
+
+        raise NotImplementedError(f"Equality with {type(other)} is not supported.")
 
     def __len__(self) -> int:
         """ Return the length of the bra vector.
@@ -414,8 +432,10 @@ class Ket:
         """
         return len(self.data.flatten())
 
-    def __add__(self,
-                other: Ket) -> Ket:
+    def __add__(
+            self,
+            other: Ket
+        ) -> Ket:
         """ Superpose two ket states together.
 
         Parameters
@@ -445,102 +465,103 @@ class Ket:
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot add two incompatible vectors.")
             return Ket((self.data.flatten() + other.data.flatten()).astype(np.complex128))
-        else:
-            raise NotImplementedError(f"Addition with {type(other)} is not supported.")
+
+        raise NotImplementedError(f"Addition with {type(other)} is not supported.")
 
     @overload
-    def __mul__(self,
-                other: Scalar) -> Ket:
-        """ Multiply the ket by a scalar.
+    def __mul__(
+            self,
+            other: Scalar
+        ) -> Ket:
+        ...
+
+    @overload
+    def __mul__(
+            self,
+            other: bra.Bra
+        ) -> operator.Operator:
+        ...
+
+    @overload
+    def __mul__(
+            self,
+            other: Ket
+        ) -> Ket:
+        ...
+
+    def __mul__(
+            self,
+            other: Scalar | bra.Bra | Ket
+        ) -> Ket | operator.Operator:
+        """ Multiply the ket by a scalar, bra, or ket.
+
+        The multiplication of a ket with a bra is defined as:
+        |ψ⟩⟨ψ|, which is called the projection operator and is implemented using the measurement
+        operator.
+
+        The multiplication of a ket with a ket is defined as:
+        |ψ⟩⊗|ψ'⟩, which is called the tensor product of two quantum states.
+
+        Notes
+        -----
+        The multiplication of a ket with a scalar does not change the ket. This is because
+        the norm of the ket is preserved, and the scalar is multiplied with each element of the
+        ket. We provide the scalar multiplication for completeness.
 
         Parameters
         ----------
-        `other` : qickit.primitives.Scalar
-            The scalar to multiply the ket by.
+        `other` : qickit.primitives.Scalar | qickit.primitives.Bra | qickit.primitives.Ket
+            The object to multiply the ket by.
 
         Returns
         -------
-        qickit.primitives.Ket
-            The ket multiplied by the scalar.
+        qickit.primitives.Ket | qickit.primitives.Operator
+            The ket or operator resulting from the multiplication.
+
+        Raises
+        ------
+        ValueError
+            If the two vectors are incompatible.
+        NotImplementedError
+            If the `other` type is incompatible.
 
         Usage
         -----
         >>> scalar = 2
         >>> ket = Ket(np.array([1+0j, 0+0j]))
         >>> ket = ket * scalar
-        """
-
-    @overload
-    def __mul__(self,
-                other: bra.Bra) -> operator.Operator:
-        """ Multiply the ket by a bra. This is equivalent to the outer product.
-
-        Parameters
-        ----------
-        `other` : qickit.primitives.Bra
-            The bra to multiply the ket by.
-
-        Returns
-        -------
-        qickit.primitives.Operator
-            The operator resulting from the multiplication.
-
-        Raises
-        ------
-        ValueError
-            If the two vectors are incompatible.
-
-        Usage
-        -----
         >>> bra = Bra(np.array([1+0j, 0+0j]))
         >>> ket = Ket(np.array([1+0j, 0+0j]))
         >>> operator = ket * bra
-        """
-
-    @overload
-    def __mul__(self,
-                other: Ket) -> Ket:
-        """ Multiply the ket by a ket. This is equivalent to the tensor product.
-
-        Parameters
-        ----------
-        `other` : qickit.primitives.Ket
-            The ket to multiply the ket by.
-
-        Returns
-        -------
-        qickit.primitives.Ket
-            The ket resulting from the multiplication.
-
-        Raises
-        ------
-        ValueError
-            If the two vectors are incompatible.
-
-        Usage
-        -----
         >>> ket1 = Ket(np.array([1+0j, 0+0j]))
         >>> ket2 = Ket(np.array([1+0j, 0+0j]))
         >>> ket3 = ket1 * ket2
         """
-
-    def __mul__(self,
-                other: Scalar | bra.Bra | Ket) -> Ket | operator.Operator:
-        if isinstance(other, Scalar):
-            return Ket((self.data * other).astype(np.complex128)) # type: ignore
-        elif isinstance(other, (bra.Bra, Ket)):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot contract two incompatible vectors.")
-            if isinstance(other, bra.Bra):
+        match other:
+            case SupportsFloat() | complex():
+                return Ket((self.data * other).astype(np.complex128)) # type: ignore
+            case bra.Bra():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot contract two incompatible vectors.")
                 return operator.Operator(np.outer(self.data, other.data.conj())) # type: ignore
-            else:
+            case Ket():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot contract two incompatible vectors.")
                 return Ket(np.kron(self.data, other.data)) # type: ignore
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+            case _:
+                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
-    def __rmul__(self,
-                 other: Scalar) -> Ket:
+    def __rmul__(
+            self,
+            other: Scalar
+        ) -> Ket:
         """ Multiply the ket by a scalar.
+
+        Notes
+        -----
+        The multiplication of a ket with a scalar does not change the ket. This is because
+        the norm of the ket is preserved, and the scalar is multiplied with each element of the
+        ket. We provide the scalar multiplication for completeness.
 
         Parameters
         ----------
@@ -558,10 +579,10 @@ class Ket:
         >>> ket = Ket(np.array([1+0j, 0+0j]))
         >>> ket = scalar * ket
         """
-        if isinstance(other, Scalar):
+        if isinstance(other, (SupportsFloat, complex)):
             return Ket((self.data * other).astype(np.complex128)) # type: ignore
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+
+        raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __str__(self) -> str:
         """ Return the string representation of the ket.

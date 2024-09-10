@@ -20,12 +20,14 @@ import numpy as np # type: ignore
 from scipy.spatial import distance # type: ignore
 
 from qickit.backend import AerBackend
-from qickit.circuit import CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
+from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 from tests.backend import Template
 
 
-def cosine_similarity(h1: dict[str, int],
-                      h2: dict[str, int]) -> float:
+def cosine_similarity(
+        h1: dict[str, int],
+        h2: dict[str, int]
+    ) -> float:
     """ Calculate the cosine similarity between two histograms.
 
     Parameters
@@ -52,13 +54,78 @@ class TestAerBackend(Template):
     """ `TestAerBackend` is the tester for the `AerBackend` class.
     """
     def test_init(self) -> None:
-        """ Test the initialization of the backend.
-        """
         backend = AerBackend()
 
+    def test_get_partial_counts(self) -> None:
+        # Define the `qickit.backend.AerBackend` instance
+        backend = AerBackend()
+
+        # Define the `qickit.circuit.Circuit` instances
+        cirq_circuit = CirqCircuit(3)
+        pennylane_circuit = PennylaneCircuit(3)
+        qiskit_circuit = QiskitCircuit(3)
+        tket_circuit = TKETCircuit(3)
+
+        # Prepare the Bell state
+        cirq_circuit.H(0)
+        cirq_circuit.CX(0, 1)
+
+        pennylane_circuit.H(0)
+        pennylane_circuit.CX(0, 1)
+
+        qiskit_circuit.H(0)
+        qiskit_circuit.CX(0, 1)
+
+        tket_circuit.H(0)
+        tket_circuit.CX(0, 1)
+
+        def test_partial_measurement(circuit: Circuit) -> None:
+            """ Define the circuits for partial measurement.
+
+            Parameters
+            ----------
+            `circuit` : qickit.circuit.Circuit
+                The circuit to perform partial measurement on.
+            """
+            # Perform partial measurement on the first qubit and ensure the counts are correct
+            circuit.measure(0)
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the second qubit and ensure the counts are correct
+            circuit.measure(1)
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the third qubit and ensure the counts are correct
+            circuit.measure(2)
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {"0": 1024, "1": 0}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the first and second qubits and ensure the counts are correct
+            circuit.measure([0, 1])
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {'00': 512, '01': 0, '10': 0, '11': 512}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the first and third qubits and ensure the counts are correct
+            circuit.measure([0, 2])
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {'00': 512, '01': 512, '10': 0, '11': 0}) > 0.95
+
+        test_partial_measurement(cirq_circuit)
+        test_partial_measurement(pennylane_circuit)
+        test_partial_measurement(qiskit_circuit)
+        test_partial_measurement(tket_circuit)
+
     def test_get_counts(self) -> None:
-        """ Test the `.get_counts()` method.
-        """
         # Define the `qickit.backend.AerBackend` instance
         backend = AerBackend()
 
@@ -106,8 +173,6 @@ class TestAerBackend(Template):
         assert cosine_similarity(tket_counts, output_counts) > 0.95
 
     def test_get_statevector(self) -> None:
-        """ Test the `.get_statevector()` method.
-        """
         # Define the `qickit.backend.AerBackend` instance
         backend = AerBackend()
 
@@ -152,8 +217,6 @@ class TestAerBackend(Template):
         assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
 
     def test_get_unitary(self) -> None:
-        """ Test the `.get_unitary()` method.
-        """
         # Define the `qickit.backend.AerBackend` instance
         backend = AerBackend()
 

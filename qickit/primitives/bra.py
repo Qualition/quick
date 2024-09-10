@@ -18,7 +18,7 @@ __all__ = ["Bra"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, overload
+from typing import Any, Literal, overload, SupportsFloat
 
 import qickit.primitives.operator as operator
 import qickit.primitives.ket as ket
@@ -62,9 +62,11 @@ class Bra:
     >>> data = np.array([1, 2, 3, 4])
     >>> bra = Bra(data)
     """
-    def __init__(self,
-                 data: NDArray[np.complex128],
-                 label: str | None = None) -> None:
+    def __init__(
+            self,
+            data: NDArray[np.complex128],
+            label: str | None = None
+        ) -> None:
         """ Initialize a `qickit.primitives.Bra` instance.
         """
         if label is None:
@@ -81,12 +83,12 @@ class Bra:
         self.to_bra(data)
 
     @staticmethod
-    def check_normalization(data: NDArray[np.number]) -> bool:
+    def check_normalization(data: NDArray[np.complex128]) -> bool:
         """ Check if a data is normalized to 2-norm.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
 
         Returns
@@ -116,20 +118,22 @@ class Bra:
         self.normalized = self.check_normalization(self.data)
 
     @staticmethod
-    def normalize_data(data: NDArray[np.number],
-                       norm_scale: np.float64) -> NDArray[np.number]:
+    def normalize_data(
+            data: NDArray[np.complex128],
+            norm_scale: np.float64
+        ) -> NDArray[np.complex128]:
         """ Normalize the data to 2-norm, and return the normalized data.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
         `norm_scale` : np.float64
             The normalization scale.
 
         Returns
         -------
-        NDArray[np.number]
+        NDArray[np.complex128]
             The 2-norm normalized data.
 
         Usage
@@ -151,12 +155,12 @@ class Bra:
         self.normalized = True
 
     @staticmethod
-    def check_padding(data: NDArray[np.number]) -> bool:
+    def check_padding(data: NDArray[np.complex128]) -> bool:
         """ Check if a data is normalized to 2-norm.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
 
         Returns
@@ -181,22 +185,23 @@ class Bra:
         self.padded = self.check_padding(self.data)
 
     @staticmethod
-    def pad_data(data: NDArray[np.number],
-                 target_size: int) -> tuple[NDArray[np.number],
-                                                    tuple[int, ...]]:
+    def pad_data(
+            data: NDArray[np.complex128],
+            target_size: int
+        ) -> tuple[NDArray[np.complex128], tuple[int, ...]]:
         """ Pad data with zeros up to the nearest power of 2, and return
         the padded data.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data to be padded.
         `target_size` : int
             The target size to pad the data to.
 
         Returns
         -------
-        `padded_data` : NDArray[np.number]
+        `padded_data` : NDArray[np.complex128]
             The padded data.
         `data_shape` : (tuple[int, ...])
             The updated shape.
@@ -206,7 +211,10 @@ class Bra:
         >>> data = np.array([1, 2, 3])
         >>> pad_data(data, 4)
         """
-        padded_data = np.pad(data, (0, int(target_size - len(data))), mode="constant")
+        padded_data = np.pad(
+            data, (0, int(target_size - len(data))),
+            mode="constant"
+        )
         updated_shape = padded_data.shape
 
         return padded_data, updated_shape
@@ -237,13 +245,15 @@ class Bra:
         if not self.padded:
             self.pad()
 
-    def to_bra(self,
-               data: NDArray[np.number]) -> None:
+    def to_bra(
+            self,
+            data: NDArray[np.complex128]
+        ) -> None:
         """ Convert the data to a bra vector.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The data.
 
         Raises
@@ -256,28 +266,26 @@ class Bra:
         >>> data = np.array([1, 2, 3, 4])
         >>> to_bra(data)
         """
-        if data.ndim == 0:
-            raise ValueError("Cannot convert a scalar to a bra.")
-
-        elif data.ndim == 1:
-            if data.shape[0] == 1:
+        match data.ndim:
+            case 0:
                 raise ValueError("Cannot convert a scalar to a bra.")
-            else:
-                self.data = data
-                self.shape = self.data.shape
-
-        elif data.ndim == 2:
-            if data.shape[0] == 1:
-                if data.shape[1] == 1:
+            case 1:
+                if data.shape[0] == 1:
                     raise ValueError("Cannot convert a scalar to a bra.")
                 else:
-                    self.data: NDArray = data.reshape(1, -1)[0]
+                    self.data = data
                     self.shape = self.data.shape
-            else:
-                raise ValueError("Cannot convert an operator to a bra.")
-
-        else:
-            raise ValueError("Cannot convert a N-dimensional array to a bra.")
+            case 2:
+                if data.shape[0] == 1:
+                    if data.shape[1] == 1:
+                        raise ValueError("Cannot convert a scalar to a bra.")
+                    else:
+                        self.data: NDArray = data.reshape(1, -1)[0] # type: ignore
+                        self.shape = self.data.shape
+                else:
+                    raise ValueError("Cannot convert an operator to a bra.")
+            case _:
+                raise ValueError("Cannot convert a N-dimensional array to a bra.")
 
         self.data = self.data.astype(np.complex128)
 
@@ -298,8 +306,10 @@ class Bra:
         """
         return ket.Ket(self.data.conj().reshape(1, -1)[0])
 
-    def compress(self,
-                 compression_percentage: float) -> None:
+    def compress(
+            self,
+            compression_percentage: float
+        ) -> None:
         """ Compress a `qickit.data.Data` instance.
 
         Parameters
@@ -318,8 +328,10 @@ class Bra:
         for i in data_sort_ind[:cutoff]:
             self.data[i] = 0
 
-    def change_indexing(self,
-                        index_type: Literal["row", "snake"]) -> None:
+    def change_indexing(
+            self,
+            index_type: Literal["row", "snake"]
+        ) -> None:
         """ Change the indexing of a `qickit.primitives.Bra` instance.
 
         Parameters
@@ -349,8 +361,10 @@ class Bra:
         else:
             raise ValueError("Index type not supported.")
 
-    def _check__mul__(self,
-                      other) -> None:
+    def _check__mul__(
+            self,
+            other: Any
+        ) -> None:
         """ Check if the multiplication is valid.
 
         Parameters
@@ -366,19 +380,22 @@ class Bra:
         NotImplementedError
             If the `other` type is incompatible.
         """
-        if isinstance(other, Scalar):
-            pass
-        elif isinstance(other, ket.Ket):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot contract two incompatible vectors.")
-        elif isinstance(other, operator.Operator):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot multiply the bra with an incompatible operator.")
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        match other:
+            case SupportsFloat() | complex():
+                pass
+            case ket.Ket():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot contract two incompatible vectors.")
+            case operator.Operator():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot multiply the bra with an incompatible operator.")
+            case _:
+                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
-    def __eq__(self,
-               other: object) -> bool:
+    def __eq__(
+            self,
+            other: object
+        ) -> bool:
         """ Check if two bra vectors are equal.
 
         Parameters
@@ -399,8 +416,8 @@ class Bra:
         """
         if isinstance(other, Bra):
             return bool(np.all(np.isclose(self.data, other.data, atol=1e-10, rtol=0)))
-        else:
-            raise NotImplementedError(f"Equality with {type(other)} is not supported.")
+
+        raise NotImplementedError(f"Equality with {type(other)} is not supported.")
 
     def __len__(self) -> int:
         """ Return the length of the bra vector.
@@ -416,8 +433,10 @@ class Bra:
         """
         return len(self.data)
 
-    def __add__(self,
-                other: Bra) -> Bra:
+    def __add__(
+            self,
+            other: Bra
+        ) -> Bra:
         """ Superpose two bra states together.
 
         Parameters
@@ -445,104 +464,104 @@ class Bra:
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot add two incompatible vectors.")
             return Bra((self.data + other.data).astype(np.complex128))
-        else:
-            raise NotImplementedError(f"Addition with {type(other)} is not supported.")
+
+        raise NotImplementedError(f"Addition with {type(other)} is not supported.")
 
     @overload
-    def __mul__(self,
-                other: Scalar) -> Bra:
-        """ Multiply the bra by a scalar.
+    def __mul__(
+            self,
+            other: Scalar
+        ) -> Bra:
+        ...
+
+    @overload
+    def __mul__(
+            self,
+            other: ket.Ket
+        ) -> Scalar:
+        ...
+
+    @overload
+    def __mul__(
+            self,
+            other: operator.Operator
+        ) -> Bra:
+        ...
+
+    def __mul__(
+            self,
+            other: Scalar | ket.Ket | operator.Operator
+        ) -> Scalar | Bra:
+        """ Multiply the bra by a scalar, a ket, or an operator.
+
+        The multiplication of a bra with a ket is defined as:
+        - ⟨ψ'|ψ⟩ = s, where s is a scalar
+
+        The multiplication of a bra with an operator is defined as:
+        - ⟨ψ|A = ⟨ψ'|
+
+        Notes
+        -----
+        The multiplication of a bra with a scalar does not change the bra. This is because
+        the norm of the bra is preserved, and the scalar is multiplied with each element of the
+        bra. We provide the scalar multiplication for completeness.
 
         Parameters
         ----------
-        `other` : qickit.primitives.Scalar
-            The scalar to multiply the bra by.
+        `other` : qickit.primitives.Scalar | qickit.primitives.Ket | qickit.primitives.Operator
+            The other object to multiply the bra by.
 
         Returns
         -------
-        qickit.primitives.Bra
-            The bra multiplied by the scalar.
+        qickit.primitives.Scalar | qickit.primitives.Bra
+            The result of the multiplication.
+
+        Raises
+        ------
+        ValueError
+            If the two vectors are incompatible.
+            If the operator dimensions are incompatible.
+        NotImplementedError
+            If the `other` type is incompatible.
 
         Usage
         -----
         >>> scalar = 2
         >>> bra = Bra(np.array([1+0j, 0+0j]))
         >>> bra * scalar
-        """
-
-    @overload
-    def __mul__(self,
-                other: ket.Ket) -> Scalar:
-        """ Multiply the bra by a ket. This is equivalent to the inner product.
-
-        Parameters
-        ----------
-        `other` : qickit.primitives.Ket
-            The ket to multiply the bra by.
-
-        Returns
-        -------
-        qickit.primitives.Scalar
-            The scalar resulting from the multiplication.
-
-        Raises
-        ------
-        ValueError
-            If the two vectors are incompatible.
-
-        Usage
-        -----
         >>> bra = Bra(np.array([1+0j, 0+0j]))
         >>> ket = Ket(np.array([1+0j, 0+0j]))
         >>> bra * ket
-        """
-
-    @overload
-    def __mul__(self,
-                other: operator.Operator) -> Bra:
-        """ Multiply the bra by an operator.
-
-        Parameters
-        ----------
-        `other` : qickit.primitives.Operator
-            The operator to multiply the bra by.
-
-        Returns
-        -------
-        qickit.primitives.Bra
-            The bra multiplied by the operator.
-
-        Raises
-        ------
-        ValueError
-            If the operator dimensions are incompatible.
-
-        Usage
-        -----
         >>> bra = Bra(np.array([1+0j, 0+0j]))
         >>> operator = Operator([[1+0j, 0+0j],
         ...                      [0+0j, 1+0j]])
         >>> bra * operator
         """
+        match other:
+            case SupportsFloat() | complex():
+                return Bra((self.data * other).astype(np.complex128)) # type: ignore
+            case ket.Ket():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot contract two incompatible vectors.")
+                return np.dot(self.data, other.data).flatten()[0]
+            case operator.Operator():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot multiply two incompatible vectors.")
+                return Bra(self.data @ other.data)
+            case _:
+                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
-    def __mul__(self,
-                other: Scalar | ket.Ket | operator.Operator) -> Scalar | Bra:
-        if isinstance(other, Scalar):
-            return Bra((self.data * other).astype(np.complex128))
-        elif isinstance(other, ket.Ket):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot contract two incompatible vectors.")
-            return np.dot(self.data, other.data).flatten()[0]
-        elif isinstance(other, operator.Operator):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot multiply two incompatible vectors.")
-            return Bra(self.data @ other.data)
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
-
-    def __rmul__(self,
-                 other: Scalar) -> Bra:
+    def __rmul__(
+            self,
+            other: Scalar
+        ) -> Bra:
         """ Multiply the bra by a scalar.
+
+        Notes
+        -----
+        The multiplication of a bra with a scalar does not change the bra. This is because
+        the norm of the bra is preserved, and the scalar is multiplied with each element of the
+        bra. We provide the scalar multiplication for completeness.
 
         Parameters
         ----------
@@ -560,10 +579,10 @@ class Bra:
         >>> bra = Bra(np.array([1+0j, 0+0j]))
         >>> scalar * bra
         """
-        if isinstance(other, Scalar):
-            return Bra((self.data * other).astype(np.complex128))
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return Bra((self.data * other).astype(np.complex128)) # type: ignore
+
+        raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __str__(self) -> str:
         """ Return the string representation of the bra vector.

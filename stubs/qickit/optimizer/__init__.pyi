@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["TestData"]
+from qickit.optimizer.optimizer import Optimizer as Optimizer
+from qickit.optimizer.tket2optimizer import TKET2Optimizer as TKET2Optimizer
 
-from tests.data.test_data import TestData
+__all__ = ["Optimizer", "TKET2Optimizer"]

@@ -18,7 +18,8 @@ __all__ = ["Operator"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import overload
+from typing import Any, overload, SupportsFloat
+
 
 import qickit.primitives.ket as ket
 from qickit.types import Scalar
@@ -61,9 +62,11 @@ class Operator:
     ...                  [0+0j, 1+0j]])
     >>> Operator(data)
     """
-    def __init__(self,
-                 data: NDArray[np.complex128],
-                 label: str | None = None) -> None:
+    def __init__(
+            self,
+            data: NDArray[np.complex128],
+            label: str | None = None
+        ) -> None:
         """ Initialize a `qickit.primitives.Operator` instance.
         """
         if label is None:
@@ -74,12 +77,12 @@ class Operator:
         self.num_qubits = int(np.ceil(np.log2(self.shape[0])))
 
     @staticmethod
-    def ishermitian(data: NDArray[np.number]) -> None:
+    def ishermitian(data: NDArray[np.complex128]) -> None:
         """ Check if a matrix is Hermitian.
 
         Parameters
         ----------
-        `data` : NDArray[np.number]
+        `data` : NDArray[np.complex128]
             The matrix to check.
 
         Raises
@@ -115,8 +118,10 @@ class Operator:
         if not bool(np.allclose(np.eye(data.shape[0], dtype=np.complex128), np.conj(data.T) @ data)):
             raise ValueError("Operator must be unitary.")
 
-    def _check__mul__(self,
-                      other) -> None:
+    def _check__mul__(
+            self,
+            other: Any
+        ) -> None:
         """ Check if the multiplication is valid.
 
         Parameters
@@ -132,31 +137,74 @@ class Operator:
         NotImplementedError
             If the `other` type is incompatible.
         """
-        if isinstance(other, Scalar):
-            pass
-        elif isinstance(other, ket.Ket):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot multiply an operator with an incompatible ket.")
-        elif isinstance(other, Operator):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot multiply two incompatible operators.")
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        match other:
+            case SupportsFloat() | complex():
+                pass
+            case ket.Ket():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot multiply an operator with an incompatible ket.")
+            case Operator():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot multiply two incompatible operators.")
+            case _:
+                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     @overload
-    def __mul__(self,
-                other: Scalar) -> Operator:
-        """ Multiply an operator with a scalar.
+    def __mul__(
+            self,
+            other: Scalar
+        ) -> Operator:
+        ...
+
+    @overload
+    def __mul__(
+            self,
+            other: ket.Ket
+        ) -> ket.Ket:
+        ...
+
+    @overload
+    def __mul__(
+            self,
+            other: Operator
+        ) -> Operator:
+        ...
+
+    def __mul__(
+            self,
+            other: Scalar | ket.Ket | Operator
+        ) -> Operator | ket.Ket:
+        """ Multiply an operator with a scalar, ket or another operator.
+
+        The multiplication of an operator with a ket is defined as:
+        - A|ψ⟩ = |ψ'⟩
+
+        The multiplication of an operator with another operator is defined as:
+        - AB = C
+
+        Notes
+        -----
+        The multiplication of an operator with a scalar does not change the operator. This is because
+        the norm of the operator is preserved, and the scalar is multiplied with each element of the
+        operator. We provide the scalar multiplication for completeness.
 
         Parameters
         ----------
-        `other` : qickit.primitives.Scalar
-            The scalar to multiply with.
+        `other` : qickit.primitives.Scalar | qickit.primitives.Ket | qickit.primitives.Operator
+            The object to multiply with.
 
         Returns
         -------
-        qickit.primitives.Operator
-            The operator multiplied by the scalar.
+        qickit.primitives.Operator | qickit.primitives.Ket
+            The result of the multiplication.
+
+        Raises
+        ------
+        ValueError
+            If the operator and ket dimensions are incompatible.
+            If the operator dimensions are incompatible.
+        NotImplementedError
+            If the `other` type is incompatible.
 
         Usage
         -----
@@ -164,85 +212,41 @@ class Operator:
         >>> operator = Operator([[1+0j, 0+0j],
         ...                      [0+0j, 1+0j]])
         >>> operator * scalar
-        """
-
-    @overload
-    def __mul__(self,
-                other: ket.Ket) -> ket.Ket:
-        """ Multiply an operator with a ket.
-        |psi'> = A|psi>
-
-        Parameters
-        ----------
-        `other` : qickit.primitives.Ket
-            The ket to multiply with.
-
-        Returns
-        -------
-        qickit.primitives.Ket
-            The ket multiplied by the operator.
-
-        Raises
-        ------
-        ValueError
-            If the operator and ket dimensions are incompatible.
-
-        Usage
-        -----
         >>> operator = Operator([[1+0j, 0+0j],
         ...                      [0+0j, 1+0j]])
         >>> ket = Ket([1+0j, 0+0j])
         >>> operator * ket
-        """
-
-    @overload
-    def __mul__(self,
-                other: Operator) -> Operator:
-        """ Multiply an operator with another operator.
-        C = AB
-
-        Parameters
-        ----------
-        `other` : qickit.primitives.Operator
-            The operator to multiply with.
-
-        Returns
-        -------
-        qickit.primitives.Operator
-            The operator multiplied by the other operator.
-
-        Raises
-        ------
-        ValueError
-            If the operator dimensions are incompatible.
-
-        Usage
-        -----
         >>> operator1 = Operator([[1+0j, 0+0j],
         ...                       [0+0j, 1+0j]])
         >>> operator2 = Operator([[1+0j, 0+0j],
         ...                       [0+0j, 1+0j]])
         >>> operator1 * operator2
         """
+        match other:
+            case SupportsFloat() | complex():
+                return Operator((self.data * other).astype(np.complex128)) # type: ignore
+            case ket.Ket():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot multiply an operator with an incompatible ket.")
+                return ket.Ket((self.data @ other.data).astype(np.complex128)) # type: ignore
+            case Operator():
+                if self.num_qubits != other.num_qubits:
+                    raise ValueError("Cannot multiply two incompatible operators.")
+                return Operator(self.data @ other.data)
+            case _:
+                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
-    def __mul__(self,
-                other: Scalar | ket.Ket | Operator) -> Operator | ket.Ket:
-        if isinstance(other, Scalar):
-            return Operator((self.data * other).astype(np.complex128)) # type: ignore
-        elif isinstance(other, ket.Ket):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot multiply an operator with an incompatible ket.")
-            return ket.Ket((self.data @ other.data).astype(np.complex128)) # type: ignore
-        elif isinstance(other, Operator):
-            if self.num_qubits != other.num_qubits:
-                raise ValueError("Cannot multiply two incompatible operators.")
-            return Operator(self.data @ other.data)
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
-
-    def __rmul__(self,
-                 other: Scalar) -> Operator:
+    def __rmul__(
+            self,
+            other: Scalar
+        ) -> Operator:
         """ Multiply a scalar with an operator.
+
+        Notes
+        -----
+        The multiplication of an operator with a scalar does not change the operator. This is because
+        the norm of the operator is preserved, and the scalar is multiplied with each element of the
+        operator. We provide the scalar multiplication for completeness.
 
         Parameters
         ----------
@@ -253,6 +257,11 @@ class Operator:
         -------
         qickit.primitives.Operator
             The operator multiplied by the scalar.
+
+        Raises
+        ------
+        NotImplementedError
+            If the `other` type is incompatible
 
         Usage
         -----
@@ -261,10 +270,10 @@ class Operator:
         ...                      [0+0j, 1+0j]])
         >>> scalar * operator
         """
-        if isinstance(other, Scalar):
+        if isinstance(other, (SupportsFloat, complex)):
             return Operator((self.data * other).astype(np.complex128)) # type: ignore
-        else:
-            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+
+        raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __str__(self) -> str:
         """ Return the string representation of the operator.

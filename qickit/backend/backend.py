@@ -50,8 +50,10 @@ class Backend(ABC):
     ValueError
         If the device is not "CPU" or "GPU".
     """
-    def __init__(self,
-                 device: str="CPU") -> None:
+    def __init__(
+            self,
+            device: str="CPU"
+        ) -> None:
         """ Initialize a `qickit.backend.Backend` instance.
         """
         if device not in ["CPU", "GPU"]:
@@ -111,8 +113,10 @@ class Backend(ABC):
         return wrapped
 
     @abstractmethod
-    def get_statevector(self,
-                        circuit: Circuit) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
         """ Get the statevector of the circuit.
 
         Parameters
@@ -136,8 +140,10 @@ class Backend(ABC):
         """
 
     @abstractmethod
-    def get_operator(self,
-                     circuit: Circuit) -> NDArray[np.complex128]:
+    def get_operator(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
         """ Get the operator of the circuit.
 
         Parameters
@@ -161,16 +167,18 @@ class Backend(ABC):
         """
 
     @abstractmethod
-    def get_counts(self,
-                   circuit: Circuit,
-                   num_shots: int) -> dict[str, int]:
+    def get_counts(
+            self,
+            circuit: Circuit,
+            num_shots: int=1024
+        ) -> dict[str, int]:
         """ Get the counts of the backend.
 
         Parameters
         ----------
         `circuit` : qickit.circuit.Circuit
             The circuit to run.
-        `num_shots` : int
+        `num_shots` : int, optional, default=1024
             The number of shots to run.
 
         Returns
@@ -313,10 +321,12 @@ class NoisyBackend(Backend, ABC):
         If the single-qubit error rate is not between 0 and 1.
         If the two-qubit error rate is not between 0 and 1.
     """
-    def __init__(self,
-                 single_qubit_error: float,
-                 two_qubit_error: float,
-                 device: str="CPU") -> None:
+    def __init__(
+            self,
+            single_qubit_error: float,
+            two_qubit_error: float,
+            device: str="CPU"
+        ) -> None:
         """ Initialize a `qickit.backend.NoisyBackend` instance.
         """
         super().__init__(device=device)
@@ -362,8 +372,10 @@ class FakeBackend(Backend, ABC):
     ValueError
         If the device is not "CPU" or "GPU".
     """
-    def __init__(self,
-                 device: str="CPU") -> None:
+    def __init__(
+            self,
+            device: str="CPU"
+        ) -> None:
         """ Initialize a `qickit.backend.FakeBackend` instance.
         """
         super().__init__(device=device)
@@ -372,8 +384,10 @@ class FakeBackend(Backend, ABC):
         self._max_num_qubits: int
 
     @abstractmethod
-    def get_statevector(self,
-                        circuit: Circuit) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
         """ Get the statevector of the circuit.
 
         Parameters
@@ -399,8 +413,10 @@ class FakeBackend(Backend, ABC):
         """
 
     @abstractmethod
-    def get_operator(self,
-                     circuit: Circuit) -> NDArray[np.complex128]:
+    def get_operator(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
         """ Get the operator of the circuit.
 
         Parameters
@@ -426,16 +442,18 @@ class FakeBackend(Backend, ABC):
         """
 
     @abstractmethod
-    def get_counts(self,
-                   circuit: Circuit,
-                   num_shots: int) -> dict[str, int]:
+    def get_counts(
+            self,
+            circuit: Circuit,
+            num_shots: int=1024
+        ) -> dict[str, int]:
         """ Get the counts of the backend.
 
         Parameters
         ----------
         `circuit` : qickit.circuit.Circuit
             The circuit to run.
-        `num_shots` : int
+        `num_shots` : int, optional, default=1024
             The number of shots to run.
 
         Returns

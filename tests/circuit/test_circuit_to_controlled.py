@@ -24,8 +24,10 @@ from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit
 class TestControlled:
     """ `tests.circuit.TestControlled` is the tester for the `.control()` method.
     """
-    def x_control(self,
-                  framework: Type[Circuit]) -> None:
+    def x_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with X gate.
 
         Parameters
@@ -56,8 +58,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def y_control(self,
-                  framework: Type[Circuit]) -> None:
+    def y_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with Y gate.
 
         Parameters
@@ -88,8 +92,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def z_control(self,
-                  framework: Type[Circuit]) -> None:
+    def z_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with Z gate.
 
         Parameters
@@ -120,8 +126,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def h_control(self,
-                  framework: Type[Circuit]) -> None:
+    def h_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with H gate.
 
         Parameters
@@ -152,8 +160,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def s_control(self,
-                  framework: Type[Circuit]) -> None:
+    def s_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with S gate.
 
         Parameters
@@ -184,8 +194,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def sdg_control(self,
-                    framework: Type[Circuit]) -> None:
+    def sdg_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with Sdg gate.
 
         Parameters
@@ -216,8 +228,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def t_control(self,
-                  framework: Type[Circuit]) -> None:
+    def t_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with T gate.
 
         Parameters
@@ -248,8 +262,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def tdg_control(self,
-                    framework: Type[Circuit]) -> None:
+    def tdg_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with Tdg gate.
 
         Parameters
@@ -280,8 +296,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def rx_control(self,
-                   framework: Type[Circuit]) -> None:
+    def rx_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with RX gate.
 
         Parameters
@@ -312,8 +330,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def ry_control(self,
-                   framework: Type[Circuit]) -> None:
+    def ry_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with RY gate.
 
         Parameters
@@ -344,8 +364,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def rz_control(self,
-                   framework: Type[Circuit]) -> None:
+    def rz_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with RZ gate.
 
         Parameters
@@ -376,8 +398,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def u3_control(self,
-                   framework: Type[Circuit]) -> None:
+    def u3_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with U3 gate.
 
         Parameters
@@ -405,8 +429,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def swap_control(self,
-                     framework: Type[Circuit]) -> None:
+    def swap_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with SWAP gate.
 
         Parameters
@@ -434,8 +460,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def cx_control(self,
-                   framework: Type[Circuit]) -> None:
+    def cx_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CX gate.
 
         Parameters
@@ -463,8 +491,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def cy_control(self,
-                   framework: Type[Circuit]) -> None:
+    def cy_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CY gate.
 
         Parameters
@@ -492,8 +522,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def cz_control(self,
-                   framework: Type[Circuit]) -> None:
+    def cz_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CZ gate.
 
         Parameters
@@ -521,8 +553,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def ch_control(self,
-                   framework: Type[Circuit]) -> None:
+    def ch_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CH gate.
 
         Parameters
@@ -550,8 +584,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def cs_control(self,
-                   framework: Type[Circuit]) -> None:
+    def cs_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CS gate.
 
         Parameters
@@ -579,8 +615,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def csdg_control(self,
-                     framework: Type[Circuit]) -> None:
+    def csdg_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CSdg gate.
 
         Parameters
@@ -608,8 +646,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def ct_control(self,
-                   framework: Type[Circuit]) -> None:
+    def ct_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CT gate.
 
         Parameters
@@ -637,8 +677,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def ctdg_control(self,
-                     framework: Type[Circuit]) -> None:
+    def ctdg_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CTdg gate.
 
         Parameters
@@ -666,8 +708,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def crx_control(self,
-                    framework: Type[Circuit]) -> None:
+    def crx_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CRX gate.
 
         Parameters
@@ -695,8 +739,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def cry_control(self,
-                    framework: Type[Circuit]) -> None:
+    def cry_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CRY gate.
 
         Parameters
@@ -724,8 +770,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def crz_control(self,
-                    framework: Type[Circuit]) -> None:
+    def crz_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CRZ gate.
 
         Parameters
@@ -753,8 +801,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def cu3_control(self,
-                    framework: Type[Circuit]) -> None:
+    def cu3_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with CU3 gate.
 
         Parameters
@@ -782,8 +832,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcx_control(self,
-                    framework: Type[Circuit]) -> None:
+    def mcx_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCX gate.
 
         Parameters
@@ -811,8 +863,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcy_control(self,
-                    framework: Type[Circuit]) -> None:
+    def mcy_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCY gate.
 
         Parameters
@@ -840,8 +894,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcz_control(self,
-                    framework: Type[Circuit]) -> None:
+    def mcz_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCZ gate.
 
         Parameters
@@ -869,8 +925,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mch_control(self,
-                    framework: Type[Circuit]) -> None:
+    def mch_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCH gate.
 
         Parameters
@@ -898,8 +956,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcs_control(self,
-                    framework: Type[Circuit]) -> None:
+    def mcs_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCS gate.
 
         Parameters
@@ -927,8 +987,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcsdg_control(self,
-                      framework: Type[Circuit]) -> None:
+    def mcsdg_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCSdg gate.
 
         Parameters
@@ -956,8 +1018,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mct_control(self,
-                    framework: Type[Circuit]) -> None:
+    def mct_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCT gate.
 
         Parameters
@@ -985,8 +1049,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mctdg_control(self,
-                      framework: Type[Circuit]) -> None:
+    def mctdg_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCTdg gate.
 
         Parameters
@@ -1014,8 +1080,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcrx_control(self,
-                     framework: Type[Circuit]) -> None:
+    def mcrx_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCRX gate.
 
         Parameters
@@ -1043,8 +1111,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcry_control(self,
-                     framework: Type[Circuit]) -> None:
+    def mcry_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCRY gate.
 
         Parameters
@@ -1072,8 +1142,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcrz_control(self,
-                     framework: Type[Circuit]) -> None:
+    def mcrz_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCRZ gate.
 
         Parameters
@@ -1101,8 +1173,10 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
-    def mcu3_control(self,
-                     framework: Type[Circuit]) -> None:
+    def mcu3_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
         """ Test the `.control()` method with MCU3 gate.
 
         Parameters

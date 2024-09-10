@@ -1,4 +1,5 @@
 # Qickit
+[![License](https://img.shields.io/github/license/Qiskit/qiskit.svg?)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
 [![Tests](https://github.com/qualition/qickit/actions/workflows/tests.yml/badge.svg)](https://github.com/qualition/qickit/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/qualition/qickit/graph/badge.svg?token=IHWJZG8VJT)](https://codecov.io/gh/qualition/qickit)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e287a2eed9e24d5e9d4a3ffe911ce6a5)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
@@ -7,27 +8,40 @@
 
 ![image](https://github.com/Qualition/QICKIT/assets/73689800/6878b3cd-0bd7-4b11-86db-189cb241a3f8)
 
-`Qickit` is an agnostic gate-based circuit SDK, providing an integrated interface for using any supported quantum circuit framework seamlessly.
+`qickit` is an agnostic gate-based circuit SDK, providing an integrated interface for using any supported quantum circuit framework seamlessly, and provides a complete pipeline from construction of circuits to mapping on actual hardware.
 
 ## Getting Started
 
 ### Prerequisites
 
-- python 3.11
+- python 3.11.9
 
-### Installation
+### Quick Installation
 
-qickit can be installed with the command:
+`qickit` can be installed with the command:
 
 ```
 pip install qickit
 ```
 
-The default installation of qickit includes numpy, qiskit, pennylane, cirq, and pytket.
+Pip will handle all dependencies automatically and you will always install the latest (and well-tested) version.
+
+To install from source, follow the instructions in the [`documentation`]().
 
 ## Usage
 
-The docs/examples are a good way for understanding how qickit works. Depending on your preference, you may use the package as end-to-end, or use it in parts for low-level modifications.
+The docs/examples are a good way for understanding how `qickit` works. Depending on your preference, you may use the package as end-to-end, or use it in parts for low-level modifications.
+
+The `/notebooks` directory contains pedagogical material for utilizing `qickit`:
+
+- [`Creating and Manipulating Circuits`](https://github.com/Qualition/QICKIT/blob/main/notebooks/Creating%20and%20Manipulating%20Circuits.ipynb)
+: This notebook demonstrates the basics of creating quantum circuits, and how different existing frameworks have been integrated within `qickit`.
+- [`Preparing Quantum States and Operators`](https://github.com/Qualition/QICKIT/blob/main/notebooks/Preparing%20Quantum%20States%20and%20Operators.ipynb)
+: This notebook demonstrates how to prepare arbitrary statevectors and unitary operators to quantum circuits using exact encoding schema.
+- [`Running Quantum Circuits`](https://github.com/Qualition/QICKIT/blob/main/notebooks/Running%20Quantum%20Circuits.ipynb)
+: This notebook demonstrates the different backends available for running circuits, ranging from simulators to QPUs.
+- [`Using Bra-Ket Interface`](https://github.com/Qualition/QICKIT/blob/main/notebooks/Using%20Bra-Ket%20Interface.ipynb)
+: This notebook demonstrates how the Bra-Ket interface is used for performing quantum computing.
 
 ## Testing
 
@@ -37,11 +51,11 @@ Run all tests with the command:
 py -m pytest tests
 ```
 
-Note: if you have installed in a virtual environment, remember to install pytest in the same environment using:
+## Contribution Guidelines
 
-```
-pip install pytest
-```
+If you'd like to contribute to `qickit`, please take a look at our [`contribution guidelines`](). By participating, you are expected to uphold our code of conduct.
+
+We use [`GitHub issues`](https://github.com/Qualition/QICKIT/issues) for tracking requests and bugs.
 
 ## License
 

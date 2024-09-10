@@ -37,9 +37,11 @@ def gray_code(index: int) -> int:
     """
     return index ^ (index >> 1)
 
-def compute_alpha_y(magnitude: NDArray[np.float64],
-                    k: int,
-                    j: int) -> float:
+def compute_alpha_y(
+        magnitude: NDArray[np.float64],
+        k: int,
+        j: int
+    ) -> float:
     """ Return the rotation angle required for encoding the real components of the state
     at the specified indices.
 
@@ -79,9 +81,11 @@ def compute_alpha_y(magnitude: NDArray[np.float64],
         return 2 * np.arcsin(np.sqrt(enumerator / divisor)) # type: ignore
     return 0
 
-def compute_alpha_z(phase: NDArray[np.float64],
-                    k: int,
-                    j: int) -> float:
+def compute_alpha_z(
+        phase: NDArray[np.float64],
+        k: int,
+        j: int
+    ) -> float:
     """ Compute the angles alpha_k for the z rotations.
 
     Notes

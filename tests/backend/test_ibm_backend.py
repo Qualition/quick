@@ -25,8 +25,10 @@ from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit
 from tests.backend import Template
 
 
-def cosine_similarity(h1: dict[str, int],
-                      h2: dict[str, int]) -> float:
+def cosine_similarity(
+        h1: dict[str, int],
+        h2: dict[str, int]
+    ) -> float:
     """ Calculate the cosine similarity between two histograms.
 
     Parameters
@@ -56,8 +58,11 @@ class MockIBMBackend(FakeBackend):
         self._qc_framework = QiskitCircuit
 
     @Backend.backendmethod
-    def get_statevector(self,
-                        circuit: Circuit) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
+
         # Get the counts of the circuit
         counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
 
@@ -74,8 +79,11 @@ class MockIBMBackend(FakeBackend):
         return state_vector
 
     @Backend.backendmethod
-    def get_operator(self,
-                     circuit: Circuit) -> NDArray[np.complex128]:
+    def get_operator(
+            self,
+            circuit: Circuit
+        ) -> NDArray[np.complex128]:
+
         # This is a mock implementation, so we will return the expected result without
         # using the api call to the IBM Quantum service
         return np.array([[0.70710678+0.j, 0.70710678+0.j, 0.+0.j, 0.+0.j],
@@ -84,24 +92,34 @@ class MockIBMBackend(FakeBackend):
                          [0.70710678+0.j, -0.70710678+0.j, 0.+0.j, 0.+0.j]])
 
     @Backend.backendmethod
-    def get_counts(self,
-                   circuit: Circuit,
-                   num_shots: int = 1024) -> dict[str, int]:
+    def get_counts(
+            self,
+            circuit: Circuit,
+            num_shots: int=1024
+        ) -> dict[str, int]:
+
         # Create a copy of the circuit as measurement is applied inplace
         circuit = circuit.copy()
 
-        # Extract the quasi-probability distribution from the first result
+        # Extract the counts from the result
         # This is a mock implementation, so we will return the expected result without
         # using the api call to the IBM Quantum service
-        quasi_dist = {1: 0.0263671875, 3: 0.484375, 2: 0.0185546875, 0: 0.470703125}
+        counts = {"000": 501, "011": 523}
 
-        # Convert the quasi-probability distribution to counts
-        counts = {bin(k)[2:].zfill(circuit.num_qubits): int(v * num_shots) \
-                  for k, v in quasi_dist.items()}
+        partial_counts = {}
+
+        # Parse the binary strings to filter out the unmeasured qubits
+        for key in counts.keys():
+            new_key = ''.join(key[::-1][i] for i in range(len(key)) if i in circuit.measured_qubits)
+            partial_counts[new_key[::-1]] = counts[key]
+
+        counts = partial_counts
 
         # Fill the counts dict with zeros for the missing states
-        counts = {f'{i:0{circuit.num_qubits}b}': counts.get(f'{i:0{circuit.num_qubits}b}', 0) \
-                  for i in range(2**circuit.num_qubits)}
+        num_qubits_to_measure = len(circuit.measured_qubits)
+
+        counts = {f"{i:0{num_qubits_to_measure}b}": counts.get(f"{i:0{num_qubits_to_measure}b}", 0) \
+                  for i in range(2**num_qubits_to_measure)}
 
         # Sort the counts by their keys (basis states)
         counts = dict(sorted(counts.items()))
@@ -113,14 +131,79 @@ class TestFakeIBMBackend(Template):
     """ `TestFakeIBMBackend` is the tester for the `FakeIBMBackend` class.
     """
     def test_init(self) -> None:
-        """ Test the initialization of the backend.
-        """
         # Define the `qickit.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
+    def test_get_partial_counts(self) -> None:
+        # Define the `qickit.backend.MockIBMBackend` instance
+        backend = MockIBMBackend()
+
+        # Define the `qickit.circuit.Circuit` instances
+        cirq_circuit = CirqCircuit(3)
+        pennylane_circuit = PennylaneCircuit(3)
+        qiskit_circuit = QiskitCircuit(3)
+        tket_circuit = TKETCircuit(3)
+
+        # Prepare the Bell state
+        cirq_circuit.H(0)
+        cirq_circuit.CX(0, 1)
+
+        pennylane_circuit.H(0)
+        pennylane_circuit.CX(0, 1)
+
+        qiskit_circuit.H(0)
+        qiskit_circuit.CX(0, 1)
+
+        tket_circuit.H(0)
+        tket_circuit.CX(0, 1)
+
+        def test_partial_measurement(circuit: Circuit) -> None:
+            """ Define the circuits for partial measurement.
+
+            Parameters
+            ----------
+            `circuit` : qickit.circuit.Circuit
+                The circuit to perform partial measurement on.
+            """
+            # Perform partial measurement on the first qubit and ensure the counts are correct
+            circuit.measure(0)
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the second qubit and ensure the counts are correct
+            circuit.measure(1)
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {"0": 512, "1": 512}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the third qubit and ensure the counts are correct
+            circuit.measure(2)
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {"0": 1024, "1": 0}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the first and second qubits and ensure the counts are correct
+            circuit.measure([0, 1])
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {'00': 512, '01': 0, '10': 0, '11': 512}) > 0.95
+
+            circuit = circuit._remove_measurements()
+
+            # Perform partial measurement on the first and third qubits and ensure the counts are correct
+            circuit.measure([0, 2])
+            counts = backend.get_counts(circuit=circuit, num_shots=1024)
+            assert cosine_similarity(counts, {'00': 512, '01': 512, '10': 0, '11': 0}) > 0.95
+
+        test_partial_measurement(cirq_circuit)
+        test_partial_measurement(pennylane_circuit)
+        test_partial_measurement(qiskit_circuit)
+        test_partial_measurement(tket_circuit)
+
     def test_get_counts(self) -> None:
-        """ Test the `.get_counts()` method.
-        """
         # Define the `qickit.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
@@ -159,7 +242,7 @@ class TestFakeIBMBackend(Template):
         tket_counts = backend.get_counts(tket_circuit, num_shots=num_shots)
 
         # Define the output counts for checking purposes
-        output_counts = {'00': 500, '11': 500}
+        output_counts = {"00": 500, "11": 500}
 
         # Ensure the resulting distributions are close enough (95 percent fidelity)
         assert cosine_similarity(cirq_counts, output_counts) > 0.95
@@ -168,8 +251,6 @@ class TestFakeIBMBackend(Template):
         assert cosine_similarity(tket_counts, output_counts) > 0.95
 
     def test_get_statevector(self) -> None:
-        """ Test the `.get_statevector()` method.
-        """
         # Define the `qickit.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
@@ -214,8 +295,6 @@ class TestFakeIBMBackend(Template):
         assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
 
     def test_get_unitary(self) -> None:
-        """ Test the `.get_unitary()` method.
-        """
         # Define the `qickit.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 

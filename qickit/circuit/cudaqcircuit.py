@@ -46,8 +46,8 @@ class CUDAQCircuit(Circuit):
         The quantum bit register.
     `circuit` : cudaq.kernel
         The circuit.
-    `measured_qubits` : list[bool]
-        The measurement status of the qubits.
+    `measured_qubits` : set[int]
+        The set of measured qubits indices.
     `circuit_log` : list[dict]
         The circuit log.
     `process_gate_params_flag` : bool
@@ -64,16 +64,22 @@ class CUDAQCircuit(Circuit):
     -----
     >>> circuit = CUDAQCircuit(num_qubits=2)
     """
-    def __init__(self,
-                 num_qubits: int) -> None:
+    def __init__(
+            self,
+            num_qubits: int
+        ) -> None:
+
         super().__init__(num_qubits=num_qubits)
 
         self.circuit = cudaq.make_kernel()
         self.qr = self.circuit.qalloc(self.num_qubits)
 
-    def _non_parameterized_single_qubit_gate(self,
-                                             gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"],
-                                             qubit_indices: int | Sequence[int]) -> None:
+    def _non_parameterized_single_qubit_gate(
+            self,
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"],
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+
         # Cudaq does not support the identity gate
         if gate == "I":
             return
@@ -82,39 +88,52 @@ class CUDAQCircuit(Circuit):
 
         # Define the gate mapping for the non-parameterized single qubit gates
         gate_mapping = {
-            "X": self.circuit.x,
-            "Y": self.circuit.y,
-            "Z": self.circuit.z,
-            "H": self.circuit.h,
-            "S": self.circuit.s,
-            "T": self.circuit.t
+            "X": lambda: self.circuit.x,
+            "Y": lambda: self.circuit.y,
+            "Z": lambda: self.circuit.z,
+            "H": lambda: self.circuit.h,
+            "S": lambda: self.circuit.s,
+            "T": lambda: self.circuit.t
         }
+
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the abstraction
+        single_qubit_gate = gate_mapping[gate]()
 
         # Apply the gate to the specified qubit(s)
         for index in qubit_indices:
-            gate_mapping[gate](self.qr[index])
+            single_qubit_gate(self.qr[index])
 
-    def _parameterized_single_qubit_gate(self,
-                                         gate: Literal["RX", "RY", "RZ"],
-                                         qubit_indices: int | Sequence[int],
-                                         angle: float) -> None:
+    def _parameterized_single_qubit_gate(
+            self,
+            gate: Literal["RX", "RY", "RZ"],
+            qubit_indices: int | Sequence[int],
+            angle: float
+        ) -> None:
+
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         # Define the gate mapping for the parameterized single qubit gates
         gate_mapping = {
-            "RX": self.circuit.rx,
-            "RY": self.circuit.ry,
-            "RZ": self.circuit.rz
+            "RX": lambda: self.circuit.rx,
+            "RY": lambda: self.circuit.ry,
+            "RZ": lambda: self.circuit.rz
         }
+
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the abstraction
+        single_qubit_gate = gate_mapping[gate]()
 
         # Apply the gate to the specified qubit(s)
         for index in qubit_indices:
-            gate_mapping[gate](angle, self.qr[index])
+            single_qubit_gate(angle, self.qr[index])
 
-    def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                           qubit_indices: int | Sequence[int],
-                           angle: float=0) -> None:
+    def _single_qubit_gate(
+            self,
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            qubit_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None:
         # With cuda-quantum we cannot abstract the single qubit gates as a single method
         # without committing wrong abstraction, hence we will simply wrap the gates in
         # the `_single_qubit_gate` method
@@ -123,57 +142,80 @@ class CUDAQCircuit(Circuit):
         elif gate in ["RX", "RY", "RZ"]:
             self._parameterized_single_qubit_gate(gate, qubit_indices, angle) # type: ignore
 
-    def U3(self,
-           angles: Sequence[float],
-           qubit_index: int) -> None:
+    def U3(
+            self,
+            angles: Sequence[float],
+            qubit_index: int
+        ) -> None:
+
         self.process_gate_params(gate=self.U3.__name__, params=locals())
         self.circuit.u3(angles[0], angles[1], angles[2], self.qr[qubit_index])
 
-    def SWAP(self,
-             first_qubit_index: int,
-             second_qubit_index: int) -> None:
+    def SWAP(
+            self,
+            first_qubit_index: int,
+            second_qubit_index: int
+        ) -> None:
+
         self.process_gate_params(gate=self.SWAP.__name__, params=locals())
         self.circuit.swap(self.qr[first_qubit_index], self.qr[second_qubit_index])
 
-    def _non_parameterized_controlled_gate(self,
-                                           gate: Literal["X", "Y", "Z", "H", "S", "T"],
-                                           control_indices: Sequence[int],
-                                           target_indices: Sequence[int]) -> None:
+    def _non_parameterized_controlled_gate(
+            self,
+            gate: Literal["X", "Y", "Z", "H", "S", "T"],
+            control_indices: Sequence[int],
+            target_indices: Sequence[int]
+        ) -> None:
+
         # Define the gate mapping for the non-parameterized controlled gates
         gate_mapping = {
-            "X": self.circuit.cx,
-            "Y": self.circuit.cy,
-            "Z": self.circuit.cz,
-            "H": self.circuit.ch,
-            "S": self.circuit.cs,
-            "T": self.circuit.ct
+            "X": lambda: self.circuit.cx,
+            "Y": lambda: self.circuit.cy,
+            "Z": lambda: self.circuit.cz,
+            "H": lambda: self.circuit.ch,
+            "S": lambda: self.circuit.cs,
+            "T": lambda: self.circuit.ct
         }
+
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the abstraction
+        controlled_gate = gate_mapping[gate]()
 
         # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
-            gate_mapping[gate](*map(self.qr.__getitem__, control_indices), self.qr[target_index])
+            controlled_gate(*map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
-    def _parameterized_controlled_gate(self,
-                                       gate: Literal["RX", "RY", "RZ"],
-                                       angles: float,
-                                       control_indices: Sequence[int],
-                                       target_indices: Sequence[int]) -> None:
+    def _parameterized_controlled_gate(
+            self,
+            gate: Literal["RX", "RY", "RZ"],
+            angles: float,
+            control_indices: Sequence[int],
+            target_indices: Sequence[int]
+        ) -> None:
+
         # Define the gate mapping for the parameterized controlled gates
         gate_mapping = {
-            "RX": self.circuit.crx,
-            "RY": self.circuit.cry,
-            "RZ": self.circuit.crz,
+            "RX": lambda: self.circuit.crx,
+            "RY": lambda: self.circuit.cry,
+            "RZ": lambda: self.circuit.crz,
         }
+
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the abstraction
+        controlled_gate = gate_mapping[gate]()
 
         # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
-            gate_mapping[gate](angles, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
+            controlled_gate(angles, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
-    def _controlled_qubit_gate(self,
-                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                               control_indices: int | Sequence[int],
-                               target_indices: int | Sequence[int],
-                               angle: float=0) -> None:
+    def _controlled_qubit_gate(
+            self,
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None:
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
@@ -185,10 +227,13 @@ class CUDAQCircuit(Circuit):
         elif gate in ["RX", "RY", "RZ"]:
             self._parameterized_controlled_gate(gate, angle, control_indices, target_indices) # type: ignore
 
-    def MCU3(self,
-             angles: Sequence[float],
-             control_indices: int | Sequence[int],
-             target_indices: int | Sequence[int]) -> None:
+    def MCU3(
+            self,
+            angles: Sequence[float],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
+
         self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
@@ -200,10 +245,13 @@ class CUDAQCircuit(Circuit):
             self.circuit.cu3(angles[0], angles[1], angles[2],
                              *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
-    def MCSWAP(self,
-               control_indices: int | Sequence[int],
-               first_target_index: int,
-               second_target_index: int) -> None:
+    def MCSWAP(
+            self,
+            control_indices: int | Sequence[int],
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+
         self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
@@ -212,8 +260,11 @@ class CUDAQCircuit(Circuit):
         self.circuit.cswap(*map(self.qr.__getitem__, control_indices),
                            self.qr[first_target_index], self.qr[second_target_index])
 
-    def GlobalPhase(self,
-                    angle: float) -> None:
+    def GlobalPhase(
+            self,
+            angle: float
+        ) -> None:
+
         self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
         global_phase = np.array([[np.exp(1j * angle), 0],
@@ -222,26 +273,32 @@ class CUDAQCircuit(Circuit):
         cudaq.register_operation("global_phase", global_phase)
         self.circuit.global_phase(self.qr[0])
 
-    def measure(self,
-                qubit_indices: int | Sequence[int]) -> None:
+    def measure(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
-        if any(self.measured_qubits[qubit_index] for qubit_index in qubit_indices):
-            raise ValueError("The qubit(s) have already been measured")
+        if any(qubit_index in self.measured_qubits for qubit_index in qubit_indices):
+            raise ValueError("The qubit(s) have already been measured.")
 
         # Measure the qubits
         for qubit_index in qubit_indices:
             self.circuit.mz(self.qr[qubit_index])
 
         # Set the measurement as applied
-        list(map(self.measured_qubits.__setitem__, qubit_indices, [True]*len(qubit_indices)))
+        for qubit_index in qubit_indices:
+            self.measured_qubits.add(qubit_index)
 
-    def get_statevector(self,
-                        backend: Backend | None = None,
-                        magnitude_only: bool=False) -> NDArray[np.complex128]:
+    def get_statevector(
+            self,
+            backend: Backend | None = None,
+        ) -> NDArray[np.complex128]:
+
         # Copy the circuit as the operations are applied inplace
         circuit: CUDAQCircuit = self.copy() # type: ignore
 
@@ -253,34 +310,14 @@ class CUDAQCircuit(Circuit):
         else:
             state_vector = backend.get_statevector(circuit)
 
-        if magnitude_only:
-            # Round off the small values to 0 (values below 1e-12 are set to 0)
-            state_vector = np.round(state_vector, 12)
-
-            # Create masks for real and imaginary parts
-            real_mask = (state_vector.imag == 0)
-            imag_mask = (state_vector.real == 0)
-
-            # Calculate the sign for each part
-            real_sign = np.sign(state_vector.real) * real_mask
-            imag_sign = np.sign(state_vector.imag) * imag_mask
-
-            # Calculate the sign for complex numbers
-            complex_sign = np.sign(state_vector.real * (np.abs(state_vector.real) <= np.abs(state_vector.imag)) + \
-                                state_vector.imag * (np.abs(state_vector.imag) < np.abs(state_vector.real))) * \
-                                ~(real_mask | imag_mask)
-
-            # Define the signs for the real and imaginary components
-            signs = real_sign + imag_sign + complex_sign
-
-            # Multiply the state vector by the signs
-            state_vector = signs * np.abs(state_vector)
-
         return state_vector
 
-    def get_counts(self,
-                   num_shots: int,
-                   backend: Backend | None = None) -> dict:
+    def get_counts(
+            self,
+            num_shots: int,
+            backend: Backend | None = None
+        ) -> dict:
+
         if not(any(self.measured_qubits)):
             raise ValueError("At least one qubit must be measured.")
 
@@ -315,9 +352,12 @@ class CUDAQCircuit(Circuit):
 
         return np.array(unitary)
 
-    def transpile(self,
-                  direct_transpile: bool=True,
-                  synthesis_method: UnitaryPreparation | None = None) -> None:
+    def transpile(
+            self,
+            direct_transpile: bool=True,
+            synthesis_method: UnitaryPreparation | None = None
+        ) -> None:
+
         # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
         qiskit_circuit = self.convert(QiskitCircuit)
         qiskit_circuit.transpile(direct_transpile=direct_transpile,
@@ -328,8 +368,11 @@ class CUDAQCircuit(Circuit):
         self.circuit_log = updated_circuit.circuit_log
         self.circuit = updated_circuit.circuit
 
-    def to_qasm(self,
-                qasm_version: int=2) -> str:
+    def to_qasm(
+            self,
+            qasm_version: int=2
+        ) -> str:
+
         return self.convert(QiskitCircuit).to_qasm(qasm_version=qasm_version)
 
     def draw(self) -> None:

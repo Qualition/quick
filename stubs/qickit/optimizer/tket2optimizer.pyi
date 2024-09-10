@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["optimize_cnot"]
+from qickit.circuit import Circuit
+from qickit.optimizer.optimizer import Optimizer
 
-from qickit.circuitoptimizer.circuitoptimizer import optimize_cnot
+__all__ = ["TKET2Optimizer"]
+
+class TKET2Optimizer(Optimizer):
+    def optimize(self, circuit: Circuit) -> Circuit: ...
