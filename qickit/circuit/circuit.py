@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from __future__ import annotations
+from abc import ABC
+from types import NotImplementedType
+from typing import Any
 
 __all__ = ["Circuit"]
 
@@ -3188,21 +3191,10 @@ class Circuit(ABC):
 
     @classmethod
     def __subclasshook__(cls, C) -> bool | NotImplementedType:
-        """ Checks if a class is a `qickit.circuit.Circuit` if the class
-        passed does not directly inherit from `qickit.circuit.Circuit`.
-
-        Parameters
-        ----------
-        `C` : type
-            The class to check if it is a subclass.
-
-        Returns
-        -------
-        bool | NotImplementedType
-            Whether or not the class is a subclass.
+        """ Checks if a class is a `qickit.circuit.Circuit`.
         """
         if cls is Circuit:
-            return all(hasattr(C, method) for method in list(cls.__dict__["__abstractmethods__"]))
+            return hasattr(C, '__dict__') and '__abstractmethods__' in cls.__dict__ and all(hasattr(C, method) for method in cls.__dict__["__abstractmethods__"])
         return NotImplemented
 
     @classmethod
