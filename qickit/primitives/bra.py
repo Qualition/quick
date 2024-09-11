@@ -13,6 +13,12 @@
 # limitations under the License.
 
 from __future__ import annotations
+import numpy as np
+import qickit.primitives.ket as ket
+import qickit.primitives.operator as operator
+from numpy.typing import NDArray
+from qickit.types.scalar import Scalar
+from typing import SupportsFloat
 
 __all__ = ["Bra"]
 
@@ -156,24 +162,8 @@ class Bra:
 
     @staticmethod
     def check_padding(data: NDArray[np.complex128]) -> bool:
-        """ Check if a data is normalized to 2-norm.
-
-        Parameters
-        ----------
-        `data` : NDArray[np.complex128]
-            The data.
-
-        Returns
-        -------
-        bool
-            Whether the vector is normalized to 2-norm or not.
-
-        Usage
-        -----
-        >>> data = np.array([[1, 2], [3, 4]])
-        >>> check_padding(data)
-        """
-        return (data.shape[0] & (data.shape[0]-1) == 0) and data.shape[0] != 0
+        """ Check if data is normalized to 2-norm. """
+        return (data.size & (data.size-1) == 0) and data.size != 0
 
     def is_padded(self) -> None:
         """ Check if a `qickit.data.Data` instance is padded to a power of 2.
