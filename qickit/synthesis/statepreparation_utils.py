@@ -109,10 +109,12 @@ def compute_alpha_z(
         at the specified indices.
     """
     m = 2 ** (k - 1)
-    ind1 = [(2 * (j + 1) - 1) * m + bit for bit in range(m)]
-    ind2 = [(2 * (j + 1) - 2) * m + bit for bit in range(m)]
-    diff = (phase[ind1] - phase[ind2]) / m
-    return sum(diff)
+    base1 = (2 * (j + 1) - 1) * m
+    base2 = (2 * (j + 1) - 2) * m
+    diff_sum = 0.0
+    for bit in range(m):
+        diff_sum += phase[base1 + bit] - phase[base2 + bit]
+    return diff_sum / m
 
 def compute_m(k: int) -> NDArray[np.float64]:
     """ Compute matrix M which takes alpha -> theta.
