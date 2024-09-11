@@ -13,6 +13,10 @@
 # limitations under the License.
 
 from __future__ import annotations
+import cirq
+import numpy as np
+from numpy.typing import NDArray
+from qickit.circuit import Circuit
 
 __all__ = ["CirqCircuit"]
 
@@ -296,18 +300,9 @@ class CirqCircuit(Circuit):
             self,
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
-
-        # Copy the circuit as the operations are applied inplace
-        circuit: CirqCircuit = self.copy() # type: ignore
-
-        # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
+        circuit: CirqCircuit = self.copy()  # type: ignore
         circuit.vertical_reverse()
-
-        if backend is None:
-            state_vector = circuit.circuit.final_state_vector(qubit_order=self.qr)
-        else:
-            state_vector = backend.get_statevector(circuit)
-
+        state_vector = circuit.circuit.final_state_vector(qubit_order=self.qr) if backend is None else backend.get_statevector(circuit)
         return np.array(state_vector)
 
     def get_counts(
