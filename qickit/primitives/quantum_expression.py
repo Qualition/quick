@@ -27,11 +27,6 @@ from qickit.synthesis.statepreparation import StatePreparation, Mottonen
 from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitaryTranspiler
 from qickit.primitives import Bra, Ket, Operator
 
-# <bra|ket> -> swap-test between |bra> and |ket> controlled by an ancillary qubit (being the overlap result)
-# |ket><bra| -> measurement operator
-# |ket>|ket>
-# A|ket>
-# <bra|A|ket> -> expectation value
 
 class QuantumExpression:
     """ `qickit.primitives.QuantumExpression` is a class that represents a quantum expression.

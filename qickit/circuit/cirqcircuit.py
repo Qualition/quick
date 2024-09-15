@@ -84,7 +84,7 @@ class CirqCircuit(Circuit):
 
     def _single_qubit_gate(
             self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float=0
         ) -> None:
@@ -104,7 +104,8 @@ class CirqCircuit(Circuit):
             "Tdg": lambda: T**-1,
             "RX": lambda: Rx(rads=angle),
             "RY": lambda: Ry(rads=angle),
-            "RZ": lambda: Rz(rads=angle)
+            "RZ": lambda: Rz(rads=angle),
+            "Phase": lambda: cirq.ZPowGate(exponent=angle/np.pi)
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -156,7 +157,7 @@ class CirqCircuit(Circuit):
 
     def _controlled_qubit_gate(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             control_indices: int | Sequence[int],
             target_indices: int | Sequence[int],
             angle: float=0
@@ -177,7 +178,11 @@ class CirqCircuit(Circuit):
             "Tdg": lambda: cirq.ControlledGate(sub_gate=T**-1, num_controls=len(control_indices)),
             "RX": lambda: cirq.ControlledGate(sub_gate=Rx(rads=angle), num_controls=len(control_indices)),
             "RY": lambda: cirq.ControlledGate(sub_gate=Ry(rads=angle), num_controls=len(control_indices)),
-            "RZ": lambda: cirq.ControlledGate(sub_gate=Rz(rads=angle), num_controls=len(control_indices))
+            "RZ": lambda: cirq.ControlledGate(sub_gate=Rz(rads=angle), num_controls=len(control_indices)),
+            "Phase": lambda: cirq.ControlledGate(
+                sub_gate=cirq.ZPowGate(exponent=angle/np.pi),
+                num_controls=len(control_indices)
+            )
         }
 
         # Lazily extract the value of the gate from the mapping to avoid

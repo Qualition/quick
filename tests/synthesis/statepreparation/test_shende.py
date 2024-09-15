@@ -24,7 +24,7 @@ import random
 from qickit.circuit import QiskitCircuit
 from qickit.primitives import Bra, Ket
 from qickit.synthesis.statepreparation import Shende
-from tests.synthesis.test_statepreparation import StatePreparationTemplate
+from tests.synthesis.statepreparation import StatePreparationTemplate
 
 # Define the test data
 generated_data = np.array([random.random() + 1j * random.random() for _ in range(128)])
@@ -39,7 +39,7 @@ class TestStatePreparationShende(StatePreparationTemplate):
     for `qickit.synthesis.statepreparation.Shende` class.
     """
     def test_init(self) -> None:
-        shende = Shende(QiskitCircuit)
+        Shende(QiskitCircuit)
 
     def test_prepare_state_bra(self) -> None:
         # Initialize the Shende encoder

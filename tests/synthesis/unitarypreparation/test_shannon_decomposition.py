@@ -14,33 +14,33 @@
 
 from __future__ import annotations
 
-__all__ = ["TestQiskitUnitaryTranspiler"]
+__all__ = ["TestShannonDecomposition"]
 
 from numpy.testing import assert_almost_equal
 from scipy.stats import unitary_group
 
 from qickit.circuit import QiskitCircuit
 from qickit.primitives import Operator
-from qickit.synthesis.unitarypreparation import QiskitUnitaryTranspiler
-from tests.synthesis import UnitaryPreparationTemplate
+from qickit.synthesis.unitarypreparation import ShannonDecomposition
+from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
 unitary_matrix = unitary_group.rvs(8)
 
 
-class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
-    """ `tests.synthesis.test_unitarypreparation_qiskitunitarytranspiler.TestQiskitUnitaryTranspiler` is the tester class
-    for `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler` class.
+class TestShannonDecomposition(UnitaryPreparationTemplate):
+    """ `tests.synthesis.test_shannon_decomposition.TestShannonDecomposition` is the tester class
+    for `qickit.synthesis.unitarypreparation.ShannonDecomposition` class.
     """
     def test_init(self) -> None:
-        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+        ShannonDecomposition(QiskitCircuit)
 
     def test_prepare_unitary_ndarray(self) -> None:
-        # Initialize the Qiskit transpiler
-        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+        # Initialize the Shannon decomposition
+        shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
         # Prepare the unitary matrix
-        circuit = qiskit_transpiler.prepare_unitary(unitary_matrix) # type: ignore
+        circuit = shannon_decomposition.prepare_unitary(unitary_matrix) # type: ignore
 
         # Get the unitary matrix of the circuit
         unitary = circuit.get_unitary()
@@ -50,10 +50,10 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
 
     def test_prepare_unitary_operator(self) -> None:
         # Initialize the Qiskit transpiler
-        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+        shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
         # Prepare the unitary matrix
-        circuit = qiskit_transpiler.prepare_unitary(Operator(unitary_matrix)) # type: ignore
+        circuit = shannon_decomposition.prepare_unitary(Operator(unitary_matrix)) # type: ignore
 
         # Get the unitary matrix of the circuit
         unitary = circuit.get_unitary()

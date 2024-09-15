@@ -76,7 +76,7 @@ class TKETCircuit(Circuit):
 
     def _single_qubit_gate(
             self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float=0
         ) -> None:
@@ -96,7 +96,8 @@ class TKETCircuit(Circuit):
             "Tdg": lambda: (OpType.Tdg,),
             "RX": lambda: (OpType.Rx, angle/np.pi),
             "RY": lambda: (OpType.Ry, angle/np.pi),
-            "RZ": lambda: (OpType.Rz, angle/np.pi)
+            "RZ": lambda: (OpType.Rz, angle/np.pi),
+            "Phase": lambda: (OpType.U1, angle/np.pi)
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -133,7 +134,7 @@ class TKETCircuit(Circuit):
 
     def _controlled_qubit_gate(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             control_indices: int | Sequence[int],
             target_indices: int | Sequence[int],
             angle: float=0
@@ -154,7 +155,8 @@ class TKETCircuit(Circuit):
             "Tdg": lambda: QControlBox(Op.create(OpType.Tdg), len(control_indices)),
             "RX": lambda: QControlBox(Op.create(OpType.Rx, angle/np.pi), len(control_indices)),
             "RY": lambda: QControlBox(Op.create(OpType.Ry, angle/np.pi), len(control_indices)),
-            "RZ": lambda: QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices))
+            "RZ": lambda: QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices)),
+            "Phase": lambda: QControlBox(Op.create(OpType.U1, angle/np.pi), len(control_indices))
         }
 
         # Lazily extract the value of the gate from the mapping to avoid

@@ -49,3 +49,11 @@ Repository = "https://github.com/qualition/qickit.git"
 
 [tool.setuptools]
 py-modules = ["qickit"]
+
+[tool.codeflash]
+# All paths are relative to this pyproject.toml's directory.
+module-root = "qickit"
+tests-root = "tests"
+test-framework = "pytest"
+ignore-paths = []
+formatter-cmds = ["disabled"]

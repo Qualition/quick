@@ -12,24 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
 import numpy as np
-from abc import ABC, abstractmethod
 from numpy.typing import NDArray
 from qickit.circuit import Circuit
 from qickit.primitives import Bra, Ket
-from typing import Type
+from qickit.synthesis.statepreparation import StatePreparation
 
-__all__ = ["StatePreparation", "Mottonen", "Shende"]
-
-class StatePreparation(ABC, metaclass=abc.ABCMeta):
-    output_framework: Type[Circuit]
-    def __init__(self, output_framework: Type[Circuit]) -> None: ...
-    @abstractmethod
-    def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: str="row") -> Circuit: ...
-
-class Mottonen(StatePreparation):
-    def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: str="row") -> Circuit: ...
+__all__ = ["Shende"]
 
 class Shende(StatePreparation):
     def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: str="row") -> Circuit: ...

@@ -60,6 +60,8 @@ class TestConvert:
         circuit.RY(0.5, [0, 1])
         circuit.RZ(0.5, 0)
         circuit.RZ(0.5, [0, 1])
+        circuit.Phase(0.5, 0)
+        circuit.Phase(0.5, [0, 1])
         circuit.U3([0.1, 0.2, 0.3], 0)
         circuit.SWAP(0, 1)
 
@@ -75,6 +77,7 @@ class TestConvert:
         circuit.CRX(0.5, 0, 1)
         circuit.CRY(0.5, 0, 1)
         circuit.CRZ(0.5, 0, 1)
+        circuit.CPhase(0.5, 0, 1)
         circuit.CU3([0.1, 0.2, 0.3], 0, 1)
         circuit.CSWAP(0, 1, 2)
 
@@ -133,6 +136,11 @@ class TestConvert:
         circuit.MCRZ(0.5, [0, 1], 2)
         circuit.MCRZ(0.5, 0, [1, 2])
         circuit.MCRZ(0.5, [0, 1], [2, 3])
+
+        circuit.MCPhase(0.5, 0, 1)
+        circuit.MCPhase(0.5, [0, 1], 2)
+        circuit.MCPhase(0.5, 0, [1, 2])
+        circuit.MCPhase(0.5, [0, 1], [2, 3])
 
         circuit.MCU3([0.1, 0.2, 0.3], 0, 1)
         circuit.MCU3([0.1, 0.2, 0.3], [0, 1], 2)

@@ -106,7 +106,7 @@ class CUDAQCircuit(Circuit):
 
     def _parameterized_single_qubit_gate(
             self,
-            gate: Literal["RX", "RY", "RZ"],
+            gate: Literal["RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float
         ) -> None:
@@ -117,7 +117,8 @@ class CUDAQCircuit(Circuit):
         gate_mapping = {
             "RX": lambda: self.circuit.rx,
             "RY": lambda: self.circuit.ry,
-            "RZ": lambda: self.circuit.rz
+            "RZ": lambda: self.circuit.rz,
+            "Phase": lambda: self.circuit.phase
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -130,7 +131,7 @@ class CUDAQCircuit(Circuit):
 
     def _single_qubit_gate(
             self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float=0
         ) -> None:
@@ -139,7 +140,7 @@ class CUDAQCircuit(Circuit):
         # the `_single_qubit_gate` method
         if gate in ["I", "X", "Y", "Z", "H", "S", "T"]:
             self._non_parameterized_single_qubit_gate(gate, qubit_indices) # type: ignore
-        elif gate in ["RX", "RY", "RZ"]:
+        elif gate in ["RX", "RY", "RZ", "Phase"]:
             self._parameterized_single_qubit_gate(gate, qubit_indices, angle) # type: ignore
 
     def U3(
@@ -187,7 +188,7 @@ class CUDAQCircuit(Circuit):
 
     def _parameterized_controlled_gate(
             self,
-            gate: Literal["RX", "RY", "RZ"],
+            gate: Literal["RX", "RY", "RZ", "Phase"],
             angles: float,
             control_indices: Sequence[int],
             target_indices: Sequence[int]
@@ -198,6 +199,7 @@ class CUDAQCircuit(Circuit):
             "RX": lambda: self.circuit.crx,
             "RY": lambda: self.circuit.cry,
             "RZ": lambda: self.circuit.crz,
+            "Phase": lambda: self.circuit.cphase
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -210,7 +212,7 @@ class CUDAQCircuit(Circuit):
 
     def _controlled_qubit_gate(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             control_indices: int | Sequence[int],
             target_indices: int | Sequence[int],
             angle: float=0
@@ -224,7 +226,7 @@ class CUDAQCircuit(Circuit):
         # the `_controlled_qubit_gate` method
         if gate in ["X", "Y", "Z", "H", "S", "T"]:
             self._non_parameterized_controlled_gate(gate, control_indices, target_indices) # type: ignore
-        elif gate in ["RX", "RY", "RZ"]:
+        elif gate in ["RX", "RY", "RZ", "Phase"]:
             self._parameterized_controlled_gate(gate, angle, control_indices, target_indices) # type: ignore
 
     def MCU3(

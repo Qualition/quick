@@ -27,15 +27,15 @@ from tests.circuit.gate_utils import (
     X_unitary_matrix, Y_unitary_matrix, Z_unitary_matrix,
     H_unitary_matrix, S_unitary_matrix, T_unitary_matrix,
     RX_unitary_matrix, RY_unitary_matrix, RZ_unitary_matrix,
-    U3_unitary_matrix, SWAP_unitary_matrix,
+    Phase_unitary_matrix, U3_unitary_matrix, SWAP_unitary_matrix,
     CX_unitary_matrix, CY_unitary_matrix, CZ_unitary_matrix,
     CH_unitary_matrix, CS_unitary_matrix, CT_unitary_matrix,
     CRX_unitary_matrix, CRY_unitary_matrix, CRZ_unitary_matrix,
-    CU3_unitary_matrix, CSWAP_unitary_matrix,
+    CPhase_unitary_matrix, CU3_unitary_matrix, CSWAP_unitary_matrix,
     MCX_unitary_matrix, MCY_unitary_matrix, MCZ_unitary_matrix,
     MCH_unitary_matrix, MCS_unitary_matrix, MCT_unitary_matrix,
     MCRX_unitary_matrix, MCRY_unitary_matrix, MCRZ_unitary_matrix,
-    MCU3_unitary_matrix, MCSWAP_unitary_matrix, Identity_unitary_matrix
+    MCPhase_unitary_matrix, MCU3_unitary_matrix, MCSWAP_unitary_matrix, Identity_unitary_matrix
 )
 
 
@@ -259,6 +259,16 @@ class TestPennylaneCircuit(Template):
         # Compare the results
         assert_almost_equal(circuit.get_unitary(), RZ_unitary_matrix, 8)
 
+    def test_Phase(self) -> None:
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(1)
+
+        # Apply the Phase gate
+        circuit.Phase(np.pi/4, 0)
+
+        # Compare the results
+        assert_almost_equal(circuit.get_unitary(), Phase_unitary_matrix, 8)
+
     def test_U3(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
         circuit = PennylaneCircuit(1)
@@ -389,6 +399,16 @@ class TestPennylaneCircuit(Template):
         # Compare the results
         assert_almost_equal(circuit.get_unitary(), CRZ_unitary_matrix, 8)
 
+    def test_CPhase(self) -> None:
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(2)
+
+        # Apply the CPhase gate
+        circuit.CPhase(np.pi/4, 0, 1)
+
+        # Compare the results
+        assert_almost_equal(circuit.get_unitary(), CPhase_unitary_matrix, 8)
+
     def test_CU3(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance
         circuit = PennylaneCircuit(2)
@@ -518,6 +538,16 @@ class TestPennylaneCircuit(Template):
 
         # Compare the results
         assert_almost_equal(circuit.get_unitary(), MCRZ_unitary_matrix, 8)
+
+    def test_MCPhase(self) -> None:
+        # Define the `qickit.circuit.PennylaneCircuit` instance
+        circuit = PennylaneCircuit(4)
+
+        # Apply the MCPhase gate
+        circuit.MCPhase(np.pi/4, [0, 1], [2, 3])
+
+        # Compare the results
+        assert_almost_equal(circuit.get_unitary(), MCPhase_unitary_matrix, 8)
 
     def test_MCU3(self) -> None:
         # Define the `qickit.circuit.PennylaneCircuit` instance

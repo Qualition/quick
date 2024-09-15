@@ -1,5 +1,6 @@
 cirq-core == 1.4.1
 cuda-quantum == 0.8.0
+genQC == 0.1.0
 mypy == 1.10.0
 numpy == 1.26.4
 pennylane == 0.38.0

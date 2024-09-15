@@ -132,7 +132,7 @@ class TestFakeIBMBackend(Template):
     """
     def test_init(self) -> None:
         # Define the `qickit.backend.MockIBMBackend` instance
-        backend = MockIBMBackend()
+        MockIBMBackend()
 
     def test_get_partial_counts(self) -> None:
         # Define the `qickit.backend.MockIBMBackend` instance

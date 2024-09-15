@@ -55,7 +55,7 @@ class TestAerBackend(Template):
     """ `TestAerBackend` is the tester for the `AerBackend` class.
     """
     def test_init(self) -> None:
-        backend = AerBackend()
+        AerBackend()
 
     def test_get_partial_counts(self) -> None:
         # Define the `qickit.backend.AerBackend` instance
@@ -398,7 +398,7 @@ class TestAerBackend(Template):
         tket_operator = backend.get_operator(tket_circuit)
 
         # Define the output operator for checking purposes
-        output_operator: NDArray[np.complex128] = np.load("tests/backend/aer_backend_large_unitary_checker.npy")
+        output_operator: NDArray[np.complex128] = np.load("tests/backend/qiskit_backends/aer_backend_large_unitary_checker.npy")
 
         # Ensure the resulting operators are close enough (99 percent fidelity)
         assert 1 - distance.cosine(cirq_operator.flatten(), output_operator.flatten()) > 0.99

@@ -14,13 +14,12 @@
 
 from __future__ import annotations
 
-__all__ = ["UnitaryPreparation", "QiskitUnitaryTranspiler"]
+__all__ = ["QiskitUnitaryTranspiler"]
 
-from abc import ABC, abstractmethod
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Type, TYPE_CHECKING, SupportsIndex
+from typing import SupportsIndex, Type, TYPE_CHECKING
 
 from qiskit import QuantumCircuit, transpile # type: ignore
 from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
@@ -29,71 +28,7 @@ from qiskit_transpiler_service.transpiler_service import TranspilerService # typ
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
 from qickit.primitives import Operator
-
-
-class UnitaryPreparation(ABC):
-    """ `qickit.UnitaryPreparation` is the class for preparing quantum operators.
-
-    Parameters
-    ----------
-    `output_framework` : type[qickit.circuit.Circuit]
-        The quantum circuit framework.
-
-    Attributes
-    ----------
-    `output_framework` : type[qickit.circuit.Circuit]
-        The quantum circuit framework.
-    """
-    def __init__(
-            self,
-            output_framework: Type[Circuit]
-        ) -> None:
-        """ Initalize a Unitary Preparation instance.
-        """
-        # Define the QC framework
-        self.output_framework = output_framework
-
-    @abstractmethod
-    def prepare_unitary(
-            self,
-            unitary: NDArray[np.complex128] | Operator
-        ) -> Circuit:
-        """ Prepare the quantum unitary operator.
-
-        Parameters
-        ----------
-        `unitary` : NDArray[np.complex128] | qickit.primitives.Operator
-            The quantum unitary operator.
-
-        Returns
-        -------
-        `circuit` : qickit.circuit.Circuit
-            The quantum circuit for preparing the unitary operator.
-        """
-
-    @abstractmethod
-    def apply_unitary(
-            self,
-            circuit: Circuit,
-            unitary: NDArray[np.complex128] | Operator,
-            qubit_indices: int | Sequence[int]
-        ) -> Circuit:
-        """ Apply the quantum unitary operator to a quantum circuit.
-
-        Parameters
-        ----------
-        `circuit` : qickit.circuit.Circuit
-            The quantum circuit.
-        `unitary` : NDArray[np.complex128] | qickit.primitives.Operator
-            The quantum unitary operator.
-        `qubit_indices` : int | Sequence[int]
-            The qubit indices to apply the unitary operator to.
-
-        Returns
-        -------
-        `circuit` : qickit.circuit.Circuit
-            The quantum circuit with the unitary operator applied.
-        """
+from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 
 class QiskitUnitaryTranspiler(UnitaryPreparation):
@@ -154,24 +89,6 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         if ai_transpilation and backend_name is None:
             raise ValueError("The name of the backend must be provided for AI transpilation.")
         self.backend_name = backend_name
-
-    def prepare_unitary(
-            self,
-            unitary: NDArray[np.complex128] | Operator
-        ) -> Circuit:
-
-        if isinstance(unitary, np.ndarray):
-            unitary = Operator(unitary)
-
-        # Get the number of qubits needed to implement the operator
-        num_qubits = unitary.num_qubits
-
-        # Initialize the qickit circuit
-        circuit = self.output_framework(num_qubits)
-
-        # Apply the unitary matrix to the circuit
-        # and return the circuit
-        return self.apply_unitary(circuit, unitary, range(num_qubits))
 
     def apply_unitary(
             self,

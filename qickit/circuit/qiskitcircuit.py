@@ -24,7 +24,7 @@ from typing import Literal, TYPE_CHECKING
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile # type: ignore
 from qiskit.circuit.library import (RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
                                     ZGate, SGate, SdgGate, TGate, TdgGate, U3Gate, # type: ignore
-                                    SwapGate, GlobalPhaseGate, IGate) # type: ignore
+                                    PhaseGate, SwapGate, GlobalPhaseGate, IGate) # type: ignore
 from qiskit.primitives import BackendSamplerV2 as BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
 import qiskit.qasm2 as qasm2 # type: ignore
@@ -83,7 +83,7 @@ class QiskitCircuit(Circuit):
 
     def _single_qubit_gate(
             self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float=0
         ) -> None:
@@ -103,7 +103,8 @@ class QiskitCircuit(Circuit):
             "Tdg": lambda: TdgGate(),
             "RX": lambda: RXGate(angle),
             "RY": lambda: RYGate(angle),
-            "RZ": lambda: RZGate(angle)
+            "RZ": lambda: RZGate(angle),
+            "Phase": lambda: PhaseGate(angle)
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -140,7 +141,7 @@ class QiskitCircuit(Circuit):
 
     def _controlled_qubit_gate(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             control_indices: int | Sequence[int],
             target_indices: int | Sequence[int],
             angle: float=0
@@ -161,7 +162,8 @@ class QiskitCircuit(Circuit):
             "Tdg": lambda: TdgGate().control(len(control_indices)),
             "RX": lambda: RXGate(angle).control(len(control_indices)),
             "RY": lambda: RYGate(angle).control(len(control_indices)),
-            "RZ": lambda: RZGate(angle).control(len(control_indices))
+            "RZ": lambda: RZGate(angle).control(len(control_indices)),
+            "Phase": lambda: PhaseGate(angle).control(len(control_indices))
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -350,13 +352,11 @@ class QiskitCircuit(Circuit):
         ) -> str:
 
         if qasm_version == 2:
-            qasm = qasm2.dumps(self.circuit)
+            return qasm2.dumps(self.circuit)
         elif qasm_version == 3:
-            qasm = qasm3.dumps(self.circuit)
+            return qasm3.dumps(self.circuit)
         else:
             raise ValueError("The QASM version must be either 2 or 3.")
-
-        return qasm
 
     def draw(self) -> None:
         self.circuit.draw(output='mpl')

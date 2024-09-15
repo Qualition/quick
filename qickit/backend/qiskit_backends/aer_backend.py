@@ -121,6 +121,7 @@ class AerBackend(NoisyBackend):
             self,
             circuit: Circuit
         ) -> NDArray[np.complex128]:
+
         # Create a copy of the circuit as `.remove_measurements()` is applied inplace
         circuit = circuit.copy()
 

@@ -115,6 +115,11 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_Phase(self) -> None:
+        """ Test the Phase gate.
+        """
+
+    @abstractmethod
     def test_U3(self) -> None:
         """ Test the U3 gate.
         """
@@ -180,6 +185,11 @@ class Template(ABC):
         """
 
     @abstractmethod
+    def test_CPhase(self) -> None:
+        """ Test the Controlled Phase gate.
+        """
+
+    @abstractmethod
     def test_CU3(self) -> None:
         """ Test the Controlled U3 gate.
         """
@@ -242,6 +252,11 @@ class Template(ABC):
     @abstractmethod
     def test_MCRZ(self) -> None:
         """ Test the Multi-Controlled RZ gate.
+        """
+
+    @abstractmethod
+    def test_MCPhase(self) -> None:
+        """ Test the Multi-Controlled Phase gate.
         """
 
     @abstractmethod

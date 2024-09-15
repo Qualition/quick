@@ -27,33 +27,45 @@ class CUDAQCircuit(Circuit):
     circuit: cudaq.PyKernel
     qr: cudaq.QuakeValue
     def __init__(self, num_qubits: int) -> None: ...
-    def _non_parameterized_single_qubit_gate(self,
-                                             gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"],
-                                             qubit_indices: int | Sequence[int]) -> None: ...
-    def _parameterized_single_qubit_gate(self,
-                                         gate: Literal["RX", "RY", "RZ"],
-                                         qubit_indices: int | Sequence[int],
-                                         angle: float) -> None: ...
-    def _single_qubit_gate(self,
-                           gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                           qubit_indices: int | Sequence[int],
-                           angle: float=0) -> None: ...
+    def _non_parameterized_single_qubit_gate(
+            self,
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"],
+            qubit_indices: int | Sequence[int]
+        ) -> None: ...
+    def _parameterized_single_qubit_gate(
+            self,
+            gate: Literal["RX", "RY", "RZ", "Phase"],
+            qubit_indices: int | Sequence[int],
+            angle: float
+        ) -> None: ...
+    def _single_qubit_gate(
+            self,
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
+            qubit_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None: ...
     def U3(self, angles: Sequence[float], qubit_index: int) -> None: ...
     def SWAP(self, first_qubit_index: int, second_qubit_index: int) -> None: ...
-    def _non_parameterized_controlled_gate(self,
-                                           gate: Literal["X", "Y", "Z", "H", "S", "T"],
-                                           control_indices: Sequence[int],
-                                           target_indices: Sequence[int]) -> None: ...
-    def _parameterized_controlled_gate(self,
-                                       gate: Literal["RX", "RY", "RZ"],
-                                       angles: float,
-                                       control_indices: Sequence[int],
-                                       target_indices: Sequence[int]) -> None: ...
-    def _controlled_qubit_gate(self,
-                               gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
-                               control_indices: int | Sequence[int],
-                               target_indices: int | Sequence[int],
-                               angle: float=0) -> None: ...
+    def _non_parameterized_controlled_gate(
+            self,
+            gate: Literal["X", "Y", "Z", "H", "S", "T"],
+            control_indices: Sequence[int],
+            target_indices: Sequence[int]
+        ) -> None: ...
+    def _parameterized_controlled_gate(
+            self,
+            gate: Literal["RX", "RY", "RZ", "Phase"],
+            angles: float,
+            control_indices: Sequence[int],
+            target_indices: Sequence[int]
+        ) -> None: ...
+    def _controlled_qubit_gate(
+            self,
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int],
+            angle: float=0
+        ) -> None: ...
     def MCU3(self, angles: Sequence[float], control_indices: int | Sequence[int], target_indices: int | Sequence[int]) -> None: ...
     def MCSWAP(self, control_indices: int | Sequence[int], first_target_index: int, second_target_index: int) -> None: ...
     def GlobalPhase(self, angle: float) -> None: ...

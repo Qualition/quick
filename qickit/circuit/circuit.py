@@ -271,7 +271,7 @@ class Circuit(ABC):
     @abstractmethod
     def _single_qubit_gate(
             self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float=0
         ) -> None:
@@ -279,7 +279,7 @@ class Circuit(ABC):
 
         Parameters
         ----------
-        `gate` : Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"]
+        `gate` : Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"]
             The gate to apply to the circuit.
         `qubit_indices` : int | Sequence[int]
             The index of the qubit(s) to apply the gate to.
@@ -305,7 +305,7 @@ class Circuit(ABC):
     @abstractmethod
     def _controlled_qubit_gate(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             control_indices: int | Sequence[int],
             target_indices: int | Sequence[int],
             angle: float=0
@@ -314,7 +314,7 @@ class Circuit(ABC):
 
         Parameters
         ----------
-        `gate` : Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"]
+        `gate` : Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"]
             The gate to apply to the circuit.
         `control_indices` : int | Collection[int]
             The index of the control qubit(s).
@@ -672,6 +672,39 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.RZ.__name__, params=locals())
         self._single_qubit_gate(
             gate="RZ",
+            angle=angle,
+            qubit_indices=qubit_indices
+        )
+
+    def Phase(
+            self,
+            angle: float,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a Phase gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `qubit_indices` : int | Sequence[int]
+            The index of the qubit to apply the gate to.
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.Phase(angle=np.pi/2, qubit_index=0)
+        """
+        self.process_gate_params(gate=self.Phase.__name__, params=locals())
+        self._single_qubit_gate(
+            gate="Phase",
             angle=angle,
             qubit_indices=qubit_indices
         )
@@ -1093,6 +1126,43 @@ class Circuit(ABC):
         self.process_gate_params(gate=self.CRZ.__name__, params=locals())
         self._controlled_qubit_gate(
             gate="RZ",
+            angle=angle,
+            control_indices=control_index,
+            target_indices=target_index
+        )
+
+    def CPhase(
+            self,
+            angle: float,
+            control_index: int,
+            target_index: int
+        ) -> None:
+        """ Apply a Controlled Phase gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_index` : int
+            The index of the control qubit.
+        `target_index` : int
+            The index of the target qubit.
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CPhase(angle=np.pi/2, control_index=0, target_index=1)
+        """
+        self.process_gate_params(gate=self.CPhase.__name__, params=locals())
+        self._controlled_qubit_gate(
+            gate="Phase",
             angle=angle,
             control_indices=control_index,
             target_indices=target_index
@@ -1574,6 +1644,46 @@ class Circuit(ABC):
             target_indices=target_indices
         )
 
+    def MCPhase(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a Multi-Controlled Phase gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_indices` : int | Sequence[int]
+            The index of the target qubit(s).
+
+        Raises
+        ------
+        TypeError
+            Qubit index must be an integer.
+            Angle must be a float or integer.
+        ValueError
+            Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCPhase(angle=np.pi/2, control_indices=0, target_indices=1)
+        >>> circuit.MCPhase(angle=np.pi/2, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCPhase(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCPhase(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
+        """
+        self.process_gate_params(gate=self.MCPhase.__name__, params=locals())
+        self._controlled_qubit_gate(
+            gate="Phase",
+            angle=angle,
+            control_indices=control_indices,
+            target_indices=target_indices
+        )
+
     @abstractmethod
     def MCU3(
             self,
@@ -1752,7 +1862,6 @@ class Circuit(ABC):
                     case _:
                         operation[key] = (self.num_qubits - 1 - operation[key])
 
-        # Update the circuit
         self.update()
 
     def horizontal_reverse(
@@ -1797,7 +1906,6 @@ class Circuit(ABC):
                 elif operation["gate"] in ["S", "T", "CS", "CT", "MCS", "MCT"]:
                     operation["gate"] = operation["gate"] + "dg"
 
-        # Update the circuit
         self.update()
 
     def add(
@@ -2025,7 +2133,6 @@ class Circuit(ABC):
         # Create a new circuit without the measurement instructions
         self.circuit_log = instructions
 
-        # Update the circuit
         self.update()
 
     def _remove_measurements(self) -> Circuit:
@@ -2043,7 +2150,6 @@ class Circuit(ABC):
         circuit = type(self)(self.num_qubits)
         circuit.circuit_log = instructions
 
-        # Update the circuit
         circuit.update()
 
         return circuit
@@ -2155,7 +2261,6 @@ class Circuit(ABC):
         for index in sorted(indices_to_remove, reverse=True):
             del self.circuit_log[index]
 
-        # Update the circuit
         self.update()
 
     def change_mapping(
@@ -2205,7 +2310,6 @@ class Circuit(ABC):
                     case _:
                         operation[key] = qubit_indices[operation[key]]
 
-        # Update the circuit
         self.update()
 
     def convert(

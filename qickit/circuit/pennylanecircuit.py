@@ -76,7 +76,7 @@ class PennylaneCircuit(Circuit):
 
     def _single_qubit_gate(
             self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             qubit_indices: int | Sequence[int],
             angle: float=0
         ) -> None:
@@ -96,7 +96,8 @@ class PennylaneCircuit(Circuit):
             "Tdg": lambda: qml.adjoint(qml.T(0)).matrix(), # type: ignore
             "RX": lambda: qml.RX(phi=angle, wires=0).matrix(), # type: ignore
             "RY": lambda: qml.RY(phi=angle, wires=0).matrix(), # type: ignore
-            "RZ": lambda: qml.RZ(phi=angle, wires=0).matrix() # type: ignore
+            "RZ": lambda: qml.RZ(phi=angle, wires=0).matrix(), # type: ignore
+            "Phase": lambda: qml.PhaseShift(phi=angle, wires=0).matrix() # type: ignore
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -133,7 +134,7 @@ class PennylaneCircuit(Circuit):
 
     def _controlled_qubit_gate(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ"],
+            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
             control_indices: int | Sequence[int],
             target_indices: int | Sequence[int],
             angle: float=0
@@ -155,6 +156,7 @@ class PennylaneCircuit(Circuit):
             "RX": lambda: qml.RX(phi=angle, wires=0).matrix(), # type: ignore
             "RY": lambda: qml.RY(phi=angle, wires=0).matrix(), # type: ignore
             "RZ": lambda: qml.RZ(phi=angle, wires=0).matrix(), # type: ignore
+            "Phase": lambda: qml.PhaseShift(phi=angle, wires=0).matrix() # type: ignore
         }
 
         # Lazily extract the value of the gate from the mapping to avoid

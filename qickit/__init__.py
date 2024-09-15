@@ -14,9 +14,10 @@
 
 __all__ = ["backend",
            "circuit",
+           "compiler",
            "optimizer",
            "primitives",
            "synthesis",
            "types",]
 
-from qickit import backend, circuit, optimizer, primitives, synthesis, types
+from qickit import backend, circuit, compiler, optimizer, primitives, synthesis, types
