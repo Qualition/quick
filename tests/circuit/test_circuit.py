@@ -296,17 +296,22 @@ class Template(ABC):
 
     @abstractmethod
     def test_get_statevector(self) -> None:
-        """ Test the get_statevector operation.
+        """ Test the `circuit.get_statevector()` operation.
         """
 
     @abstractmethod
     def test_partial_get_counts(self) -> None:
-        """ Test the get_counts operation with only partial measurement.
+        """ Test the `circuit.get_counts()` operation with only partial measurement.
         """
 
     @abstractmethod
     def test_get_counts(self) -> None:
-        """ Test the get_counts operation.
+        """ Test the `circuit.get_counts()` operation.
+        """
+
+    @abstractmethod
+    def test_get_global_phase(self) -> None:
+        """ Test the `circuit.get_global_phase()` operation.
         """
 
     @abstractmethod
@@ -336,12 +341,12 @@ class Template(ABC):
 
     @abstractmethod
     def test_get_depth(self) -> None:
-        """ Test the get_depth operation.
+        """ Test the `circuit.get_depth()` operation.
         """
 
     @abstractmethod
     def test_get_width(self) -> None:
-        """ Test the get_width operation.
+        """ Test the `circuit.get_width()` operation.
         """
 
     @abstractmethod

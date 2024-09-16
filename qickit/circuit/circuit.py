@@ -42,8 +42,8 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitar
 - Method `Circuit.add()`
 - Method `Circuit.change_mapping()`
 """
-QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_qubit",
-                        "second_qubit", "first_target_index", "second_target_index"])
+QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_qubit_index",
+                        "second_qubit_index", "first_target_index", "second_target_index"])
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
 ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
@@ -74,6 +74,8 @@ class Circuit(ABC):
         The set of measured qubits indices.
     `circuit_log` : list[dict]
         The log of the circuit operations.
+    `global_phase` : float
+        The global phase of the circuit.
     `process_gate_params_flag` : bool
         The flag to process the gate parameters.
 
@@ -100,6 +102,7 @@ class Circuit(ABC):
         self.circuit: Any
         self.measured_qubits: set[int] = set()
         self.circuit_log: list[dict] = []
+        self.global_phase: float = 0
         self.process_gate_params_flag: bool = True
 
     def _convert_param_type(
@@ -2119,6 +2122,20 @@ class Circuit(ABC):
             instructions.append(operation)
 
         return instructions
+
+    def get_global_phase(self) -> float:
+        """ Get the global phase of the circuit.
+
+        Returns
+        -------
+        `global_phase` : float
+            The global phase of the circuit.
+
+        Usage
+        -----
+        >>> circuit.get_global_phase()
+        """
+        return np.exp(1j * self.global_phase)
 
     def _remove_measurements_inplace(self) -> None:
         """ Remove the measurement instructions from the circuit inplace.

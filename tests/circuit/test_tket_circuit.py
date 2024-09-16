@@ -687,6 +687,17 @@ class TestTKETCircuit(Template):
 
         assert cosine_similarity(counts, {"00": 512, "01": 0, "10":0, "11": 512}) > 0.95
 
+    def test_get_global_phase(self) -> None:
+        # Define the `qickit.circuit.TKETCircuit` instance
+        circuit = TKETCircuit(1)
+
+        # Apply the global phase gate
+        circuit.GlobalPhase(1.8)
+        circuit.GlobalPhase(1.4)
+
+        # Get the global phase of the circuit, and ensure it is correct
+        assert circuit.get_global_phase() == np.exp(3.2j)
+
     def test_vertical_reverse(self) -> None:
         # Define the `qickit.circuit.TKETCircuit` instance
         circuit = TKETCircuit(2)

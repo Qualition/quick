@@ -53,6 +53,8 @@ class CirqCircuit(Circuit):
         The set of measured qubits indices.
     `circuit_log` : list[dict]
         The circuit log.
+    `global_phase` : float
+        The global phase of the circuit.
     `process_gate_params_flag` : bool
         The flag to process the gate parameters.
 
@@ -268,6 +270,7 @@ class CirqCircuit(Circuit):
         global_phase = cirq.GlobalPhaseGate(np.exp(1j*angle))
 
         self.circuit.append(global_phase())
+        self.global_phase += angle
 
     def measure(
             self,

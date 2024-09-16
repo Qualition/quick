@@ -174,6 +174,7 @@ class Diffusion(UnitaryPreparation):
 
         # Find the best solution in terms of the number of gates and fidelity
         depths = []
+        solution_circuits = []
 
         for qc in qc_list:
             qc_unitary = QiskitOperator(qc).data
@@ -187,12 +188,13 @@ class Diffusion(UnitaryPreparation):
 
             if fidelity > self.min_fidelity:
                 depths.append(qc.depth())
+                solution_circuits.append(qc)
 
         if len(depths) == 0:
             raise ValueError(f"No solution found with fidelity > {self.min_fidelity}.")
 
         # Find the shortest circuit with fidelity > `self.min_fidelity`
-        best_qc = qc_list[depths.index(min(depths))]
+        best_qc = solution_circuits[depths.index(min(depths))]
 
         circuit = qickit.circuit.Circuit.from_qiskit(best_qc, self.output_framework)
 

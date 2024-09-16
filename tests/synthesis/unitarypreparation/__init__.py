@@ -13,9 +13,11 @@
 # limitations under the License.
 
 __all__ = ["UnitaryPreparationTemplate",
+           "TestDiffusion",
            "TestQiskitUnitaryTranspiler",
            "TestShannonDecomposition"]
 
 from tests.synthesis.unitarypreparation.test_unitarypreparation import UnitaryPreparationTemplate
-from tests.synthesis.unitarypreparation.test_shannon_decomposition import TestShannonDecomposition
+from tests.synthesis.unitarypreparation.test_diffusion import TestDiffusion
 from tests.synthesis.unitarypreparation.test_qiskit_unitary_transpiler import TestQiskitUnitaryTranspiler
+from tests.synthesis.unitarypreparation.test_shannon_decomposition import TestShannonDecomposition

@@ -178,6 +178,6 @@ class Compiler:
                     else:
                         raise ValueError("Invalid primitives object.")
                 else:
-                    return self.state_preparation(Ket(primitives))
+                    raise ValueError("Invalid primitives object.")
             case _:
                 raise ValueError("Invalid primitives object.")
