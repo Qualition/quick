@@ -57,7 +57,7 @@ class UnitaryPreparation(ABC):
         """ Initalize a Unitary Preparation instance.
         """
         if not issubclass(output_framework, qickit.circuit.Circuit):
-            raise TypeError(f"The output framework must be a subclass of qickit.circuit.Circuit.")
+            raise TypeError("The output framework must be a subclass of qickit.circuit.Circuit.")
 
         self.output_framework = output_framework
 
