@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using Quantinuum's TKET in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["TKETCircuit"]
@@ -34,7 +37,19 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 class TKETCircuit(Circuit):
     """ `qickit.circuit.TKETCircuit` is the wrapper for using Quantinuum's TKET in Qickit SDK.
-    ref: https://arxiv.org/pdf/2003.10611
+
+    Notes
+    -----
+    Quantinuum's TKET is a quantum software development kit for building, compiling,
+    and simulating quantum circuits.
+
+    For more information on the TKET:
+    - Documentation:
+    https://tket.quantinuum.com/api-docs/
+    - Source Code:
+    https://github.com/CQCL/tket
+    - Publication:
+    https://arxiv.org/pdf/2003.10611
 
     Parameters
     ----------
@@ -59,9 +74,9 @@ class TKETCircuit(Circuit):
     Raises
     ------
     TypeError
-        Number of qubits bits must be integers.
+        - Number of qubits bits must be integers.
     ValueError
-        Number of qubits bits must be greater than 0.
+        - Number of qubits bits must be greater than 0.
 
     Usage
     -----
@@ -327,8 +342,10 @@ class TKETCircuit(Circuit):
 
         # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
         qiskit_circuit = self.convert(QiskitCircuit)
-        qiskit_circuit.transpile(direct_transpile=direct_transpile,
-                                 synthesis_method=synthesis_method)
+        qiskit_circuit.transpile(
+            direct_transpile=direct_transpile,
+            synthesis_method=synthesis_method
+        )
 
         # Convert back to `qickit.circuit.TKETCircuit` to update the circuit
         updated_circuit = qiskit_circuit.convert(TKETCircuit)

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Shende approach for preparing quantum states using multiplexed RY and RZ gates.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Shende"]
@@ -31,14 +34,35 @@ class Shende(StatePreparation):
     """ `qickit.synthesis.statepreparation.Shende` is the class for preparing quantum states
     using the Shende method.
 
+    Notes
+    -----
     The Shende method is a recursive method that uses multiplexed RY and RZ gates to prepare the state.
-    This method is based on the paper "Synthesis of Quantum Logic Circuits" [1], and scales exponentially
+    This method is based on the paper "Synthesis of Quantum Logic Circuits", and scales exponentially
     with the number of qubits in terms of circuit depth.
 
-    References
-    ----------
-    [1] Shende, Bullock, Markov. Synthesis of Quantum Logic Circuits (2004)
+    For more information on Shende method:
+    - Shende, Bullock, Markov.
+    Synthesis of Quantum Logic Circuits (2004)
     [https://arxiv.org/abs/quant-ph/0406176v5]
+
+    Parameters
+    ----------
+    `output_framework` : type[qickit.circuit.Circuit]
+        The quantum circuit framework.
+
+    Attributes
+    ----------
+    `output_framework` : type[qickit.circuit.Circuit]
+        The quantum circuit framework.
+
+    Raises
+    ------
+    TypeError
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
+
+    Usage
+    -----
+    >>> state_preparer = Shende(output_framework=QiskitCircuit)
     """
     def prepare_state(
             self,
@@ -76,7 +100,7 @@ class Shende(StatePreparation):
 
         def multiplexor(
                 list_of_angles: list[float],
-                gate: Literal["RY", "RZ"],
+                rotation_gate: Literal["RY", "RZ"],
                 last_cnot=True
             ) -> Circuit:
             """ Create the multiplexor circuit, where each instruction itself
@@ -88,7 +112,7 @@ class Shende(StatePreparation):
             ----------
             `list_of_angles` : list[float]
                 The list of rotation angles.
-            `gate` : Literal["RY", "RZ"]
+            `rotation_gate` : Literal["RY", "RZ"]
                 The type of gate to be applied.
             `last_cnot` : bool
                 Whether to apply the last CNOT gate or not.
@@ -109,8 +133,8 @@ class Shende(StatePreparation):
 
             # Define the gate mapping
             gate_mapping = {
-                "RY": circuit.RY,
-                "RZ": circuit.RZ
+                "RY": lambda: circuit.RY,
+                "RZ": lambda: circuit.RZ
             }
 
             # Define least significant bit (LSB) and most significant bit (MSB)
@@ -118,7 +142,7 @@ class Shende(StatePreparation):
 
             # Define the base case for the recursion
             if local_num_qubits == 1:
-                gate_mapping[gate](list_of_angles[0], 0)
+                gate_mapping[rotation_gate]()(list_of_angles[0], 0)
                 return circuit
 
             # Calculate angle weights
@@ -130,7 +154,7 @@ class Shende(StatePreparation):
             list_of_angles = angle_weight.dot(np.array(list_of_angles)).tolist()
 
             # Define the first half multiplexed circuit
-            multiplex_1 = multiplexor(list_of_angles[0 : (num_angles // 2)], gate=gate, last_cnot=False)
+            multiplex_1 = multiplexor(list_of_angles[0 : (num_angles // 2)], rotation_gate=rotation_gate, last_cnot=False)
             circuit.add(multiplex_1, list(range(local_num_qubits-1)))
 
             # Apply CX to flip the LSB qubit
@@ -139,12 +163,12 @@ class Shende(StatePreparation):
             # Optimize the circuit by cancelling adjacent CXs
             # (by leaving out last CX and reversing (NOT inverting) the
             # second lower-level multiplex)
-            multiplex_2 = multiplexor(list_of_angles[(num_angles // 2) :], gate=gate, last_cnot=False)
+            multiplex_2 = multiplexor(list_of_angles[(num_angles // 2) :], rotation_gate=rotation_gate, last_cnot=False)
+
             if num_angles > 1:
                 multiplex_2.horizontal_reverse(adjoint=False)
-                circuit.add(multiplex_2, list(range(local_num_qubits-1)))
-            else:
-                circuit.add(multiplex_2, list(range(local_num_qubits-1)))
+
+            circuit.add(multiplex_2, list(range(local_num_qubits-1)))
 
             # Leave out the last cnot
             if last_cnot:
@@ -189,16 +213,17 @@ class Shende(StatePreparation):
                     add_last_cnot = False
 
                 if np.linalg.norm(phis) != 0:
-                    rz_mult = multiplexor(list_of_angles=phis, gate="RZ", last_cnot=add_last_cnot)
+                    rz_mult = multiplexor(list_of_angles=phis, rotation_gate="RZ", last_cnot=add_last_cnot)
                     circuit.add(rz_mult, list(range(i, num_qubits)))
 
                 if np.linalg.norm(thetas) != 0:
-                    ry_mult = multiplexor(list_of_angles=thetas, gate="RY", last_cnot=add_last_cnot)
+                    ry_mult = multiplexor(list_of_angles=thetas, rotation_gate="RY", last_cnot=add_last_cnot)
                     ry_mult.horizontal_reverse(adjoint=False)
                     circuit.add(ry_mult, list(range(i, num_qubits)))
 
             global_phase_angle = -np.angle(sum(remaining_param))
             circuit.GlobalPhase(float(global_phase_angle))
+
             return circuit
 
         # Define the disentangling circuit

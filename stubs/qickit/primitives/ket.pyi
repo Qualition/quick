@@ -16,10 +16,11 @@ import numpy as np
 import qickit.primitives.bra as bra
 import qickit.primitives.operator as operator
 from numpy.typing import NDArray
-from qickit.types import Scalar
-from typing import overload
+from typing import overload, SupportsFloat, TypeAlias
 
 __all__ = ["Ket"]
+
+Scalar: TypeAlias = SupportsFloat | complex
 
 class Ket:
     label: str

@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Ket vector class for representing ket states.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Ket"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Literal, overload, SupportsFloat
+from typing import Any, Literal, overload, SupportsFloat, TypeAlias
 
 import qickit.primitives.operator as operator
 import qickit.primitives.bra as bra
-from qickit.types import Scalar
+
+# `Scalar` is a type alias that represents a scalar value that can be either
+# a real number or a complex number.
+Scalar: TypeAlias = SupportsFloat | complex
 
 
 class Ket:
@@ -55,7 +61,7 @@ class Ket:
     Raises
     ------
     ValueError
-        If the data is a scalar or an operator.
+        - If the data is a scalar or an operator.
 
     Usage
     -----
@@ -262,7 +268,7 @@ class Ket:
         Raises
         ------
         ValueError
-            If the data is a scalar or an operator.
+            - If the data is a scalar or an operator.
 
         Usage
         -----
@@ -345,7 +351,7 @@ class Ket:
         Raises
         ------
         ValueError
-            If the index type is not supported.
+            - If the index type is not supported.
 
         Usage
         -----
@@ -378,9 +384,9 @@ class Ket:
         Raises
         ------
         ValueError
-            If the two vectors are incompatible.
+            - If the two vectors are incompatible.
         NotImplementedError
-            If the `other` type is incompatible.
+            - If the `other` type is incompatible.
         """
         match other:
             case SupportsFloat() | complex():
@@ -451,9 +457,9 @@ class Ket:
         Raises
         ------
         NotImplementedError
-            If the two vectors are incompatible.
+            - If the two vectors are incompatible.
         ValueError
-            If the two ket states are incompatible.
+            - If the two ket states are incompatible.
 
         Usage
         -----
@@ -521,9 +527,9 @@ class Ket:
         Raises
         ------
         ValueError
-            If the two vectors are incompatible.
+            - If the two vectors are incompatible.
         NotImplementedError
-            If the `other` type is incompatible.
+            - If the `other` type is incompatible.
 
         Usage
         -----

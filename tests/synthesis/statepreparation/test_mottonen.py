@@ -35,7 +35,7 @@ checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
 
 class TestStatePreparationMottonen(StatePreparationTemplate):
-    """ `tests.synthesis.test_statepreparation_mottonen.TestStatePreparationMottonen` is the tester class
+    """ `tests.synthesis.test_mottonen.TestStatePreparationMottonen` is the tester class
     for `qickit.synthesis.statepreparation.Mottonen` class.
     """
     def test_init(self) -> None:

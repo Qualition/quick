@@ -15,10 +15,11 @@
 import numpy as np
 import qickit.primitives.ket as ket
 from numpy.typing import NDArray
-from qickit.types import Scalar
-from typing import overload
+from typing import overload, SupportsFloat, TypeAlias
 
 __all__ = ["Operator"]
+
+Scalar: TypeAlias = SupportsFloat | complex
 
 class Operator:
     label: str

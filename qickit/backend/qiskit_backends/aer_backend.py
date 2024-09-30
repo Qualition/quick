@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for the Aer quantum simulator backend.
+"""
+
 from __future__ import annotations
 
 __all__ = ["AerBackend"]
@@ -34,6 +37,14 @@ class AerBackend(NoisyBackend):
     instances on Aer. This supports ideal and noisy simulations, and allows for running
     on both CPU and GPU.
 
+    Notes
+    -----
+    Aer is a high-performance simulator for quantum circuits developed by IBM Quantum.
+    It supports both ideal and noisy simulations, and can run on both CPU and GPU.
+
+    For more information, see https://qiskit.github.io/qiskit-aer/.
+
+    This 
     Parameters
     ----------
     `single_qubit_error` : float, optional, default=0.0
@@ -65,9 +76,9 @@ class AerBackend(NoisyBackend):
     Raises
     ------
     ValueError
-        If the device is not "CPU" or "GPU".
-        If the single-qubit error rate is not between 0 and 1.
-        If the two-qubit error rate is not between 0 and 1.
+        - If the device is not "CPU" or "GPU".
+        - If the single-qubit error rate is not between 0 and 1.
+        - If the two-qubit error rate is not between 0 and 1.
 
     Usage
     -----

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using the `genQC` diffusion model in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Diffusion"]
@@ -43,7 +46,18 @@ class Diffusion(UnitaryPreparation):
 
     Notes
     -----
-    The default pre-trained model used in this class is for 3-qubit unitaries only.
+    `genQC` is a quantum compilation library that uses diffusion models to approximately
+    compile quantum circuits. The default pre-trained model used in this class is for
+    3-qubit unitaries which can be theoretically prepared using ['h', 'cx', 'z', 'ccx',
+    'swap'] gate set within 12 max gates.
+
+    For more information on `genQC`:
+    - Documentation:
+    https://genqc.readthedocs.io/en/latest/
+    - Source code:
+    https://github.com/FlorianFuerrutter/genQC
+    - Publication:
+    https://arxiv.org/abs/2311.02041
 
     Parameters
     ----------
@@ -78,9 +92,9 @@ class Diffusion(UnitaryPreparation):
     Raises
     ------
     TypeError
-        If the output framework is not a subclass of `qickit.circuit.Circuit`.
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
     ValueError
-        If the minimum fidelity is not in the range [0, 1].
+        - If the minimum fidelity is not in the range [0, 1].
     """
     def __init__(
             self,
@@ -136,8 +150,8 @@ class Diffusion(UnitaryPreparation):
         Raises
         ------
         ValueError
-            If the unitary is not a 3-qubit unitary.
-            No solution found with fidelity > 0.9.
+            - If the unitary is not a 3-qubit unitary.
+            - No solution found with fidelity > 0.9.
         """
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)

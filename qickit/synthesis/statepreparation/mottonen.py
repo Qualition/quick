@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Mottonen approach for preparing quantum states using uniformly controlled rotations.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Mottonen"]
@@ -33,13 +36,35 @@ class Mottonen(StatePreparation):
     """ `qickit.synthesis.statepreparation.Mottonen` is the class for preparing quantum states
     using the Möttönen method.
 
-    The Möttönen method uses uniform controlled rotations about the y-axis and z-axis to prepare the state.
-    This method is based on the paper "Transformation of quantum states using uniformly controlled rotations" [1],
+    Notes
+    ----------
+    The Möttönen method uses uniformly controlled rotations about the y-axis and z-axis to prepare the state.
+    This method is based on the paper "Transformation of quantum states using uniformly controlled rotations",
     and scales exponentially with the number of qubits in terms of circuit depth.
 
-    References
+    For more information on Möttönen method:
+    - Möttönen, Vartiainen, Bergholm, Salomaa.
+    Transformation of quantum states using uniformly controlled rotations (2004)
+    https://arxiv.org/abs/quant-ph/0407010
+
+    Parameters
     ----------
-    [1] Möttönen, Vartiainen, Bergholm, Salomaa. Transformation of quantum states using uniformly controlled rotations (2004)
+    `output_framework` : type[qickit.circuit.Circuit]
+        The quantum circuit framework.
+
+    Attributes
+    ----------
+    `output_framework` : type[qickit.circuit.Circuit]
+        The quantum circuit framework.
+
+    Raises
+    ------
+    TypeError
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
+
+    Usage
+    -----
+    >>> state_preparer = Mottonen(output_framework=QiskitCircuit)
     """
     def prepare_state(
             self,
@@ -80,7 +105,7 @@ class Mottonen(StatePreparation):
                 alpha_k: list[float],
                 control_qubits: list[int],
                 target_qubit: int,
-                gate: Literal["RY", "RZ"]
+                rotation_gate: Literal["RY", "RZ"]
             ) -> None:
             """ Apply a k-controlled rotation about the y-axis.
 
@@ -94,12 +119,12 @@ class Mottonen(StatePreparation):
                 The list of control qubits.
             `target_qubit` : int
                 The target qubit.
-            `gate` : Literal["RY", "RZ"]
+            `rotation_gate` : Literal["RY", "RZ"]
                 The type of gate to be applied.
             """
             gate_mapping = {
-                "RY": circuit.RY,
-                "RZ": circuit.RZ
+                "RY": lambda: circuit.RY,
+                "RZ": lambda: circuit.RZ
             }
 
             k = len(control_qubits)
@@ -107,7 +132,7 @@ class Mottonen(StatePreparation):
             ctl = compute_control_indices(k)
 
             for i in range(2**k):
-                gate_mapping[gate](thetas[i], target_qubit)
+                gate_mapping[rotation_gate]()(thetas[i], target_qubit)
                 if k > 0:
                     circuit.CX(control_qubits[k - 1 - ctl[i]], target_qubit)
 

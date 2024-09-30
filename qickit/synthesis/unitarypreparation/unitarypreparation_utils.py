@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Helper functions for the unitary preparation methods.
+"""
+
 from __future__ import annotations
 
 __all__ = ["phase_matrix",

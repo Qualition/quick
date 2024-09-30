@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from qickit import backend as backend, circuit as circuit, optimizer as optimizer, synthesis as synthesis, types as types
+from qickit import backend as backend, circuit as circuit, compiler as compiler, optimizer as optimizer, primitives as primitives, synthesis as synthesis
 
-__all__ = ["backend", "circuit", "optimizer", "synthesis", "types"]
+__all__ = ["backend", "circuit", "compiler", "optimizer", "primitives", "synthesis"]

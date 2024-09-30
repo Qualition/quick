@@ -25,7 +25,7 @@ from qickit.synthesis.unitarypreparation import ShannonDecomposition
 from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
-unitary_matrix = unitary_group.rvs(8)
+unitary_matrix = unitary_group.rvs(8).astype(complex)
 
 
 class TestShannonDecomposition(UnitaryPreparationTemplate):
@@ -40,7 +40,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
         # Prepare the unitary matrix
-        circuit = shannon_decomposition.prepare_unitary(unitary_matrix) # type: ignore
+        circuit = shannon_decomposition.prepare_unitary(unitary_matrix)
 
         # Get the unitary matrix of the circuit
         unitary = circuit.get_unitary()
@@ -53,7 +53,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
         # Prepare the unitary matrix
-        circuit = shannon_decomposition.prepare_unitary(Operator(unitary_matrix)) # type: ignore
+        circuit = shannon_decomposition.prepare_unitary(Operator(unitary_matrix))
 
         # Get the unitary matrix of the circuit
         unitary = circuit.get_unitary()

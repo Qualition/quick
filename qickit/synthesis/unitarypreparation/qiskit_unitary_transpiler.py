@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using the Qiskit transpiler to prepare
+quantum unitary operators in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["QiskitUnitaryTranspiler"]
@@ -22,6 +26,7 @@ from numpy.typing import NDArray
 from typing import SupportsIndex, Type, TYPE_CHECKING
 
 from qiskit import QuantumCircuit, transpile # type: ignore
+from qiskit.transpiler.passes import unitary_synthesis_plugin_names # type: ignore
 from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
 from qiskit_transpiler_service.transpiler_service import TranspilerService # type: ignore
 
@@ -34,16 +39,37 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation
 class QiskitUnitaryTranspiler(UnitaryPreparation):
     """ `qickit.QiskitUnitaryTranspiler` is the class for preparing quantum operators using Qiskit transpiler.
 
+    Notes
+    -----
+    The `qiskit.transpiler` library is a quantum circuit optimization library developed by IBM Quantum
+    to optimize, route, and transpile quantum circuits given a set of constraints. The implementation
+    utilizes LightSABRE approach, and by default, Shende's Shannon Decomposition for unitary synthesis.
+
+    For more information on Qiskit transpiler:
+    - Documentation:
+    https://qiskit.org/documentation/apidoc/transpiler.html.
+    - Source code:
+    https://github.com/Qiskit/qiskit/tree/main/qiskit/transpiler
+    - Publication:
+    https://arxiv.org/pdf/2409.08368
+
     Parameters
     ----------
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
     `ai_transpilation` : bool, optional, default=False
         Whether to use Qiskit's AI transpiler.
+    `unitary_synthesis_plugin` : str, optional, default="default"
+        The unitary synthesis plugin to use for preparing quantum unitary
+        operators. The available plugins are:
+        - "default": Shende's Shannon Decomposition.
+        - "sk": Solovay-Kitaev.
+        - "aqc": Approximate Quantum Compilation.
     `service`: qiskit_ibm_runtime.QiskitRuntimeService, optional
         The Qiskit Runtime service. Only needed if `ai`=True.
-    `backend_name`: str, optional
-        The name of the backend to use for transpilation. Only needed if `ai`=True.
+    `backend_name`: str, qiskit.primitives.backend.Backend, optional
+        The backend to use for transpilation. For AI transpilation, the name
+        of the backend must be provided.
 
     Attributes
     ----------
@@ -51,44 +77,53 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
         The quantum circuit framework.
     `ai_transpilation` : bool
         Whether to use Qiskit's AI transpiler.
+    `unitary_synthesis_plugin` : str
+        The unitary synthesis plugin to use for preparing quantum unitary
+        operators.
     `service`: qiskit_ibm_runtime.QiskitRuntimeService
         The Qiskit Runtime service.
-    `backend_name`: str
+    `backend_name`: str | None
         The name of the backend to use for transpilation.
 
     Raises
     ------
+    TypeError
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
     ValueError
-        The Qiskit Runtime service must be provided for AI transpilation.
-        The name of the backend must be provided for AI transpilation.
-
-    Notes
-    -----
-    The `QiskitTranspiler` class uses the Qiskit transpiler to prepare the quantum unitary operator.
-    This is also how `qickit.circuit.Circuit` by default implements the `.unitary()` operation. Users
-    can customize this class to implement custom transpilers for different hardware. For example, one
-    can change the set of gates the circuit is transpiled to, or can change the optimization level.
-
-    A good resource is IBM Quantum Challenge 2024: https://github.com/qiskit-community/ibm-quantum-challenge-2024/tree/main
+        - The Qiskit Runtime service must be provided for AI transpilation.
+        - The name of the backend must be provided for AI transpilation.
+        - Invalid unitary synthesis plugin.
     """
     def __init__(
             self,
             output_framework: Type[Circuit],
             ai_transpilation: bool=False,
+            unitary_synthesis_plugin: str="default",
             service: QiskitRuntimeService | None = None,
             backend_name: str | None = None
         ) -> None:
 
         super().__init__(output_framework)
         self.ai_transpilation = ai_transpilation
+        self.backend_name = None
 
-        if ai_transpilation and service is None:
-            raise ValueError("The Qiskit Runtime service must be provided for AI transpilation.")
-        self.service = service
+        if ai_transpilation:
+            if service is None:
+                raise ValueError("The Qiskit Runtime service must be provided for AI transpilation.")
+            match backend_name:
+                case None:
+                    raise ValueError("The name of the backend must be provided for AI transpilation.")
+                case str():
+                    supported_backends = TranspilerService(optimization_level=3)\
+                        .transpiler_service.get_supported_backends()
 
-        if ai_transpilation and backend_name is None:
-            raise ValueError("The name of the backend must be provided for AI transpilation.")
-        self.backend_name = backend_name
+                    if backend_name not in supported_backends:
+                        raise ValueError(f"Invalid backend: {backend_name}.")
+                    self.backend_name = backend_name
+
+        if unitary_synthesis_plugin not in unitary_synthesis_plugin_names():
+            raise ValueError(f"Invalid unitary synthesis plugin: {unitary_synthesis_plugin}.")
+        self.unitary_synthesis_plugin = unitary_synthesis_plugin
 
     def apply_unitary(
             self,
@@ -114,21 +149,26 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
 
         # Transpile the unitary operator to a series of CX and U3 gates
         if self.ai_transpilation:
+            transpile_params = {
+                "basis_gates": ["u3", "cx"],
+                "unitary_synthesis_method": self.unitary_synthesis_plugin,
+            }
             # Use the Qiskit AI transpiler
             ai_transpiler = TranspilerService(
                 backend_name=self.backend_name,
                 optimization_level=3,
+                qiskit_transpile_options=transpile_params,
                 ai="true",
                 ai_layout_mode="OPTIMIZE"
             )
             transpiled_circuit = ai_transpiler.run(qiskit_circuit)
-
         else:
-            # Use the Qiskit transpiler
+            # Use the Qiskit SDK transpiler
             transpiled_circuit = transpile(
                 qiskit_circuit,
+                unitary_synthesis_method=self.unitary_synthesis_plugin,
                 basis_gates=["u3", "cx"],
-                optimization_level=3,
+                optimization_level=0,
                 seed_transpiler=0
             )
 

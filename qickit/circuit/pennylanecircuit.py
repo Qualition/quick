@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using Xanadu's PennyLane in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["PennylaneCircuit"]
@@ -31,7 +34,19 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 class PennylaneCircuit(Circuit):
     """ `qickit.circuit.PennylaneCircuit` is the wrapper for using Xanadu's PennyLane in Qickit SDK.
-    ref: https://arxiv.org/pdf/1811.04968
+
+    Notes
+    -----
+    Xanadu's PennyLane is a cross-platform Python library for quantum computing,
+    quantum machine learning, and quantum chemistry. 
+
+    For more information on PennyLane:
+    - Documentation:
+    https://docs.pennylane.ai/en/stable/code/qml.html
+    - Source Code:
+    https://github.com/PennyLaneAI/pennylane
+    - Publication:
+    https://arxiv.org/pdf/1811.04968
 
     Parameters
     ----------
@@ -58,9 +73,9 @@ class PennylaneCircuit(Circuit):
     Raises
     ------
     TypeError
-        Number of qubits bits must be integers.
+        - Number of qubits bits must be integers.
     ValueError
-        Number of qubits bits must be greater than 0.
+        - Number of qubits bits must be greater than 0.
 
     Usage
     -----
@@ -403,8 +418,10 @@ class PennylaneCircuit(Circuit):
 
         # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
         qiskit_circuit = self.convert(QiskitCircuit)
-        qiskit_circuit.transpile(direct_transpile=direct_transpile,
-                                 synthesis_method=synthesis_method)
+        qiskit_circuit.transpile(
+            direct_transpile=direct_transpile,
+            synthesis_method=synthesis_method
+        )
 
         # Convert back to `qickit.circuit.PennylaneCircuit` to update the circuit
         updated_circuit = qiskit_circuit.convert(PennylaneCircuit)

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using IBM Qiskit in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["QiskitCircuit"]
@@ -39,7 +42,19 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitar
 
 class QiskitCircuit(Circuit):
     """ `qickit.circuit.QiskitCircuit` is the wrapper for using IBM Qiskit in Qickit SDK.
-    ref: https://arxiv.org/pdf/2405.08810
+
+    Notes
+    -----
+    IBM Qiskit is an open-source SDK for working with quantum computers at the level of
+    extended quantum circuits, operators, and primitives.
+
+    For more information on IBM Qiskit:
+    - Documentation:
+    https://qiskit.org/documentation/
+    - Source code:
+    https://github.com/Qiskit/qiskit
+    - Publication:
+    https://arxiv.org/pdf/2405.08810
 
     Parameters
     ----------
@@ -64,9 +79,9 @@ class QiskitCircuit(Circuit):
     Raises
     ------
     TypeError
-        Number of qubits bits must be integers.
+        - Number of qubits bits must be integers.
     ValueError
-        Number of qubits bits must be greater than 0.
+        - Number of qubits bits must be greater than 0.
 
     Usage
     -----
@@ -326,10 +341,12 @@ class QiskitCircuit(Circuit):
 
         if direct_transpile:
             # Transpile the circuit (this returns a `qiskit.QuantumCircuit` instance)
-            transpiled_circuit = transpile(self.circuit,
-                                           optimization_level=3,
-                                           basis_gates=['u3', 'cx'],
-                                           seed_transpiler=0)
+            transpiled_circuit = transpile(
+                self.circuit,
+                optimization_level=3,
+                basis_gates=["u3", "cx"],
+                seed_transpiler=0
+            )
 
             # Define a `qickit.circuit.QiskitCircuit` instance from the transpiled circuit
             transpiled_circuit = self.from_qiskit(transpiled_circuit, QiskitCircuit)
@@ -362,4 +379,4 @@ class QiskitCircuit(Circuit):
             raise ValueError("The QASM version must be either 2 or 3.")
 
     def draw(self) -> None:
-        self.circuit.draw(output='mpl')
+        self.circuit.draw(output="mpl")

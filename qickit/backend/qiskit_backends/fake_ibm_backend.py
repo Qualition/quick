@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for the IBM quantum hardware emulator backend.
+"""
+
 from __future__ import annotations
 
 __all__ = ["FakeIBMBackend"]
@@ -31,6 +34,13 @@ from qickit.backend import Backend, FakeBackend
 class FakeIBMBackend(FakeBackend): # pragma: no cover
     """ `qickit.backend.FakeIBMBackend` is the class for running
     `qickit.circuit.Circuit` instances on an IBM hardware emulator.
+
+    Notes
+    -----
+    This backend emulates an IBM quantum hardware by using the Aer simulator
+    with the latest calibration results from the IBM backend.
+
+    For more information, see https://docs.quantum.ibm.com/api/qiskit/providers_fake_provider.
 
     Parameters
     ----------
@@ -57,15 +67,15 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
     Raises
     ------
     ValueError
-        If the device is not "CPU" or "GPU".
-        If the single-qubit error rate is not between 0 and 1.
-        If the two-qubit error rate is not between 0 and 1.
-        If the specified IBM backend is not available.
+        - If the device is not "CPU" or "GPU".
+        - If the single-qubit error rate is not between 0 and 1.
+        - If the two-qubit error rate is not between 0 and 1.
+        - If the specified IBM backend is not available.
 
     Warns
     -----
     UserWarning
-        If the device is "GPU" but GPU acceleration is not available.
+        - If the device is "GPU" but GPU acceleration is not available.
 
     Usage
     -----

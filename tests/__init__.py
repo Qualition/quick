@@ -14,7 +14,8 @@
 
 __all__ = ["backend",
            "circuit",
+           "compiler",
            "primitives",
            "synthesis"]
 
-from tests import backend, circuit, primitives, synthesis
+from tests import backend, circuit, compiler, primitives, synthesis

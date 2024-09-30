@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using the optimizer provided by the `tket2` library in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["TKET2Optimizer"]
@@ -32,7 +35,6 @@ class TKET2Optimizer(Optimizer):
     The `tket2` library is a quantum circuit optimization library developed by Cambridge Quantum
     Computing. The library is written in Rust and provides a Python interface, providing a faster
     and more efficient optimization compared to the default optimizer provided by `tket`.
-
 
     The Badger compiler pass optimizes the circuit by applying multiple rewrite rules simultaneously
     and searching for the best sequence. Though computationally expensive, this process can significantly

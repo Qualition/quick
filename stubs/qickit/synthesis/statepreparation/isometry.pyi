@@ -12,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterator, Protocol, Self, TypeVar, overload
+import numpy as np
+from numpy.typing import NDArray
+from qickit.circuit import Circuit
+from qickit.primitives import Bra, Ket
+from qickit.synthesis.statepreparation import StatePreparation
+from typing import Literal
 
-__all__ = ["Collection"]
+__all__ = ["Isometry"]
 
-T = TypeVar("T", covariant=True)
-
-class Collection(Protocol[T]):
-    def __len__(self) -> int: ...
-    def __iter__(self) -> Iterator[T]: ...
-    @overload
-    def __getitem__(self, idx: int) -> T: ...
-    @overload
-    def __getitem__(self, idx: slice) -> Self: ...
-    def __add__(self, other: Self) -> Self: ...
-    def __mul__(self, other: int) -> Self: ...
+class Isometry(StatePreparation):
+    def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float = 0.0, index_type: Literal["row", "snake"]="row") -> Circuit: ...

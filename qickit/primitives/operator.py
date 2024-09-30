@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Operator matrix class for representing quantum unitary operators.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Operator"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, overload, SupportsFloat
-
+from typing import Any, overload, SupportsFloat, TypeAlias
 
 import qickit.primitives.ket as ket
-from qickit.types import Scalar
+
+# `Scalar` is a type alias that represents a scalar value that can be either
+# a real number or a complex number.
+Scalar: TypeAlias = SupportsFloat | complex
 
 
 class Operator:
@@ -51,10 +56,10 @@ class Operator:
     Raises
     ------
     ValueError
-        If the operator is not a square matrix.
-        If the operator dimension is not a power of 2.
-        If the operator cannot be converted to complex type.
-        If the operator is not unitary.
+        - If the operator is not a square matrix.
+        - If the operator dimension is not a power of 2.
+        - If the operator cannot be converted to complex type.
+        - If the operator is not unitary.
 
     Usage
     -----
@@ -88,10 +93,10 @@ class Operator:
         Raises
         ------
         ValueError
-            If the matrix is not square.
-            If the matrix dimension is not a power of 2.
-            If the matrix cannot be converted to complex type.
-            If the matrix is not unitary.
+            - If the matrix is not square.
+            - If the matrix dimension is not a power of 2.
+            - If the matrix cannot be converted to complex type.
+            - If the matrix is not unitary.
 
         Usage
         -----
@@ -132,10 +137,10 @@ class Operator:
         Raises
         ------
         ValueError
-            If the the operator and ket are incompatible.
-            If the two operators are incompatible.
+            - If the the operator and ket are incompatible.
+            - If the two operators are incompatible.
         NotImplementedError
-            If the `other` type is incompatible.
+            - If the `other` type is incompatible.
         """
         match other:
             case SupportsFloat() | complex():
@@ -201,10 +206,10 @@ class Operator:
         Raises
         ------
         ValueError
-            If the operator and ket dimensions are incompatible.
-            If the operator dimensions are incompatible.
+            - If the operator and ket dimensions are incompatible.
+            - If the operator dimensions are incompatible.
         NotImplementedError
-            If the `other` type is incompatible.
+            - If the `other` type is incompatible.
 
         Usage
         -----
@@ -261,7 +266,7 @@ class Operator:
         Raises
         ------
         NotImplementedError
-            If the `other` type is incompatible
+            - If the `other` type is incompatible
 
         Usage
         -----

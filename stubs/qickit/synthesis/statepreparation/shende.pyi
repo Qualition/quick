@@ -17,8 +17,9 @@ from numpy.typing import NDArray
 from qickit.circuit import Circuit
 from qickit.primitives import Bra, Ket
 from qickit.synthesis.statepreparation import StatePreparation
+from typing import Literal
 
 __all__ = ["Shende"]
 
 class Shende(StatePreparation):
-    def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: str="row") -> Circuit: ...
+    def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: Literal["row", "snake"]="row") -> Circuit: ...

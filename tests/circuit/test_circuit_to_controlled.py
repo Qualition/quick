@@ -21,6 +21,10 @@ from typing import Type
 from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 
 
+# The quantum circuit frameworks
+CIRCUIT_FRAMEWORKS = [CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit]
+
+
 class TestControlled:
     """ `tests.circuit.TestControlled` is the tester for the `.control()` method.
     """
@@ -32,7 +36,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -66,7 +70,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -100,7 +104,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -134,7 +138,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -168,7 +172,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -202,7 +206,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -236,7 +240,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -270,7 +274,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -304,7 +308,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -338,7 +342,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -372,7 +376,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -398,6 +402,40 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
+    def phase_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
+        """ Test the `.control()` method with Phase gate.
+
+        Parameters
+        ----------
+        `framework` : type[qickit.circuit.Circuit]
+            The framework to convert the circuit to.
+        """
+        circuit = framework(num_qubits=2)
+
+        # Apply Phase gate with both single index and multiple indices variations
+        circuit.Phase(0.5, 0)
+        circuit.Phase(0.5, [0, 1])
+
+        # Define controlled-Phase gates
+        single_controlled_circuit = circuit.control(1)
+        multiple_controlled_circuit = circuit.control(2)
+
+        # Define checkers
+        check_single_controlled_circuit = framework(num_qubits=3)
+        check_multiple_controlled_circuit = framework(num_qubits=4)
+
+        check_single_controlled_circuit.MCPhase(0.5, 0, 1)
+        check_single_controlled_circuit.MCPhase(0.5, 0, [1, 2])
+
+        check_multiple_controlled_circuit.MCPhase(0.5, [0, 1], 2)
+        check_multiple_controlled_circuit.MCPhase(0.5, [0, 1], [2, 3])
+
+        assert single_controlled_circuit == check_single_controlled_circuit
+        assert multiple_controlled_circuit == check_multiple_controlled_circuit
+
     def u3_control(
             self,
             framework: Type[Circuit]
@@ -406,7 +444,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -437,7 +475,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -468,7 +506,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -499,7 +537,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -530,7 +568,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -561,7 +599,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -592,7 +630,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -623,7 +661,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -654,7 +692,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -685,7 +723,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=2)
@@ -716,7 +754,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=3)
@@ -747,7 +785,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=3)
@@ -778,7 +816,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=3)
@@ -801,6 +839,68 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
+    def cphase_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
+        """ Test the `.control()` method with CPhase gate.
+
+        Parameters
+        ----------
+        `framework` : type[qickit.circuit.Circuit]
+            The framework to convert the circuit to.
+        """
+        circuit = framework(num_qubits=3)
+
+        # Apply CPhase gate with both single index and multiple indices variations
+        circuit.CPhase(0.5, 0, 1)
+
+        # Define controlled-CPhase gates
+        single_controlled_circuit = circuit.control(1)
+        multiple_controlled_circuit = circuit.control(2)
+
+        # Define checkers
+        check_single_controlled_circuit = framework(num_qubits=4)
+        check_multiple_controlled_circuit = framework(num_qubits=5)
+
+        check_single_controlled_circuit.MCPhase(0.5, [0, 1], 2)
+
+        check_multiple_controlled_circuit.MCPhase(0.5, [0, 1, 2], 3)
+
+        assert single_controlled_circuit == check_single_controlled_circuit
+        assert multiple_controlled_circuit == check_multiple_controlled_circuit
+
+    def cswap_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
+        """ Test the `.control()` method with CSWAP gate.
+
+        Parameters
+        ----------
+        `framework` : type[qickit.circuit.Circuit]
+            The framework to convert the circuit to.
+        """
+        circuit = framework(num_qubits=3)
+
+        # Apply CSWAP gate with both single index and multiple indices variations
+        circuit.CSWAP(0, 1, 2)
+
+        # Define controlled-CSWAP gates
+        single_controlled_circuit = circuit.control(1)
+        multiple_controlled_circuit = circuit.control(2)
+
+        # Define checkers
+        check_single_controlled_circuit = framework(num_qubits=4)
+        check_multiple_controlled_circuit = framework(num_qubits=5)
+
+        check_single_controlled_circuit.MCSWAP([0, 1], 2, 3)
+
+        check_multiple_controlled_circuit.MCSWAP([0, 1, 2], 3, 4)
+
+        assert single_controlled_circuit == check_single_controlled_circuit
+        assert multiple_controlled_circuit == check_multiple_controlled_circuit
+
     def cu3_control(
             self,
             framework: Type[Circuit]
@@ -809,7 +909,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=3)
@@ -840,7 +940,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -871,7 +971,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -902,7 +1002,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -933,7 +1033,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -964,7 +1064,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -995,7 +1095,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -1026,7 +1126,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -1057,7 +1157,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=4)
@@ -1088,7 +1188,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=5)
@@ -1119,7 +1219,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=5)
@@ -1150,7 +1250,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=5)
@@ -1173,6 +1273,37 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
+    def mcphase_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
+        """ Test the `.control()` method with MCPhase gate.
+
+        Parameters
+        ----------
+        `framework` : type[qickit.circuit.Circuit]
+            The framework to convert the circuit to.
+        """
+        circuit = framework(num_qubits=5)
+
+        # Apply MCPhase gate with both single index and multiple indices variations
+        circuit.MCPhase(0.5, [0, 1], [2, 3])
+
+        # Define controlled-MCPhase gates
+        single_controlled_circuit = circuit.control(1)
+        multiple_controlled_circuit = circuit.control(2)
+
+        # Define checkers
+        check_single_controlled_circuit = framework(num_qubits=6)
+        check_multiple_controlled_circuit = framework(num_qubits=7)
+
+        check_single_controlled_circuit.MCPhase(0.5, [0, 1, 2], [3, 4])
+
+        check_multiple_controlled_circuit.MCPhase(0.5, [0, 1, 2, 3], [4, 5])
+
+        assert single_controlled_circuit == check_single_controlled_circuit
+        assert multiple_controlled_circuit == check_multiple_controlled_circuit
+
     def mcu3_control(
             self,
             framework: Type[Circuit]
@@ -1181,7 +1312,7 @@ class TestControlled:
 
         Parameters
         ----------
-        framework : Type[Circuit]
+        `framework` : type[qickit.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = framework(num_qubits=5)
@@ -1204,261 +1335,285 @@ class TestControlled:
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 
+    def mcswap_control(
+            self,
+            framework: Type[Circuit]
+        ) -> None:
+        """ Test the `.control()` method with MCSWAP gate.
+
+        Parameters
+        ----------
+        `framework` : type[qickit.circuit.Circuit]
+            The framework to convert the circuit to.
+        """
+        circuit = framework(num_qubits=4)
+
+        # Apply MCSWAP gate with both single index and multiple indices variations
+        circuit.MCSWAP([0, 1], 2, 3)
+
+        # Define controlled-MCSWAP gates
+        single_controlled_circuit = circuit.control(1)
+        multiple_controlled_circuit = circuit.control(2)
+
+        # Define checkers
+        check_single_controlled_circuit = framework(num_qubits=5)
+        check_multiple_controlled_circuit = framework(num_qubits=6)
+
+        check_single_controlled_circuit.MCSWAP([0, 1, 2], 3, 4)
+
+        check_multiple_controlled_circuit.MCSWAP([0, 1, 2, 3], 4, 5)
+
+        assert single_controlled_circuit == check_single_controlled_circuit
+        assert multiple_controlled_circuit == check_multiple_controlled_circuit
+
     def test_x_control(self) -> None:
-        """ Test the `.control()` method with X gate. """
-        self.x_control(CirqCircuit)
-        self.x_control(PennylaneCircuit)
-        self.x_control(QiskitCircuit)
-        self.x_control(TKETCircuit)
+        """ Test the `.control()` method with X gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.x_control(circuit_framework)
 
     def test_y_control(self) -> None:
-        """ Test the `.control()` method with Y gate. """
-        self.y_control(CirqCircuit)
-        self.y_control(PennylaneCircuit)
-        self.y_control(QiskitCircuit)
-        self.y_control(TKETCircuit)
+        """ Test the `.control()` method with Y gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.y_control(circuit_framework)
 
     def test_z_control(self) -> None:
-        """ Test the `.control()` method with Z gate. """
-        self.z_control(CirqCircuit)
-        self.z_control(PennylaneCircuit)
-        self.z_control(QiskitCircuit)
-        self.z_control(TKETCircuit)
+        """ Test the `.control()` method with Z gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.z_control(circuit_framework)
 
     def test_h_control(self) -> None:
-        """ Test the `.control()` method with H gate. """
-        self.h_control(CirqCircuit)
-        self.h_control(PennylaneCircuit)
-        self.h_control(QiskitCircuit)
-        self.h_control(TKETCircuit)
+        """ Test the `.control()` method with H gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.h_control(circuit_framework)
 
     def test_s_control(self) -> None:
-        """ Test the `.control()` method with S gate. """
-        self.s_control(CirqCircuit)
-        self.s_control(PennylaneCircuit)
-        self.s_control(QiskitCircuit)
-        self.s_control(TKETCircuit)
+        """ Test the `.control()` method with S gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.s_control(circuit_framework)
 
     def test_sdg_control(self) -> None:
-        """ Test the `.control()` method with Sdg gate. """
-        self.sdg_control(CirqCircuit)
-        self.sdg_control(PennylaneCircuit)
-        self.sdg_control(QiskitCircuit)
-        self.sdg_control(TKETCircuit)
+        """ Test the `.control()` method with Sdg gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.sdg_control(circuit_framework)
 
     def test_t_control(self) -> None:
-        """ Test the `.control()` method with T gate. """
-        self.t_control(CirqCircuit)
-        self.t_control(PennylaneCircuit)
-        self.t_control(QiskitCircuit)
-        self.t_control(TKETCircuit)
+        """ Test the `.control()` method with T gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.t_control(circuit_framework)
 
     def test_tdg_control(self) -> None:
-        """ Test the `.control()` method with Tdg gate. """
-        self.tdg_control(CirqCircuit)
-        self.tdg_control(PennylaneCircuit)
-        self.tdg_control(QiskitCircuit)
-        self.tdg_control(TKETCircuit)
+        """ Test the `.control()` method with Tdg gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.tdg_control(circuit_framework)
 
     def test_rx_control(self) -> None:
-        """ Test the `.control()` method with RX gate. """
-        self.rx_control(CirqCircuit)
-        self.rx_control(PennylaneCircuit)
-        self.rx_control(QiskitCircuit)
-        self.rx_control(TKETCircuit)
+        """ Test the `.control()` method with RX gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.rx_control(circuit_framework)
 
     def test_ry_control(self) -> None:
-        """ Test the `.control()` method with RY gate. """
-        self.ry_control(CirqCircuit)
-        self.ry_control(PennylaneCircuit)
-        self.ry_control(QiskitCircuit)
-        self.ry_control(TKETCircuit)
+        """ Test the `.control()` method with RY gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.ry_control(circuit_framework)
 
     def test_rz_control(self) -> None:
-        """ Test the `.control()` method with RZ gate. """
-        self.rz_control(CirqCircuit)
-        self.rz_control(PennylaneCircuit)
-        self.rz_control(QiskitCircuit)
-        self.rz_control(TKETCircuit)
+        """ Test the `.control()` method with RZ gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.rz_control(circuit_framework)
+
+    def test_phase_control(self) -> None:
+        """ Test the `.control()` method with Phase gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.phase_control(circuit_framework)
 
     def test_u3_control(self) -> None:
-        """ Test the `.control()` method with U3 gate. """
-        self.u3_control(CirqCircuit)
-        self.u3_control(PennylaneCircuit)
-        self.u3_control(QiskitCircuit)
-        self.u3_control(TKETCircuit)
+        """ Test the `.control()` method with U3 gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.u3_control(circuit_framework)
 
     def test_swap_control(self) -> None:
-        """ Test the `.control()` method with SWAP gate. """
-        self.swap_control(CirqCircuit)
-        self.swap_control(PennylaneCircuit)
-        self.swap_control(QiskitCircuit)
-        self.swap_control(TKETCircuit)
+        """ Test the `.control()` method with SWAP gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.swap_control(circuit_framework)
 
     def test_cx_control(self) -> None:
-        """ Test the `.control()` method with CX gate. """
-        self.cx_control(CirqCircuit)
-        self.cx_control(PennylaneCircuit)
-        self.cx_control(QiskitCircuit)
-        self.cx_control(TKETCircuit)
+        """ Test the `.control()` method with CX gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cx_control(circuit_framework)
 
     def test_cy_control(self) -> None:
-        """ Test the `.control()` method with CY gate. """
-        self.cy_control(CirqCircuit)
-        self.cy_control(PennylaneCircuit)
-        self.cy_control(QiskitCircuit)
-        self.cy_control(TKETCircuit)
+        """ Test the `.control()` method with CY gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cy_control(circuit_framework)
 
     def test_cz_control(self) -> None:
-        """ Test the `.control()` method with CZ gate. """
-        self.cz_control(CirqCircuit)
-        self.cz_control(PennylaneCircuit)
-        self.cz_control(QiskitCircuit)
-        self.cz_control(TKETCircuit)
+        """ Test the `.control()` method with CZ gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cz_control(circuit_framework)
 
     def test_ch_control(self) -> None:
-        """ Test the `.control()` method with CH gate. """
-        self.ch_control(CirqCircuit)
-        self.ch_control(PennylaneCircuit)
-        self.ch_control(QiskitCircuit)
-        self.ch_control(TKETCircuit)
+        """ Test the `.control()` method with CH gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.ch_control(circuit_framework)
 
     def test_cs_control(self) -> None:
-        """ Test the `.control()` method with CS gate. """
-        self.cs_control(CirqCircuit)
-        self.cs_control(PennylaneCircuit)
-        self.cs_control(QiskitCircuit)
-        self.cs_control(TKETCircuit)
+        """ Test the `.control()` method with CS gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cs_control(circuit_framework)
 
     def test_csdg_control(self) -> None:
-        """ Test the `.control()` method with CSdg gate. """
-        self.csdg_control(CirqCircuit)
-        self.csdg_control(PennylaneCircuit)
-        self.csdg_control(QiskitCircuit)
-        self.csdg_control(TKETCircuit)
+        """ Test the `.control()` method with CSdg gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.csdg_control(circuit_framework)
 
     def test_ct_control(self) -> None:
-        """ Test the `.control()` method with CT gate. """
-        self.ct_control(CirqCircuit)
-        self.ct_control(PennylaneCircuit)
-        self.ct_control(QiskitCircuit)
-        self.ct_control(TKETCircuit)
+        """ Test the `.control()` method with CT gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.ct_control(circuit_framework)
 
     def test_ctdg_control(self) -> None:
-        """ Test the `.control()` method with CTdg gate. """
-        self.ctdg_control(CirqCircuit)
-        self.ctdg_control(PennylaneCircuit)
-        self.ctdg_control(QiskitCircuit)
-        self.ctdg_control(TKETCircuit)
+        """ Test the `.control()` method with CTdg gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.ctdg_control(circuit_framework)
 
     def test_crx_control(self) -> None:
-        """ Test the `.control()` method with CRX gate. """
-        self.crx_control(CirqCircuit)
-        self.crx_control(PennylaneCircuit)
-        self.crx_control(QiskitCircuit)
-        self.crx_control(TKETCircuit)
+        """ Test the `.control()` method with CRX gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.crx_control(circuit_framework)
 
     def test_cry_control(self) -> None:
-        """ Test the `.control()` method with CRY gate. """
-        self.cry_control(CirqCircuit)
-        self.cry_control(PennylaneCircuit)
-        self.cry_control(QiskitCircuit)
-        self.cry_control(TKETCircuit)
+        """ Test the `.control()` method with CRY gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cry_control(circuit_framework)
 
     def test_crz_control(self) -> None:
-        """ Test the `.control()` method with CRZ gate. """
-        self.crz_control(CirqCircuit)
-        self.crz_control(PennylaneCircuit)
-        self.crz_control(QiskitCircuit)
-        self.crz_control(TKETCircuit)
+        """ Test the `.control()` method with CRZ gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.crz_control(circuit_framework)
+
+    def test_cphase_control(self) -> None:
+        """ Test the `.control()` method with CPhase gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cphase_control(circuit_framework)
 
     def test_cu3_control(self) -> None:
-        """ Test the `.control()` method with CU3 gate. """
-        self.cu3_control(CirqCircuit)
-        self.cu3_control(PennylaneCircuit)
-        self.cu3_control(QiskitCircuit)
-        self.cu3_control(TKETCircuit)
+        """ Test the `.control()` method with CU3 gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cu3_control(circuit_framework)
+
+    def test_cswap_control(self) -> None:
+        """ Test the `.control()` method with CSWAP gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.cswap_control(circuit_framework)
 
     def test_mcx_control(self) -> None:
-        """ Test the `.control()` method with MCX gate. """
-        self.mcx_control(CirqCircuit)
-        self.mcx_control(PennylaneCircuit)
-        self.mcx_control(QiskitCircuit)
-        self.mcx_control(TKETCircuit)
+        """ Test the `.control()` method with MCX gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcx_control(circuit_framework)
 
     def test_mcy_control(self) -> None:
-        """ Test the `.control()` method with MCY gate. """
-        self.mcy_control(CirqCircuit)
-        self.mcy_control(PennylaneCircuit)
-        self.mcy_control(QiskitCircuit)
-        self.mcy_control(TKETCircuit)
+        """ Test the `.control()` method with MCY gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcy_control(circuit_framework)
 
     def test_mcz_control(self) -> None:
-        """ Test the `.control()` method with MCZ gate. """
-        self.mcz_control(CirqCircuit)
-        self.mcz_control(PennylaneCircuit)
-        self.mcz_control(QiskitCircuit)
-        self.mcz_control(TKETCircuit)
+        """ Test the `.control()` method with MCZ gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcz_control(circuit_framework)
 
     def test_mch_control(self) -> None:
-        """ Test the `.control()` method with MCH gate. """
-        self.mch_control(CirqCircuit)
-        self.mch_control(PennylaneCircuit)
-        self.mch_control(QiskitCircuit)
-        self.mch_control(TKETCircuit)
+        """ Test the `.control()` method with MCH gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mch_control(circuit_framework)
 
     def test_mcs_control(self) -> None:
-        """ Test the `.control()` method with MCS gate. """
-        self.mcs_control(CirqCircuit)
-        self.mcs_control(PennylaneCircuit)
-        self.mcs_control(QiskitCircuit)
-        self.mcs_control(TKETCircuit)
+        """ Test the `.control()` method with MCS gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcs_control(circuit_framework)
 
     def test_mcsdg_control(self) -> None:
-        """ Test the `.control()` method with MCSdg gate. """
-        self.mcsdg_control(CirqCircuit)
-        self.mcsdg_control(PennylaneCircuit)
-        self.mcsdg_control(QiskitCircuit)
-        self.mcsdg_control(TKETCircuit)
+        """ Test the `.control()` method with MCSdg gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcsdg_control(circuit_framework)
 
     def test_mct_control(self) -> None:
-        """ Test the `.control()` method with MCT gate. """
-        self.mct_control(CirqCircuit)
-        self.mct_control(PennylaneCircuit)
-        self.mct_control(QiskitCircuit)
-        self.mct_control(TKETCircuit)
+        """ Test the `.control()` method with MCT gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mct_control(circuit_framework)
 
     def test_mctdg_control(self) -> None:
-        """ Test the `.control()` method with MCTdg gate. """
-        self.mctdg_control(CirqCircuit)
-        self.mctdg_control(PennylaneCircuit)
-        self.mctdg_control(QiskitCircuit)
-        self.mctdg_control(TKETCircuit)
+        """ Test the `.control()` method with MCTdg gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mctdg_control(circuit_framework)
 
     def test_mcrx_control(self) -> None:
-        """ Test the `.control()` method with MCRX gate. """
-        self.mcrx_control(CirqCircuit)
-        self.mcrx_control(PennylaneCircuit)
-        self.mcrx_control(QiskitCircuit)
-        self.mcrx_control(TKETCircuit)
+        """ Test the `.control()` method with MCRX gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcrx_control(circuit_framework)
 
     def test_mcry_control(self) -> None:
-        """ Test the `.control()` method with MCRY gate. """
-        self.mcry_control(CirqCircuit)
-        self.mcry_control(PennylaneCircuit)
-        self.mcry_control(QiskitCircuit)
-        self.mcry_control(TKETCircuit)
+        """ Test the `.control()` method with MCRY gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcry_control(circuit_framework)
 
     def test_mcrz_control(self) -> None:
-        """ Test the `.control()` method with MCRZ gate. """
-        self.mcrz_control(CirqCircuit)
-        self.mcrz_control(PennylaneCircuit)
-        self.mcrz_control(QiskitCircuit)
-        self.mcrz_control(TKETCircuit)
+        """ Test the `.control()` method with MCRZ gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcrz_control(circuit_framework)
+
+    def test_mcphase_control(self) -> None:
+        """ Test the `.control()` method with MCPhase gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcphase_control(circuit_framework)
 
     def test_mcu3_control(self) -> None:
-        """ Test the `.control()` method with MCU3 gate. """
-        self.mcu3_control(CirqCircuit)
-        self.mcu3_control(PennylaneCircuit)
-        self.mcu3_control(QiskitCircuit)
-        self.mcu3_control(TKETCircuit)
+        """ Test the `.control()` method with MCU3 gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcu3_control(circuit_framework)
+
+    def test_mcswap_control(self) -> None:
+        """ Test the `.control()` method with MCSWAP gate.
+        """
+        for circuit_framework in CIRCUIT_FRAMEWORKS:
+            self.mcswap_control(circuit_framework)

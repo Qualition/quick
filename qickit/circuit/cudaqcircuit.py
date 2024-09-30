@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using NVIDIA's cuda-quantum in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["CUDAQCircuit"]
@@ -31,7 +34,19 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 class CUDAQCircuit(Circuit):
     """ `qickit.circuit.CUDAQCircuit` is the wrapper for using NVIDIA's cuda-quantum in Qickit SDK.
-    ref: https://ieeexplore.ieee.org/document/10247886
+
+    Notes
+    -----
+    NVIDIA's cuda-quantum is a quantum computing library that provides a high-performance
+    quantum circuit compiler using MLIR (Multi-Level Intermediate Representation).
+
+    For more information on cuda-quantum:
+    - Documentation:
+    https://nvidia.github.io/cuda-quantum/latest/index.html
+    - Source Code:
+    https://github.com/NVIDIA/cuda-quantum
+    - Publication:
+    https://ieeexplore.ieee.org/document/10247886
 
     Parameters
     ----------
@@ -58,9 +73,9 @@ class CUDAQCircuit(Circuit):
     Raises
     ------
     TypeError
-        Number of qubits bits must be integers.
+        - Number of qubits bits must be integers.
     ValueError
-        Number of qubits bits must be greater than 0.
+        - Number of qubits bits must be greater than 0.
 
     Usage
     -----
@@ -365,8 +380,10 @@ class CUDAQCircuit(Circuit):
 
         # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
         qiskit_circuit = self.convert(QiskitCircuit)
-        qiskit_circuit.transpile(direct_transpile=direct_transpile,
-                                 synthesis_method=synthesis_method)
+        qiskit_circuit.transpile(
+            direct_transpile=direct_transpile,
+            synthesis_method=synthesis_method
+        )
 
         # Convert back to `qickit.circuit.CUDAQCircuit` to update the circuit
         updated_circuit = qiskit_circuit.convert(CUDAQCircuit)

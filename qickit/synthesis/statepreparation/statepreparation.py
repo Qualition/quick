@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Abstract base class for defining state preparation methods
+to prepare quantum states.
+"""
+
 from __future__ import annotations
+
+import qickit.circuit.circuit
 
 __all__ = ["StatePreparation"]
 
@@ -21,6 +27,7 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, Type, TYPE_CHECKING
 
+import qickit
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
 from qickit.primitives import Bra, Ket
@@ -39,6 +46,11 @@ class StatePreparation(ABC):
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
 
+    Raises
+    ------
+    TypeError
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
+
     Usage
     -----
     >>> state_preparer = StatePreparation(output_framework=QiskitCircuit)
@@ -49,6 +61,9 @@ class StatePreparation(ABC):
         ) -> None:
         """ Initalize a State Preparation instance.
         """
+        if not issubclass(output_framework, qickit.circuit.circuit.Circuit):
+            raise TypeError(f"The output framework must be a subclass of qickit.circuit.Circuit.")
+
         self.output_framework = output_framework
 
     @abstractmethod
@@ -77,5 +92,5 @@ class StatePreparation(ABC):
         Raises
         ------
         TypeError
-            If the state is not a numpy array or a Bra/Ket object.
+            - If the state is not a numpy array or a Bra/Ket object.
         """

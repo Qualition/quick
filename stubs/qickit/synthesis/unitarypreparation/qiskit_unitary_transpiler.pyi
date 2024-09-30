@@ -30,6 +30,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
             self,
             output_framework: type[Circuit],
             ai_transpilation: bool=False,
+            unitary_synthesis_plugin: str="default",
             service: QiskitRuntimeService | None = None,
             backend_name: str | None = None
         ) -> None: ...

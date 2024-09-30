@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Abstract base class for defining unitary preparation methods
+to prepare quantum operators.
+"""
+
 from __future__ import annotations
 
 __all__ = ["UnitaryPreparation"]
@@ -22,6 +26,7 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Type, TYPE_CHECKING
 
+import qickit
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
 from qickit.primitives import Operator
@@ -39,6 +44,11 @@ class UnitaryPreparation(ABC):
     ----------
     `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
+
+    Raises
+    ------
+    TypeError
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
     """
     def __init__(
             self,
@@ -46,6 +56,9 @@ class UnitaryPreparation(ABC):
         ) -> None:
         """ Initalize a Unitary Preparation instance.
         """
+        if not issubclass(output_framework, qickit.circuit.Circuit):
+            raise TypeError(f"The output framework must be a subclass of qickit.circuit.Circuit.")
+
         self.output_framework = output_framework
 
     def prepare_unitary(

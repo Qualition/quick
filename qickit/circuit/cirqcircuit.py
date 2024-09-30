@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Wrapper class for using Google's Cirq in Qickit SDK.
+"""
+
 from __future__ import annotations
 
 __all__ = ["CirqCircuit"]
@@ -32,7 +35,17 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 class CirqCircuit(Circuit):
     """ `qickit.circuit.CirqCircuit` is the wrapper for using Google's Cirq in Qickit SDK.
-    ref: https://zenodo.org/records/11398048
+
+    Notes
+    -----
+    Google's Cirq is a Python framework for creating, editing, and invoking Noisy Intermediate
+    Scale Quantum (NISQ) circuits.
+
+    For more information on Cirq:
+    - Documentation:
+    https://quantumai.google/reference/python/cirq/all_symbols
+    - Source code:
+    https://github.com/quantumlib/Cirq
 
     Parameters
     ----------
@@ -61,9 +74,9 @@ class CirqCircuit(Circuit):
     Raises
     ------
     TypeError
-        Number of qubits bits must be integers.
+        - Number of qubits bits must be integers.
     ValueError
-        Number of qubits bits must be greater than 0.
+        - Number of qubits bits must be greater than 0.
 
     Usage
     -----
@@ -382,8 +395,10 @@ class CirqCircuit(Circuit):
 
         # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
         qiskit_circuit = self.convert(QiskitCircuit)
-        qiskit_circuit.transpile(direct_transpile=direct_transpile,
-                                 synthesis_method=synthesis_method)
+        qiskit_circuit.transpile(
+            direct_transpile=direct_transpile,
+            synthesis_method=synthesis_method
+        )
 
         # Convert back to `qickit.circuit.CirqCircuit` to update the circuit
         updated_circuit = qiskit_circuit.convert(CirqCircuit)

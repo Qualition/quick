@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = ["TestStatePreparationShende"]
+__all__ = ["TestStatePreparationIsometry"]
 
 import copy
 import numpy as np
@@ -23,7 +23,7 @@ import random
 
 from qickit.circuit import QiskitCircuit
 from qickit.primitives import Bra, Ket
-from qickit.synthesis.statepreparation import Shende
+from qickit.synthesis.statepreparation import Isometry
 from tests.synthesis.statepreparation import StatePreparationTemplate
 
 # Define the test data
@@ -34,19 +34,19 @@ checker_data_ket = copy.deepcopy(test_data_ket)
 checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
 
-class TestStatePreparationShende(StatePreparationTemplate):
-    """ `tests.synthesis.test_shende.TestStatePreparationShende` is the tester class
-    for `qickit.synthesis.statepreparation.Shende` class.
+class TestStatePreparationIsometry(StatePreparationTemplate):
+    """ `tests.synthesis.test_shende.TestStatePreparationIsometry` is the tester class
+    for `qickit.synthesis.statepreparation.Isometry` class.
     """
     def test_init(self) -> None:
-        Shende(QiskitCircuit)
+        Isometry(QiskitCircuit)
 
     def test_prepare_state_bra(self) -> None:
-        # Initialize the Shende encoder
-        shende_encoder = Shende(QiskitCircuit)
+        # Initialize the Isometry encoder
+        isometry_encoder = Isometry(QiskitCircuit)
 
         # Encode the data to a circuit
-        circuit = shende_encoder.prepare_state(test_data_bra)
+        circuit = isometry_encoder.prepare_state(test_data_bra)
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
@@ -55,11 +55,11 @@ class TestStatePreparationShende(StatePreparationTemplate):
         assert_almost_equal(np.array(statevector), checker_data_bra.data, decimal=8)
 
     def test_prepare_state_ket(self) -> None:
-        # Initialize the Shende encoder
-        shende_encoder = Shende(QiskitCircuit)
+        # Initialize the Isometry encoder
+        isometry_encoder = Isometry(QiskitCircuit)
 
         # Encode the data to a circuit
-        circuit = shende_encoder.prepare_state(test_data_ket)
+        circuit = isometry_encoder.prepare_state(test_data_ket)
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
@@ -68,11 +68,11 @@ class TestStatePreparationShende(StatePreparationTemplate):
         assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
 
     def test_prepare_state_ndarray(self) -> None:
-        # Initialize the Shende encoder
-        shende_encoder = Shende(QiskitCircuit)
+        # Initialize the Isometry encoder
+        isometry_encoder = Isometry(QiskitCircuit)
 
         # Encode the data to a circuit
-        circuit = shende_encoder.prepare_state(generated_data)
+        circuit = isometry_encoder.prepare_state(generated_data)
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()

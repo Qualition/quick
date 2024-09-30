@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Bra vector class for representing bra states.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Bra"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Literal, overload, SupportsFloat
+from typing import Any, Literal, overload, SupportsFloat, TypeAlias
 
 import qickit.primitives.operator as operator
 import qickit.primitives.ket as ket
-from qickit.types.scalar import Scalar
+
+# `Scalar` is a type alias that represents a scalar value that can be either
+# a real number or a complex number.
+Scalar: TypeAlias = SupportsFloat | complex
 
 
 class Bra:
@@ -55,7 +61,7 @@ class Bra:
     Raises
     ------
     ValueError
-        If the data is a scalar or an operator.
+        - If the data is a scalar or an operator.
 
     Usage
     -----
@@ -77,7 +83,7 @@ class Bra:
         self.norm_scale = np.linalg.norm(data)
         self.data = data
         self.shape = data.shape
-        self.num_qubits = int(np.ceil(np.log2(self.shape[0])))
+        self.num_qubits = int(np.ceil(np.log2(len(data.flatten()))))
         self.is_normalized()
         self.is_padded()
         self.to_bra(data)
@@ -259,7 +265,7 @@ class Bra:
         Raises
         ------
         ValueError
-            If the data is a scalar or an operator.
+            - If the data is a scalar or an operator.
 
         Usage
         -----
@@ -342,7 +348,7 @@ class Bra:
         Raises
         ------
         ValueError
-            If the index type is not supported.
+            - If the index type is not supported.
 
         Usage
         -----
@@ -375,10 +381,10 @@ class Bra:
         Raises
         ------
         ValueError
-            If the two vectors are incompatible.
-            If the the bra and operator are incompatible.
+            - If the two vectors are incompatible.
+            - If the the bra and operator are incompatible.
         NotImplementedError
-            If the `other` type is incompatible.
+            - If the `other` type is incompatible.
         """
         match other:
             case SupportsFloat() | complex():
@@ -452,7 +458,7 @@ class Bra:
         Raises
         ------
         ValueError
-            If the two bra states are incompatible.
+            - If the two bra states are incompatible.
 
         Usage
         -----
@@ -519,10 +525,10 @@ class Bra:
         Raises
         ------
         ValueError
-            If the two vectors are incompatible.
-            If the operator dimensions are incompatible.
+            - If the two vectors are incompatible.
+            - If the operator dimensions are incompatible.
         NotImplementedError
-            If the `other` type is incompatible.
+            - If the `other` type is incompatible.
 
         Usage
         -----

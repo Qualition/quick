@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Shende's Shannon decomposition for preparing quantum unitary operators
+using multiplexed RY and RZ gates.
+"""
+
 from __future__ import annotations
 
 __all__ = ["ShannonDecomposition"]
@@ -31,8 +35,14 @@ from qickit.synthesis.unitarypreparation.unitarypreparation_utils import deconst
 
 
 class ShannonDecomposition(UnitaryPreparation):
-    """ `qickit.ShannonDecomposition` is the class for preparing quantum operators using Shannon decomposition.
-    ref: https://arxiv.org/abs/quant-ph/0406176
+    """ `qickit.ShannonDecomposition` is the class for preparing quantum operators
+    using Shannon decomposition.
+
+    Notes
+    -----
+    Shende's Shannon decomposition uses multiplexed RY and RZ gates to prepare the unitary
+    operator. This method scales exponentially with the number of qubits in terms of circuit
+    depth.
 
     ```
        ┌───┐               ┌───┐     ┌───┐     ┌───┐
@@ -41,6 +51,11 @@ class ShannonDecomposition(UnitaryPreparation):
      /─┤   ├─       /─┤   ├──□──┤   ├──□──┤   ├──□──┤   ├
        └───┘          └───┘     └───┘     └───┘     └───┘
     ```
+
+    For more information on Shannon decomposition:
+    - Shende, Bullock, Markov.
+    Synthesis of Quantum Logic Circuits (2006)
+    https://arxiv.org/abs/quant-ph/0406176
 
     Parameters
     ----------
@@ -55,7 +70,7 @@ class ShannonDecomposition(UnitaryPreparation):
     Raises
     ------
     TypeError
-        If the output framework is not a subclass of `qickit.circuit.Circuit`.
+        - If the output framework is not a subclass of `qickit.circuit.Circuit`.
     """
     def apply_unitary(
             self,
@@ -70,21 +85,18 @@ class ShannonDecomposition(UnitaryPreparation):
         if isinstance(qubit_indices, SupportsIndex):
             qubit_indices = [qubit_indices]
 
-        num_qubits = unitary.num_qubits
-
-        circuit = self.output_framework(num_qubits)
-
         def quantum_shannon_decomposition(
                 circuit: Circuit,
                 qubits: list[int],
                 unitary: NDArray[np.complex128]
             ) -> None:
-            """ Decompose n-qubit unitary into CX/YPow/ZPow/CNOT gates, preserving global phase.
+            """ Decompose n-qubit unitary into CX/RY/RZ/CX gates, preserving global phase.
 
             Using cosine-sine decomposition, the unitary matrix is decomposed into a series of
             single-qubit rotations and CX gates. The most significant qubit is then decomposed
             into a series of RY rotations and CX gates, and the process is repeated recursively
             until the unitary is fully decomposed.
+
             ```
               ┌───┐               ┌───┐
             ──┤   ├──      ────□──┤ Ry├──□───
@@ -109,8 +121,8 @@ class ShannonDecomposition(UnitaryPreparation):
             Raises
             ------
             ValueError
-                If the u matrix is non-unitary
-                If the u matrix is not of shape (2^n,2^n)
+                - If the u matrix is non-unitary
+                - If the u matrix is not of shape (2^n,2^n)
             """
             n = unitary.shape[0]
 
@@ -119,13 +131,12 @@ class ShannonDecomposition(UnitaryPreparation):
                 return
 
             # Perform a cosine-sine (linalg) decomposition on the unitary
-            (u1, u2), theta, (v1, v2) = cossin(unitary, n/2, n/2, separate=True)
+            (u1, u2), theta, (v1, v2) = cossin(unitary, separate=True, p=n/2, q=n/2)
 
             # Apply the decomposition of multiplexed v1/v2 part
             msb_demuxer(circuit, qubits, v1, v2)
 
-            # Observe that middle part looks like Σ_i(Ry(theta_i)⊗|i><i|)
-            # Then most significant qubit is Ry multiplexed over all other qubits
+            # Apply the multiplexed RY gate
             multiplexed_cossin(circuit, qubits, theta, "RY")
 
             # Apply the decomposition of multiplexed u1/u2 part
@@ -157,7 +168,7 @@ class ShannonDecomposition(UnitaryPreparation):
             circuit.RY(phi_1, qubit)
             circuit.Phase(phi_2, qubit)
 
-            # Apply global phase e^{i*pi*phase}
+            # Apply global phase e^{i*pi*phase} picked up during the decomposition
             circuit.GlobalPhase(phase)
 
         def msb_demuxer(
@@ -166,7 +177,37 @@ class ShannonDecomposition(UnitaryPreparation):
                 unitary_1: NDArray[np.complex128],
                 unitary_2: NDArray[np.complex128]
             ) -> None:
-            """ Demultiplex a unitary matrix that is multiplexed in its most-significant-qubit.
+            """ Decompose a multiplexor defined by a pair of unitary matrices operating on the same subspace.
+
+            That is, decompose
+
+            ```
+              ctrl     ────□────
+                        ┌──┴──┐
+              target  /─┤     ├─
+                        └─────┘
+            ```
+
+            represented by the block diagonal matrix
+
+            ```
+                ┏         ┓
+                ┃ U1      ┃
+                ┃      U2 ┃
+                ┗         ┛
+            ```
+
+            to
+
+            ```
+                             ┌───┐
+              ctrl    ───────┤ Rz├──────
+                        ┌───┐└─┬─┘┌───┐
+              target  /─┤ W ├──□──┤ V ├─
+                        └───┘     └───┘
+            ```
+
+            by means of simultaneous unitary diagonalization.
 
             Parameters
             ----------
@@ -179,24 +220,35 @@ class ShannonDecomposition(UnitaryPreparation):
             `unitary_2` : NDArray[np.complex128]
                 Lower-right quadrant of total unitary to be decomposed (see diagram).
             """
-            # Perform diagonalization to find values
+            # Compute the product of `unitary_1` and the conjugate transpose of `unitary_2`
             u = unitary_1 @ unitary_2.conj().T
-            dsquared, V = np.linalg.eig(u)
-            d = np.sqrt(dsquared)
+
+            # Perform eigenvalue decomposition to find the eigenvalues and eigenvectors of u
+            # This step is crucial because it allows us to express the unitary transformation
+            # in terms of its eigenvalues and eigenvectors, which simplifies further calculations
+            d_squared, V = np.linalg.eig(u)
+
+            # Take the square root of the eigenvalues to obtain the singular values
+            # This is necessary because the singular values provide a more convenient form
+            # for constructing the diagonal matrix D, which is used in the final decomposition
+            d = np.sqrt(d_squared)
+
+            # Create a diagonal matrix D from the singular values
+            # The diagonal matrix D is used to scale the eigenvectors appropriately in the final step
             D = np.diag(d)
+
+            # Compute the matrix W using D, the conjugate transpose of V, and `unitary_2`
+            # This step combines the scaled eigenvectors with the original unitary matrix to
+            # achieve the desired decomposition
             W = D @ V.conj().T @ unitary_2
 
-            # Last term is given by I ⊗ W, demultiplexed
-            # Remove most-significant (demuxed) control-qubit
-            # Apply operations for QSD on W
+            # Apply the left gate
             quantum_shannon_decomposition(circuit, demux_qubits[1:], W)
 
-            # Use complex phase of d_i to give theta_i (so d_i* gives -theta_i)
-            # Observe that middle part looks like Σ_i(Rz(theta_i)⊗|i><i|)
-            # Apply operations from multiplexed Rz part
+            # Apply the RZ multiplexed gate
             multiplexed_cossin(circuit, demux_qubits, -np.angle(d), "RZ")
 
-            # Apply operations for QSD on V
+            # Apply the right gate
             quantum_shannon_decomposition(circuit, demux_qubits[1:], V)
 
         def multiplexed_cossin(
@@ -252,12 +304,14 @@ class ShannonDecomposition(UnitaryPreparation):
                 # therefore introduce max function
                 select_qubit = max(-select_qubit - 1, -len(control_qubits))
 
+                # Define the gate mapping
+                gate_mapping = {
+                    "RY": lambda: circuit.RY,
+                    "RZ": lambda: circuit.RZ
+                }
+
                 # Add a rotation on the main qubit
-                match rotation_gate:
-                    case "RY":
-                        circuit.RY(rotation, main_qubit)
-                    case "RZ":
-                        circuit.RZ(rotation, main_qubit)
+                gate_mapping[rotation_gate]()(rotation, main_qubit)
 
                 # Add a CX main qubit controlled by the select qubit
                 circuit.CX(control_qubits[select_qubit], main_qubit)

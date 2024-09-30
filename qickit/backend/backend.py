@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Abstract Base Class for defining backends to run quantum circuits.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Backend", "NoisyBackend", "FakeBackend"]
@@ -48,7 +51,7 @@ class Backend(ABC):
     Raises
     ------
     ValueError
-        If the device is not "CPU" or "GPU".
+        - If the device is not "CPU" or "GPU".
     """
     def __init__(
             self,
@@ -78,10 +81,10 @@ class Backend(ABC):
         Raises
         ------
         TypeError
-            If the circuit is not of type `qickit.circuit.Circuit`.
+            - If the circuit is not of type `qickit.circuit.Circuit`.
         ValueError
-            If the number of shots is not a positive integer.
-            If the number of qubits in the circuit is greater than the maximum supported by the backend.
+            - If the number of shots is not a positive integer.
+            - If the number of qubits in the circuit is greater than the maximum supported by the backend.
 
         Usage
         -----
@@ -132,7 +135,7 @@ class Backend(ABC):
         Raises
         ------
         TypeError
-            The circuit is not of type `qickit.circuit.Circuit`.
+            - The circuit is not of type `qickit.circuit.Circuit`.
 
         Usage
         -----
@@ -159,7 +162,7 @@ class Backend(ABC):
         Raises
         ------
         TypeError
-            The circuit is not of type `qickit.circuit.Circuit`.
+            - The circuit is not of type `qickit.circuit.Circuit`.
 
         Usage
         -----
@@ -189,10 +192,10 @@ class Backend(ABC):
         Raises
         ------
         TypeError
-            The circuit is not of type `qickit.circuit.Circuit`.
+            - The circuit is not of type `qickit.circuit.Circuit`.
         ValueError
-            The circuit must have at least one qubit that is measured.
-            The number of shots must be a positive integer.
+            - The circuit must have at least one qubit that is measured.
+            - The number of shots must be a positive integer.
 
         Usage
         -----
@@ -317,9 +320,9 @@ class NoisyBackend(Backend, ABC):
     Raises
     ------
     ValueError
-        If the device is not "CPU" or "GPU".
-        If the single-qubit error rate is not between 0 and 1.
-        If the two-qubit error rate is not between 0 and 1.
+        - If the device is not "CPU" or "GPU".
+        - If the single-qubit error rate is not between 0 and 1.
+        - If the two-qubit error rate is not between 0 and 1.
     """
     def __init__(
             self,
@@ -370,7 +373,7 @@ class FakeBackend(Backend, ABC):
     Raises
     ------
     ValueError
-        If the device is not "CPU" or "GPU".
+        - If the device is not "CPU" or "GPU".
     """
     def __init__(
             self,
@@ -403,9 +406,9 @@ class FakeBackend(Backend, ABC):
         Raises
         ------
         TypeError
-            The circuit is not of type `qickit.circuit.Circuit`.
+            - The circuit is not of type `qickit.circuit.Circuit`.
         ValueError
-            The number of qubits in the circuit is greater than the maximum supported by the backend.
+            - The number of qubits in the circuit is greater than the maximum supported by the backend.
 
         Usage
         -----
@@ -432,9 +435,9 @@ class FakeBackend(Backend, ABC):
         Raises
         ------
         TypeError
-            The circuit is not of type `qickit.circuit.Circuit`.
+            - The circuit is not of type `qickit.circuit.Circuit`.
         ValueError
-            The number of qubits in the circuit is greater than the maximum supported by the backend.
+            - The number of qubits in the circuit is greater than the maximum supported by the backend.
 
         Usage
         -----
@@ -464,11 +467,11 @@ class FakeBackend(Backend, ABC):
         Raises
         ------
         TypeError
-            The circuit is not of type `qickit.circuit.Circuit`.
+            - The circuit is not of type `qickit.circuit.Circuit`.
         ValueError
-            The number of qubits in the circuit is greater than the maximum supported by the backend.
-            The circuit must have at least one qubit that is measured.
-            The number of shots must be a positive integer.
+            - The number of qubits in the circuit is greater than the maximum supported by the backend.
+            - The circuit must have at least one qubit that is measured.
+            - The number of shots must be a positive integer.
 
         Usage
         -----

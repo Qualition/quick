@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Abstract base class for creating and manipulating gate-based circuits.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Circuit"]
@@ -19,6 +22,7 @@ __all__ = ["Circuit"]
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 import copy
+import cmath
 import matplotlib.pyplot as plt # type: ignore
 import numpy as np
 from numpy.typing import NDArray
@@ -33,7 +37,15 @@ import pytket.circuit
 
 if TYPE_CHECKING:
     from qickit.backend import Backend
-from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitaryTranspiler
+from qickit.circuit.circuit_utils import (
+    is_unitary_matrix, extract_rz, dec_uc_rotations, dec_ucg_help,
+    simplify
+)
+from qickit.synthesis.unitarypreparation import (
+    UnitaryPreparation, QiskitUnitaryTranspiler
+)
+
+EPSILON = 1e-10
 
 """ Set the frozensets for the keys to be used:
 - Decorator `Circuit.gatemethod()`
@@ -82,9 +94,9 @@ class Circuit(ABC):
     Raises
     ------
     TypeError
-        Number of qubits must be integers.
+        - Number of qubits must be integers.
     ValueError
-        Number of qubits must be greater than 0.
+        - Number of qubits must be greater than 0.
     """
     def __init__(
             self,
@@ -153,9 +165,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
         """
         if name in ALL_QUBIT_KEYS:
             match value:
@@ -212,7 +224,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Angle must be a number.
+            - Angle must be a number.
         """
         if name in ANGLE_KEYS:
             match value:
@@ -220,10 +232,15 @@ class Circuit(ABC):
                     for angle in value:
                         if not isinstance(angle, (int, float)):
                             raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
+                        if np.isclose(angle, EPSILON) or np.isclose(angle % (2 * np.pi), EPSILON):
+                            angle = 0
+                    if all(angle == 0 for angle in value):
+                        # Indicate no operation needed
+                        return None
                 case _:
                     if not isinstance(value, (int, float)):
                         raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
-                    if value == 0 or np.isclose(value % (2 * np.pi), 0):
+                    if np.isclose(value, EPSILON) or np.isclose(value % (2 * np.pi), EPSILON):
                         # Indicate no operation needed
                         return None
 
@@ -292,11 +309,11 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Gate not supported.
-            Qubit index out of range.
+            - Gate not supported.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -329,11 +346,11 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Gate not supported.
-            Qubit index out of range.
+            - Gate not supported.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -357,9 +374,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -383,9 +400,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -409,9 +426,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -435,9 +452,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -461,9 +478,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -487,9 +504,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -513,9 +530,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -539,9 +556,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -565,9 +582,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -594,10 +611,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -628,10 +645,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -662,10 +679,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -696,10 +713,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -730,10 +747,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -758,9 +775,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -784,9 +801,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -816,9 +833,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -848,9 +865,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -880,9 +897,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -912,9 +929,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -944,9 +961,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -976,9 +993,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1008,9 +1025,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1043,10 +1060,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1080,10 +1097,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1117,10 +1134,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1154,10 +1171,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1191,10 +1208,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1230,9 +1247,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1264,9 +1281,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1299,9 +1316,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1334,9 +1351,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1369,9 +1386,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1404,9 +1421,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1439,9 +1456,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1474,9 +1491,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1509,9 +1526,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1547,10 +1564,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1587,10 +1604,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1627,10 +1644,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1667,10 +1684,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1708,10 +1725,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1742,15 +1759,454 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
+            - Qubit index must be an integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
         >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3)
         """
+
+    def UCPauliRot(
+        self,
+        control_indices: int | Sequence[int],
+        target_index: int,
+        angles: Sequence[float],
+        rot_axis: Literal["X", "Y", "Z"]
+        ) -> None:
+        """ Apply a uniformly controlled Pauli rotation to the circuit.
+
+        Parameters
+        ----------
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_index` : int
+            The index of the target qubit.
+        `angles` : Sequence[float]
+            The rotation angles in radians.
+        `rot_axis` : Literal["X", "Y", "Z"]
+            The rotation axis.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+            - The number of angles must be a power of 2.
+            - The number of control qubits must be equal to the number of angles.
+            - Invalid rotation axis. Expected 'X', 'Y' or 'Z'.
+
+        Usage
+        -----
+        >>> circuit.UCPauliRot(control_indices=0, target_index=1,
+        ...                    angles=[np.pi/2, np.pi/2], rot_axis="X")
+        """
+        if isinstance(control_indices, int):
+            control_indices = [control_indices]
+
+        angles_params = np.asarray(angles)
+
+        # Check if the number of angles is a power of 2
+        is_power_of_2 = (angles_params.shape[0] & (angles_params.shape[0]-1) == 0) \
+            and angles_params.shape[0] != 0
+
+        if not is_power_of_2:
+            raise ValueError(
+                f"The number of angles must be a power of 2. Received {len(angles_params)}.")
+
+        num_control_qubits = len(control_indices)
+
+        # Check if the number of control qubits is equal to the number of angles
+        if num_control_qubits != np.log2(len(angles_params)):
+            raise ValueError(
+                f"The number of control qubits must be equal to the number of angles. "
+                f"Received {num_control_qubits} control qubits and {len(angles_params)} angles.")
+
+        # Check if the rotation axis is valid
+        if rot_axis not in ["X", "Y", "Z"]:
+            raise ValueError(
+                f"Invalid rotation axis. Expected 'X', 'Y' or 'Z'. Received {rot_axis}.")
+
+        gate_mapping = {
+            "X": lambda: self.RX,
+            "Y": lambda: self.RY,
+            "Z": lambda: self.RZ
+        }
+
+        # If there are no control qubits, apply the gate directly
+        # to the target qubit with the first angle
+        if num_control_qubits == 0:
+            gate_mapping[rot_axis]()(angles_params[0], target_index)
+            return
+
+        # Make a copy of the angles parameters to avoid modifying the original
+        angles_params = angles_params.copy()
+
+        dec_uc_rotations(angles_params, 0, len(angles_params), False)
+
+        # Apply the uniformly controlled Pauli rotations
+        for i, angle in enumerate(angles_params):
+            gate_mapping[rot_axis]()(angle, target_index)
+
+            # Determine the index of the qubit we want to control the CX gate
+            # Note that it corresponds to the number of trailing zeros in the
+            # binary representation of i+1
+            if not i == len(angles_params) - 1:
+                binary_rep = np.binary_repr(i + 1)
+                control_index = len(binary_rep) - len(binary_rep.rstrip("0"))
+            else:
+                control_index = num_control_qubits - 1
+
+            # For X rotations, we have to additionally place some RY gates around the
+            # CX gates
+            # They change the basis of the NOT operation, such that the
+            # decomposition of for uniformly controlled X rotations works correctly by symmetry
+            # with the decomposition of uniformly controlled Z or Y rotations
+            if rot_axis == "X":
+                self.RY(np.pi / 2, target_index)
+            self.CX(control_indices[control_index], target_index)
+            if rot_axis == "X":
+                self.RY(-np.pi / 2, target_index)
+
+    def UCRX(
+        self,
+        control_indices: int | Sequence[int],
+        target_index: int,
+        angles: Sequence[float]
+        ) -> None:
+        """ Apply a uniformly controlled RX gate to the circuit.
+
+        Parameters
+        ----------
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_index` : int
+            The index of the target qubit.
+        `angles` : Sequence[float]
+            The rotation angles in radians.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+            - The number of angles must be a power of 2.
+            - The number of control qubits must be equal to the number of angles.
+
+        Usage
+        -----
+        >>> circuit.UCRX(control_indices=0, target_index=1, angles=[np.pi/2, np.pi/2])
+        """
+        self.UCPauliRot(control_indices, target_index, angles, "X")
+
+    def UCRY(
+        self,
+        control_indices: int | Sequence[int],
+        target_index: int,
+        angles: Sequence[float]
+        ) -> None:
+        """ Apply a uniformly controlled RY gate to the circuit.
+
+        Parameters
+        ----------
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_index` : int
+            The index of the target qubit.
+        `angles` : Sequence[float]
+            The rotation angles in radians.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+            - The number of angles must be a power of 2.
+            - The number of control qubits must be equal to the number of angles.
+
+        Usage
+        -----
+        >>> circuit.UCRY(control_indices=0, target_index=1, angles=[np.pi/2, np.pi/2])
+        """
+        self.UCPauliRot(control_indices, target_index, angles, "Y")
+
+    def UCRZ(
+        self,
+        control_indices: int | Sequence[int],
+        target_index: int,
+        angles: Sequence[float]
+        ) -> None:
+        """ Apply a uniformly controlled RZ gate to the circuit.
+
+        Parameters
+        ----------
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_index` : int
+            The index of the target qubit.
+        `angles` : Sequence[float]
+            The rotation angles in radians.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+            - The number of angles must be a power of 2.
+            - The number of control qubits must be equal to the number of angles.
+
+        Usage
+        -----
+        >>> circuit.UCRZ(control_indices=0, target_index=1, angles=[np.pi/2, np.pi/2])
+        """
+        self.UCPauliRot(control_indices, target_index, angles, "Z")
+
+    def Diagonal(
+            self,
+            diagnoal: NDArray[np.complex128],
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a diagonal gate to the circuit.
+
+        Notes
+        -----
+        .. math::
+            \text{DiagonalGate}\ q_0, q_1, .., q_{n-1} =
+                \begin{pmatrix}
+                    D[0]    & 0         & \dots     & 0 \\
+                    0       & D[1]      & \dots     & 0 \\
+                    \vdots  & \vdots    & \ddots    & 0 \\
+                    0       & 0         & \dots     & D[n-1]
+                \end{pmatrix}
+
+        Diagonal gates are useful as representations of Boolean functions,
+        as they can map from :math:`\{0,1\}^{2^n}` to :math:`\{0,1\}^{2^n}` space. For example a phase
+        oracle can be seen as a diagonal gate with :math:`\{1, -1\}` on the diagonals. Such
+        an oracle will induce a :math:`+1` or :math`-1` phase on the amplitude of any corresponding
+        basis state.
+
+        Diagonal gates appear in many classically hard oracular problems such as
+        Forrelation or Hidden Shift circuits.
+
+        Diagonal gates are represented and simulated more efficiently than a dense
+        :math:`2^n \times 2^n` unitary matrix.
+
+        The reference implementation is via the method described in
+        Theorem 7 of [1]. The code is based on Emanuel Malvetti's semester thesis
+        at ETH in 2018, supervised by Raban Iten and Prof. Renato Renner.
+
+        [1] Shende, Bullock, Markov,
+        Synthesis of Quantum Logic Circuits (2009).
+        https://arxiv.org/pdf/quant-ph/0406176.pdf
+
+        Parameters
+        ----------
+        `diagnoal` : NDArray[np.complex128]
+            The diagonal matrix to apply to the circuit.
+
+        Raises
+        ------
+        ValueError
+            - The number of diagonal entries is not a positive power of 2.
+            - The number of qubits passed must be the same as the number of qubits needed to prepare the diagonal.
+            - A diagonal element does not have absolute value one.
+
+        Usage
+        -----
+        >>> circuit.Diagnoal([[1, 0],
+        ...                   [0, 1]])
+        """
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        # Check if the number of diagonal entries is a power of 2
+        num_qubits = np.log2(len(diagnoal))
+
+        if num_qubits < 1 or not int(num_qubits) == num_qubits:
+            raise ValueError("The number of diagonal entries is not a positive power of 2.")
+        num_qubits = int(num_qubits)
+
+        if num_qubits != len(qubit_indices):
+            raise ValueError(
+                "The number of qubits passed must be the same as "
+                "the number of qubits needed to prepare the diagonal."
+            )
+
+        if not np.allclose(np.abs(diagnoal), 1, atol=1e-10):
+            raise ValueError("A diagonal element does not have absolute value one.")
+
+        # Since the diagonal is a unitary, all its entries have absolute value
+        # one and the diagonal is fully specified by the phases of its entries.
+        diagonal_phases = [cmath.phase(z) for z in diagnoal]
+        n = len(diagnoal)
+
+        while n >= 2:
+            angles_rz = []
+
+            for i in range(0, n, 2):
+                diagonal_phases[i // 2], rz_angle = extract_rz(
+                    diagonal_phases[i], diagonal_phases[i + 1]
+                )
+                angles_rz.append(rz_angle)
+
+            num_act_qubits = int(np.log2(n))
+            control_indices = list(range(num_qubits - num_act_qubits + 1, num_qubits))
+            target_index = num_qubits - num_act_qubits
+
+            control_indices = [qubit_indices[i] for i in control_indices]
+            target_index = qubit_indices[target_index]
+
+            self.UCRZ(
+                angles=angles_rz,
+                control_indices=control_indices,
+                target_index=target_index
+            )
+
+            n //= 2
+
+        self.GlobalPhase(diagonal_phases[0])
+
+    def UC(
+            self,
+            control_indices: int | Sequence[int],
+            target_index: int,
+            gates: list[NDArray[np.complex128]],
+            up_to_diagonal: bool=False,
+            multiplexor_simplification: bool=True
+        ) -> None:
+        """ Apply a uniformly controlled gate (multiplexor) to the circuit.
+
+        Notes
+        -----
+        The decomposition used in this method is based on the paper by Bergholm et al. [1].
+        Additional simplifications were made by de Carvalho et al. [2].
+
+        [1] Bergholm,
+        Quantum circuits with uniformly controlled one-qubit gates (2005).
+        https://journals.aps.org/pra/abstract/10.1103/PhysRevA.71.052330
+
+        [2] de Carvalho, Batista, de Veras, Araujo, da Silva,
+        Quantum multiplexer simplification for state preparation (2024).
+        https://arxiv.org/abs/2409.05618
+
+        Parameters
+        ----------
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_index` : int
+            The index of the target qubit.
+        `gates` : list[NDArray[np.complex128]]
+            The gates to apply to the circuit.
+        `up_to_diagonal` : bool, optional, default=False
+            Determines if the gate is implemented up to a diagonal
+            or if it is decomposed completely.
+        `multiplexor_simplification` : bool, optional, default=True
+            Determines if the multiplexor is simplified using [2].
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+        ValueError
+            - Qubit index out of range.
+            - The number of single-qubit gates must be a non-negative power of 2.
+            - The number of control qubits passed must be equal to the number of gates.
+            - A gate is not unitary.
+
+        Usage
+        -----
+        >>> circuit.UC(control_indices=[1, 2], target_index=0,
+        ...            [[[1, 0],
+        ...              [0, 1]],
+        ...             [[0, 1],
+        ...              [1, 0]]])
+        >>> circuit.UC(control_indices=[1, 2], target_index=0,
+        ...            [[[1, 0],
+        ...              [0, 1]],
+        ...             [[0, 1],
+        ...              [1, 0]]], up_to_diagonal=True)
+        """
+        if isinstance(control_indices, int):
+            control_indices = [control_indices]
+
+        for gate in gates:
+            if not gate.shape == (2, 2):
+                raise ValueError(f"The dimension of a gate is not equal to 2x2. Received {gate.shape}.")
+
+        # Check if number of gates in gate_list is a positive power of two
+        num_control = np.log2(len(gates))
+        if num_control < 0 or not int(num_control) == num_control:
+            raise ValueError(
+                "The number of single-qubit gates is not a non-negative power of 2."
+            )
+
+        if not num_control == len(control_indices):
+            raise ValueError(
+                "The number of control qubits passed must be equal to the number of gates."
+            )
+
+        # Check if the single-qubit gates are unitaries
+        for gate in gates:
+            if not is_unitary_matrix(gate, 1e-10):
+                raise ValueError("A gate is not unitary.")
+
+        qubits = [target_index] + list(control_indices)
+        if multiplexor_simplification:
+            new_controls, gates = simplify(gates, int(num_control))
+            control_indices = [qubits[len(control_indices) + 1 - i] for i in new_controls]
+            control_indices.reverse()
+
+        # If there is no control, we use the ZYZ decomposition
+        if not control_indices:
+            self.unitary(gates[0], target_index)
+            return
+
+        # If there is at least one control, first,
+        # we find the single qubit gates of the decomposition
+        (single_qubit_gates, diagonal) = dec_ucg_help(gates, len(control_indices) + 1)
+
+        # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
+        # (which are absorbed into the single-qubit unitaries) to get back the full decomposition.
+        for i, gate in enumerate(single_qubit_gates):
+            if i == 0:
+                self.unitary(gate, target_index)
+                self.H(target_index)
+
+            elif i == len(single_qubit_gates) - 1:
+                self.H(target_index)
+                self.RZ(-np.pi / 2, target_index)
+                self.unitary(gate, target_index)
+
+            else:
+                self.H(target_index)
+                self.RZ(-np.pi / 2, target_index)
+                self.unitary(gate, target_index)
+                self.H(target_index)
+
+            # The number of the control qubit is given by the number of zeros at the end
+            # of the binary representation of (i+1)
+            binary_rep = np.binary_repr(i + 1)
+            num_trailing_zeros = len(binary_rep) - len(binary_rep.rstrip("0"))
+            control_index = num_trailing_zeros
+
+            # Add CX gate
+            if not i == len(single_qubit_gates) - 1:
+                self.CX(control_indices[control_index], target_index)
+                self.GlobalPhase(-np.pi/4)
+
+        # If `up_to_diagonal` is False, we apply the diagonal gate
+        if not up_to_diagonal:
+            self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
 
     @abstractmethod
     def GlobalPhase(
@@ -1767,10 +2223,10 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Qubit index must be an integer.
-            Angle must be a float or integer.
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
         ValueError
-            Qubit index out of range.
+            - Qubit index out of range.
 
         Usage
         -----
@@ -1782,7 +2238,8 @@ class Circuit(ABC):
             unitary_matrix: NDArray[np.complex128],
             qubit_indices:  int | Sequence[int]
         ) -> None:
-        """ Apply a unitary gate to the circuit.
+        """ Apply a unitary gate to the circuit. Uses Quantum Shannon Decomposition
+        to decompose the unitary matrix into RY, RZ, and CX gates.
 
         Parameters
         ----------
@@ -1794,20 +2251,28 @@ class Circuit(ABC):
         Raises
         ------
         ValueError
-            The unitary matrix must have a size of 2^n x 2^n, where n is the number of qubits.
-            The unitary matrix must be unitary.
-            The number of qubits passed must be the same as the number of qubits needed to prepare the unitary.
+            - The unitary matrix must have a size of 2^n x 2^n, where n is the number of qubits.
+            - The unitary matrix must be unitary.
+            - The number of qubits passed must be the same as the number of qubits needed to prepare the unitary.
 
         Usage
         -----
-        >>> circuit.unitary([[0, 1], [1, 0]], qubit_indices=0)
-        >>> circuit.unitary([[0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]], qubit_indices=[0, 1])
+        >>> circuit.unitary([[0, 1],
+        ...                  [1, 0]], qubit_indices=0)
+        >>> circuit.unitary([[0, 0, 0, 1],
+        ...                  [0, 0, 1, 0],
+        ...                  [0, 1, 0, 0],
+        ...                  [1, 0, 0, 0]], qubit_indices=[0, 1])
         """
         # Initialize the unitary preparation schema
-        unitary_preparer = QiskitUnitaryTranspiler(type(self))
+        unitary_preparer = QiskitUnitaryTranspiler(output_framework=type(self))
 
         # Prepare the unitary matrix
-        self = unitary_preparer.apply_unitary(self, unitary_matrix, qubit_indices)
+        self = unitary_preparer.apply_unitary(
+            circuit=self,
+            unitary=unitary_matrix,
+            qubit_indices=qubit_indices
+        )
 
     def clbit_condition(
             self,
@@ -1883,7 +2348,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Adjoint must be a boolean.
+            - Adjoint must be a boolean.
 
         Usage
         -----
@@ -1928,9 +2393,9 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            The circuit must be a Circuit object.
+            - The circuit must be a Circuit object.
         ValueError
-            The number of qubits must match the number of qubits in the circuit.
+            - The number of qubits must match the number of qubits in the `circuit`.
 
         Usage
         -----
@@ -1981,7 +2446,7 @@ class Circuit(ABC):
         Raises
         ------
         ValueError
-            If an index in `qubit_indices` has priorly been measured.
+            - If an index in `qubit_indices` has priorly been measured.
 
         Usage
         -----
@@ -2044,7 +2509,7 @@ class Circuit(ABC):
         Raises
         ------
         ValueError
-            The circuit must have at least one qubit that is measured.
+            - The circuit must have at least one qubit that is measured.
 
         Usage
         -----
@@ -2297,7 +2762,7 @@ class Circuit(ABC):
             - Qubit indices must be a collection.
             - All qubit indices must be integers.
         ValueError
-            The number of qubits must match the number of qubits in the circuit.
+            - The number of qubits must match the number of qubits in the circuit.
 
         Usage
         -----
@@ -2345,10 +2810,18 @@ class Circuit(ABC):
         `converted_circuit` : qickit.circuit.Circuit
             The converted circuit.
 
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circle.Circuit`.
+
         Usage
         -----
         >>> converted_circuit = circuit.convert(circuit_framework=QiskitCircuit)
         """
+        if not issubclass(circuit_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
         # Define the new circuit using the provided framework
         converted_circuit = circuit_framework(self.num_qubits)
 
@@ -2454,9 +2927,13 @@ class Circuit(ABC):
 
                 # For CSWAP and MCSWAP gates
                 elif "first_target_index" in gate_info:
-                    gate_info["first_target_index"] = gate_info.pop("first_qubit_index", None) + num_controls
-                    gate_info["second_target_index"] = gate_info.pop("second_qubit_index", None) + num_controls
-                    gate_info["control_indices"] = [gate_info.pop("control_qubit_index", None) + num_controls]
+                    gate_info["first_target_index"] = gate_info.pop("first_target_index", None) + num_controls
+                    gate_info["second_target_index"] = gate_info.pop("second_target_index", None) + num_controls
+                    if "control_indices" in gate_info:
+                        control_indices = gate_info.pop("control_indices", None)
+                        gate_info["control_indices"] = [control_index + num_controls for control_index in control_indices]
+                    else:
+                        gate_info["control_indices"] = [gate_info.pop("control_index", None) + num_controls]
 
             gate_info["control_indices"] = list(range(num_controls)) + gate_info.pop("control_indices", None)
 
@@ -2499,7 +2976,7 @@ class Circuit(ABC):
         Raises
         ------
         ValueError
-            QASM version must be either 2 or 3.
+            - QASM version must be either 2 or 3.
 
         Usage
         -----
@@ -2525,10 +3002,18 @@ class Circuit(ABC):
         `circuit` : qickit.circuit.Circuit
             The converted circuit.
 
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circuit.Circuit`.
+
         Usage
         -----
         >>> circuit.from_cirq(cirq_circuit)
         """
+        if not issubclass(output_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
         # Define a circuit
         num_qubits = len(cirq_circuit.all_qubits())
         circuit = output_framework(num_qubits=num_qubits)
@@ -2542,13 +3027,13 @@ class Circuit(ABC):
             gate_type = type(gate).__name__
 
             qubits = operation.qubits
-            qubit_indices = [qubit.x for qubit in qubits] if len(qubits) > 1 else qubits[0].x # type: ignore
+            if gate_type != "GlobalPhaseGate":
+                qubit_indices = [qubit.x for qubit in qubits] if len(qubits) > 1 else qubits[0].x # type: ignore
 
             # Extract the parameters of the gate
             parameters = gate._json_dict_() # type: ignore
 
             # TODO: Add U3, CU3, and MCU3 support (Note: Cirq doesn't have built-in U3 gate)
-            # TODO: Add GlobalPhase gate support (Note: Cirq doesn't have global phase attribute)
             if gate_type == "IdentityGate":
                 circuit.Identity(qubit_indices)
 
@@ -2573,6 +3058,14 @@ class Circuit(ABC):
                     circuit.Sdg(qubit_indices)
                 elif parameters["exponent"] == -0.25:
                     circuit.Tdg(qubit_indices)
+                else:
+                    circuit.Phase(parameters["exponent"], qubit_indices)
+
+                    if parameters["global_shift"] != 0:
+                        global_phase_angle = abs(
+                            np.log(parameters["global_shift"])
+                        )
+                        circuit.GlobalPhase(global_phase_angle)
 
             elif gate_type == "S":
                 circuit.S(qubit_indices)
@@ -2604,95 +3097,145 @@ class Circuit(ABC):
             elif gate_type == "SwapPowGate":
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
 
+            elif gate_type == "GlobalPhaseGate":
+                global_phase_angle = abs(
+                    np.log(parameters["coefficient"])
+                )
+                circuit.GlobalPhase(global_phase_angle)
+
+            elif gate_type == "MeasurementGate":
+                circuit.measure(qubit_indices)
+
             elif gate_type == "ControlledGate":
                 if parameters["sub_gate"] == cirq.X:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCX(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCX(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CX(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.Y:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCY(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCY(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CY(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.Z:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCZ(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCZ(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CZ(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.H:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCH(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCH(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CH(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.S:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCS(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCS(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CS(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.S**-1:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCSdg(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCSdg(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CSdg(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.T:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCT(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCT(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CT(qubit_indices[0], qubit_indices[1])
 
                 elif parameters["sub_gate"] == cirq.T**-1:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCTdg(control_indices=qubit_indices[:-1],
-                                    target_indices=qubit_indices[-1])
+                        circuit.MCTdg(
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CTdg(qubit_indices[0], qubit_indices[1])
 
                 elif isinstance(parameters["sub_gate"], cirq.Rx):
                     angle = parameters["sub_gate"]._json_dict_()["rads"]
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCRX(angle,
-                                     control_indices=qubit_indices[:-1],
-                                     target_indices=qubit_indices[-1])
+                        circuit.MCRX(
+                            angle,
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CRX(angle, qubit_indices[0], qubit_indices[1])
 
                 elif isinstance(parameters["sub_gate"], cirq.Ry):
                     angle = parameters["sub_gate"]._json_dict_()["rads"]
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCRY(angle,
-                                     control_indices=qubit_indices[:-1],
-                                     target_indices=qubit_indices[-1])
+                        circuit.MCRY(
+                            angle,
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CRY(angle, qubit_indices[0], qubit_indices[1])
 
                 elif isinstance(parameters["sub_gate"], cirq.Rz):
                     angle = parameters["sub_gate"]._json_dict_()["rads"]
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCRZ(angle,
-                                     control_indices=qubit_indices[:-1],
-                                     target_indices=qubit_indices[-1])
+                        circuit.MCRZ(
+                            angle,
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
                     else:
                         circuit.CRZ(angle, qubit_indices[0], qubit_indices[1])
 
+                elif isinstance(parameters["sub_gate"], cirq.ZPowGate):
+                    angle = parameters["sub_gate"]._json_dict_()["exponent"]
+                    if len(parameters["control_qid_shape"]) > 1:
+                        circuit.MCPhase(
+                            angle,
+                            control_indices=qubit_indices[:-1],
+                            target_indices=qubit_indices[-1]
+                        )
+                    else:
+                        circuit.CPhase(angle, qubit_indices[0], qubit_indices[1])
+
+                    if parameters["sub_gate"]._json_dict_()["global_shift"] != 0:
+                        global_phase_angle = abs(
+                            np.log(parameters["sub_gate"]._json_dict_()["global_shift"])
+                        )
+                        circuit.GlobalPhase(global_phase_angle)
+
                 elif parameters["sub_gate"] == cirq.SWAP:
                     if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCSWAP(control_indices=qubit_indices[:-2],
-                                       first_target_index=qubit_indices[-2],
-                                       second_target_index=qubit_indices[-1])
+                        circuit.MCSWAP(
+                            control_indices=qubit_indices[:-2],
+                            first_target_index=qubit_indices[-2],
+                            second_target_index=qubit_indices[-1]
+                        )
                     else:
                         circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
 
@@ -2720,10 +3263,18 @@ class Circuit(ABC):
         `circuit` : qickit.circuit.Circuit
             The converted circuit.
 
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circuit.Circuit`.
+
         Usage
         -----
         >>> circuit.from_pennylane(pennylane_circuit)
         """
+        if not issubclass(output_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
         # Define a circuit
         num_qubits = len(pennylane_circuit.device.wires)
         circuit = output_framework(num_qubits=num_qubits)
@@ -2750,10 +3301,18 @@ class Circuit(ABC):
         `circuit` : qickit.circuit.Circuit
             The converted circuit.
 
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circuit.Circuit`.
+
         Usage
         -----
         >>> circuit.from_qiskit(qiskit_circuit)
         """
+        if not issubclass(output_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
         def match_pattern(
                 string: str,
                 gate_name: str
@@ -2781,10 +3340,19 @@ class Circuit(ABC):
         num_qubits = qiskit_circuit.num_qubits
         circuit = output_framework(num_qubits=num_qubits)
 
+        # Define the gates to skip
+        skip_gates = ["barrier", "global_phase"]
+
         # Iterate over the operations in the Qiskit circuit
         for gate in qiskit_circuit.data:
             gate_type = gate.operation.name
-            qubit_indices = [int(qubit._index) for qubit in gate.qubits] if len(gate.qubits) > 1 else [int(gate.qubits[0]._index)]
+
+            if gate_type not in skip_gates:
+                qubit_indices = [int(qubit._index) for qubit in gate.qubits] if len(gate.qubits) > 1 else [int(gate.qubits[0]._index)]
+            elif gate_type == "global_phase":
+                pass
+            else:
+                continue
 
             if gate_type == "id":
                 circuit.Identity(qubit_indices)
@@ -2821,6 +3389,9 @@ class Circuit(ABC):
 
             elif gate_type == "rz":
                 circuit.RZ(gate.operation.params[0], qubit_indices)
+
+            elif gate_type == "p":
+                circuit.Phase(gate.operation.params[0], qubit_indices)
 
             elif gate_type in ["u", "u3"]:
                 circuit.U3(gate.operation.params, qubit_indices[0])
@@ -2861,11 +3432,20 @@ class Circuit(ABC):
             elif gate_type == "crz":
                 circuit.CRZ(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
 
+            elif gate_type == "cp":
+                circuit.CPhase(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
+
             elif gate_type == "cu3":
                 circuit.CU3(gate.operation.params, qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "cswap":
                 circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
+
+            elif gate_type == "measure":
+                circuit.measure(qubit_indices)
+
+            elif gate_type == "global_phase":
+                circuit.GlobalPhase(gate.operation.params[0])
 
             elif match_pattern(gate_type, "x"):
                 circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
@@ -2900,6 +3480,9 @@ class Circuit(ABC):
             elif match_pattern(gate_type, "rz"):
                 circuit.MCRZ(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
 
+            elif match_pattern(gate_type, "phase"):
+                circuit.MCPhase(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
+
             elif match_pattern(gate_type, "u3"):
                 circuit.MCU3(gate.operation.params, qubit_indices[:-1], qubit_indices[-1])
 
@@ -2933,10 +3516,18 @@ class Circuit(ABC):
         `circuit` : qickit.circuit.Circuit
             The converted circuit.
 
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circuit.Circuit`.
+
         Usage
         -----
         >>> circuit.from_tket(tket_circuit)
         """
+        if not issubclass(output_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
         # Define a circuit
         num_qubits = tket_circuit.n_qubits
         circuit = output_framework(num_qubits=num_qubits)
@@ -2983,6 +3574,9 @@ class Circuit(ABC):
             elif gate_type == "OpType.Rz":
                 circuit.RZ(float(gate.op.params[0]), qubit_indices[0])
 
+            elif gate_type == "OpType.U1":
+                circuit.Phase(float(gate.op.params[0]), qubit_indices[0])
+
             elif gate_type == "OpType.U3":
                 circuit.U3([float(param) for param in gate.op.params], qubit_indices[0])
 
@@ -3016,6 +3610,9 @@ class Circuit(ABC):
             elif gate_type == "OpType.CRz":
                 circuit.CRZ(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
 
+            elif gate_type == "OpType.CU1":
+                circuit.CPhase(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
+
             elif gate_type == "OpType.CU3":
                 circuit.CU3([float(param) for param in gate.op.params], qubit_indices[0], qubit_indices[1])
 
@@ -3030,6 +3627,9 @@ class Circuit(ABC):
 
             elif gate_type == "OpType.CnZ":
                 circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
+
+            elif gate_type == "OpType.Measure":
+                circuit.measure(qubit_indices)
 
             elif isinstance(gate.op, pytket.circuit.QControlBox):
                 qcontrolbox = gate.op
@@ -3103,6 +3703,12 @@ class Circuit(ABC):
                     else:
                         circuit.CRZ(float(gate.op.get_op().params[0]), qubit_indices[0], qubit_indices[1])
 
+                elif "U1" in str(qcontrolbox.get_op()):
+                    if len(qubit_indices) > 2:
+                        circuit.MCPhase(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
+                    else:
+                        circuit.CPhase(float(gate.op.get_op().params[0]), qubit_indices[0], qubit_indices[1])
+
                 elif "U3" in str(qcontrolbox.get_op()):
                     if len(qubit_indices) > 2:
                         circuit.MCU3([float(param) for param in gate.op.get_op().params], qubit_indices[:-1], qubit_indices[-1])
@@ -3113,7 +3719,7 @@ class Circuit(ABC):
                 raise ValueError(f"Gate not supported.\n{gate_type} ")
 
         # Apply the global phase of the `tket_circuit`
-        circuit.GlobalPhase(float(tket_circuit.phase)/np.pi)
+        circuit.GlobalPhase(float(tket_circuit.phase))
 
         return circuit
 
@@ -3136,10 +3742,18 @@ class Circuit(ABC):
         `circuit` : qickit.circuit.Circuit
             The converted circuit.
 
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circuit.Circuit`.
+
         Usage
         -----
         >>> circuit.from_qasm(qasm)
         """
+        if not issubclass(output_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
         # Define a circuit
         num_qubits = 0
         circuit = output_framework(num_qubits=num_qubits)
@@ -3236,7 +3850,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            Circuits must be compared with other circuits.
+            - Circuits must be compared with other circuits.
 
         Usage
         -----

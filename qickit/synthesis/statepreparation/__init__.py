@@ -13,9 +13,11 @@
 # limitations under the License.
 
 __all__ = ["StatePreparation",
+           "Isometry",
            "Shende",
            "Mottonen"]
 
 from qickit.synthesis.statepreparation.statepreparation import StatePreparation
+from qickit.synthesis.statepreparation.isometry import Isometry
 from qickit.synthesis.statepreparation.shende import Shende
 from qickit.synthesis.statepreparation.mottonen import Mottonen

@@ -150,6 +150,13 @@ class TestConvert:
         circuit.MCSWAP(0, 1, 2)
         circuit.MCSWAP([0, 1], 2, 3)
 
+        # Apply global phase
+        circuit.GlobalPhase(0.5)
+
+        # Apply measurement
+        circuit.measure(0)
+        circuit.measure([1, 2])
+
         # Convert the circuit
         converted_circuit_cirq = circuit.convert(CirqCircuit)
         converted_circuit_pennylane = circuit.convert(PennylaneCircuit)

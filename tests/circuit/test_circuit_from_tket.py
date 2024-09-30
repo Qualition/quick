@@ -193,6 +193,20 @@ class TestFromTKET(FrameworkTemplate):
         check_circuit.RZ(0.5, 0)
         assert qickit_circuit == check_circuit
 
+    def test_Phase(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(1, 1)
+        tket_circuit.add_gate(OpType.U1, 0.15, [0])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(1)
+        check_circuit.Phase(0.15, 0)
+        assert qickit_circuit == check_circuit
+
     def test_U3(self) -> None:
         # Define the TKET circuit
         tket_circuit = TKCircuit(1, 1)
@@ -378,6 +392,20 @@ class TestFromTKET(FrameworkTemplate):
         # that the two circuits are equal
         check_circuit = TKETCircuit(2)
         check_circuit.CRZ(0.5, 0, 1)
+        assert qickit_circuit == check_circuit
+
+    def test_CPhase(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(2, 2)
+        tket_circuit.add_gate(OpType.CU1, 0.15, [0, 1])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(2)
+        check_circuit.CPhase(0.15, 0, 1)
         assert qickit_circuit == check_circuit
 
     def test_CU3(self) -> None:
@@ -603,6 +631,24 @@ class TestFromTKET(FrameworkTemplate):
         check_circuit.MCRZ(0.5, [0, 1], 3)
         assert qickit_circuit == check_circuit
 
+    def test_MCPhase(self) -> None:
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(4, 4)
+        phase = Op.create(OpType.U1, 0.15)
+        mcphase = QControlBox(phase, 2)
+        tket_circuit.add_qcontrolbox(mcphase, [0, 1, 2])
+        tket_circuit.add_qcontrolbox(mcphase, [0, 1, 3])
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(4)
+        check_circuit.MCPhase(0.15, [0, 1], 2)
+        check_circuit.MCPhase(0.15, [0, 1], 3)
+        assert qickit_circuit == check_circuit
+
     def test_MCU3(self) -> None:
         # Define the TKET circuit
         tket_circuit = TKCircuit(4, 4)
@@ -631,31 +677,53 @@ class TestFromTKET(FrameworkTemplate):
 
         # Convert the TKET circuit to a QICKIT circuit
         qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
-        print(qickit_circuit)
+
         # Define the equivalent QICKIT circuit, and ensure
         # that the two circuits are equal
         check_circuit = TKETCircuit(4)
         check_circuit.MCSWAP([0, 1], 2, 3)
-        print(check_circuit)
         assert qickit_circuit == check_circuit
 
     def test_GlobalPhase(self) -> None:
-        # # Define the TKET circuit
-        # tket_circuit = TKCircuit(1, 1)
-        # tket_circuit.add_phase(0.5)
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(1, 1)
+        tket_circuit.add_phase(0.5)
 
-        # # Convert the TKET circuit to a QICKIT circuit
-        # qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
 
-        # # Define the equivalent QICKIT circuit, and ensure
-        # # that the two circuits are equal
-        # check_circuit = TKETCircuit(1)
-        # check_circuit.GlobalPhase(0.5)
-        # assert qickit_circuit == check_circuit
-        pass
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        check_circuit = TKETCircuit(1)
+        check_circuit.GlobalPhase(0.5)
+        assert qickit_circuit == check_circuit
 
     def test_single_measurement(self) -> None:
-        pass
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(1, 1)
+        tket_circuit.Measure(0, 0)
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        checker_circuit = TKETCircuit(1)
+        checker_circuit.measure(0)
+        assert qickit_circuit == checker_circuit
 
     def test_multiple_measurement(self) -> None:
-        pass
+        # Define the TKET circuit
+        tket_circuit = TKCircuit(2, 2)
+        tket_circuit.Measure(0, 0)
+        tket_circuit.Measure(1, 1)
+
+        # Convert the TKET circuit to a QICKIT circuit
+        qickit_circuit = Circuit.from_tket(tket_circuit, TKETCircuit)
+
+        # Define the equivalent QICKIT circuit, and ensure
+        # that the two circuits are equal
+        checker_circuit = TKETCircuit(2)
+        checker_circuit.measure(0)
+        checker_circuit.measure(1)
+        assert qickit_circuit == checker_circuit
