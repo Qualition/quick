@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ["TestDiffusion"]
 
 from numpy.testing import assert_almost_equal
+import pytest
 import random
 from typing import Type
 
@@ -95,6 +96,10 @@ class TestDiffusion(UnitaryPreparationTemplate):
     def test_init(self) -> None:
         Diffusion(QiskitCircuit)
 
+    def test_init_invalid_output_framework(self) -> None:
+        with pytest.raises(TypeError):
+            Diffusion("invalid output framework") # type: ignore
+
     def test_prepare_unitary_ndarray(self) -> None:
         # Initialize the Diffusion
         diffusion_model = Diffusion(QiskitCircuit)
@@ -120,3 +125,71 @@ class TestDiffusion(UnitaryPreparationTemplate):
 
         # Ensure that the unitary matrix is close enough to the expected unitary matrix
         assert_almost_equal(unitary, test_unitary, decimal=8)
+
+    def test_apply_unitary_ndarray(self) -> None:
+        # Initialize the Diffusion
+        diffusion_model = Diffusion(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        # Apply the unitary matrix to the circuit
+        circuit = diffusion_model.apply_unitary(circuit, test_unitary, range(3))
+
+        # Get the unitary matrix of the circuit
+        unitary = circuit.get_unitary()
+
+        # Ensure that the unitary matrix is close enough to the expected unitary matrix
+        assert_almost_equal(unitary, test_unitary, decimal=8)
+
+    def test_apply_unitary_operator(self) -> None:
+        # Initialize the Diffusion
+        diffusion_model = Diffusion(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        # Apply the unitary matrix to the circuit
+        circuit = diffusion_model.apply_unitary(circuit, Operator(test_unitary), range(3))
+
+        # Get the unitary matrix of the circuit
+        unitary = circuit.get_unitary()
+
+        # Ensure that the unitary matrix is close enough to the expected unitary matrix
+        assert_almost_equal(unitary, test_unitary, decimal=8)
+
+    def test_apply_unitary_invalid_input(self) -> None:
+        # Initialize the Diffusion
+        diffusion_model = Diffusion(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        with pytest.raises(TypeError):
+            diffusion_model.apply_unitary(circuit, "invalid input", range(3)) # type: ignore
+
+    def test_apply_unitary_invalid_qubit_indices(self) -> None:
+        # Initialize the Diffusion
+        diffusion_model = Diffusion(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        with pytest.raises(TypeError):
+            diffusion_model.apply_unitary(circuit, test_unitary, "invalid qubit indices") # type: ignore
+
+        with pytest.raises(TypeError):
+            diffusion_model.apply_unitary(circuit, test_unitary, [1+1j, 2+2j, 3+3j]) # type: ignore
+        
+        with pytest.raises(ValueError):
+            diffusion_model.apply_unitary(circuit, test_unitary, [0, 1, 2, 3])
+
+    def test_apply_unitary_invalid_qubit_indices_out_of_range(self) -> None:
+        # Initialize the Diffusion
+        diffusion_model = Diffusion(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        with pytest.raises(IndexError):
+            diffusion_model.apply_unitary(circuit, test_unitary, [0, 1, 4])

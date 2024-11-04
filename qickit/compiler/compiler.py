@@ -77,10 +77,11 @@ class Compiler:
 
     Raises
     ------
-    ValueError
+    TypeError
         - If the circuit framework is invalid.
         - If the state preparation schema is invalid.
         - If the unitary preparation schema is invalid.
+        - If the optimizer is invalid.
 
     Usage
     -----

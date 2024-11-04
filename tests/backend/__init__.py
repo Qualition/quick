@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["qiskit_backends",
-           "Template"]
+__all__ = [
+    "qiskit_backends",
+    "Template"
+]
 
 from tests.backend.test_backend import Template
 from tests.backend import qiskit_backends

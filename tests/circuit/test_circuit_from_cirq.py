@@ -251,7 +251,7 @@ class TestFromCirq(FrameworkTemplate):
         # Define the equivalent QICKIT circuit, and ensure
         # that the two circuits are equal
         check_circuit = CirqCircuit(1)
-        check_circuit.Phase(0.15, 0)
+        check_circuit.Phase(0.15*np.pi, 0)
         assert qickit_circuit == check_circuit
 
     def test_U3(self) -> None:

@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["Circuit",
-           "CirqCircuit",
-           "CUDAQCircuit",
-           "PennylaneCircuit",
-           "QiskitCircuit",
-           "TKETCircuit"]
+__all__ = [
+    "gate_matrix",
+    "Circuit",
+    "CirqCircuit",
+    "CUDAQCircuit",
+    "PennylaneCircuit",
+    "QiskitCircuit",
+    "TKETCircuit"
+]
 
+import qickit.circuit.gate_matrix as gate_matrix
 from qickit.circuit.circuit import Circuit
 # Need to import QiskitCircuit before other circuits to avoid circular import
 from qickit.circuit.qiskitcircuit import QiskitCircuit

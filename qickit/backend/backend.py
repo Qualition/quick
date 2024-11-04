@@ -17,7 +17,11 @@
 
 from __future__ import annotations
 
-__all__ = ["Backend", "NoisyBackend", "FakeBackend"]
+__all__ = [
+    "Backend",
+    "NoisyBackend",
+    "FakeBackend"
+]
 
 from abc import ABC, abstractmethod
 from functools import wraps

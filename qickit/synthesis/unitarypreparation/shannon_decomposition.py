@@ -23,15 +23,20 @@ __all__ = ["ShannonDecomposition"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from scipy.linalg import cossin # type: ignore
-from typing import Literal, SupportsIndex, TYPE_CHECKING
+from numpy.testing import assert_almost_equal
+import scipy.linalg # type: ignore
+from typing import SupportsIndex, TYPE_CHECKING
 
+import qickit
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
+from qickit.circuit.circuit_utils import decompose_uc_rotations
+from qickit.predicates import is_hermitian_matrix
 from qickit.primitives import Operator
-from qickit.synthesis.statepreparation.statepreparation_utils import gray_code
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
-from qickit.synthesis.unitarypreparation.unitarypreparation_utils import deconstruct_single_qubit_matrix_into_angles
+
+# Constants
+EPSILON = 1e-10
 
 
 class ShannonDecomposition(UnitaryPreparation):
@@ -51,6 +56,26 @@ class ShannonDecomposition(UnitaryPreparation):
      /─┤   ├─       /─┤   ├──□──┤   ├──□──┤   ├──□──┤   ├
        └───┘          └───┘     └───┘     └───┘     └───┘
     ```
+
+    The number of CX gates generated with the decomposition without optimizations is,
+
+    .. math::
+
+        \frac{9}{16} 4^n - \frac{3}{2} 2^n
+
+    With A.1 optimization the CX count is reduced by,
+
+    .. math::
+
+        \frac{1}{3} 4^{n - 2} - 1.
+
+    With A.2 optimization the CX count is reduced by,
+
+    .. math::
+
+        4^{n-2} - 1.
+
+    Both A.1 and A.2 optimizations are applied by default.
 
     For more information on Shannon decomposition:
     - Shende, Bullock, Markov.
@@ -72,6 +97,16 @@ class ShannonDecomposition(UnitaryPreparation):
     TypeError
         - If the output framework is not a subclass of `qickit.circuit.Circuit`.
     """
+    def __init__(
+            self,
+            output_framework: type[Circuit]
+        ) -> None:
+
+        super().__init__(output_framework)
+
+        self.one_qubit_decomposition = qickit.synthesis.gate_decompositions.OneQubitDecomposition(output_framework)
+        self.two_qubit_decomposition = qickit.synthesis.gate_decompositions.TwoQubitDecomposition(output_framework)
+
     def apply_unitary(
             self,
             circuit: Circuit,
@@ -79,16 +114,31 @@ class ShannonDecomposition(UnitaryPreparation):
             qubit_indices: int | Sequence[int]
         ) -> Circuit:
 
+        if not isinstance(unitary, (np.ndarray, Operator)):
+            try:
+                unitary = np.array(unitary).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The operator must be a numpy array or an Operator object. Received {type(unitary)} instead.")
+
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
         if isinstance(qubit_indices, SupportsIndex):
             qubit_indices = [qubit_indices]
 
+        if not all(isinstance(qubit_index, SupportsIndex) for qubit_index in qubit_indices):
+            raise TypeError("All qubit indices must be integers.")
+
+        if not len(qubit_indices) == unitary.num_qubits:
+            raise ValueError("The number of qubit indices must match the number of qubits in the unitary.")
+
+        a2_qsd_blocks: list[list[int]] = []
+
         def quantum_shannon_decomposition(
                 circuit: Circuit,
-                qubits: list[int],
-                unitary: NDArray[np.complex128]
+                qubit_indices: list[int],
+                unitary: NDArray[np.complex128],
+                recursion_depth: int=0
             ) -> None:
             """ Decompose n-qubit unitary into CX/RY/RZ/CX gates, preserving global phase.
 
@@ -113,10 +163,12 @@ class ShannonDecomposition(UnitaryPreparation):
             ----------
             `circuit` : qickit.circuit.Circuit
                 Quantum circuit to append operations to.
-            `qubits` : list[int]
-                List of qubits in order of significance.
+            `qubit_indices` : list[int]
+                The qubits to apply the unitary to.
             `unitary` : NDArray[np.complex128]
                 N-qubit unitary matrix to be decomposed.
+            `recursion_depth` : int, optional, default=0
+                The current recursion depth.
 
             Raises
             ------
@@ -124,58 +176,53 @@ class ShannonDecomposition(UnitaryPreparation):
                 - If the u matrix is non-unitary
                 - If the u matrix is not of shape (2^n,2^n)
             """
-            n = unitary.shape[0]
+            dim = unitary.shape[0]
 
-            if n == 2:
-                single_qubit_decomposition(circuit, qubits, unitary) # type: ignore
+            if dim == 2:
+                self.one_qubit_decomposition.apply_unitary(circuit, unitary, qubit_indices)
                 return
 
-            # Perform a cosine-sine (linalg) decomposition on the unitary
-            (u1, u2), theta, (v1, v2) = cossin(unitary, separate=True, p=n/2, q=n/2)
+            elif dim == 4:
+                current_index = len(circuit.circuit_log)
+                self.two_qubit_decomposition.apply_unitary(circuit, unitary, qubit_indices)
 
-            # Apply the decomposition of multiplexed v1/v2 part
-            msb_demuxer(circuit, qubits, v1, v2)
+                # Store the block for A.2 optimization
+                if recursion_depth > 0:
+                    a2_qsd_blocks.append([current_index, len(circuit.circuit_log)])
 
-            # Apply the multiplexed RY gate
-            multiplexed_cossin(circuit, qubits, theta, "RY")
+                return
 
-            # Apply the decomposition of multiplexed u1/u2 part
-            msb_demuxer(circuit, qubits, u1, u2)
+            # Perform cosine-sine decomposition
+            (u1, u2), vtheta, (v1h, v2h) = scipy.linalg.cossin(unitary, separate=True, p=dim//2, q=dim//2)
 
-        def single_qubit_decomposition(
-                circuit: Circuit,
-                qubit: int,
-                unitary: NDArray[np.complex128]) -> None:
-            """ Decompose single-qubit gate to RY and RZ rotations and global phase.
+            # Left multiplexed circuit
+            demultiplexor(circuit, qubit_indices, v1h, v2h, recursion_depth)
 
-            Parameters
-            ----------
-            `circuit` : qickit.circuit.Circuit
-                Quantum circuit to append operations to.
-            `qubit` : int
-                Qubit on which to apply operations.
-            `unitary` : NDArray[np.complex128]
-                2x2 unitary matrix representing 1-qubit gate to be decomposed
-            """
-            # Perform ZYZ decomposition
-            phi_0, phi_1, phi_2 = deconstruct_single_qubit_matrix_into_angles(unitary)
+            # Perform A.1 optimization from Shende et al.
+            # This optimization reduces the number of CX gates by 1/3 * 4^(n-2) - 1
+            num_angles = len(vtheta)
+            half_size = num_angles // 2
 
-            # Calculate the global phase picked up by the decomposition
-            phase = np.angle(unitary[0, 0] / (np.exp(-1j * phi_0 / 2) * np.cos(phi_1 / 2)))
+            # The multiplexed RY gate is replaced by its equivalent CZ-RY gate
+            get_ucry_cz(circuit, qubit_indices, (2 * vtheta).tolist())
 
-            # Apply the ZYZ decomposition
-            circuit.RZ(phi_0, qubit)
-            circuit.RY(phi_1, qubit)
-            circuit.Phase(phi_2, qubit)
+            # Merge final CZ gate with right-side generic multiplexer
+            u2[:, half_size:] = np.negative(u2[:, half_size:])
 
-            # Apply global phase e^{i*pi*phase} picked up during the decomposition
-            circuit.GlobalPhase(phase)
+            # Right multiplexed circuit
+            demultiplexor(circuit, qubit_indices, u1, u2, recursion_depth)
 
-        def msb_demuxer(
+            if recursion_depth == 0:
+                # Apply A.2 optimization from Shende et al.
+                # This optimization reduces the number of CX gates by 4^(n-2) - 1
+                apply_a2_optimization(circuit, a2_qsd_blocks)
+
+        def demultiplexor(
                 circuit: Circuit,
                 demux_qubits: list[int],
                 unitary_1: NDArray[np.complex128],
-                unitary_2: NDArray[np.complex128]
+                unitary_2: NDArray[np.complex128],
+                recursion_depth: int=0
             ) -> None:
             """ Decompose a multiplexor defined by a pair of unitary matrices operating on the same subspace.
 
@@ -219,6 +266,8 @@ class ShannonDecomposition(UnitaryPreparation):
                 Upper-left quadrant of total unitary to be decomposed (see diagram).
             `unitary_2` : NDArray[np.complex128]
                 Lower-right quadrant of total unitary to be decomposed (see diagram).
+            `recursion_depth` : int, optional, default=0
+                The current recursion depth.
             """
             # Compute the product of `unitary_1` and the conjugate transpose of `unitary_2`
             u = unitary_1 @ unitary_2.conj().T
@@ -226,97 +275,164 @@ class ShannonDecomposition(UnitaryPreparation):
             # Perform eigenvalue decomposition to find the eigenvalues and eigenvectors of u
             # This step is crucial because it allows us to express the unitary transformation
             # in terms of its eigenvalues and eigenvectors, which simplifies further calculations
-            d_squared, V = np.linalg.eig(u)
+            if is_hermitian_matrix(u):
+                eigenvalues, eigenvectors = scipy.linalg.eigh(u)
+            else:
+                # If the matrix is not Hermitian, use the Schur decomposition
+                # to compute the eigenvalues and eigenvectors
+                eigenvalues, eigenvectors = scipy.linalg.schur(u, output="complex") # type: ignore
+                eigenvalues = eigenvalues.diagonal()
 
             # Take the square root of the eigenvalues to obtain the singular values
             # This is necessary because the singular values provide a more convenient form
             # for constructing the diagonal matrix D, which is used in the final decomposition
-            d = np.sqrt(d_squared)
+            # We need to use `np.emath.sqrt` to handle negative eigenvalues
+            eigenvalues_sqrt = np.emath.sqrt(eigenvalues)
 
             # Create a diagonal matrix D from the singular values
             # The diagonal matrix D is used to scale the eigenvectors appropriately in the final step
-            D = np.diag(d)
+            diagonal = np.diag(eigenvalues_sqrt)
 
             # Compute the matrix W using D, the conjugate transpose of V, and `unitary_2`
             # This step combines the scaled eigenvectors with the original unitary matrix to
             # achieve the desired decomposition
-            W = D @ V.conj().T @ unitary_2
+            W = diagonal @ eigenvectors.conj().T @ unitary_2
 
             # Apply the left gate
-            quantum_shannon_decomposition(circuit, demux_qubits[1:], W)
+            quantum_shannon_decomposition(circuit, demux_qubits[:-1], W, recursion_depth + 1)
 
-            # Apply the RZ multiplexed gate
-            multiplexed_cossin(circuit, demux_qubits, -np.angle(d), "RZ")
+            # Apply multiplexed RZ gate
+            angles = (2 * np.angle(
+                np.conj(eigenvalues_sqrt)
+            )).tolist()
+            circuit.UCRZ(angles, demux_qubits[:-1], demux_qubits[-1])
 
             # Apply the right gate
-            quantum_shannon_decomposition(circuit, demux_qubits[1:], V)
+            quantum_shannon_decomposition(circuit, demux_qubits[:-1], eigenvectors.astype(complex), recursion_depth + 1)
 
-        def multiplexed_cossin(
+        def get_ucry_cz(
                 circuit: Circuit,
-                cossin_qubits: list[int],
-                angles: NDArray[np.floating],
-                rotation_gate: Literal["RY", "RZ"]
+                qubit_indices: list[int],
+                angles: NDArray[np.float64]
             ) -> None:
-            """ Perform a multiplexed rotation over all qubits in this unitary matrix.
-            This function uses RY and RZ multiplexing for quantum shannon decomposition.
+            """ Get UCRY gate in terms of CZ-RY.
 
             Parameters
             ----------
             `circuit` : qickit.circuit.Circuit
                 Quantum circuit to append operations to.
-            `cossin_qubits` : list[int]
-                Subset of total qubits involved in this unitary gate.
-            `angles` : list[float]
-                List of angles to be multiplexed over for the given type of rotation.
-            `rotation_gate` : Literal["RY", "RZ"]
-                Rotation function used for this multiplexing implementation (RY or RZ).
+            `qubit_indices` : list[int]
+                List of qubit indices.
+            `angles` : NDArray[np.float64]
+                List of angles for the RY gates.
             """
-            # Most significant qubit is main qubit with rotation function applied
-            # All other qubits are control qubits
-            main_qubit = cossin_qubits[0]
-            control_qubits = cossin_qubits[1:]
+            num_angles = len(angles)
+            control_indices = qubit_indices[:-1]
+            target_index = qubit_indices[-1]
 
-            for j in range(len(angles)):
-                # The rotation includes a factor of -1 for each bit in the Gray Code
-                # if the position of that bit is also 1
-                # The number of factors of -1 is counted using the 1s in the
-                # binary representation of the (gray(j) & i)
-                # Here, i gives the index for the angle, and
-                # j is the iteration of the decomposition
-                rotation = sum(
-                    -angle if bin(gray_code(j) & i).count("1") % 2 else angle
-                    for i, angle in enumerate(angles)
+            # If there are no control qubits, apply the RY gate directly
+            # to the target qubit
+            if not control_indices:
+                if np.abs(angles[0]) > EPSILON:
+                    circuit.RY(angles[0], target_index)
+
+            else:
+                # Copy the angles as `dec_uc_rotations` modifies the input
+                angles = angles.copy()
+
+                # Calculate rotation angles for a Uniformly Controlled Pauli Rotation gate
+                # with a CX gate at the end of the circuit
+                decompose_uc_rotations(angles, 0, len(angles), False)
+
+                for (i, angle) in enumerate(angles):
+                    if np.abs(angle) > EPSILON:
+                        circuit.RY(angle, target_index)
+
+                    if not i == len(angles) - 1:
+                        binary_rep = np.binary_repr(i + 1)
+                        control_index = len(binary_rep) - len(binary_rep.rstrip("0"))
+                    else:
+                        # Handle special case for last angle
+                        control_index = len(control_indices) - 1
+
+                    # Leave off last CZ for merging with adjacent UCG
+                    if i < num_angles - 1:
+                        circuit.CZ(control_indices[control_index], target_index)
+
+        def apply_a2_optimization(
+                circuit: Circuit,
+                a2_qsd_blocks: list[list[int]]
+            ) -> None:
+            """ Apply A.2 optimization to the circuit.
+
+            Parameters
+            ----------
+            `circuit` : qickit.circuit.Circuit
+                Quantum circuit to append operations to.
+            `a2_qsd_blocks` : list[list[int]]
+                List of blocks to apply A.2 optimization to.
+            """
+            # If there are no blocks, or only one block which means
+            # no neighbors to merge diagonal into, then return
+            if len(a2_qsd_blocks) < 2:
+                return
+
+            # Break apart the circuit into the blocks that need to be changed
+            # and the blocks that will remain the same
+            qsd_blocks: list[list[dict]] = []
+            circuit_blocks: list[list[dict]] = []
+
+            circuit_blocks.append(circuit.circuit_log[:a2_qsd_blocks[0][0]])
+
+            for block_index, block in enumerate(a2_qsd_blocks[:-1]):
+                qsd_blocks.append(circuit.circuit_log[block[0]:block[1]])
+                circuit_blocks.append(circuit.circuit_log[block[1]:a2_qsd_blocks[block_index + 1][0]])
+
+            qsd_blocks.append(circuit.circuit_log[a2_qsd_blocks[-1][0]:a2_qsd_blocks[-1][1]])
+            circuit_blocks.append(circuit.circuit_log[a2_qsd_blocks[-1][1]:])
+
+            for block_index in range(len(qsd_blocks) - 1):
+                # Extract the blocks from the circuit
+                circuit_1 = self.output_framework(2)
+                circuit_2 = self.output_framework(2)
+
+                circuit_1.circuit_log = qsd_blocks[block_index]
+                circuit_2.circuit_log = qsd_blocks[block_index + 1]
+
+                # Update the circuit to reconstruct the circuit from the modified circuit log
+                circuit_1.update()
+                circuit_2.update()
+
+                unitary_1 = circuit_1.get_unitary()
+                unitary_2 = circuit_2.get_unitary()
+
+                # Perform diagonalization of the unitary blocks
+                circuit_1, diagonal = self.two_qubit_decomposition.apply_unitary_up_to_diagonal(
+                    self.output_framework(2),
+                    unitary_1,
+                    [0, 1]
                 )
+                circuit_2 = self.two_qubit_decomposition.prepare_unitary(unitary_2 @ diagonal)
 
-                # Divide by a factor of 2 for each additional select qubit
-                # This is due to the halving in the decomposition applied recursively
-                rotation = rotation * 2 / len(angles)
+                # Update the blocks
+                qsd_blocks[block_index] = circuit_1.circuit_log
+                qsd_blocks[block_index + 1] = circuit_2.circuit_log
 
-                # The XOR of the this gray code with the next will give the 1 for the bit
-                # corresponding to the CX select, else 0
-                select_string = gray_code(j) ^ gray_code(j + 1)
+            # Reconstruct the circuit with the modified blocks in alternating order
+            circuit.reset()
 
-                # Find the index number where the bit is 1
-                select_qubit = next(i for i in range(len(angles)) if (select_string >> i & 1))
+            circuit.circuit_log.extend(circuit_blocks.pop(0))
 
-                # Negate the value, since we must index starting at most significant qubit
-                # Also the final value will overflow, and it should be the MSB,
-                # therefore introduce max function
-                select_qubit = max(-select_qubit - 1, -len(control_qubits))
+            for qsd_block, circuit_block in zip(qsd_blocks, circuit_blocks):
+                circuit.circuit_log.extend(qsd_block)
+                circuit.circuit_log.extend(circuit_block)
 
-                # Define the gate mapping
-                gate_mapping = {
-                    "RY": lambda: circuit.RY,
-                    "RZ": lambda: circuit.RZ
-                }
+            # Update the circuit to reconstruct the circuit from the modified circuit log
+            circuit.update()
 
-                # Add a rotation on the main qubit
-                gate_mapping[rotation_gate]()(rotation, main_qubit)
-
-                # Add a CX main qubit controlled by the select qubit
-                circuit.CX(control_qubits[select_qubit], main_qubit)
+            assert_almost_equal(circuit.get_unitary(), unitary.data)
 
         # Apply the Shannon decomposition to the circuit
-        quantum_shannon_decomposition(circuit, qubit_indices[::-1], unitary.data) # type: ignore
+        quantum_shannon_decomposition(circuit, qubit_indices, unitary.data, recursion_depth=0) # type: ignore
 
         return circuit

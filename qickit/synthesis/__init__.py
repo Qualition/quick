@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["statepreparation",
-           "unitarypreparation"]
+__all__ = [
+    "gate_decompositions",
+    "statepreparation",
+    "unitarypreparation"
+]
 
-from qickit.synthesis import statepreparation, unitarypreparation
+from qickit.synthesis import gate_decompositions, statepreparation, unitarypreparation

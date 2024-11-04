@@ -18,14 +18,12 @@
 from __future__ import annotations
 
 __all__ = [
-    "is_identity_matrix",
-    "is_unitary_matrix",
     "update_angles",
-    "dec_uc_rotations",
+    "decompose_uc_rotations",
     "extract_rz",
     "det_one_qubit",
     "demultiplex_single_uc",
-    "dec_ucg_help",
+    "decompose_ucg_help",
     "get_ucg_diagonal",
     "simplify",
     "repetition_search",
@@ -38,79 +36,12 @@ from numpy.linalg import eig
 from math import pi
 
 EPS = 1e-10
-ATOL_DEFAULT = 1e-8
-RTOL_DEFAULT = 1e-5
 FRAC_1_SQRT_2 = 1 / np.sqrt(2)
 RZ_PI2_11 = complex(FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
 RZ_PI2_00 = complex(FRAC_1_SQRT_2, FRAC_1_SQRT_2)
 IM = 1j
 C_ZERO = 0 + 0j
 
-
-def is_identity_matrix(
-        matrix: NDArray[np.complex128],
-        ignore_phase: bool=False,
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
-    ) -> bool:
-    """ Test if an array is an identity matrix.
-
-    Parameters
-    ----------
-    `matrix` : NDArray[np.complex128]
-        The input matrix.
-    `ignore_phase` : bool, optional, default=False
-        If True, ignore the phase of the matrix.
-    `rtol` : float, optional, default=RTOL_DEFAULT
-        The relative tolerance parameter.
-    `atol` : float, optional, default=ATOL_DEFAULT
-        The absolute tolerance parameter.
-
-    Returns
-    -------
-    bool
-        True if the matrix is an identity matrix, False otherwise.
-    """
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
-    if matrix.ndim != 2:
-        return False
-    if ignore_phase:
-        # If the matrix is equal to an identity up to a phase, we can
-        # remove the phase by multiplying each entry by the complex
-        # conjugate of the phase of the [0, 0] entry.
-        theta = np.angle(matrix[0, 0])
-        matrix = np.exp(-1j * theta) * matrix
-
-    # Check if square identity
-    identity = np.eye(len(matrix))
-    return np.allclose(matrix, identity, rtol=rtol, atol=atol)
-
-def is_unitary_matrix(
-        matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
-    ) -> bool:
-    """ Test if an array is a unitary matrix.
-
-    Parameters
-    ----------
-    `matrix` : NDArray[np.complex128]
-        The input matrix.
-    `rtol` : float, optional, default=RTOL_DEFAULT
-        The relative tolerance parameter.
-    `atol` : float, optional, default=ATOL_DEFAULT
-        The absolute tolerance parameter.
-
-    Returns
-    -------
-    bool
-        True if the matrix is a unitary matrix, False otherwise.
-    """
-    matrix = np.conj(matrix.T).dot(matrix)
-    return is_identity_matrix(matrix, ignore_phase=False, rtol=rtol, atol=atol)
 
 def update_angles(
         angle_1: float,
@@ -133,7 +64,7 @@ def update_angles(
     """
     return (angle_1 + angle_2) / 2.0, (angle_1 - angle_2) / 2.0
 
-def dec_uc_rotations(
+def decompose_uc_rotations(
         angles: NDArray[np.float64],
         start_index: int,
         end_index: int,
@@ -173,10 +104,10 @@ def dec_uc_rotations(
 
     # Decompose the second half of the interval
     else:
-        dec_uc_rotations(
+        decompose_uc_rotations(
             angles, start_index, start_index + interval_len_half, False
         )
-        dec_uc_rotations(
+        decompose_uc_rotations(
             angles, start_index + interval_len_half, end_index, True
         )
 
@@ -271,7 +202,7 @@ def demultiplex_single_uc(
 
     return v, u, r
 
-def dec_ucg_help(
+def decompose_ucg_help(
         sq_gates: list[NDArray[np.complex128]],
         num_qubits: int
     ) -> tuple[list[NDArray[np.complex128]], NDArray[np.complex128]]:
@@ -362,7 +293,7 @@ def get_ucg_diagonal(
     NDArray[np.complex128]
         The diagonal matrix.
     """
-    _, diagonal = dec_ucg_help(sq_gates, num_qubits)
+    _, diagonal = decompose_ucg_help(sq_gates, num_qubits)
     if simplified_controls:
         q_controls = [num_qubits - i for i in simplified_controls]
         q_controls.reverse()

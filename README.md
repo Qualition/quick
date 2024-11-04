@@ -15,6 +15,7 @@
 ### Prerequisites
 
 - python 3.11.9
+- Ubuntu OS
 
 ### Quick Installation
 

@@ -16,7 +16,7 @@ from qickit.circuit import Circuit
 from qickit.primitives import Operator
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
-__all__ = ['ShannonDecomposition']
+__all__ = ["ShannonDecomposition"]
 
 class ShannonDecomposition(UnitaryPreparation):
     def apply_unitary(self, circuit: Circuit, unitary: NDArray[np.complex128] | Operator, qubit_indices: int | Sequence[int]) -> Circuit: ...

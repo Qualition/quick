@@ -13,17 +13,26 @@
 # limitations under the License.
 
 import abc
-import numpy as np
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
+import numpy as np
 from numpy.typing import NDArray
 from qickit.circuit import Circuit
 from qickit.primitives import Bra, Ket
-from typing import Type
+from typing import Literal, Type
 
 __all__ = ["StatePreparation"]
 
 class StatePreparation(ABC, metaclass=abc.ABCMeta):
     output_framework: Type[Circuit]
     def __init__(self, output_framework: Type[Circuit]) -> None: ...
-    @abstractmethod
     def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: str="row") -> Circuit: ...
+    @abstractmethod
+    def apply_state(
+            self,
+            circuit: Circuit,
+            state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int],
+            compression_percentage: float=0.0,
+            index_type: Literal["row", "snake"]="row"
+        ) -> Circuit: ...

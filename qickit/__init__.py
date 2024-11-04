@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["backend",
-           "circuit",
-           "compiler",
-           "optimizer",
-           "primitives",
-           "synthesis"]
+__all__ = [
+    "backend",
+    "circuit",
+    "compiler",
+    "optimizer",
+    "predicates",
+    "primitives",
+    "synthesis"
+]
 
-from qickit import backend, circuit, compiler, optimizer, primitives, synthesis
+from qickit import backend, circuit, compiler, optimizer, predicates, primitives, synthesis

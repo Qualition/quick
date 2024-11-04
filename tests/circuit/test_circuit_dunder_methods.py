@@ -14,133 +14,79 @@
 
 from __future__ import annotations
 
-__all__ = ["test_eq",
-           "test_len",
-           "test_str",
-           "test_repr"]
+__all__ = [
+    "test_eq",
+    "test_len",
+    "test_str",
+    "test_repr"
+]
 
-from qickit.circuit import CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
+import pytest
+from typing import Type
+
+from qickit.circuit import Circuit
+
+from tests.circuit import CIRCUIT_FRAMEWORKS
 
 
-def test_eq() -> None:
+@pytest.mark.parametrize("circuit_frameworks", [CIRCUIT_FRAMEWORKS])
+def test_eq(circuit_frameworks: list[Type[Circuit]]) -> None:
     """ Test the `__eq__` dunder method.
     """
-    # Define the circuits
-    cirq_circuit = CirqCircuit(2)
-    pennylane_circuit = PennylaneCircuit(2)
-    qiskit_circuit = QiskitCircuit(2)
-    tket_circuit = TKETCircuit(2)
+    circuits = [circuit_framework(2) for circuit_framework in circuit_frameworks]
 
     # Define the Bell state
-    cirq_circuit.H(0)
-    cirq_circuit.CX(0, 1)
-
-    pennylane_circuit.H(0)
-    pennylane_circuit.CX(0, 1)
-
-    qiskit_circuit.H(0)
-    qiskit_circuit.CX(0, 1)
-
-    tket_circuit.H(0)
-    tket_circuit.CX(0, 1)
+    for circuit in circuits:
+        circuit.H(0)
+        circuit.CX(0, 1)
 
     # Test the equality of the circuits
-    assert cirq_circuit == pennylane_circuit
-    assert cirq_circuit == qiskit_circuit
-    assert cirq_circuit == tket_circuit
+    for circuit_1, circuit_2 in zip(circuits[0:-1:], circuits[1::]):
+        assert circuit_1 == circuit_2
 
-def test_len() -> None:
+@pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+def test_len(circuit_framework: Type[Circuit]) -> None:
     """ Test the `__len__` dunder method.
     """
     # Define the circuits
-    cirq_circuit = CirqCircuit(2)
-    pennylane_circuit = PennylaneCircuit(2)
-    qiskit_circuit = QiskitCircuit(2)
-    tket_circuit = TKETCircuit(2)
+    circuit = circuit_framework(2)
 
     # Define the Bell state
-    cirq_circuit.H(0)
-    cirq_circuit.CX(0, 1)
+    circuit.H(0)
+    circuit.CX(0, 1)
 
-    pennylane_circuit.H(0)
-    pennylane_circuit.CX(0, 1)
+    # Test the length of the circuit
+    assert len(circuit) == 2
 
-    qiskit_circuit.H(0)
-    qiskit_circuit.CX(0, 1)
-
-    tket_circuit.H(0)
-    tket_circuit.CX(0, 1)
-
-    # Test the length of the circuits
-    assert len(cirq_circuit) == 2
-    assert len(pennylane_circuit) == 2
-    assert len(qiskit_circuit) == 2
-    assert len(tket_circuit) == 2
-
-def test_str() -> None:
+@pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+def test_str(circuit_framework: Type[Circuit]) -> None:
     """ Test the `__str__` dunder method.
     """
     # Define the circuits
-    cirq_circuit = CirqCircuit(2)
-    pennylane_circuit = PennylaneCircuit(2)
-    qiskit_circuit = QiskitCircuit(2)
-    tket_circuit = TKETCircuit(2)
+    circuit = circuit_framework(2)
 
     # Define the Bell state
-    cirq_circuit.H(0)
-    cirq_circuit.CX(0, 1)
-
-    pennylane_circuit.H(0)
-    pennylane_circuit.CX(0, 1)
-
-    qiskit_circuit.H(0)
-    qiskit_circuit.CX(0, 1)
-
-    tket_circuit.H(0)
-    tket_circuit.CX(0, 1)
+    circuit.H(0)
+    circuit.CX(0, 1)
 
     # Test the string representation of the circuits
-    assert str(cirq_circuit) == "CirqCircuit(num_qubits=2)"
-    assert str(pennylane_circuit) == "PennylaneCircuit(num_qubits=2)"
-    assert str(qiskit_circuit) == "QiskitCircuit(num_qubits=2)"
-    assert str(tket_circuit) == "TKETCircuit(num_qubits=2)"
+    assert str(circuit) == f"{circuit_framework.__name__}(num_qubits=2)"
 
-def test_repr() -> None:
+@pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+def test_repr(circuit_framework: Type[Circuit]) -> None:
     """ Test the `__repr__` dunder method.
     """
     # Define the circuits
-    cirq_circuit = CirqCircuit(2)
-    pennylane_circuit = PennylaneCircuit(2)
-    qiskit_circuit = QiskitCircuit(2)
-    tket_circuit = TKETCircuit(2)
+    circuit = circuit_framework(2)
 
     # Define the Bell state
-    cirq_circuit.H(0)
-    cirq_circuit.CX(0, 1)
-
-    pennylane_circuit.H(0)
-    pennylane_circuit.CX(0, 1)
-
-    qiskit_circuit.H(0)
-    qiskit_circuit.CX(0, 1)
-
-    tket_circuit.H(0)
-    tket_circuit.CX(0, 1)
+    circuit.H(0)
+    circuit.CX(0, 1)
 
     # Test the string representation of the circuits
-    cirq_check = ("CirqCircuit(num_qubits=2, "
-                  "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
-                  "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
-    pennylane_check = ("PennylaneCircuit(num_qubits=2, "
-                       "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
-                       "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
-    qiskit_check = ("QiskitCircuit(num_qubits=2, "
-                    "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
-                    "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
-    tket_check = ("TKETCircuit(num_qubits=2, "
-                  "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
-                  "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])")
-    assert repr(cirq_circuit) == cirq_check
-    assert repr(pennylane_circuit) == pennylane_check
-    assert repr(qiskit_circuit) == qiskit_check
-    assert repr(tket_circuit) == tket_check
+    circuit_checker = (
+        f"{circuit_framework.__name__}(num_qubits=2, "
+        "circuit_log=[{'gate': 'H', 'qubit_indices': 0}, "
+        "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])"
+    )
+    assert repr(circuit) == circuit_checker

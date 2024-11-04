@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["StatePreparationTemplate",
-           "TestStatePreparationMottonen",
-           "TestStatePreparationShende"]
+__all__ = [
+    "StatePreparationTemplate",
+    "TestStatePreparationMottonen",
+    "TestStatePreparationShende"
+]
 
 from tests.synthesis.statepreparation.test_statepreparation import StatePreparationTemplate
 from tests.synthesis.statepreparation.test_mottonen import TestStatePreparationMottonen

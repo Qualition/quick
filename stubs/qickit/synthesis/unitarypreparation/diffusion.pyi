@@ -19,7 +19,7 @@ from qickit.primitives.operator import Operator
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
 from typing import Any, Sequence
 
-__all__ = ['Diffusion']
+__all__ = ["Diffusion"]
 
 class Diffusion(UnitaryPreparation):
     model: str

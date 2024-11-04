@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["TestBra",
-           "TestKet",
-           "TestOperator"]
+__all__ = [
+    "TestBra",
+    "TestKet",
+    "TestOperator"
+]
 
 from tests.primitives.test_bra import TestBra
 from tests.primitives.test_ket import TestKet

@@ -18,6 +18,9 @@ __all__ = ["Template"]
 
 from abc import ABC, abstractmethod
 
+import numpy as np
+from numpy.typing import NDArray
+
 
 class Template(ABC):
     """ `tests.circuit.Template` is the template for creating circuit testers.
@@ -55,218 +58,1443 @@ class Template(ABC):
         """
 
     @abstractmethod
-    def test_Identity(self) -> None:
+    def test_Identity(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Identity gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_X(self) -> None:
+    def test_X(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Pauli-X gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_Y(self) -> None:
+    def test_Y(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Pauli-Y gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_Z(self) -> None:
+    def test_Z(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Pauli-Z gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_H(self) -> None:
+    def test_H(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Hadamard gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_S(self) -> None:
+    def test_S(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Clifford-S gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_Sdg(self) -> None:
+    def test_Sdg(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Clifford-S dagger gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_T(self) -> None:
+    def test_T(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Clifford-T gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_Tdg(self) -> None:
+    def test_Tdg(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Clifford-T dagger gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_RX(self) -> None:
+    def test_RX(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the RX gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_RY(self) -> None:
+    def test_RY(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the RY gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_RZ(self) -> None:
+    def test_RZ(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the RZ gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_Phase(self) -> None:
+    def test_Phase(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Phase gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_U3(self) -> None:
+    def test_XPow(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Pauli-X power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_YPow(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Pauli-Y power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_ZPow(
+            self,
+            num_qubits: int,
+            qubit_indices: int | list[int],
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Pauli-Z power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_RXX(
+            self,
+            num_qubits: int,
+            first_qubit_index: int,
+            second_qubit_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the RXX gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `first_qubit_index`: int
+            The first qubit index.
+        `second_qubit_index`: int
+            The second qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_RYY(
+            self,
+            num_qubits: int,
+            first_qubit_index: int,
+            second_qubit_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the RYY gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `first_qubit_index`: int
+            The first qubit index.
+        `second_qubit_index`: int
+            The second qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_RZZ(
+            self,
+            num_qubits: int,
+            first_qubit_index: int,
+            second_qubit_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the RZZ gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `first_qubit_index`: int
+            The first qubit index.
+        `second_qubit_index`: int
+            The second qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_U3(
+            self,
+            num_qubits: int,
+            qubit_index: int,
+            angles: tuple[float, float, float],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the U3 gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `qubit_index`: int
+            The qubit index.
+        `angles`: tuple[float, float, float]
+            The rotation angles.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_SWAP(self) -> None:
+    def test_SWAP(
+            self,
+            num_qubits: int,
+            first_qubit_index: int,
+            second_qubit_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the SWAP gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `first_qubit_index`: int
+            The first qubit index.
+        `second_qubit_index`: int
+            The second qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CX(self) -> None:
+    def test_CX(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Pauli-X gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CY(self) -> None:
+    def test_CY(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Pauli-Y gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CZ(self) -> None:
+    def test_CZ(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Pauli-Z gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CH(self) -> None:
+    def test_CH(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Hadamard gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CS(self) -> None:
+    def test_CS(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Clifford-S gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CSdg(self) -> None:
+    def test_CSdg(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Clifford-S dagger gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CT(self) -> None:
+    def test_CT(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Clifford-T gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CTdg(self) -> None:
+    def test_CTdg(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Clifford-T dagger gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CRX(self) -> None:
+    def test_CRX(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled RX gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CRY(self) -> None:
+    def test_CRY(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled RY gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CRZ(self) -> None:
+    def test_CRZ(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled RZ gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CPhase(self) -> None:
+    def test_CPhase(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled Phase gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CU3(self) -> None:
+    def test_CXPow(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Controlled Pauli-X power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_CYPow(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Controlled Pauli-Y power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_CZPow(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Controlled Pauli-Z power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_CRXX(
+            self,
+            num_qubits: int,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Controlled RXX gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_CRYY(
+            self,
+            num_qubits: int,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Controlled RYY gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_CRZZ(
+            self,
+            num_qubits: int,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Controlled RZZ gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_CU3(
+            self,
+            num_qubits: int,
+            control_index: int,
+            target_index: int,
+            angles: tuple[float, float, float],
+            expected
+        ) -> None:
         """ Test the Controlled U3 gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `target_index`: int
+            The target qubit index.
+        `angles`: tuple[float, float, float]
+            The rotation angles.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_CSWAP(self) -> None:
+    def test_CSWAP(
+            self,
+            num_qubits: int,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Controlled SWAP gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_index`: int
+            The control qubit index.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCX(self) -> None:
+    def test_MCX(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Pauli-X gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCY(self) -> None:
+    def test_MCY(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Pauli-Y gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCZ(self) -> None:
+    def test_MCZ(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Pauli-Z gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCH(self) -> None:
+    def test_MCH(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Hadamard gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCS(self) -> None:
+    def test_MCS(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Clifford-S gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCSdg(self) -> None:
+    def test_MCSdg(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Clifford-S dagger gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCTdg(self) -> None:
-        """ Test the Multi-Controlled Clifford-T dagger gate.
-        """
-
-    @abstractmethod
-    def test_MCT(self) -> None:
+    def test_MCT(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Clifford-T gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCRX(self) -> None:
+    def test_MCTdg(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled Clifford-T dagger gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_MCRX(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled RX gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCRY(self) -> None:
+    def test_MCRY(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled RY gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCRZ(self) -> None:
+    def test_MCRZ(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled RZ gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCPhase(self) -> None:
+    def test_MCPhase(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled Phase gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCU3(self) -> None:
+    def test_MCXPow(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled Pauli-X power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_MCYPow(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled Pauli-Y power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_MCZPow(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            power: float,
+            global_shift: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled Pauli-Z power gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `power`: float
+            The power of the gate.
+        `global_shift`: float
+            The global shift of the gate.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_MCRXX(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            first_target_index: int,
+            second_target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled RXX gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_MCRYY(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            first_target_index: int,
+            second_target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled RYY gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
+        """
+
+    @abstractmethod
+    def test_MCRZZ(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            first_target_index: int,
+            second_target_index: int,
+            angle: float,
+            expected: NDArray[np.complex128]
+        ) -> None:
+        """ Test the Multi-Controlled RZZ gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `angle`: float
+            The rotation angle.
+        `expected`: NDArray[np.complex128]
+        """
+
+    @abstractmethod
+    def test_MCU3(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            target_indices: int | list[int],
+            angles: tuple[float, float, float],
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled U3 gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `target_indices`: int | list[int]
+            The target qubit indices.
+        `angles`: tuple[float, float, float]
+            The rotation angles.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.
         """
 
     @abstractmethod
-    def test_MCSWAP(self) -> None:
+    def test_MCSWAP(
+            self,
+            num_qubits: int,
+            control_indices: int | list[int],
+            first_target_index: int,
+            second_target_index: int,
+            expected: NDArray[np.complex128]
+        ) -> None:
         """ Test the Multi-Controlled SWAP gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the circuit.
+        `control_indices`: int | list[int]
+            The control qubit indices.
+        `first_target_index`: int
+            The first target qubit index.
+        `second_target_index`: int
+            The second target qubit index.
+        `expected`: NDArray[np.complex128]
+            The expected unitary matrix.k
         """
 
     @abstractmethod
@@ -290,13 +1518,54 @@ class Template(ABC):
         """
 
     @abstractmethod
-    def test_unitary(self) -> None:
+    def test_qubit_out_of_range(self) -> None:
+        """ Test the error raised when the qubit index is out of range.
+        """
+
+    @abstractmethod
+    def test_control_out_of_range(self) -> None:
+        """ Test the error raised when the control index is out of range.
+        """
+
+    @abstractmethod
+    def test_target_out_of_range(self) -> None:
+        """ Test the error raised when the target index is out of range.
+        """
+
+    @abstractmethod
+    def test_initialize(
+            self,
+            num_qubits: int
+        ) -> None:
+        """ Test the initialization of the state.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the statevector.
+        """
+
+    @abstractmethod
+    def test_unitary(
+            self,
+            num_qubits: int
+        ) -> None:
         """ Test the unitary gate.
+
+        Parameters
+        ----------
+        `num_qubits`: int
+            The number of qubits in the operator.
         """
 
     @abstractmethod
     def test_get_statevector(self) -> None:
         """ Test the `circuit.get_statevector()` operation.
+        """
+
+    @abstractmethod
+    def test_get_unitary(self) -> None:
+        """ Test the `circuit.get_unitary()` operation.
         """
 
     @abstractmethod

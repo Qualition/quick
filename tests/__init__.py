@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["backend",
-           "circuit",
-           "compiler",
-           "primitives",
-           "synthesis"]
+__all__ = [
+    "backend",
+    "circuit",
+    "compiler",
+    "predicates",
+    "primitives",
+    "synthesis"
+]
 
-from tests import backend, circuit, compiler, primitives, synthesis
+from tests import backend, circuit, compiler, predicates, primitives, synthesis

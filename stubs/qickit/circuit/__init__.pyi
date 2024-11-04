@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import qickit.circuit.gate_matrix as gate_matrix
 from qickit.circuit.circuit import Circuit as Circuit
 from qickit.circuit.cirqcircuit import CirqCircuit as CirqCircuit
 from qickit.circuit.pennylanecircuit import PennylaneCircuit as PennylaneCircuit
 from qickit.circuit.qiskitcircuit import QiskitCircuit as QiskitCircuit
 from qickit.circuit.tketcircuit import TKETCircuit as TKETCircuit
 
-__all__ = ["Circuit", "QiskitCircuit", "CirqCircuit", "TKETCircuit", "PennylaneCircuit"]
+__all__ = ["gate_matrix", "Circuit", "QiskitCircuit", "CirqCircuit", "TKETCircuit", "PennylaneCircuit"]

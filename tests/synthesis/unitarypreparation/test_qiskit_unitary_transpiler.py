@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ["TestQiskitUnitaryTranspiler"]
 
 from numpy.testing import assert_almost_equal
+import pytest
 from scipy.stats import unitary_group
 
 from qickit.circuit import QiskitCircuit
@@ -34,6 +35,10 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
     """
     def test_init(self) -> None:
         QiskitUnitaryTranspiler(QiskitCircuit)
+
+    def test_init_invalid_output_framework(self) -> None:
+        with pytest.raises(TypeError):
+            QiskitUnitaryTranspiler("invalid_framework") # type: ignore
 
     def test_prepare_unitary_ndarray(self) -> None:
         # Initialize the Qiskit transpiler
@@ -60,3 +65,71 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
 
         # Ensure that the unitary matrix is close enough to the expected unitary matrix
         assert_almost_equal(unitary, unitary_matrix, decimal=8)
+
+    def test_apply_unitary_ndarray(self) -> None:
+        # Initialize the Qiskit transpiler
+        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        # Apply the unitary matrix to the circuit
+        circuit = qiskit_transpiler.apply_unitary(circuit, unitary_matrix, range(3))
+
+        # Get the unitary matrix of the circuit
+        unitary = circuit.get_unitary()
+
+        # Ensure that the unitary matrix is close enough to the expected unitary matrix
+        assert_almost_equal(unitary, unitary_matrix, decimal=8)
+
+    def test_apply_unitary_operator(self) -> None:
+        # Initialize the Qiskit transpiler
+        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        # Apply the unitary matrix to the circuit
+        circuit = qiskit_transpiler.apply_unitary(circuit, Operator(unitary_matrix), range(3))
+
+        # Get the unitary matrix of the circuit
+        unitary = circuit.get_unitary()
+
+        # Ensure that the unitary matrix is close enough to the expected unitary matrix
+        assert_almost_equal(unitary, unitary_matrix, decimal=8)
+
+    def test_apply_unitary_invalid_input(self) -> None:
+        # Initialize the Qiskit transpiler
+        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        with pytest.raises(TypeError):
+            qiskit_transpiler.apply_unitary(circuit, "invalid_unitary", range(3)) # type: ignore
+
+    def test_apply_unitary_invalid_qubit_indices(self) -> None:
+        # Initialize the Qiskit transpiler
+        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        with pytest.raises(TypeError):
+            qiskit_transpiler.apply_unitary(circuit, unitary_matrix, "invalid_indices") # type: ignore
+
+        with pytest.raises(TypeError):
+            qiskit_transpiler.apply_unitary(circuit, unitary_matrix, [1+1j, 2+2j, 3+3j]) # type: ignore
+
+        with pytest.raises(ValueError):
+            qiskit_transpiler.apply_unitary(circuit, unitary_matrix, [0, 1, 2, 3])
+
+    def test_apply_unitary_invalid_qubit_indices_out_of_range(self) -> None:
+        # Initialize the Qiskit transpiler
+        qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
+
+        # Initialize the qickit circuit
+        circuit = QiskitCircuit(3)
+
+        with pytest.raises(IndexError):
+            qiskit_transpiler.apply_unitary(circuit, unitary_matrix, [0, 1, 4])

@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["StatePreparation",
-           "Isometry",
-           "Shende",
-           "Mottonen"]
+__all__ = [
+    "StatePreparation",
+    "Isometry",
+    "Shende",
+    "Mottonen"
+]
 
 from qickit.synthesis.statepreparation.statepreparation import StatePreparation
 from qickit.synthesis.statepreparation.isometry import Isometry

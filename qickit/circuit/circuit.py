@@ -34,15 +34,18 @@ import cirq # type: ignore
 import pennylane as qml # type: ignore
 import pytket
 import pytket.circuit
+import quimb.tensor as qtn # type: ignore
 
 if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit.circuit_utils import (
-    is_unitary_matrix, extract_rz, dec_uc_rotations, dec_ucg_help,
-    simplify
+    extract_rz, decompose_uc_rotations, decompose_ucg_help, simplify
 )
+from qickit.predicates import is_unitary_matrix
+from qickit.primitives import Bra, Ket, Operator
+from qickit.synthesis.statepreparation import Isometry
 from qickit.synthesis.unitarypreparation import (
-    UnitaryPreparation, QiskitUnitaryTranspiler
+    UnitaryPreparation, ShannonDecomposition
 )
 
 EPSILON = 1e-10
@@ -54,8 +57,10 @@ EPSILON = 1e-10
 - Method `Circuit.add()`
 - Method `Circuit.change_mapping()`
 """
-QUBIT_KEYS = frozenset(["qubit_index", "control_index", "target_index", "first_qubit_index",
-                        "second_qubit_index", "first_target_index", "second_target_index"])
+QUBIT_KEYS = frozenset([
+    "qubit_index", "control_index", "target_index", "first_qubit_index",
+    "second_qubit_index", "first_target_index", "second_target_index"
+])
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
 ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
@@ -166,7 +171,7 @@ class Circuit(ABC):
         ------
         TypeError
             - Qubit index must be an integer.
-        ValueError
+        IndexError
             - Qubit index out of range.
         """
         if name in ALL_QUBIT_KEYS:
@@ -179,7 +184,7 @@ class Circuit(ABC):
                             raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
 
                         if value >= self.num_qubits or value < -self.num_qubits:
-                            raise ValueError(f"Qubit index {value} out of range {self.num_qubits-1}.")
+                            raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
 
                         value = value if value >= 0 else self.num_qubits + value
 
@@ -189,13 +194,13 @@ class Circuit(ABC):
                                 raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
 
                             if index >= self.num_qubits or index < -self.num_qubits:
-                                raise ValueError(f"Qubit index {index} out of range {self.num_qubits-1}.")
+                                raise IndexError(f"Qubit index {index} out of range {self.num_qubits-1}.")
 
                             value[i] = index if index >= 0 else self.num_qubits + index
 
                 case int():
                     if value >= self.num_qubits or value < -self.num_qubits:
-                        raise ValueError(f"Qubit index {value} out of range {self.num_qubits-1}.")
+                        raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
 
                     value = value if value >= 0 else self.num_qubits + value
 
@@ -729,6 +734,234 @@ class Circuit(ABC):
             qubit_indices=qubit_indices
         )
 
+    def XPow(
+            self,
+            power: float,
+            global_shift: float,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a X^power gate to the circuit.
+
+        Notes
+        -----
+        The XPow gate is defined exactly as Google Cirq's `XPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `qubit_indices` : int | Sequence[int]
+            The index of the qubit(s) to apply the gate to.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.XPow(power=0.5, qubit_indices=0)
+        >>> circuit.XPow(power=0.5, qubit_indices=[0, 1])
+        >>> circuit.XPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
+        """
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
+        self.RX(power * np.pi, qubit_indices)
+        self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
+
+    def YPow(
+            self,
+            power: float,
+            global_shift: float,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a Y^power gate to the circuit.
+
+        Notes
+        -----
+        The YPow gate is defined exactly as Google Cirq's `YPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `qubit_indices` : int | Sequence[int]
+            The index of the qubit(s) to apply the gate to.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.YPow(power=0.5, qubit_indices=0)
+        >>> circuit.YPow(power=0.5, qubit_indices=[0, 1])
+        >>> circuit.YPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
+        """
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
+        self.RY(power * np.pi, qubit_indices)
+        self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
+
+    def ZPow(
+            self,
+            power: float,
+            global_shift: float,
+            qubit_indices: int | Sequence[int],
+        ) -> None:
+        """ Apply a Z^power gate to the circuit.
+
+        Notes
+        -----
+        The ZPow gate is defined exactly as Google Cirq's `ZPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `qubit_indices` : int | Sequence[int]
+            The index of the qubit(s) to apply the gate to.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.ZPow(power=0.5, qubit_indices=0)
+        >>> circuit.ZPow(power=0.5, qubit_indices=[0, 1])
+        >>> circuit.ZPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
+        """
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
+        self.RZ(power * np.pi, qubit_indices)
+        self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
+
+    def RXX(
+            self,
+            angle: float,
+            first_qubit_index: int,
+            second_qubit_index: int
+        ) -> None:
+        """ Apply a RXX gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `first_qubit_index` : int
+            The index of the first qubit.
+        `second_qubit_index` : int
+            The index of the second qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.RXX(first_qubit_index=0, second_qubit_index=1, angle=np.pi/2)
+        """
+        self.H([first_qubit_index, second_qubit_index])
+        self.CX(first_qubit_index, second_qubit_index)
+        self.RZ(angle, second_qubit_index)
+        self.CX(first_qubit_index, second_qubit_index)
+        self.H([first_qubit_index, second_qubit_index])
+
+    def RYY(
+            self,
+            angle: float,
+            first_qubit_index: int,
+            second_qubit_index: int
+        ) -> None:
+        """ Apply a RYY gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `first_qubit_index` : int
+            The index of the first qubit.
+        `second_qubit_index` : int
+            The index of the second qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.RYY(first_qubit_index=0, second_qubit_index=1, angle=np.pi/2)
+        """
+        self.RX(np.pi/2, first_qubit_index)
+        self.RX(np.pi/2, second_qubit_index)
+        self.CX(first_qubit_index, second_qubit_index)
+        self.RZ(angle, second_qubit_index)
+        self.CX(first_qubit_index, second_qubit_index)
+        self.RX(-np.pi/2, first_qubit_index)
+        self.RX(-np.pi/2, second_qubit_index)
+
+    def RZZ(
+            self,
+            angle: float,
+            first_qubit_index: int,
+            second_qubit_index: int
+        ) -> None:
+        """ Apply a RZZ gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `first_qubit_index` : int
+            The index of the first qubit.
+        `second_qubit_index` : int
+            The index of the second qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.RZZ(first_qubit_index=0, second_qubit_index=1, angle=np.pi/2)
+        """
+        self.CX(first_qubit_index, second_qubit_index)
+        self.RZ(angle, second_qubit_index)
+        self.CX(first_qubit_index, second_qubit_index)
+
     @abstractmethod
     def U3(
             self,
@@ -1186,6 +1419,261 @@ class Circuit(ABC):
             angle=angle,
             control_indices=control_index,
             target_indices=target_index
+        )
+
+    def CXPow(
+            self,
+            power: float,
+            global_shift: float,
+            control_index: int,
+            target_index: int
+        ) -> None:
+        """ Apply a Controlled X^power gate to the circuit.
+
+        Notes
+        -----
+        The CXPow gate is defined exactly as Google Cirq's controlled `XPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `control_index` : int
+            The index of the control qubit.
+        `target_index` : int
+            The index of the target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CXPow(power=0.5, control_index=0, target_index=1)
+        >>> circuit.CXPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
+        """
+        self.CRX(power * np.pi, control_index, target_index)
+
+        # Apply the relative phase correction to the control index
+        # to account for the global phase shift created by the target
+        # gate
+        self.Phase(power * np.pi * (global_shift + 0.5), control_index)
+
+    def CYPow(
+            self,
+            power: float,
+            global_shift: float,
+            control_index: int,
+            target_index: int
+        ) -> None:
+        """ Apply a Controlled Y^power gate to the circuit.
+
+        Notes
+        -----
+        The CYPow gate is defined exactly as Google Cirq's controlled `YPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `control_index` : int
+            The index of the control qubit.
+        `target_index` : int
+            The index of the target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CYPow(power=0.5, control_index=0, target_index=1)
+        >>> circuit.CYPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
+        """
+        self.CRY(power * np.pi, control_index, target_index)
+
+        # Apply the relative phase correction to the control index
+        # to account for the global phase shift created by the target
+        # gate
+        self.Phase(power * np.pi * (global_shift + 0.5), control_index)
+
+    def CZPow(
+            self,
+            power: float,
+            global_shift: float,
+            control_index: int,
+            target_index: int
+        ) -> None:
+        """ Apply a Controlled Z^power gate to the circuit.
+
+        Notes
+        -----
+        The CZPow gate is defined exactly as Google Cirq's controlled `ZPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `control_index` : int
+            The index of the control qubit.
+        `target_index` : int
+            The index of the target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CZPow(power=0.5, control_index=0, target_index=1)
+        >>> circuit.CZPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
+        """
+        self.CRZ(power * np.pi, control_index, target_index)
+
+        # Apply the relative phase correction to the control index
+        # to account for the global phase shift created by the target
+        # gate
+        self.Phase(power * np.pi * (global_shift + 0.5), control_index)
+
+    def CRXX(
+            self,
+            angle: float,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+        """ Apply a Controlled RXX gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_index` : int
+            The index of the control qubit.
+        `first_target_index` : int
+            The index of the first target qubit.
+        `second_target_index` : int
+            The index of the second target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CRXX(angle=np.pi/2, control_index=0,
+        ...              first_target_index=1, second_target_index=2)
+        """
+        self.MCRXX(
+            angle=angle,
+            control_indices=control_index,
+            first_target_index=first_target_index,
+            second_target_index=second_target_index
+        )
+
+    def CRYY(
+            self,
+            angle: float,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+        """ Apply a Controlled RYY gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_index` : int
+            The index of the control qubit.
+        `first_target_index` : int
+            The index of the first target qubit.
+        `second_target_index` : int
+            The index of the second target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CRYY(angle=np.pi/2, control_index=0,
+        ...              first_target_index=1, second_target_index=2)
+        """
+        self.MCRYY(
+            angle=angle,
+            control_indices=control_index,
+            first_target_index=first_target_index,
+            second_target_index=second_target_index
+        )
+
+    def CRZZ(
+            self,
+            angle: float,
+            control_index: int,
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+        """ Apply a Controlled RZZ gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_index` : int
+            The index of the control qubit.
+        `first_target_index` : int
+            The index of the first target qubit.
+        `second_target_index` : int
+            The index of the second target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.CRZZ(angle=np.pi/2, control_index=0,
+        ...              first_target_index=1, second_target_index=2)
+        """
+        self.MCRZZ(
+            angle=angle,
+            control_indices=control_index,
+            first_target_index=first_target_index,
+            second_target_index=second_target_index
         )
 
     def CU3(
@@ -1704,6 +2192,339 @@ class Circuit(ABC):
             target_indices=target_indices
         )
 
+    def MCXPow(
+            self,
+            power: float,
+            global_shift: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a Multi-Controlled X^power gate to the circuit.
+
+        Notes
+        -----
+        The MCXPow gate is defined exactly as Google Cirq's controlled `XPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_indices` : int | Sequence[int]
+            The index of the target qubit(s).
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCXPow(power=0.5, control_indices=0, target_indices=1)
+        >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
+        """
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        for target_index in target_indices:
+            self.MCRX(power * np.pi, control_indices=control_indices, target_indices=target_index)
+
+            # Apply the relative phase correction to the control indices
+            # to account for the global phase shift created by the target
+            # gate
+            if len(control_indices) > 1:
+                self.MCPhase(
+                    power * np.pi * (global_shift + 0.5),
+                    control_indices=control_indices[:-1],
+                    target_indices=control_indices[-1]
+                )
+            else:
+                self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
+
+    def MCYPow(
+            self,
+            power: float,
+            global_shift: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a Multi-Controlled Y^power gate to the circuit.
+
+        Notes
+        -----
+        The MCYPow gate is defined exactly as Google Cirq's controlled `YPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_indices` : int | Sequence[int]
+            The index of the target qubit(s).
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCYPow(power=0.5, control_indices=0, target_indices=1)
+        >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
+        """
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        for target_index in target_indices:
+            self.MCRY(power * np.pi, control_indices=control_indices, target_indices=target_index)
+
+            # Apply the relative phase correction to the control indices
+            # to account for the global phase shift created by the target
+            # gate
+            if len(control_indices) > 1:
+                self.MCPhase(
+                    power * np.pi * (global_shift + 0.5),
+                    control_indices=control_indices[:-1],
+                    target_indices=control_indices[-1]
+                )
+            else:
+                self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
+
+    def MCZPow(
+            self,
+            power: float,
+            global_shift: float,
+            control_indices: int | Sequence[int],
+            target_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a Multi-Controlled Z^power gate to the circuit.
+
+        Notes
+        -----
+        The MCZPow gate is defined exactly as Google Cirq's controlled `ZPowGate`.
+
+        Parameters
+        ----------
+        `power` : float
+            The power of the gate.
+        `global_shift` : float
+            The global phase shift of the gate.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_indices` : int | Sequence[int]
+            The index of the target qubit(s).
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Power must be a float or integer.
+            - Global shift must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCZPow(power=0.5, control_indices=0, target_indices=1)
+        >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
+        """
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        for target_index in target_indices:
+            self.MCRZ(power * np.pi, control_indices=control_indices, target_indices=target_index)
+
+            # Apply the relative phase correction to the control indices
+            # to account for the global phase shift created by the target
+            # gate
+            if len(control_indices) > 1:
+                self.MCPhase(
+                    power * np.pi * (global_shift + 0.5),
+                    control_indices=control_indices[:-1],
+                    target_indices=control_indices[-1]
+                )
+            else:
+                self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
+
+    def MCRXX(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+        """ Apply a Multi-Controlled RXX gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `first_target_index` : int
+            The index of the first target qubit.
+        `second_target_index` : int
+            The index of the second target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCRXX(angle=np.pi/2, control_indices=0,
+        ...               first_target_index=1, second_target_index=2)
+        >>> circuit.MCRXX(angle=np.pi/2, control_indices=[0, 1],
+        ...               first_target_index=2, second_target_index=3)
+        """
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        self.MCH(control_indices=control_indices, target_indices=first_target_index)
+        self.MCH(control_indices=control_indices, target_indices=second_target_index)
+        self.MCX(
+            control_indices=list(control_indices) + [first_target_index],
+            target_indices=second_target_index
+        )
+        self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+        self.MCX(
+            control_indices=list(control_indices) + [first_target_index],
+            target_indices=second_target_index
+        )
+        self.MCH(control_indices=control_indices, target_indices=first_target_index)
+        self.MCH(control_indices=control_indices, target_indices=second_target_index)
+
+    def MCRYY(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+        """ Apply a Multi-Controlled RYY gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `first_target_index` : int
+            The index of the first target qubit.
+        `second_target_index` : int
+            The index of the second target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCRYY(angle=np.pi/2, control_indices=0,
+        ...               first_target_index=1, second_target_index=2)
+        >>> circuit.MCRYY(angle=np.pi/2, control_indices=[0, 1],
+        ...               first_target_index=2, second_target_index=3)
+        """
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        self.MCRX(
+            angle=np.pi/2,
+            control_indices=control_indices,
+            target_indices=first_target_index
+        )
+        self.MCRX(
+            angle=np.pi/2,
+            control_indices=control_indices,
+            target_indices=second_target_index
+        )
+        self.MCX(
+            control_indices=list(control_indices) + [first_target_index],
+            target_indices=second_target_index
+        )
+        self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+        self.MCX(
+            control_indices=list(control_indices) + [first_target_index],
+            target_indices=second_target_index
+        )
+        self.MCRX(
+            angle=-np.pi/2,
+            control_indices=control_indices,
+            target_indices=first_target_index
+        )
+        self.MCRX(
+            angle=-np.pi/2,
+            control_indices=control_indices,
+            target_indices=second_target_index
+        )
+
+    def MCRZZ(
+            self,
+            angle: float,
+            control_indices: int | Sequence[int],
+            first_target_index: int,
+            second_target_index: int
+        ) -> None:
+        """ Apply a Multi-Controlled RZZ gate to the circuit.
+
+        Parameters
+        ----------
+        `angle` : float
+            The rotation angle in radians.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `first_target_index` : int
+            The index of the first target qubit.
+        `second_target_index` : int
+            The index of the second target qubit.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        ValueError
+            - Qubit index out of range.
+
+        Usage
+        -----
+        >>> circuit.MCRZZ(angle=np.pi/2, control_indices=0,
+        ...               first_target_index=1, second_target_index=2)
+        >>> circuit.MCRZZ(angle=np.pi/2, control_indices=[0, 1],
+        ...               first_target_index=2, second_target_index=3)
+        """
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        self.MCX(
+            control_indices=list(control_indices) + [first_target_index],
+            target_indices=second_target_index
+        )
+        self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+        self.MCX(
+            control_indices=list(control_indices) + [first_target_index],
+            target_indices=second_target_index
+        )
+
     @abstractmethod
     def MCU3(
             self,
@@ -1770,24 +2591,24 @@ class Circuit(ABC):
         """
 
     def UCPauliRot(
-        self,
-        control_indices: int | Sequence[int],
-        target_index: int,
-        angles: Sequence[float],
-        rot_axis: Literal["X", "Y", "Z"]
+            self,
+            angles: Sequence[float],
+            rot_axis: Literal["X", "Y", "Z"],
+            control_indices: int | Sequence[int],
+            target_index: int
         ) -> None:
         """ Apply a uniformly controlled Pauli rotation to the circuit.
 
         Parameters
         ----------
-        `control_indices` : int | Sequence[int]
-            The index of the control qubit(s).
-        `target_index` : int
-            The index of the target qubit.
         `angles` : Sequence[float]
             The rotation angles in radians.
         `rot_axis` : Literal["X", "Y", "Z"]
             The rotation axis.
+        `control_indices` : int | Sequence[int]
+            The index of the control qubit(s).
+        `target_index` : int
+            The index of the target qubit.
 
         Raises
         ------
@@ -1846,7 +2667,7 @@ class Circuit(ABC):
         # Make a copy of the angles parameters to avoid modifying the original
         angles_params = angles_params.copy()
 
-        dec_uc_rotations(angles_params, 0, len(angles_params), False)
+        decompose_uc_rotations(angles_params, 0, len(angles_params), False)
 
         # Apply the uniformly controlled Pauli rotations
         for i, angle in enumerate(angles_params):
@@ -1873,21 +2694,21 @@ class Circuit(ABC):
                 self.RY(-np.pi / 2, target_index)
 
     def UCRX(
-        self,
-        control_indices: int | Sequence[int],
-        target_index: int,
-        angles: Sequence[float]
+            self,
+            angles: Sequence[float],
+            control_indices: int | Sequence[int],
+            target_index: int
         ) -> None:
         """ Apply a uniformly controlled RX gate to the circuit.
 
         Parameters
         ----------
+        `angles` : Sequence[float]
+            The rotation angles in radians.
         `control_indices` : int | Sequence[int]
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
-        `angles` : Sequence[float]
-            The rotation angles in radians.
 
         Raises
         ------
@@ -1901,26 +2722,26 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> circuit.UCRX(control_indices=0, target_index=1, angles=[np.pi/2, np.pi/2])
+        >>> circuit.UCRX(angles=[np.pi/2, np.pi/2], control_indices=0, target_index=1)
         """
-        self.UCPauliRot(control_indices, target_index, angles, "X")
+        self.UCPauliRot(angles, "X", control_indices, target_index)
 
     def UCRY(
-        self,
-        control_indices: int | Sequence[int],
-        target_index: int,
-        angles: Sequence[float]
+            self,
+            angles: Sequence[float],
+            control_indices: int | Sequence[int],
+            target_index: int
         ) -> None:
         """ Apply a uniformly controlled RY gate to the circuit.
 
         Parameters
         ----------
+        `angles` : Sequence[float]
+            The rotation angles in radians.
         `control_indices` : int | Sequence[int]
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
-        `angles` : Sequence[float]
-            The rotation angles in radians.
 
         Raises
         ------
@@ -1934,26 +2755,26 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> circuit.UCRY(control_indices=0, target_index=1, angles=[np.pi/2, np.pi/2])
+        >>> circuit.UCRY(angles=[np.pi/2, np.pi/2], control_indices=0, target_index=1)
         """
-        self.UCPauliRot(control_indices, target_index, angles, "Y")
+        self.UCPauliRot(angles, "Y", control_indices, target_index)
 
     def UCRZ(
-        self,
-        control_indices: int | Sequence[int],
-        target_index: int,
-        angles: Sequence[float]
+            self,
+            angles: Sequence[float],
+            control_indices: int | Sequence[int],
+            target_index: int
         ) -> None:
         """ Apply a uniformly controlled RZ gate to the circuit.
 
         Parameters
         ----------
+        `angles` : Sequence[float]
+            The rotation angles in radians.
         `control_indices` : int | Sequence[int]
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
-        `angles` : Sequence[float]
-            The rotation angles in radians.
 
         Raises
         ------
@@ -1967,9 +2788,9 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> circuit.UCRZ(control_indices=0, target_index=1, angles=[np.pi/2, np.pi/2])
+        >>> circuit.UCRZ(angles=[np.pi/2, np.pi/2], control_indices=0, target_index=1)
         """
-        self.UCPauliRot(control_indices, target_index, angles, "Z")
+        self.UCPauliRot(angles, "Z", control_indices, target_index)
 
     def Diagonal(
             self,
@@ -2078,9 +2899,9 @@ class Circuit(ABC):
 
     def UC(
             self,
+            gates: list[NDArray[np.complex128]],
             control_indices: int | Sequence[int],
             target_index: int,
-            gates: list[NDArray[np.complex128]],
             up_to_diagonal: bool=False,
             multiplexor_simplification: bool=True
         ) -> None:
@@ -2101,12 +2922,12 @@ class Circuit(ABC):
 
         Parameters
         ----------
+        `gates` : list[NDArray[np.complex128]]
+            The gates to apply to the circuit.
         `control_indices` : int | Sequence[int]
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
-        `gates` : list[NDArray[np.complex128]]
-            The gates to apply to the circuit.
         `up_to_diagonal` : bool, optional, default=False
             Determines if the gate is implemented up to a diagonal
             or if it is decomposed completely.
@@ -2173,7 +2994,7 @@ class Circuit(ABC):
 
         # If there is at least one control, first,
         # we find the single qubit gates of the decomposition
-        (single_qubit_gates, diagonal) = dec_ucg_help(gates, len(control_indices) + 1)
+        (single_qubit_gates, diagonal) = decompose_ucg_help(gates, len(control_indices) + 1)
 
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # (which are absorbed into the single-qubit unitaries) to get back the full decomposition.
@@ -2233,9 +3054,127 @@ class Circuit(ABC):
         >>> circuit.GlobalPhase(angle=np.pi/2)
         """
 
+    def QFT(
+            self,
+            qubit_indices: int | Sequence[int],
+            do_swaps: bool=True,
+            approximation_degree: int=0,
+            inverse: bool=False
+        ) -> None:
+        """ Apply the Quantum Fourier Transform to the circuit.
+
+        Notes
+        -----
+        The Quantum Fourier Transform (QFT) is a linear transformation that maps
+        a quantum state to its frequency domain representation. It is the quantum
+        analogue of the Discrete Fourier Transform (DFT). The QFT is an important
+        subroutine in many quantum algorithms, including Shor's algorithm for
+        integer factorization and quantum phase estimation.
+
+        The QFT is defined as:
+
+        .. math::
+            |x\\rangle \\rightarrow \\frac{1}{\\sqrt{N}} \\sum_{y=0}^{N-1} e^{2\\pi ixy/N} |y\\rangle
+
+        The QFT can be implemented using a series of Hadamard gates and controlled
+        phase rotations. The QFT can be efficiently implemented on a quantum computer
+        using a recursive decomposition method.
+
+        For more information on the approximate decomposition of QFT, refer to:
+        https://arxiv.org/pdf/quant-ph/0403071
+
+        Parameters
+        ----------
+        `qubit_indices` : int | Sequence[int]
+            The index of the qubit(s) to apply the gate to.
+        `do_swaps` : bool, optional, default=True
+            Whether to apply the SWAP gates at the end of the QFT.
+        `approximation_degree` : int, optional, default=0
+            The degree of approximation to use in the QFT.
+        `inverse` : bool, optional, default=False
+            Whether to apply the inverse QFT.
+
+        Raises
+        ------
+        TypeError
+            - Approximation degree must be an integer.
+        ValueError
+            - Qubit index out of range.
+            - Approximation degree must be non-negative.
+        """
+        if not isinstance(approximation_degree, int):
+            raise TypeError("Approximation degree must be an integer.")
+
+        if approximation_degree < 0:
+            raise ValueError("Approximation degree must be non-negative.")
+
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        num_qubits = len(qubit_indices)
+        circuit: Circuit = type(self)(num_qubits)
+
+        for j in reversed(range(num_qubits)):
+            circuit.H(j)
+            num_entanglements = max(0, j - max(0, approximation_degree - (num_qubits - j - 1)))
+            for k in reversed(range(j - num_entanglements, j)):
+                # Use negative exponents so that the angle safely underflows to zero, rather than
+                # using a temporary variable that overflows to infinity in the worst case
+                lam = np.pi * (2.0 ** (k - j))
+                circuit.CPhase(lam, j, k)
+
+        if do_swaps:
+            for i in range(num_qubits // 2):
+                circuit.SWAP(i, num_qubits - i - 1)
+
+        if inverse:
+            circuit.horizontal_reverse()
+
+        self.add(circuit, qubit_indices)
+
+    def initialize(
+            self,
+            state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Initialize the state of the circuit.
+
+        Parameters
+        ----------
+        `state` : NDArray[np.complex128] | qickit.primitives.Bra | qickit.primitives.Ket
+            The state to initialize the circuit to.
+        `qubit_indices` : int | Sequence[int]
+            The index of the qubit(s) to apply the gate to.
+
+        Raises
+        ------
+        TypeError
+            - If the state is not a numpy array or a Bra/Ket object.
+            - If the qubit indices are not integers or a sequence of integers.
+        ValueError
+            - If the compression percentage is not in the range [0, 100].
+            - If the index type is not "row" or "snake".
+            - If the number of qubit indices is not equal to the number of qubits in the state.
+        IndexError
+            - If the qubit indices are out of range.
+
+        Usage
+        -----
+        >>> circuit.initialize([1, 0], qubit_indices=0)
+        """
+        # Initialize the state preparation schema
+        isometry = Isometry(output_framework=type(self))
+
+        # Prepare the state
+        self = isometry.apply_state(
+            circuit=self,
+            state=state,
+            qubit_indices=qubit_indices
+        )
+
     def unitary(
             self,
-            unitary_matrix: NDArray[np.complex128],
+            unitary_matrix: NDArray[np.complex128] | Operator,
             qubit_indices:  int | Sequence[int]
         ) -> None:
         """ Apply a unitary gate to the circuit. Uses Quantum Shannon Decomposition
@@ -2243,17 +3182,21 @@ class Circuit(ABC):
 
         Parameters
         ----------
-        `unitary_matrix` : NDArray[np.complex128]
+        `unitary_matrix` : NDArray[np.complex128] | qickit.primitives.Operator
             The unitary matrix to apply to the circuit.
         `qubit_indices` : int | Sequence[int]
             The index of the qubit(s) to apply the gate to.
 
         Raises
         ------
+        TypeError
+            - If the unitary is not a numpy array or an Operator object.
+            - If the qubit indices are not integers or a sequence of integers.
         ValueError
-            - The unitary matrix must have a size of 2^n x 2^n, where n is the number of qubits.
-            - The unitary matrix must be unitary.
-            - The number of qubits passed must be the same as the number of qubits needed to prepare the unitary.
+            - If the number of qubit indices is not equal to the number of qubits
+            in the unitary operator.
+        IndexError
+            - If the qubit indices are out of range.
 
         Usage
         -----
@@ -2265,7 +3208,7 @@ class Circuit(ABC):
         ...                  [1, 0, 0, 0]], qubit_indices=[0, 1])
         """
         # Initialize the unitary preparation schema
-        unitary_preparer = QiskitUnitaryTranspiler(output_framework=type(self))
+        unitary_preparer = ShannonDecomposition(output_framework=type(self))
 
         # Prepare the unitary matrix
         self = unitary_preparer.apply_unitary(
@@ -2321,16 +3264,7 @@ class Circuit(ABC):
         -----
         >>> circuit.vertical_reverse()
         """
-        # Iterate over every operation, and change the index accordingly
-        for operation in self.circuit_log:
-            for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
-                match operation[key]:
-                    case Sequence():
-                        operation[key] = [(self.num_qubits - 1 - index) for index in operation[key]]
-                    case _:
-                        operation[key] = (self.num_qubits - 1 - operation[key])
-
-        self.update()
+        self.change_mapping(list(range(self.num_qubits))[::-1])
 
     def horizontal_reverse(
             self,
@@ -2394,6 +3328,7 @@ class Circuit(ABC):
         ------
         TypeError
             - The circuit must be a Circuit object.
+            - Qubit index must be an integer.
         ValueError
             - The number of qubits must match the number of qubits in the `circuit`.
 
@@ -2405,7 +3340,12 @@ class Circuit(ABC):
         if not isinstance(circuit, Circuit):
             raise TypeError("The circuit must be a Circuit object.")
 
+        if isinstance(qubit_indices, SupportsIndex):
+            qubit_indices = [qubit_indices]
+
         if isinstance(qubit_indices, Sequence):
+            if not all(isinstance(qubit_index, int) for qubit_index in qubit_indices):
+                raise TypeError("Qubit index must be an integer.")
             if len(qubit_indices) != circuit.num_qubits:
                 raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
@@ -2601,6 +3541,26 @@ class Circuit(ABC):
         >>> circuit.get_global_phase()
         """
         return np.exp(1j * self.global_phase)
+
+    def count_ops(self) -> dict[str, int]:
+        """ Count the operations in the circuit.
+
+        Returns
+        -------
+        `ops` : dict[str, int]
+            The count of operations in the circuit.
+
+        Usage
+        -----
+        >>> circuit.count_ops()
+        """
+        ops: dict[str, int] = {}
+
+        for operation in self.circuit_log:
+            gate = operation["gate"]
+            ops[gate] = ops.get(gate, 0) + 1
+
+        return ops
 
     def _remove_measurements_inplace(self) -> None:
         """ Remove the measurement instructions from the circuit inplace.
@@ -2873,6 +3833,14 @@ class Circuit(ABC):
         # Create a copy of the circuit
         circuit = self.copy()
 
+        # Remove Global Phase gates
+        # When a target gate has global phase, we need to account for that by resetting
+        # the global phase, and then applying it to the control indices using the Phase
+        # or MCPhase gates depending on the number of control indices
+        for operation in circuit.circuit_log:
+            if operation["gate"] == "GlobalPhase":
+                circuit.circuit_log.remove(operation)
+
         # Define a controlled circuit
         controlled_circuit = type(circuit)(num_qubits=circuit.num_qubits + num_controls)
 
@@ -2944,6 +3912,18 @@ class Circuit(ABC):
             # Re-insert gate name into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
 
+        # Apply MCPhase on the control qubits to account for the global phase of the target gate
+        # This essentially performs a relative phase correction to the control indices
+        # If there is only one control qubit, we apply Phase gate, otherwise we apply MCPhase gate
+        if num_controls == 1:
+            controlled_circuit.Phase(circuit.global_phase, 0)
+        else:
+            controlled_circuit.MCPhase(
+                circuit.global_phase,
+                control_indices=list(range(num_controls))[:-1],
+                target_indices=num_controls-1
+            )
+
         return controlled_circuit
 
     def update(self) -> None:
@@ -2982,6 +3962,56 @@ class Circuit(ABC):
         -----
         >>> circuit.to_qasm()
         """
+
+    def to_quimb(
+            self
+        ) -> qtn.Circuit:
+        """ Convert the circuit to Quimb Circuit. This method
+        is used for performing tensor network simulations and
+        optimizations using Quimb.
+
+        Notes
+        -----
+        Quimb is a library for working with tensor networks in Python.
+        It is built on top of NumPy and provides a high-level interface
+        for working with tensor networks.
+
+        The method will first transpile the circuit to U3 and CX gates
+        before converting it to a Quimb Circuit.
+
+        For more information, see the documentation:
+        https://quimb.readthedocs.io/en/latest/
+
+        Returns
+        -------
+        `quimb_circuit` : quimb.Circuit
+            The Quimb representation of the circuit.
+
+        Usage
+        -----
+        >>> quimb_circuit = circuit.to_quimb()
+        """
+        # Create a copy of the circuit as the `transpile` method is applied in-place
+        circuit = self.copy()
+
+        quimb_circuit = qtn.Circuit(N=self.num_qubits)
+
+        circuit.transpile()
+
+        for operation in circuit.circuit_log:
+            if operation["gate"] == "U3":
+                quimb_circuit.apply_gate(
+                    gate_id="U3",
+                    params=operation["angles"],
+                    qubits=operation["target_indices"]
+                )
+            else:
+                quimb_circuit.apply_gate(
+                    gate_id=operation["CX"],
+                    qubits=operation["target_indices"]
+                )
+
+        return quimb_circuit
 
     @staticmethod
     def from_cirq(
@@ -3059,13 +4089,10 @@ class Circuit(ABC):
                 elif parameters["exponent"] == -0.25:
                     circuit.Tdg(qubit_indices)
                 else:
-                    circuit.Phase(parameters["exponent"], qubit_indices)
+                    circuit.Phase(parameters["exponent"] * np.pi, qubit_indices)
 
                     if parameters["global_shift"] != 0:
-                        global_phase_angle = abs(
-                            np.log(parameters["global_shift"])
-                        )
-                        circuit.GlobalPhase(global_phase_angle)
+                        circuit.GlobalPhase(parameters["global_shift"] * np.pi/2)
 
             elif gate_type == "S":
                 circuit.S(qubit_indices)
@@ -3098,7 +4125,7 @@ class Circuit(ABC):
                 circuit.SWAP(qubit_indices[0], qubit_indices[1])
 
             elif gate_type == "GlobalPhaseGate":
-                global_phase_angle = abs(
+                global_phase_angle: float = abs(
                     np.log(parameters["coefficient"])
                 )
                 circuit.GlobalPhase(global_phase_angle)
@@ -3224,7 +4251,7 @@ class Circuit(ABC):
                         circuit.CPhase(angle, qubit_indices[0], qubit_indices[1])
 
                     if parameters["sub_gate"]._json_dict_()["global_shift"] != 0:
-                        global_phase_angle = abs(
+                        global_phase_angle: float = abs( # type: ignore
                             np.log(parameters["sub_gate"]._json_dict_()["global_shift"])
                         )
                         circuit.GlobalPhase(global_phase_angle)
@@ -3759,6 +4786,43 @@ class Circuit(ABC):
         circuit = output_framework(num_qubits=num_qubits)
 
         # TODO: Implement the conversion from QASM to Qickit
+        return circuit
+
+    @staticmethod
+    def from_quimb(
+            quimb_circuit: qtn.Circuit,
+            output_framework: Type[Circuit]
+        ) -> Circuit:
+        """ Create a `qickit.circuit.Circuit` from a `qtn.Circuit`.
+
+        Parameters
+        ----------
+        `quimb_circuit` : qtn.Circuit
+            The Quimb quantum circuit to convert.
+        `output_framework` : type[qickit.circuit.Circuit]
+            The output framework to convert to.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The converted circuit.
+
+        Raises
+        ------
+        TypeError
+            - The circuit framework must be a subclass of `qickit.circuit.Circuit`.
+
+        Usage
+        -----
+        >>> circuit.from_quimb(quimb_circuit)
+        """
+        if not issubclass(output_framework, Circuit):
+            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
+
+        num_qubits = 0
+        circuit = output_framework(num_qubits=num_qubits)
+
+        # TODO: Implement the conversion from Quimb to Qickit
         return circuit
 
     def copy(self) -> Circuit:

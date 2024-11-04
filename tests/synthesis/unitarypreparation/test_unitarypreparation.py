@@ -29,6 +29,11 @@ class UnitaryPreparationTemplate(ABC):
         """
 
     @abstractmethod
+    def test_init_invalid_output_framework(self) -> None:
+        """ Test the initialization of the unitary preparation with an invalid output framework.
+        """
+
+    @abstractmethod
     def test_prepare_unitary_ndarray(self) -> None:
         """ Test the preparation of the unitary matrix from a numpy array.
         """
@@ -36,4 +41,29 @@ class UnitaryPreparationTemplate(ABC):
     @abstractmethod
     def test_prepare_unitary_operator(self) -> None:
         """ Test the preparation of the unitary matrix from a `qickit.primitives.Operator`.
+        """
+
+    @abstractmethod
+    def test_apply_unitary_ndarray(self) -> None:
+        """ Test the application of the unitary matrix from a numpy array.
+        """
+
+    @abstractmethod
+    def test_apply_unitary_operator(self) -> None:
+        """ Test the application of the unitary matrix from a `qickit.primitives.Operator`.
+        """
+
+    @abstractmethod
+    def test_apply_unitary_invalid_input(self) -> None:
+        """ Test the application of the unitary matrix with an invalid input.
+        """
+
+    @abstractmethod
+    def test_apply_unitary_invalid_qubit_indices(self) -> None:
+        """ Test the application of the unitary matrix with invalid qubit indices.
+        """
+
+    @abstractmethod
+    def test_apply_unitary_invalid_qubit_indices_out_of_range(self) -> None:
+        """ Test the application of the unitary matrix with qubit indices out of range.
         """

@@ -19,9 +19,10 @@ from __future__ import annotations
 
 __all__ = ["Mottonen"]
 
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, SupportsIndex, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
@@ -66,24 +67,35 @@ class Mottonen(StatePreparation):
     -----
     >>> state_preparer = Mottonen(output_framework=QiskitCircuit)
     """
-    def prepare_state(
+    def apply_state(
             self,
+            circuit: Circuit,
             state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int],
             compression_percentage: float=0.0,
             index_type: Literal["row", "snake"]="row"
         ) -> Circuit:
 
         if not isinstance(state, (np.ndarray, Bra, Ket)):
             try:
-                state = np.array(state)
-            except Exception as e:
-                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.") from e
+                state = np.array(state).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
 
         match state:
             case np.ndarray():
                 state = Ket(state)
             case Bra():
                 state = state.to_ket()
+
+        if isinstance(qubit_indices, SupportsIndex):
+            qubit_indices = [qubit_indices]
+
+        if not all(isinstance(qubit_index, SupportsIndex) for qubit_index in qubit_indices):
+            raise TypeError("All qubit indices must be integers.")
+
+        if not len(qubit_indices) == state.num_qubits:
+            raise ValueError("The number of qubit indices must match the number of qubits in the state.")
 
         # Order indexing (if required)
         if index_type != "row":
@@ -98,7 +110,7 @@ class Mottonen(StatePreparation):
         state = state.data.flatten() # type: ignore
 
         # Construct Mottonen circuit
-        circuit: Circuit = self.output_framework(num_qubits)
+        mottonen_circuit: Circuit = self.output_framework(num_qubits)
 
         def k_controlled_uniform_rotation(
                 circuit: Circuit,
@@ -143,21 +155,26 @@ class Mottonen(StatePreparation):
         # Prepare the state
         for k in range(num_qubits):
             alpha_k = [compute_alpha_y(magnitude, num_qubits - k, j) for j in range(2**k)]
-            k_controlled_uniform_rotation(circuit, alpha_k, list(range(k)), k, "RY")
+            k_controlled_uniform_rotation(mottonen_circuit, alpha_k, list(range(k)), k, "RY")
 
         if not np.all(phase == 0):
             for k in range(num_qubits):
                 alpha_k = [compute_alpha_z(phase, num_qubits - k, j) for j in range(2**k)]
                 if len(alpha_k) > 0:
-                    k_controlled_uniform_rotation(circuit, alpha_k, list(range(k)), k, "RZ")
+                    k_controlled_uniform_rotation(mottonen_circuit, alpha_k, list(range(k)), k, "RZ")
 
         # Apply the global phase
         global_phase = sum(phase / len(state))
-        circuit.GlobalPhase(global_phase)
+        mottonen_circuit.GlobalPhase(global_phase)
 
-        circuit.vertical_reverse()
+        # The implementation is in MSB order, so reverse the circuit
+        # to retrieve the LSB ordering
+        mottonen_circuit.vertical_reverse()
 
         if isinstance(state, Bra):
-            circuit.horizontal_reverse()
+            mottonen_circuit.horizontal_reverse()
+
+        # Add the isometry circuit to the initial circuit
+        circuit.add(mottonen_circuit, qubit_indices)
 
         return circuit

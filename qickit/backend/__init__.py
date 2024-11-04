@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["Backend",
-           "NoisyBackend",
-           "FakeBackend",
-
-           "AerBackend",
-           "FakeIBMBackend",]
+__all__ = [
+    "Backend",
+    "NoisyBackend",
+    "FakeBackend",
+    "AerBackend",
+    "FakeIBMBackend"
+]
 
 from qickit.backend.backend import Backend, NoisyBackend, FakeBackend
 from qickit.backend.qiskit_backends.aer_backend import AerBackend

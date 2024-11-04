@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["TestAerBackend",
-           "TestFakeIBMBackend"]
+__all__ = [
+    "TestAerBackend",
+    "TestFakeIBMBackend"
+]
 
 from tests.backend.qiskit_backends.test_aer_backend import TestAerBackend
 from tests.backend.qiskit_backends.test_ibm_backend import TestFakeIBMBackend

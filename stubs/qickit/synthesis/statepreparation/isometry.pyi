@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
 from qickit.circuit import Circuit
@@ -22,4 +23,11 @@ from typing import Literal
 __all__ = ["Isometry"]
 
 class Isometry(StatePreparation):
-    def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float = 0.0, index_type: Literal["row", "snake"]="row") -> Circuit: ...
+    def apply_state(
+            self,
+            circuit: Circuit,
+            state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int],
+            compression_percentage: float=0.0,
+            index_type: Literal["row", "snake"]="row"
+        ) -> Circuit: ...

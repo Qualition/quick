@@ -23,6 +23,7 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Any, overload, SupportsFloat, TypeAlias
 
+from qickit.predicates import is_square_matrix, is_unitary_matrix
 import qickit.primitives.ket as ket
 
 # `Scalar` is a type alias that represents a scalar value that can be either
@@ -76,13 +77,13 @@ class Operator:
         """
         if label is None:
             self.label = "\N{LATIN CAPITAL LETTER A}\N{COMBINING CIRCUMFLEX ACCENT}"
-        self.ishermitian(data)
+        self.is_unitary(data)
         self.data = data
         self.shape = self.data.shape
         self.num_qubits = int(np.ceil(np.log2(self.shape[0])))
 
     @staticmethod
-    def ishermitian(data: NDArray[np.complex128]) -> None:
+    def is_unitary(data: NDArray[np.complex128]) -> None:
         """ Check if a matrix is Hermitian.
 
         Parameters
@@ -105,7 +106,7 @@ class Operator:
         >>> ishermitian(data)
         """
         # Check if the matrix is square
-        if data.ndim != 2 or data.shape[0] != data.shape[1]:
+        if not is_square_matrix(data):
             raise ValueError("Operator must be a square matrix.")
 
         # Check if the matrix dimension is a power of 2
@@ -120,7 +121,7 @@ class Operator:
                 raise ValueError("Cannot convert data to complex type.")
 
         # Check if the matrix is unitary
-        if not bool(np.allclose(np.eye(data.shape[0], dtype=np.complex128), np.conj(data.T) @ data)):
+        if not is_unitary_matrix(data):
             raise ValueError("Operator must be unitary.")
 
     def _check__mul__(

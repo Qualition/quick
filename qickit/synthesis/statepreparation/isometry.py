@@ -19,20 +19,28 @@ from __future__ import annotations
 
 __all__ = ["Isometry"]
 
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, SupportsIndex, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
-from qickit.circuit.circuit_utils import dec_ucg_help
+from qickit.circuit.circuit_utils import decompose_ucg_help
 from qickit.primitives import Bra, Ket
 from qickit.synthesis.statepreparation import StatePreparation
 from qickit.synthesis.statepreparation.statepreparation_utils import (
-    a, b, k_s, get_binary_rep_as_list, get_qubits_by_label,
-    reverse_qubit_state, apply_multi_controlled_gate,
-    apply_diagonal_gate, apply_diagonal_gate_to_diag,
-    find_squs_for_disentangling, ucg_is_identity_up_to_global_phase,
+    a,
+    b,
+    k_s,
+    get_binary_rep_as_list,
+    get_qubits_by_label,
+    reverse_qubit_state,
+    apply_multi_controlled_gate,
+    apply_diagonal_gate,
+    apply_diagonal_gate_to_diag,
+    find_squs_for_disentangling,
+    ucg_is_identity_up_to_global_phase,
     merge_ucgate_and_diag, apply_ucg
 )
 
@@ -75,24 +83,35 @@ class Isometry(StatePreparation):
     -----
     >>> state_preparer = Isometry(output_framework=QiskitCircuit)
     """
-    def prepare_state(
+    def apply_state(
             self,
+            circuit: Circuit,
             state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int],
             compression_percentage: float=0.0,
             index_type: Literal["row", "snake"]="row"
         ) -> Circuit:
 
         if not isinstance(state, (np.ndarray, Bra, Ket)):
             try:
-                state = np.array(state)
-            except Exception as e:
-                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.") from e
+                state = np.array(state).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
 
         match state:
             case np.ndarray():
                 state = Ket(state)
             case Bra():
                 state = state.to_ket()
+
+        if isinstance(qubit_indices, SupportsIndex):
+            qubit_indices = [qubit_indices]
+
+        if not all(isinstance(qubit_index, SupportsIndex) for qubit_index in qubit_indices):
+            raise TypeError("All qubit indices must be integers.")
+
+        if not len(qubit_indices) == state.num_qubits:
+            raise ValueError("The number of qubit indices must match the number of qubits in the state.")
 
         # Order indexing (if required)
         if index_type != "row":
@@ -109,7 +128,7 @@ class Isometry(StatePreparation):
         state = state.reshape(state.shape[0], 1) # type: ignore
 
         # Construct Isometry circuit
-        circuit: Circuit = self.output_framework(num_qubits)
+        isometry_circuit: Circuit = self.output_framework(num_qubits)
 
         def append_ucg_up_to_diagonal(
                 circuit: Circuit,
@@ -147,7 +166,7 @@ class Isometry(StatePreparation):
                 up_to_diagonal=True
             )
 
-            (_, diagonal) = dec_ucg_help(single_qubit_gates, len(control_labels) + 1)
+            (_, diagonal) = decompose_ucg_help(single_qubit_gates, len(control_labels) + 1)
             return diagonal
 
         def disentangle(
@@ -272,11 +291,18 @@ class Isometry(StatePreparation):
                 )
 
         # Apply the gates to uncompute the state
-        prepare_isometry(circuit, state)
+        prepare_isometry(isometry_circuit, state)
 
         # We must reverse the circuit to prepare the state,
         # as the circuit is uncomputing from the target state
         # to the zero state
-        circuit.horizontal_reverse()
+        # If the state is a bra, we will apply a horizontal reverse
+        # which will nullify this reverse, thus we will first check
+        # if the state is not a bra before applying the reverse
+        if not isinstance(state, Bra):
+            isometry_circuit.horizontal_reverse()
+
+        # Add the isometry circuit to the initial circuit
+        circuit.add(isometry_circuit, qubit_indices)
 
         return circuit

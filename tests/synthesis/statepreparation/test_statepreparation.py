@@ -29,6 +29,11 @@ class StatePreparationTemplate(ABC):
         """
 
     @abstractmethod
+    def test_init_invalid_output_framework(self) -> None:
+        """ Test the initialization of the state preparation with an invalid output framework.
+        """
+
+    @abstractmethod
     def test_prepare_state_ket(self) -> None:
         """ Test the preparation of the state from a `qickit.primitives.Ket` instance.
         """
@@ -41,4 +46,34 @@ class StatePreparationTemplate(ABC):
     @abstractmethod
     def test_prepare_state_ndarray(self) -> None:
         """ Test the preparation of the state from a numpy array.
+        """
+
+    @abstractmethod
+    def test_apply_state_ket(self) -> None:
+        """ Test the application of the state from a `qickit.primitives.Ket` instance.
+        """
+
+    @abstractmethod
+    def test_apply_state_bra(self) -> None:
+        """ Test the application of the state from a `qickit.primitives.Bra` instance.
+        """
+
+    @abstractmethod
+    def test_apply_state_ndarray(self) -> None:
+        """ Test the application of the state from a numpy array.
+        """
+
+    @abstractmethod
+    def test_apply_state_invalid_input(self) -> None:
+        """ Test the application of the state with an invalid input.
+        """
+
+    @abstractmethod
+    def test_apply_state_invalid_qubit_indices(self) -> None:
+        """ Test the application of the state with invalid qubit indices.
+        """
+
+    @abstractmethod
+    def test_apply_state_qubit_indices_out_of_range(self) -> None:
+        """ Test the application of the state with qubit indices out of range.
         """

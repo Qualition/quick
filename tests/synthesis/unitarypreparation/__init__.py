@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["UnitaryPreparationTemplate",
-           "TestDiffusion",
-           "TestQiskitUnitaryTranspiler",
-           "TestShannonDecomposition"]
+__all__ = [
+    "UnitaryPreparationTemplate",
+    "TestDiffusion",
+    "TestQiskitUnitaryTranspiler",
+    "TestShannonDecomposition"
+]
 
 from tests.synthesis.unitarypreparation.test_unitarypreparation import UnitaryPreparationTemplate
 from tests.synthesis.unitarypreparation.test_diffusion import TestDiffusion

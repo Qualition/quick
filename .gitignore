@@ -259,3 +259,4 @@ $RECYCLE.BIN/
 
 # Project-specific
 .temp
+tests/circuit/gate_matrix_checkers/gate_util_maker.ipynb

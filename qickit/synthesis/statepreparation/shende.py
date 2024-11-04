@@ -19,9 +19,10 @@ from __future__ import annotations
 
 __all__ = ["Shende"]
 
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, SupportsIndex, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from qickit.circuit import Circuit
@@ -64,24 +65,35 @@ class Shende(StatePreparation):
     -----
     >>> state_preparer = Shende(output_framework=QiskitCircuit)
     """
-    def prepare_state(
+    def apply_state(
             self,
+            circuit: Circuit,
             state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int],
             compression_percentage: float=0.0,
             index_type: Literal["row", "snake"]="row"
         ) -> Circuit:
 
         if not isinstance(state, (np.ndarray, Bra, Ket)):
             try:
-                state = np.array(state)
-            except Exception as e:
-                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.") from e
+                state = np.array(state).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
 
         match state:
             case np.ndarray():
                 state = Ket(state)
             case Bra():
                 state = state.to_ket()
+
+        if isinstance(qubit_indices, SupportsIndex):
+            qubit_indices = [qubit_indices]
+
+        if not all(isinstance(qubit_index, SupportsIndex) for qubit_index in qubit_indices):
+            raise TypeError("All qubit indices must be integers.")
+
+        if not len(qubit_indices) == state.num_qubits:
+            raise ValueError("The number of qubit indices must match the number of qubits in the state.")
 
         # Order indexing (if required)
         if index_type != "row":
@@ -94,9 +106,6 @@ class Shende(StatePreparation):
         num_qubits = state.num_qubits
 
         statevector = state.data.flatten() # type: ignore
-
-        # Construct Shende circuit
-        circuit: Circuit = self.output_framework(num_qubits)
 
         def multiplexor(
                 list_of_angles: list[float],
@@ -146,8 +155,10 @@ class Shende(StatePreparation):
                 return circuit
 
             # Calculate angle weights
-            angle_weight = np.kron([[0.5, 0.5],
-                                    [0.5, -0.5]], np.identity(2 ** (local_num_qubits - 2)))
+            angle_weight = np.kron([
+                [0.5, 0.5],
+                [0.5, -0.5]
+            ], np.identity(2 ** (local_num_qubits - 2)))
 
             # Calculate the dot product of the angle weights and the list of angles
             # to get the combo angles
@@ -228,9 +239,13 @@ class Shende(StatePreparation):
 
         # Define the disentangling circuit
         disentangling_circuit = gates_to_uncompute(statevector, num_qubits) # type: ignore
-        # Apply a horizontal reverse (adjoint)
+
+        # We must reverse the circuit to prepare the state,
+        # as the circuit is uncomputing from the target state
+        # to the zero state
         disentangling_circuit.horizontal_reverse()
+
         # Add the disentangling circuit to the initial circuit
-        circuit.add(disentangling_circuit, list(range(num_qubits)))
+        circuit.add(disentangling_circuit, qubit_indices)
 
         return circuit

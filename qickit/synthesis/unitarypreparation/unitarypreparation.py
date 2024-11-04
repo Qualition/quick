@@ -76,7 +76,17 @@ class UnitaryPreparation(ABC):
         -------
         `circuit` : qickit.circuit.Circuit
             The quantum circuit for preparing the unitary operator.
+
+        Usage
+        -----
+        >>> unitary_preparation.prepare_unitary(unitary)
         """
+        if not isinstance(unitary, (np.ndarray, Operator)):
+            try:
+                unitary = np.array(unitary).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The operator must be a numpy array or an Operator object. Received {type(unitary)} instead.")
+
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
@@ -112,4 +122,19 @@ class UnitaryPreparation(ABC):
         -------
         `circuit` : qickit.circuit.Circuit
             The quantum circuit with the unitary operator applied.
+
+        Raises
+        ------
+        TypeError
+            - If the unitary is not a numpy array or an Operator object.
+            - If the qubit indices are not integers or a sequence of integers.
+        ValueError
+            - If the number of qubit indices is not equal to the number of qubits
+            in the unitary operator.
+        IndexError
+            - If the qubit indices are out of range.
+
+        Usage
+        -----
+        >>> unitary_preparation.apply_unitary(circuit, unitary, qubit_indices)
         """

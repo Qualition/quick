@@ -132,11 +132,23 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
             qubit_indices: int | Sequence[int]
         ) -> Circuit:
 
+        if not isinstance(unitary, (np.ndarray, Operator)):
+            try:
+                unitary = np.array(unitary).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The operator must be a numpy array or an Operator object. Received {type(unitary)} instead.")
+
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
         if isinstance(qubit_indices, SupportsIndex):
             qubit_indices = [qubit_indices]
+
+        if not all(isinstance(qubit_index, SupportsIndex) for qubit_index in qubit_indices):
+            raise TypeError("All qubit indices must be integers.")
+
+        if not len(qubit_indices) == unitary.num_qubits:
+            raise ValueError("The number of qubit indices must match the number of qubits in the unitary.")
 
         # Get the number of qubits needed to implement the operator
         num_qubits = unitary.num_qubits
@@ -168,7 +180,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
                 qiskit_circuit,
                 unitary_synthesis_method=self.unitary_synthesis_plugin,
                 basis_gates=["u3", "cx"],
-                optimization_level=0,
+                optimization_level=3,
                 seed_transpiler=0
             )
 

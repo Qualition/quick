@@ -110,7 +110,9 @@ class CUDAQCircuit(Circuit):
             "Z": lambda: self.circuit.z,
             "H": lambda: self.circuit.h,
             "S": lambda: self.circuit.s,
-            "T": lambda: self.circuit.t
+            "Sdg": lambda: self.circuit.sdg,
+            "T": lambda: self.circuit.t,
+            "Tdg": lambda: self.circuit.tdg
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -155,7 +157,7 @@ class CUDAQCircuit(Circuit):
         # With cuda-quantum we cannot abstract the single qubit gates as a single method
         # without committing wrong abstraction, hence we will simply wrap the gates in
         # the `_single_qubit_gate` method
-        if gate in ["I", "X", "Y", "Z", "H", "S", "T"]:
+        if gate in ["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"]:
             self._non_parameterized_single_qubit_gate(gate, qubit_indices) # type: ignore
         elif gate in ["RX", "RY", "RZ", "Phase"]:
             self._parameterized_single_qubit_gate(gate, qubit_indices, angle) # type: ignore
@@ -185,38 +187,44 @@ class CUDAQCircuit(Circuit):
             target_indices: Sequence[int]
         ) -> None:
 
+        controlled_kernel, qubit = cudaq.make_kernel(cudaq.qubit) # type: ignore
+
         # Define the gate mapping for the non-parameterized controlled gates
         gate_mapping = {
-            "X": lambda: self.circuit.cx,
-            "Y": lambda: self.circuit.cy,
-            "Z": lambda: self.circuit.cz,
-            "H": lambda: self.circuit.ch,
-            "S": lambda: self.circuit.cs,
-            "T": lambda: self.circuit.ct
+            "X": lambda: controlled_kernel.x,
+            "Y": lambda: controlled_kernel.y,
+            "Z": lambda: controlled_kernel.z,
+            "H": lambda: controlled_kernel.h,
+            "S": lambda: controlled_kernel.s,
+            "Sdg": lambda: controlled_kernel.sdg,
+            "T": lambda: controlled_kernel.t,
+            "Tdg": lambda: controlled_kernel.tdg
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
-        controlled_gate = gate_mapping[gate]()
+        gate_mapping[gate]()(qubit)
 
         # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
-            controlled_gate(*map(self.qr.__getitem__, control_indices), self.qr[target_index])
+            self.circuit.control(controlled_kernel, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
     def _parameterized_controlled_gate(
             self,
             gate: Literal["RX", "RY", "RZ", "Phase"],
-            angles: float,
+            angle: float,
             control_indices: Sequence[int],
             target_indices: Sequence[int]
         ) -> None:
 
+        controlled_kernel, qubit = cudaq.make_kernel(cudaq.qubit) # type: ignore
+
         # Define the gate mapping for the parameterized controlled gates
         gate_mapping = {
-            "RX": lambda: self.circuit.crx,
-            "RY": lambda: self.circuit.cry,
-            "RZ": lambda: self.circuit.crz,
-            "Phase": lambda: self.circuit.cphase
+            "RX": lambda: controlled_kernel.rx(angle, qubit),
+            "RY": lambda: controlled_kernel.ry(angle, qubit),
+            "RZ": lambda: controlled_kernel.rz(angle, qubit),
+            "Phase": lambda: controlled_kernel.phase(angle, qubit)
         }
 
         # Lazily extract the value of the gate from the mapping to avoid
@@ -224,8 +232,9 @@ class CUDAQCircuit(Circuit):
         controlled_gate = gate_mapping[gate]()
 
         # Apply the controlled gate controlled by all control indices to each target index
+        print(*map(self.qr.__getitem__, control_indices))
         for target_index in target_indices:
-            controlled_gate(angles, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
+            self.circuit.control(controlled_gate, *map(self.qr.__getitem__, control_indices), self.qr[target_index])
 
     def _controlled_qubit_gate(
             self,
@@ -241,7 +250,7 @@ class CUDAQCircuit(Circuit):
         # With cuda-quantum we cannot abstract the controlled gates as a single method
         # without committing wrong abstraction, hence we will simply wrap the gates in
         # the `_controlled_qubit_gate` method
-        if gate in ["X", "Y", "Z", "H", "S", "T"]:
+        if gate in ["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg"]:
             self._non_parameterized_controlled_gate(gate, control_indices, target_indices) # type: ignore
         elif gate in ["RX", "RY", "RZ", "Phase"]:
             self._parameterized_controlled_gate(gate, angle, control_indices, target_indices) # type: ignore
@@ -261,8 +270,13 @@ class CUDAQCircuit(Circuit):
         # Apply the Multi-Controlled U3 gate controlled by all control indices to each target index
         # NOTE: CUDAQ version 0.8 will provide native support of U3 gates
         for target_index in target_indices:
-            self.circuit.cu3(angles[0], angles[1], angles[2],
-                             *map(self.qr.__getitem__, control_indices), self.qr[target_index])
+            self.circuit.cu3(
+                angles[0],
+                angles[1],
+                angles[2],
+                *map(self.qr.__getitem__, control_indices),
+                self.qr[target_index]
+            )
 
     def MCSWAP(
             self,
@@ -276,8 +290,11 @@ class CUDAQCircuit(Circuit):
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
         # Apply the MCSWAP gate to the circuit controlled by all control indices to the target indices
-        self.circuit.cswap(*map(self.qr.__getitem__, control_indices),
-                           self.qr[first_target_index], self.qr[second_target_index])
+        self.circuit.cswap(
+            *map(self.qr.__getitem__, control_indices),
+            self.qr[first_target_index],
+            self.qr[second_target_index]
+        )
 
     def GlobalPhase(
             self,
@@ -286,8 +303,10 @@ class CUDAQCircuit(Circuit):
 
         self.process_gate_params(gate=self.GlobalPhase.__name__, params=locals())
 
-        global_phase = np.array([[np.exp(1j * angle), 0],
-                                 [0, np.exp(1j * angle)]], dtype=np.complex128)
+        global_phase = np.array([
+            [np.exp(1j * angle), 0],
+            [0, np.exp(1j * angle)]
+        ], dtype=np.complex128)
 
         cudaq.register_operation("global_phase", global_phase)
         self.circuit.global_phase(self.qr[0])

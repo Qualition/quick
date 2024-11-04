@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from qickit.synthesis import gate_decompositions as gate_decompositions
 from qickit.synthesis import statepreparation as statepreparation
 from qickit.synthesis import unitarypreparation as unitarypreparation
 
-__all__ = ["statepreparation", "unitarypreparation"]
+__all__ = ["gate_decompositions", "statepreparation", "unitarypreparation"]

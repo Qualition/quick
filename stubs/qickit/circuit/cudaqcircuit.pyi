@@ -55,7 +55,7 @@ class CUDAQCircuit(Circuit):
     def _parameterized_controlled_gate(
             self,
             gate: Literal["RX", "RY", "RZ", "Phase"],
-            angles: float,
+            angle: float,
             control_indices: Sequence[int],
             target_indices: Sequence[int]
         ) -> None: ...

@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["UnitaryPreparation",
-           "Diffusion",
-           "QiskitUnitaryTranspiler",
-           "ShannonDecomposition"]
+__all__ = [
+    "UnitaryPreparation",
+    "Diffusion",
+    "QiskitUnitaryTranspiler",
+    "ShannonDecomposition"
+]
 
 from qickit.synthesis.unitarypreparation.unitarypreparation import UnitaryPreparation
 from qickit.synthesis.unitarypreparation.diffusion import Diffusion

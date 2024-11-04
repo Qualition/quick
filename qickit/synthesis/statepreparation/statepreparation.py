@@ -23,6 +23,7 @@ import qickit.circuit.circuit
 __all__ = ["StatePreparation"]
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, Type, TYPE_CHECKING
@@ -66,11 +67,10 @@ class StatePreparation(ABC):
 
         self.output_framework = output_framework
 
-    @abstractmethod
     def prepare_state(
             self,
             state: NDArray[np.complex128] | Bra | Ket,
-            compression_percentage: float = 0.0,
+            compression_percentage: float=0.0,
             index_type: Literal["row", "snake"]="row"
         ) -> Circuit:
         """ Prepare the quantum state.
@@ -93,4 +93,58 @@ class StatePreparation(ABC):
         ------
         TypeError
             - If the state is not a numpy array or a Bra/Ket object.
+        """
+        if not isinstance(state, (np.ndarray, Bra, Ket)):
+            try:
+                state = np.array(state).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
+
+        if isinstance(state, np.ndarray):
+            state = Ket(state)
+
+        # Get the number of qubits needed to implement the state
+        num_qubits = state.num_qubits
+
+        # Initialize the qickit circuit
+        circuit = self.output_framework(num_qubits)
+
+        return self.apply_state(circuit, state, range(num_qubits), compression_percentage, index_type)
+
+    @abstractmethod
+    def apply_state(
+            self,
+            circuit: Circuit,
+            state: NDArray[np.complex128] | Bra | Ket,
+            qubit_indices: int | Sequence[int],
+            compression_percentage: float=0.0,
+            index_type: Literal["row", "snake"]="row"
+        ) -> Circuit:
+        """ Apply the quantum state to a quantum circuit.
+
+        Parameters
+        ----------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit to which the state is applied.
+        `state` : NDArray[np.complex128] | qickit.primitives.Bra | qickit.primitives.Ket
+            The quantum state to apply.
+        `qubit_indices` : int | Sequence[int]
+            The qubit indices to which the state is applied.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The quantum circuit with the state applied.
+
+        Raises
+        ------
+        TypeError
+            - If the state is not a numpy array or a Bra/Ket object.
+            - If the qubit indices are not integers or a sequence of integers.
+        ValueError
+            - If the compression percentage is not in the range [0, 100].
+            - If the index type is not "row" or "snake".
+            - If the number of qubit indices is not equal to the number of qubits in the state.
+        IndexError
+            - If the qubit indices are out of range.
         """

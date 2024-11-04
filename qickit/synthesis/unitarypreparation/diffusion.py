@@ -149,15 +149,34 @@ class Diffusion(UnitaryPreparation):
 
         Raises
         ------
+        TypeError
+            - If the unitary is not a numpy array or an Operator object.
+            - If the qubit indices are not integers or a sequence of integers.
         ValueError
             - If the unitary is not a 3-qubit unitary.
             - No solution found with fidelity > 0.9.
+            - If the number of qubit indices is not equal to the number of qubits
+            in the unitary operator.
+        IndexError
+            - If the qubit indices are out of range.
         """
+        if not isinstance(unitary, (np.ndarray, Operator)):
+            try:
+                unitary = np.array(unitary).astype(complex)
+            except (ValueError, TypeError):
+                raise TypeError(f"The operator must be a numpy array or an Operator object. Received {type(unitary)} instead.")
+
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
         if isinstance(qubit_indices, SupportsIndex):
             qubit_indices = [qubit_indices]
+
+        if not all(isinstance(qubit_index, SupportsIndex) for qubit_index in qubit_indices):
+            raise TypeError("All qubit indices must be integers.")
+
+        if not len(qubit_indices) == unitary.num_qubits:
+            raise ValueError("The number of qubit indices must match the number of qubits in the unitary.")
 
         if self.model == "Floki00/qc_unitary_3qubit" and unitary.num_qubits != 3:
             raise ValueError("The default pre-trained model is for 3-qubit unitaries only.")
@@ -210,6 +229,8 @@ class Diffusion(UnitaryPreparation):
         # Find the shortest circuit with fidelity > `self.min_fidelity`
         best_qc = solution_circuits[depths.index(min(depths))]
 
-        circuit = qickit.circuit.Circuit.from_qiskit(best_qc, self.output_framework)
+        diffusion_circuit = qickit.circuit.Circuit.from_qiskit(best_qc, self.output_framework)
+
+        circuit.add(diffusion_circuit, qubit_indices)
 
         return circuit

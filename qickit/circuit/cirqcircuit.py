@@ -94,8 +94,11 @@ class CirqCircuit(Circuit):
 
         # Define the circuit (Need to add an identity, otherwise `.get_unitary()`
         # returns the state instead of the operator of the circuit)
+        # We also need to apply the identity gate to all qubits to ensure that the
+        # unitary accounts for all qubits, including idle ones
         self.circuit: cirq.Circuit = cirq.Circuit()
-        self.circuit.append(I(self.qr[0]))
+        for i in range(self.num_qubits):
+            self.circuit.append(I(self.qr[i]))
 
     def _single_qubit_gate(
             self,
@@ -140,9 +143,11 @@ class CirqCircuit(Circuit):
         self.process_gate_params(gate=self.U3.__name__, params=locals())
 
         # Define the unitary matrix for the U3 gate
-        u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
-              [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
-                                                           np.cos(angles[0]/2)]]
+        u3 = [
+            [np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
+            [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
+            np.cos(angles[0]/2)]
+        ]
 
         # Define the U3 gate class
         class U3(cirq.Gate):
@@ -223,9 +228,11 @@ class CirqCircuit(Circuit):
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
         # Create a single qubit unitary gate
-        u3 = [[np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
-              [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
-                                                           np.cos(angles[0]/2)]]
+        u3 = [
+            [np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
+            [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
+            np.cos(angles[0]/2)]
+        ]
 
         # Define the U3 gate class
         class U3(cirq.Gate):
@@ -299,8 +306,8 @@ class CirqCircuit(Circuit):
         if any(qubit_index in self.measured_qubits for qubit_index in qubit_indices):
             raise ValueError("The qubit(s) have already been measured.")
 
-        # We must sort the indices as Cirq doesn't understand that the order of measurements
-        # is irrelevant
+        # We must sort the indices as Cirq interprets that the order of measurements
+        # is relevant
         # This is done to ensure that the measurements are consistent across different
         # framework
         for qubit_index in sorted(qubit_indices):
