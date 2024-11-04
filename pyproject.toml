@@ -20,8 +20,9 @@ dependencies = [
     "qiskit == 1.2.2",
     "qiskit_aer == 0.15.0",
     "qiskit-aer-gpu == 0.15.0",
-    "qiskit_ibm_runtime == 0.31.0",
+    "qiskit_ibm_runtime == 0.32.0",
     "qiskit-transpiler-service == 0.4.8",
+    "quimb == 1.8.4",
     "ruff == 0.6.8",
     "tket2 == 0.4.1"
 ]

@@ -13,8 +13,9 @@ pytest-mock == 3.14.0
 qiskit == 1.2.4
 qiskit_aer == 0.15.1
 qiskit-aer-gpu == 0.15.1
-qiskit_ibm_runtime == 0.31.0
-qiskit-transpiler-service == 0.4.10
+qiskit_ibm_runtime == 0.32.0
+qiskit-transpiler-service == 0.4.12
+quimb == 1.8.4
 ruff == 0.6.9
 tket2 == 0.4.1
 tequila-basic == 1.9.7
