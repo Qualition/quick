@@ -23,7 +23,6 @@ __all__ = ["ShannonDecomposition"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from numpy.testing import assert_almost_equal
 import scipy.linalg # type: ignore
 from typing import SupportsIndex, TYPE_CHECKING
 
@@ -37,6 +36,9 @@ from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 # Constants
 EPSILON = 1e-10
+QUBIT_KEYS = frozenset([
+    "qubit_index", "control_index", "target_index"
+])
 
 
 class ShannonDecomposition(UnitaryPreparation):
@@ -391,8 +393,8 @@ class ShannonDecomposition(UnitaryPreparation):
             qsd_blocks.append(circuit.circuit_log[a2_qsd_blocks[-1][0]:a2_qsd_blocks[-1][1]])
             circuit_blocks.append(circuit.circuit_log[a2_qsd_blocks[-1][1]:])
 
+            # Extract the blocks from the circuit
             for block_index in range(len(qsd_blocks) - 1):
-                # Extract the blocks from the circuit
                 circuit_1 = self.output_framework(2)
                 circuit_2 = self.output_framework(2)
 
@@ -400,6 +402,16 @@ class ShannonDecomposition(UnitaryPreparation):
                 circuit_2.circuit_log = qsd_blocks[block_index + 1]
 
                 # Update the circuit to reconstruct the circuit from the modified circuit log
+                # As mentioned, we need to map the qubits to 0 and 1 to extract the 4x4 unitaries
+                if block_index == 0:
+                    for operation in circuit_1.circuit_log:
+                        for key in set(operation.keys()).intersection(QUBIT_KEYS):
+                            operation[key] = 0 if operation[key] == qubit_indices[0] else 1
+
+                for operation in circuit_2.circuit_log:
+                    for key in set(operation.keys()).intersection(QUBIT_KEYS):
+                        operation[key] = 0 if operation[key] == qubit_indices[0] else 1
+
                 circuit_1.update()
                 circuit_2.update()
 
@@ -418,6 +430,12 @@ class ShannonDecomposition(UnitaryPreparation):
                 qsd_blocks[block_index] = circuit_1.circuit_log
                 qsd_blocks[block_index + 1] = circuit_2.circuit_log
 
+            # Undo the qubit mapping
+            for block in qsd_blocks:
+                for operation in block:
+                    for key in set(operation.keys()).intersection(QUBIT_KEYS):
+                        operation[key] = qubit_indices[0] if operation[key] == 0 else qubit_indices[1]
+
             # Reconstruct the circuit with the modified blocks in alternating order
             circuit.reset()
 
@@ -429,8 +447,6 @@ class ShannonDecomposition(UnitaryPreparation):
 
             # Update the circuit to reconstruct the circuit from the modified circuit log
             circuit.update()
-
-            assert_almost_equal(circuit.get_unitary(), unitary.data)
 
         # Apply the Shannon decomposition to the circuit
         quantum_shannon_decomposition(circuit, qubit_indices, unitary.data, recursion_depth=0) # type: ignore

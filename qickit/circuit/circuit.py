@@ -265,6 +265,14 @@ class Circuit(ABC):
         `params` : dict
             The parameters of the gate.
 
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Angle must be a float or integer.
+        IndexError
+            - Qubit index out of range.
+
         Usage
         -----
         >>> self.process_gate_params(gate="X", params={"qubit_indices": 0})
@@ -4562,8 +4570,10 @@ class Circuit(ABC):
         # Iterate over the operations in the Qiskit circuit
         for gate in tket_circuit:
             gate_type = str(gate.op.type)
-            qubit_indices = [int(qubit.index[0]) for qubit in gate.qubits] if len(gate.qubits) > 1 \
-                                                                           else [gate.qubits[0].index[0]]
+
+            qubit_indices = [
+                int(qubit.index[0]) for qubit in gate.qubits
+            ] if len(gate.qubits) > 1 else [gate.qubits[0].index[0]]
 
             if gate_type == "OpType.noop":
                 circuit.Identity(qubit_indices)

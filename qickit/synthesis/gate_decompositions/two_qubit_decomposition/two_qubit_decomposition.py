@@ -574,12 +574,12 @@ class TwoQubitDecomposition(UnitaryPreparation):
             overall_global_phase += np.pi
 
         for i in range(best_num_basis):
-            self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * i], 0)
-            self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * i + 1], 1)
-            circuit.CX(0, 1)
+            self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * i], qubit_indices[0])
+            self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * i + 1], qubit_indices[1])
+            circuit.CX(qubit_indices[0], qubit_indices[1])
 
-        self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * best_num_basis], 0)
-        self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * best_num_basis + 1], 1)
+        self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * best_num_basis], qubit_indices[0])
+        self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * best_num_basis + 1], qubit_indices[1])
 
         circuit.GlobalPhase(overall_global_phase)
 

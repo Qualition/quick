@@ -92,9 +92,12 @@ class AerBackend(NoisyBackend):
             device: str="CPU"
         ) -> None:
 
-        super().__init__(single_qubit_error=single_qubit_error,
-                         two_qubit_error=two_qubit_error,
-                         device=device)
+        super().__init__(
+            single_qubit_error=single_qubit_error,
+            two_qubit_error=two_qubit_error,
+            device=device
+        )
+
         self._qc_framework = QiskitCircuit
 
         if self.noisy:
