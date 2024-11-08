@@ -237,7 +237,7 @@ class Circuit(ABC):
                     for angle in value:
                         if not isinstance(angle, (int, float)):
                             raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
-                        if np.isclose(angle, EPSILON) or np.isclose(angle % (2 * np.pi), EPSILON):
+                        if abs(angle) <= EPSILON or abs(angle % (2 * np.pi)) <= EPSILON:
                             angle = 0
                     if all(angle == 0 for angle in value):
                         # Indicate no operation needed
@@ -245,7 +245,7 @@ class Circuit(ABC):
                 case _:
                     if not isinstance(value, (int, float)):
                         raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
-                    if np.isclose(value, EPSILON) or np.isclose(value % (2 * np.pi), EPSILON):
+                    if abs(value) <= EPSILON or abs(value % (2 * np.pi)) <= EPSILON:
                         # Indicate no operation needed
                         return None
 

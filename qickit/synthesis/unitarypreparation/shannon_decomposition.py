@@ -431,8 +431,8 @@ class ShannonDecomposition(UnitaryPreparation):
                 qsd_blocks[block_index + 1] = circuit_2.circuit_log
 
             # Undo the qubit mapping
-            for block in qsd_blocks:
-                for operation in block:
+            for block in qsd_blocks: # type: ignore
+                for operation in block: # type: ignore
                     for key in set(operation.keys()).intersection(QUBIT_KEYS):
                         operation[key] = qubit_indices[0] if operation[key] == 0 else qubit_indices[1]
 
