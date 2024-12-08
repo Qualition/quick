@@ -89,7 +89,7 @@ test_circuit = generate_random_circuit(7, QiskitCircuit)
 test_unitary = test_circuit.get_unitary()
 
 
-@pytest.mark.skip
+@pytest.mark.slow
 class TestDiffusion(UnitaryPreparationTemplate):
     """ `tests.synthesis.test_diffusion.TestDiffusion` is the tester class
     for `qickit.synthesis.unitarypreparation.Diffusion` class.

@@ -23,7 +23,7 @@ import numpy as np
 from pytket import Circuit as TKCircuit
 from pytket._tket.circuit import Command
 from pytket import OpType
-from pytket.passes import auto_rebase_pass
+from pytket.passes import AutoRebase
 from typing import Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -177,7 +177,7 @@ class FromTKET(FromFramework):
         qickit_circuit = self.output_framework(num_qubits=num_qubits)
 
         # Transpile the TKET circuit to u3 and cx gates
-        tket_pass = auto_rebase_pass({OpType.U3, OpType.CX})
+        tket_pass = AutoRebase({OpType.U3, OpType.CX})
         tket_pass.apply(circuit)
 
         # Extract the parameters of the gates in the TKET circuit
