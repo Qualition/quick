@@ -103,7 +103,7 @@ class Diffusion(UnitaryPreparation):
             prompt: str="Compile using: ['h', 'cx', 'z', 'ccx', 'swap']",
             max_num_gates: int=12,
             num_samples: int=128,
-            min_fidelity: float=0.9
+            min_fidelity: float=0.99
         ) -> None:
 
         super().__init__(output_framework)

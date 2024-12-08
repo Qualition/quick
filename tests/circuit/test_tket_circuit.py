@@ -887,16 +887,31 @@ class TestTKETCircuit(Template):
 
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
-    @pytest.mark.parametrize("num_qubits, qubit_index, angles, expected", [
+    @pytest.mark.parametrize("num_qubits, qubit_indices, angles, expected", [
         [1, 0, (np.pi/2, np.pi/3, np.pi/4), U3(np.pi/2, np.pi/3, np.pi/4).matrix],
         [2, 1, (np.pi/2, -np.pi/3, np.pi/4), np.kron(U3(np.pi/2, -np.pi/3, np.pi/4).matrix, np.eye(2))],
         [3, 2, (np.pi/2, np.pi/3, -np.pi/4), np.kron(U3(np.pi/2, np.pi/3, -np.pi/4).matrix, np.eye(4))],
-        [1, 0, (1/3, 1/4, 1/5), U3(1/3, 1/4, 1/5).matrix]
+        [1, 0, (1/3, 1/4, 1/5), U3(1/3, 1/4, 1/5).matrix],
+        [3, [0, 2], (np.pi/2, np.pi/3, np.pi/4), np.kron(
+            U3(np.pi/2, np.pi/3, np.pi/4).matrix,
+            np.kron(
+                np.eye(2),
+                U3(np.pi/2, np.pi/3, np.pi/4).matrix
+            )
+        )],
+        [3, [0, 1], (np.pi/2, np.pi/3, np.pi/4), np.kron(
+                np.eye(2),
+                np.kron(
+                    U3(np.pi/2, np.pi/3, np.pi/4).matrix,
+                    U3(np.pi/2, np.pi/3, np.pi/4).matrix
+                )
+            )
+        ]
     ])
     def test_U3(
             self,
             num_qubits: int,
-            qubit_index: int,
+            qubit_indices: int | list[int],
             angles: tuple[float, float, float],
             expected: NDArray[np.complex128]
         ) -> None:
@@ -904,7 +919,7 @@ class TestTKETCircuit(Template):
         circuit = TKETCircuit(num_qubits)
 
         # Apply the U3 gate
-        circuit.U3(angles, qubit_index)
+        circuit.U3(angles, qubit_indices)
 
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
@@ -2319,7 +2334,7 @@ class TestTKETCircuit(Template):
         # Get the depth of the circuit, and ensure it is correct
         depth = circuit.get_depth()
 
-        assert depth == 21
+        assert depth == 25
 
     def test_get_width(self) -> None:
         # Define the `qickit.circuit.TKETCircuit` instance

@@ -22,13 +22,14 @@ __all__ = ["PennylaneCircuit"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 import pennylane as qml # type: ignore
 
 if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit import Circuit, QiskitCircuit
+from qickit.circuit.circuit import GATES
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 
@@ -38,7 +39,7 @@ class PennylaneCircuit(Circuit):
     Notes
     -----
     Xanadu's PennyLane is a cross-platform Python library for quantum computing,
-    quantum machine learning, and quantum chemistry. 
+    quantum machine learning, and quantum chemistry.
 
     For more information on PennyLane:
     - Documentation:
@@ -59,6 +60,9 @@ class PennylaneCircuit(Circuit):
         Number of qubits in the circuit.
     `circuit` : list[qml.Operation]
         The circuit.
+    `gate_mapping` : dict[str, Callable]
+        The mapping of the gates in the input quantum computing
+        framework to the gates in qickit.
     `device` : qml.Device
         The PennyLane device to use.
     `measured_qubits` : set[int]
@@ -91,145 +95,66 @@ class PennylaneCircuit(Circuit):
         self.device = qml.device("default.qubit", wires=self.num_qubits)
         self.circuit: list[qml.Operation] = []
 
-    def _single_qubit_gate(
-            self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            qubit_indices: int | Sequence[int],
-            angle: float=0
-        ) -> None:
+    @staticmethod
+    def _define_gate_mapping() -> dict[str, Callable]:
+        # Define lambda factory for non-parameterized gates
+        def const(x):
+            return lambda _angles: x
 
-        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
-
-        # Define the gate mapping for the single qubit gates
+        # Note that Qickit only uses U3, CX, and Global Phase gates and constructs the other gates
+        # by performing decomposition
+        # However, if the user wants to override the decomposition and use the native gates, they
+        # can do so by using the below gate mapping
         gate_mapping = {
-            "I": lambda: qml.Identity(0).matrix(),
-            "X": lambda: qml.PauliX(0).matrix(),
-            "Y": lambda: qml.PauliY(0).matrix(),
-            "Z": lambda: qml.PauliZ(0).matrix(),
-            "H": lambda: qml.Hadamard(wires=0).matrix(),
-            "S": lambda: qml.S(wires=0).matrix(),
-            "Sdg": lambda: qml.adjoint(qml.S(0)).matrix(), # type: ignore
-            "T": lambda: qml.T(wires=0).matrix(),
-            "Tdg": lambda: qml.adjoint(qml.T(0)).matrix(), # type: ignore
-            "RX": lambda: qml.RX(phi=angle, wires=0).matrix(), # type: ignore
-            "RY": lambda: qml.RY(phi=angle, wires=0).matrix(), # type: ignore
-            "RZ": lambda: qml.RZ(phi=angle, wires=0).matrix(), # type: ignore
-            "Phase": lambda: qml.PhaseShift(phi=angle, wires=0).matrix() # type: ignore
+            "I": const(qml.Identity(0).matrix()),
+            "X": const(qml.PauliX(0).matrix()),
+            "Y": const(qml.PauliY(0).matrix()),
+            "Z": const(qml.PauliZ(0).matrix()),
+            "H": const(qml.Hadamard(wires=0).matrix()),
+            "S": const(qml.S(wires=0).matrix()),
+            "Sdg": const(qml.adjoint(qml.S(0)).matrix()), # type: ignore
+            "T": const(qml.T(wires=0).matrix()),
+            "Tdg": const(qml.adjoint(qml.T(0)).matrix()), # type: ignore
+            "RX": lambda angles: qml.RX(phi=angles[0], wires=0).matrix(), # type: ignore
+            "RY": lambda angles: qml.RY(phi=angles[0], wires=0).matrix(), # type: ignore
+            "RZ": lambda angles: qml.RZ(phi=angles[0], wires=0).matrix(), # type: ignore
+            "Phase": lambda angles: qml.PhaseShift(phi=angles[0], wires=0).matrix(), # type: ignore
+            "U3": lambda angles: qml.U3(theta=angles[0], phi=angles[1], delta=angles[2], wires=0).matrix() # type: ignore
         }
 
-        # Lazily extract the value of the gate from the mapping to avoid
-        # creating all the gates at once, and to maintain the abstraction
-        single_qubit_gate = gate_mapping[gate]()
+        return gate_mapping
 
-        # Apply the single qubit gate to each qubit index
-        for index in qubit_indices:
-            self.circuit.append(qml.QubitUnitary(single_qubit_gate, wires=index))
-
-    def U3(
+    def _gate_mapping(
             self,
-            angles: Sequence[float],
-            qubit_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.U3.__name__, params=locals())
-
-        # Create a single qubit unitary gate
-        u3 = qml.U3
-        self.circuit.append(u3(theta=angles[0], phi=angles[1], delta=angles[2], wires=qubit_index)) # type: ignore
-
-    def SWAP(
-            self,
-            first_qubit_index: int,
-            second_qubit_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
-
-        # Create a SWAP gate
-        swap = qml.SWAP
-        self.circuit.append(swap(wires=[first_qubit_index, second_qubit_index]))
-
-    def _controlled_qubit_gate(
-            self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            control_indices: int | Sequence[int],
+            gate: GATES,
             target_indices: int | Sequence[int],
-            angle: float=0
+            control_indices: int | Sequence[int] = [],
+            angles: Sequence[float] = [0, 0, 0]
         ) -> None:
 
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Define the gate mapping for the non-parameterized controlled gates
-        gate_mapping = {
-            "X": lambda: qml.PauliX(0).matrix(),
-            "Y": lambda: qml.PauliY(0).matrix(),
-            "Z": lambda: qml.PauliZ(0).matrix(),
-            "H": lambda: qml.Hadamard(wires=0).matrix(),
-            "S": lambda: qml.S(wires=0).matrix(),
-            "Sdg": lambda: qml.adjoint(qml.S(0)).matrix(), # type: ignore
-            "T": lambda: qml.T(wires=0).matrix(),
-            "Tdg": lambda: qml.adjoint(qml.T(0)).matrix(), # type: ignore
-            "RX": lambda: qml.RX(phi=angle, wires=0).matrix(), # type: ignore
-            "RY": lambda: qml.RY(phi=angle, wires=0).matrix(), # type: ignore
-            "RZ": lambda: qml.RZ(phi=angle, wires=0).matrix(), # type: ignore
-            "Phase": lambda: qml.PhaseShift(phi=angle, wires=0).matrix() # type: ignore
-        }
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
-        controlled_qubit_gate = gate_mapping[gate]()
+        # Apply the gate operation to the specified qubits
+        gate_operation = self.gate_mapping[gate](angles)
 
-        # Apply the controlled gate controlled by all control indices to each target index
-        for target_index in target_indices:
-            self.circuit.append(
+        if control_indices:
+            for target_index in target_indices:
+                self.circuit.append(
                 qml.ControlledQubitUnitary(
-                    controlled_qubit_gate,
+                    gate_operation,
                     control_wires=control_indices,
                     wires=target_index
                 )
             )
+            return
 
-    def MCU3(
-            self,
-            angles: Sequence[float],
-            control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
-        ) -> None:
-
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
-
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Apply the MCU3 gate controlled by all control indices to each target index
         for target_index in target_indices:
             self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    qml.U3(theta=angles[0], phi=angles[1], delta=angles[2], wires=0).matrix(), # type: ignore
-                    control_wires=control_indices,
-                    wires=target_index
-                )
+                qml.QubitUnitary(gate_operation, wires=target_index)
             )
-
-    def MCSWAP(
-            self,
-            control_indices: int | Sequence[int],
-            first_target_index: int,
-            second_target_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
-
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-
-        self.circuit.append(
-            qml.ControlledQubitUnitary(
-                qml.SWAP(wires=[0, 1]).matrix(),
-                control_wires=control_indices,
-                wires=[first_target_index, second_target_index]
-            )
-        )
 
     def GlobalPhase(
             self,
@@ -250,19 +175,17 @@ class PennylaneCircuit(Circuit):
 
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
-        # NOTE: In PennyLane, we apply measurements in '.get_statevector', and '.get_counts'
-        # methods. This is due to the need for PennyLane quantum functions to return measurement results.
-        # Therefore, we do not need to do anything here.
+        # In PennyLane, we apply measurements in '.get_statevector', and '.get_counts'
+        # methods
+        # This is due to the need for PennyLane quantum functions to return measurement results
+        # Therefore, we do not need to do anything here
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
-
-        # Check if any of the qubits have already been measured
-        if any(qubit_index in self.measured_qubits for qubit_index in qubit_indices):
-            raise ValueError("The qubit(s) have already been measured.")
 
         # Set the measurement as applied
         for qubit_index in qubit_indices:
             self.measured_qubits.add(qubit_index)
+            self.circuit.append((qml.measure(qubit_index), False)) # type: ignore
 
     def get_statevector(
             self,
@@ -290,6 +213,10 @@ class PennylaneCircuit(Circuit):
             """
             # Apply the operations in the circuit
             for op in circuit.circuit:
+                if isinstance(op, tuple):
+                    qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
+                    continue
+
                 qml.apply(op)
 
             return qml.state()
@@ -333,6 +260,10 @@ class PennylaneCircuit(Circuit):
             """
             # Apply the operations in the circuit
             for op in circuit.circuit:
+                if isinstance(op, tuple):
+                    qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
+                    continue
+
                 qml.apply(op)
 
             return qml.counts(wires=circuit.measured_qubits, all_outcomes=True)
@@ -354,6 +285,9 @@ class PennylaneCircuit(Circuit):
         # Copy the circuit as the operations are applied inplace
         circuit: PennylaneCircuit = self.copy() # type: ignore
 
+        # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
+        circuit.vertical_reverse()
+
         def compile_circuit() -> None:
             """ Compile the circuit.
 
@@ -370,45 +304,29 @@ class PennylaneCircuit(Circuit):
 
             # Apply the operations in the circuit
             for op in circuit.circuit:
+                if isinstance(op, tuple):
+                    qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
+                    continue
+
                 qml.apply(op)
 
         # Run the circuit and define the unitary matrix
         unitary = np.array(qml.matrix(compile_circuit, wire_order=range(self.num_qubits))(), dtype=complex) # type: ignore
 
-        # PennyLane's `.matrix` function does not take qubit ordering into account,
-        # so we need to manually convert the unitary matrix from MSB to LSB
-        def MSB_to_LSB(matrix: NDArray[np.complex128]) -> NDArray[np.complex128]:
-            """ Convert the MSB to LSB.
+        return unitary
 
-            Parameters
-            ----------
-            `matrix` : NDArray[np.complex128]
-                The matrix to convert.
+    def reset_qubit(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
 
-            Returns
-            -------
-            `reordered_matrix` : NDArray[np.complex128]
-                The new matrix with LSB conversion.
-            """
-            # Determine the size of the matrix (assuming it's a square matrix)
-            size = len(matrix)
+        self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
 
-            # Create a new matrix to store the reordered elements
-            reordered_matrix = np.zeros((size, size), dtype=type(matrix[0][0]))
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
 
-            # Iterate over each element in the original matrix
-            for i in range(size):
-                for j in range(size):
-                    # Convert the indices from MSB to LSB
-                    new_i = int(bin(i)[2:].zfill(int(np.log2(size)))[::-1], 2)
-                    new_j = int(bin(j)[2:].zfill(int(np.log2(size)))[::-1], 2)
-
-                    # Assign the value from the original matrix to the new position in the reordered matrix
-                    reordered_matrix[new_i][new_j] = matrix[i][j]
-
-            return reordered_matrix
-
-        return MSB_to_LSB(unitary)
+        for qubit_index in qubit_indices:
+            self.circuit.append((qml.measure(qubit_index), True)) # type: ignore
 
     def transpile(
             self,

@@ -260,5 +260,7 @@ $RECYCLE.BIN/
 # Project-specific
 .temp
 qickit/circuit/circuit_log.py
-qickit/circuit/from_framework
+qickit/circuit/cudaqcircuit_temp.py
+qickit/circuit/from_framework/from_qasm.py
+tests/circuit/test_cudaq_circuit_temp.py
 tests/circuit/gate_matrix_checkers/gate_util_maker.ipynb

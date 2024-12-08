@@ -44,7 +44,7 @@ class AerBackend(NoisyBackend):
 
     For more information, see https://qiskit.github.io/qiskit-aer/.
 
-    This 
+    This
     Parameters
     ----------
     `single_qubit_error` : float, optional, default=0.0
@@ -139,7 +139,11 @@ class AerBackend(NoisyBackend):
         # Create a copy of the circuit as `.remove_measurements()` is applied inplace
         circuit = circuit.copy()
 
-        # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
+        # Transpile the circuit to the backend
+        # This is to counter https://github.com/Qiskit/qiskit/issues/13162
+        circuit.transpile()
+
+        # For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the statevector
         if circuit.num_qubits < 10 and self.noisy is False:
             circuit.remove_measurements(inplace=True)
@@ -167,7 +171,11 @@ class AerBackend(NoisyBackend):
 
         circuit.remove_measurements(inplace=True)
 
-        # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
+        # Transpile the circuit to the backend
+        # This is to counter https://github.com/Qiskit/qiskit/issues/13162
+        circuit.transpile()
+
+        # For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the operator
         if circuit.num_qubits < 10 and self.noisy is False:
             operator = Operator(circuit.circuit).data
@@ -188,7 +196,16 @@ class AerBackend(NoisyBackend):
         if len(circuit.measured_qubits) == 0:
             raise ValueError("The circuit must have at least one measured qubit.")
 
+        # Create a copy of the circuit as `.transpile()` is applied inplace
+        circuit = circuit.copy()
+
+        # Transpile the circuit to the backend
+        # This is to counter https://github.com/Qiskit/qiskit/issues/13162
+        circuit.transpile()
+
         # Run the circuit on the backend to generate the result
+        # Transpile the circuit to the backend
+        # This is to counter https://github.com/Qiskit/qiskit/issues/13162
         result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()
 
         # Extract the counts from the result

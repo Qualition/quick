@@ -22,7 +22,7 @@ __all__ = ["TKETCircuit"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 from pytket import Circuit as TKCircuit
 from pytket import OpType
@@ -32,6 +32,7 @@ from pytket.extensions.qiskit import AerBackend, AerStateBackend
 if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit import Circuit, QiskitCircuit
+from qickit.circuit.circuit import GATES
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 
@@ -62,6 +63,9 @@ class TKETCircuit(Circuit):
         Number of qubits in the circuit.
     `circuit` : pytket.Circuit
         The TKET circuit.
+    `gate_mapping` : dict[str, Callable]
+        The mapping of the gates in the input quantum computing
+        framework to the gates in qickit.
     `measured_qubits` : set[int]
         The set of measured qubits indices.
     `circuit_log` : list[dict]
@@ -91,137 +95,62 @@ class TKETCircuit(Circuit):
 
         self.circuit: TKCircuit = TKCircuit(self.num_qubits, self.num_qubits)
 
-    def _single_qubit_gate(
-            self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            qubit_indices: int | Sequence[int],
-            angle: float=0
-        ) -> None:
+    @staticmethod
+    def _define_gate_mapping() -> dict[str, Callable]:
+        # Define lambda factory for non-parameterized gates
+        def const(x):
+            return lambda _angles: x
 
-        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
-
-        # Define the gate mapping for the non-parameterized single qubit gates
+        # Note that Qickit only uses U3, CX, and Global Phase gates and constructs the other gates
+        # by performing decomposition
+        # However, if the user wants to override the decomposition and use the native gates, they
+        # can do so by using the below gate mapping
         gate_mapping = {
-            "I": lambda: (OpType.noop,),
-            "X": lambda: (OpType.X,),
-            "Y": lambda: (OpType.Y,),
-            "Z": lambda: (OpType.Z,),
-            "H": lambda: (OpType.H,),
-            "S": lambda: (OpType.S,),
-            "Sdg": lambda: (OpType.Sdg,),
-            "T": lambda: (OpType.T,),
-            "Tdg": lambda: (OpType.Tdg,),
-            "RX": lambda: (OpType.Rx, angle/np.pi),
-            "RY": lambda: (OpType.Ry, angle/np.pi),
-            "RZ": lambda: (OpType.Rz, angle/np.pi),
-            "Phase": lambda: (OpType.U1, angle/np.pi)
+            "I": const((OpType.noop,)),
+            "X": const((OpType.X,)),
+            "Y": const((OpType.Y,)),
+            "Z": const((OpType.Z,)),
+            "H": const((OpType.H,)),
+            "S": const((OpType.S,)),
+            "Sdg": const((OpType.Sdg,)),
+            "T": const((OpType.T,)),
+            "Tdg": const((OpType.Tdg,)),
+            "RX": lambda angles: (OpType.Rx, angles[0]/np.pi),
+            "RY": lambda angles: (OpType.Ry, angles[0]/np.pi),
+            "RZ": lambda angles: (OpType.Rz, angles[0]/np.pi),
+            "Phase": lambda angles: (OpType.U1, angles[0]/np.pi),
+            "U3": lambda angles: (OpType.U3, [angles[i]/np.pi for i in range(3)])
         }
 
-        # Lazily extract the value of the gate from the mapping to avoid
-        # creating all the gates at once, and to maintain the abstraction
-        single_qubit_gate = gate_mapping[gate]()
+        return gate_mapping
 
-        # Apply the gate to the specified qubit(s)
-        for index in qubit_indices:
-            self.circuit.add_gate(*single_qubit_gate, [index]) # type: ignore
-
-    def U3(
+    def _gate_mapping(
             self,
-            angles: Sequence[float],
-            qubit_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.U3.__name__, params=locals())
-
-        # Create a single qubit unitary gate
-        u3 = OpType.U3
-        self.circuit.add_gate(u3, [angles[i]/np.pi for i in range(3)], [qubit_index])
-
-    def SWAP(
-            self,
-            first_qubit_index: int,
-            second_qubit_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
-
-        # Create a SWAP gate
-        swap = OpType.SWAP
-        self.circuit.add_gate(swap, [first_qubit_index, second_qubit_index])
-
-    def _controlled_qubit_gate(
-            self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            control_indices: int | Sequence[int],
+            gate: GATES,
             target_indices: int | Sequence[int],
-            angle: float=0
+            control_indices: int | Sequence[int] = [],
+            angles: Sequence[float] = [0, 0, 0]
         ) -> None:
 
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Define the gate mapping for the non-parameterized controlled gates
-        gate_mapping = {
-            "X": lambda: QControlBox(Op.create(OpType.X), len(control_indices)),
-            "Y": lambda: QControlBox(Op.create(OpType.Y), len(control_indices)),
-            "Z": lambda: QControlBox(Op.create(OpType.Z), len(control_indices)),
-            "H": lambda: QControlBox(Op.create(OpType.H), len(control_indices)),
-            "S": lambda: QControlBox(Op.create(OpType.S), len(control_indices)),
-            "Sdg": lambda: QControlBox(Op.create(OpType.Sdg), len(control_indices)),
-            "T": lambda: QControlBox(Op.create(OpType.T), len(control_indices)),
-            "Tdg": lambda: QControlBox(Op.create(OpType.Tdg), len(control_indices)),
-            "RX": lambda: QControlBox(Op.create(OpType.Rx, angle/np.pi), len(control_indices)),
-            "RY": lambda: QControlBox(Op.create(OpType.Ry, angle/np.pi), len(control_indices)),
-            "RZ": lambda: QControlBox(Op.create(OpType.Rz, angle/np.pi), len(control_indices)),
-            "Phase": lambda: QControlBox(Op.create(OpType.U1, angle/np.pi), len(control_indices))
-        }
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
-        controlled_gate = gate_mapping[gate]()
+        gate_operation = self.gate_mapping[gate](angles)
 
-        # Apply the controlled gate controlled by all control indices to each target index
+        if control_indices:
+            gate_operation = QControlBox(
+                Op.create(*gate_operation),
+                len(control_indices)
+            )
+
+            for target_index in target_indices:
+                self.circuit.add_qcontrolbox(gate_operation, [*control_indices[:], target_index]) # type: ignore
+            return
+
         for target_index in target_indices:
-            self.circuit.add_qcontrolbox(controlled_gate, [*control_indices[:], target_index])
-
-    def MCU3(
-            self,
-            angles: Sequence[float],
-            control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
-        ) -> None:
-
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
-
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Create a Multi-Controlled U3 gate with the number of control qubits equal to
-        # the length of control_indices with the specified angle
-        u3 = Op.create(OpType.U3, [angles[i]/np.pi for i in range(3)])
-        mcu3 = QControlBox(u3, len(control_indices))
-
-        # Apply the MCU3 gate controlled by all control indices to each target index
-        for target_index in target_indices:
-            self.circuit.add_qcontrolbox(mcu3, [*control_indices[:], target_index])
-
-    def MCSWAP(
-            self,
-            control_indices: int | Sequence[int],
-            first_target_index: int,
-            second_target_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
-
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-
-        # Create a Multi-Controlled SWAP gate with the number of control qubits equal to
-        # the length of control_indices
-        swap = Op.create(OpType.SWAP)
-        mcswap = QControlBox(swap, len(control_indices))
-
-        self.circuit.add_gate(mcswap, [*control_indices[:], first_target_index, second_target_index])
+            self.circuit.add_gate(*gate_operation, [target_index]) # type: ignore
 
     def GlobalPhase(
             self,
@@ -243,10 +172,6 @@ class TKETCircuit(Circuit):
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
-
-        # Check if any of the qubits have already been measured
-        if any(qubit_index in self.measured_qubits for qubit_index in qubit_indices):
-            raise ValueError("The qubit(s) have already been measured.")
 
         # Measure the qubits
         for index in qubit_indices:
@@ -310,8 +235,10 @@ class TKETCircuit(Circuit):
             counts = partial_counts
 
             # Fill the counts array with zeros for the missing states
-            counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
-                      for i in range(2**num_qubits_to_measure)}
+            counts = {
+                f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
+                for i in range(2**num_qubits_to_measure)
+            }
 
         else:
             counts = backend.get_counts(circuit=circuit, num_shots=num_shots)
@@ -333,6 +260,19 @@ class TKETCircuit(Circuit):
         unitary = circuit.circuit.get_unitary()
 
         return np.array(unitary)
+
+    def reset_qubit(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+
+        self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
+
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        for qubit_index in qubit_indices:
+            self.circuit.Reset(qubit_index)
 
     def transpile(
             self,

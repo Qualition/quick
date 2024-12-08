@@ -85,6 +85,9 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         circuit_3_counts = circuit_3.count_ops()
         circuit_4_counts = circuit_4.count_ops()
 
+        # MCX here is the same as CX gate
+        # This is due to the `qickit.circuit.from_framework.FromQiskit` module
+        # interpreting all controlled X gates as MCX
         assert circuit_3_counts["CX"] <= 20
         assert circuit_4_counts["CX"] <= 100
 

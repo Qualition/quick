@@ -13,20 +13,13 @@
 # limitations under the License.
 
 __all__ = [
-    "gate_matrix",
-    "from_framework",
-    "Circuit",
-    "CirqCircuit",
-    "PennylaneCircuit",
-    "QiskitCircuit",
-    "TKETCircuit"
+    "FromFramework",
+    "FromCirq",
+    "FromQiskit",
+    "FromTKET"
 ]
 
-import qickit.circuit.gate_matrix as gate_matrix
-from qickit.circuit.circuit import Circuit
-# Need to import QiskitCircuit before other circuits to avoid circular import
-from qickit.circuit.qiskitcircuit import QiskitCircuit
-from qickit.circuit.cirqcircuit import CirqCircuit
-from qickit.circuit.pennylanecircuit import PennylaneCircuit
-from qickit.circuit.tketcircuit import TKETCircuit
-import qickit.circuit.from_framework as from_framework
+from qickit.circuit.from_framework.from_framework import FromFramework
+from qickit.circuit.from_framework.from_cirq import FromCirq
+from qickit.circuit.from_framework.from_qiskit import FromQiskit
+from qickit.circuit.from_framework.from_tket import FromTKET

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Module for controlled qubit gates in Qickit SDK.
+""" Module for generating the matrix representation of a controlled quantum gate.
 """
 
 from __future__ import annotations

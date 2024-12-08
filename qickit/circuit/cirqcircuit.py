@@ -22,15 +22,39 @@ __all__ = ["CirqCircuit"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 import cirq
-from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, SWAP, I
+from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, I
 
 if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit import Circuit, QiskitCircuit
+from qickit.circuit.circuit import GATES
 from qickit.synthesis.unitarypreparation import UnitaryPreparation
+
+
+class U3(cirq.Gate):
+    def __init__(self, angles: Sequence[float]) -> None:
+        super(U3, self)
+        self.angles = angles
+
+    def _num_qubits_(self) -> int:
+        return 1
+
+    def _unitary_(self) -> NDArray[np.complex128]:
+        angles = self.angles
+
+        u3 = [
+            [np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
+            [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
+            np.cos(angles[0]/2)]
+        ]
+
+        return np.array(u3)
+
+    def _circuit_diagram_info_(self) -> str:
+        return "U3"
 
 
 class CirqCircuit(Circuit):
@@ -62,6 +86,9 @@ class CirqCircuit(Circuit):
         The measurement keys.
     `circuit` : cirq.Circuit
         The circuit.
+    `gate_mapping` : dict[str, Callable]
+        The mapping of the gates in the input quantum computing
+        framework to the gates in qickit.
     `measured_qubits` : set[int]
         The set of measured qubits indices.
     `circuit_log` : list[dict]
@@ -100,184 +127,67 @@ class CirqCircuit(Circuit):
         for i in range(self.num_qubits):
             self.circuit.append(I(self.qr[i]))
 
-    def _single_qubit_gate(
-            self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            qubit_indices: int | Sequence[int],
-            angle: float=0
-        ) -> None:
+    @staticmethod
+    def _define_gate_mapping() -> dict[str, Callable]:
+        # Define lambda factory for non-parameterized gates
+        def const(x):
+            return lambda _angles: x
 
-        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
-
-        # Define a mapping for the single qubit gates
+        # Note that Qickit only uses U3, CX, and Global Phase gates and constructs the other gates
+        # by performing decomposition
+        # However, if the user wants to override the decomposition and use the native gates, they
+        # can do so by using the below gate mapping
         gate_mapping = {
-            "I": lambda: I,
-            "X": lambda: X,
-            "Y": lambda: Y,
-            "Z": lambda: Z,
-            "H": lambda: H,
-            "S": lambda: S,
-            "Sdg": lambda: S**-1,
-            "T": lambda: T,
-            "Tdg": lambda: T**-1,
-            "RX": lambda: Rx(rads=angle),
-            "RY": lambda: Ry(rads=angle),
-            "RZ": lambda: Rz(rads=angle),
-            "Phase": lambda: cirq.ZPowGate(exponent=angle/np.pi)
+            "I": const(I),
+            "X": const(X),
+            "Y": const(Y),
+            "Z": const(Z),
+            "H": const(H),
+            "S": const(S),
+            "Sdg": const(S**-1),
+            "T": const(T),
+            "Tdg": const(T**-1),
+            "RX": lambda angles: Rx(rads=angles[0]),
+            "RY": lambda angles: Ry(rads=angles[0]),
+            "RZ": lambda angles: Rz(rads=angles[0]),
+            "Phase": lambda angles: cirq.ZPowGate(exponent=angles[0]/np.pi),
+            "U3": lambda angles: U3(angles)
         }
 
-        # Lazily extract the value of the gate from the mapping to avoid
-        # creating all the gates at once, and to maintain the abstraction
-        single_qubit_gate = gate_mapping[gate]()
+        return gate_mapping
 
-        # Apply the single qubit gate to each qubit index
-        for qubit_index in qubit_indices:
-            self.circuit.append(single_qubit_gate(self.qr[qubit_index]))
-
-    def U3(
+    def _gate_mapping(
             self,
-            angles: Sequence[float],
-            qubit_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.U3.__name__, params=locals())
-
-        # Define the unitary matrix for the U3 gate
-        u3 = [
-            [np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
-            [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
-            np.cos(angles[0]/2)]
-        ]
-
-        # Define the U3 gate class
-        class U3(cirq.Gate):
-            def __init__(self):
-                super(U3, self)
-
-            def _num_qubits_(self):
-                return 1
-
-            def _unitary_(self):
-                return np.array(u3)
-
-            def _circuit_diagram_info_(self, args):
-                return "U3"
-
-        self.circuit.append(U3().on(self.qr[qubit_index]))
-
-    def SWAP(
-            self,
-            first_qubit_index: int,
-            second_qubit_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
-        swap = cirq.SWAP
-        self.circuit.append(swap(self.qr[first_qubit_index], self.qr[second_qubit_index]))
-
-    def _controlled_qubit_gate(
-            self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            control_indices: int | Sequence[int],
+            gate: GATES,
             target_indices: int | Sequence[int],
-            angle: float=0
+            control_indices: int | Sequence[int] = [],
+            angles: Sequence[float] = [0, 0, 0]
         ) -> None:
 
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
-        # Define a mapping for the controlled qubit gates
-        gate_mapping = {
-            "X": lambda: cirq.ControlledGate(sub_gate=X, num_controls=len(control_indices)),
-            "Y": lambda: cirq.ControlledGate(sub_gate=Y, num_controls=len(control_indices)),
-            "Z": lambda: cirq.ControlledGate(sub_gate=Z, num_controls=len(control_indices)),
-            "H": lambda: cirq.ControlledGate(sub_gate=H, num_controls=len(control_indices)),
-            "S": lambda: cirq.ControlledGate(sub_gate=S, num_controls=len(control_indices)),
-            "Sdg": lambda: cirq.ControlledGate(sub_gate=S**-1, num_controls=len(control_indices)),
-            "T": lambda: cirq.ControlledGate(sub_gate=T, num_controls=len(control_indices)),
-            "Tdg": lambda: cirq.ControlledGate(sub_gate=T**-1, num_controls=len(control_indices)),
-            "RX": lambda: cirq.ControlledGate(sub_gate=Rx(rads=angle), num_controls=len(control_indices)),
-            "RY": lambda: cirq.ControlledGate(sub_gate=Ry(rads=angle), num_controls=len(control_indices)),
-            "RZ": lambda: cirq.ControlledGate(sub_gate=Rz(rads=angle), num_controls=len(control_indices)),
-            "Phase": lambda: cirq.ControlledGate(
-                sub_gate=cirq.ZPowGate(exponent=angle/np.pi),
+        # Lazily extract the value of the gate from the mapping to avoid
+        # creating all the gates at once, and to maintain the polymorphism
+        gate_operation = self.gate_mapping[gate](angles)
+
+        if control_indices:
+            gate_operation = cirq.ControlledGate(
+                sub_gate=gate_operation,
                 num_controls=len(control_indices)
             )
-        }
 
-        # Lazily extract the value of the gate from the mapping to avoid
-        # creating all the gates at once, and to maintain the abstraction
-        controlled_qubit_gate = gate_mapping[gate]()
+            for target_index in target_indices:
+                self.circuit.append(
+                    gate_operation(
+                        *map(self.qr.__getitem__, control_indices),
+                        self.qr[target_index]
+                    )
+                )
+            return
 
-        # Apply the controlled gate controlled by all control indices to each target index
         for target_index in target_indices:
-            self.circuit.append(
-                controlled_qubit_gate(*map(self.qr.__getitem__, control_indices), self.qr[target_index])
-            )
-
-    def MCU3(
-            self,
-            angles: Sequence[float],
-            control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
-        ) -> None:
-
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
-
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
-        # Create a single qubit unitary gate
-        u3 = [
-            [np.cos(angles[0]/2), -np.exp(1j*angles[2]) * np.sin(angles[0]/2)],
-            [np.exp(1j*angles[1]) * np.sin(angles[0]/2), np.exp(1j*(angles[1] + angles[2])) * \
-            np.cos(angles[0]/2)]
-        ]
-
-        # Define the U3 gate class
-        class U3(cirq.Gate):
-            def __init__(self):
-                super(U3, self)
-
-            def _num_qubits_(self):
-                return 1
-
-            def _unitary_(self):
-                return np.array(u3)
-
-            def _circuit_diagram_info_(self, args):
-                return "U3"
-
-        # Create a Multi-Controlled U3 gate with the number of control qubits equal to
-        # the length of `control_indices` with the specified angle
-        mcu3 = cirq.ControlledGate(sub_gate=U3(), num_controls=len(control_indices))
-
-        # Apply the MCU3 gate controlled by all control indices to each target index
-        for target_index in target_indices:
-            self.circuit.append(
-                mcu3(*map(self.qr.__getitem__, control_indices), self.qr[target_index])
-            )
-
-    def MCSWAP(
-            self,
-            control_indices: int | Sequence[int],
-            first_target_index: int,
-            second_target_index: int
-        ) -> None:
-
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
-
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-
-        # Create a Multi-Controlled SWAP gate with the number of control qubits equal to
-        # the length of `control_indices`
-        mcswap = cirq.ControlledGate(sub_gate=SWAP, num_controls=len(control_indices))
-
-        # Apply the MCSWAP gate to the circuit controlled by all control indices to the target indices
-        self.circuit.append(
-            mcswap(*map(self.qr.__getitem__, control_indices),
-                   self.qr[first_target_index], self.qr[second_target_index])
-        )
+            self.circuit.append(gate_operation(self.qr[target_index]))
 
     def GlobalPhase(
             self,
@@ -301,10 +211,6 @@ class CirqCircuit(Circuit):
 
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
-
-        # Check if any of the qubits have already been measured
-        if any(qubit_index in self.measured_qubits for qubit_index in qubit_indices):
-            raise ValueError("The qubit(s) have already been measured.")
 
         # We must sort the indices as Cirq interprets that the order of measurements
         # is relevant
@@ -393,6 +299,19 @@ class CirqCircuit(Circuit):
         unitary = cirq.unitary(circuit.circuit)
 
         return np.array(unitary)
+
+    def reset_qubit(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+
+        self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
+
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
+
+        for qubit_index in qubit_indices:
+            self.circuit.append(cirq.ResetChannel()(self.qr[qubit_index]))
 
     def transpile(
             self,

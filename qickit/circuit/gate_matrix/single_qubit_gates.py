@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Module for generating the matrix representation of a single-qubit quantum gate.
+"""
+
 from __future__ import annotations
 
 __all__ = [

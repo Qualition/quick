@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Module for generating the matrix representation of a quantum gate.
+"""
+
 from __future__ import annotations
 
 __all__ = ["Gate"]
@@ -147,21 +150,11 @@ class Gate:
         if ordering == self.ordering:
             return
 
-        # Determine the size of the matrix (assuming it's a square matrix)
-        size = len(self.matrix)
-
         # Create a new matrix to store the reordered elements
-        reordered_matrix = np.zeros((size, size), dtype=type(self.matrix[0][0]))
-
-        # Iterate over each element in the original matrix
-        for i in range(size):
-            for j in range(size):
-                # Convert the indices from MSB to LSB
-                new_i = int(bin(i)[2:].zfill(int(np.log2(size)))[::-1], 2)
-                new_j = int(bin(j)[2:].zfill(int(np.log2(size)))[::-1], 2)
-
-                # Assign the value from the original matrix to the new position in the reordered matrix
-                reordered_matrix[new_i][new_j] = self.matrix[i][j]
+        dims = [2] * (self.num_qubits * 2)
+        reordered_matrix = self.matrix.reshape(dims).transpose().reshape(
+            (2**self.num_qubits, 2**self.num_qubits)
+        )
 
         self.matrix = reordered_matrix
         self.ordering = ordering

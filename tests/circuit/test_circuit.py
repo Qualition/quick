@@ -22,6 +22,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 
+# Note that this unit test also covers the `qickit/synthesis/gate_decompositions/multi_controlled_decomposition`
+# module as the multi-controlled gates in here would fail if the decomposition is incorrect
 class Template(ABC):
     """ `tests.circuit.Template` is the template for creating circuit testers.
     """
@@ -470,7 +472,7 @@ class Template(ABC):
     def test_U3(
             self,
             num_qubits: int,
-            qubit_index: int,
+            qubit_indices: int | list[int],
             angles: tuple[float, float, float],
             expected: NDArray[np.complex128]
         ) -> None:
@@ -480,8 +482,8 @@ class Template(ABC):
         ----------
         `num_qubits`: int
             The number of qubits in the circuit.
-        `qubit_index`: int
-            The qubit index.
+        `qubit_indices`: int | list[int]
+            The qubit indices.
         `angles`: tuple[float, float, float]
             The rotation angles.
         `expected`: NDArray[np.complex128]

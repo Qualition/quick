@@ -21,13 +21,14 @@ __all__ = ["Circuit"]
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from contextlib import contextmanager
 import copy
 import cmath
 import matplotlib.pyplot as plt # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
-from typing import Any, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
+from typing import Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
 
 import qiskit # type: ignore
 import cirq # type: ignore
@@ -41,8 +42,10 @@ if TYPE_CHECKING:
 from qickit.circuit.circuit_utils import (
     extract_rz, decompose_uc_rotations, decompose_ucg_help, simplify
 )
+from qickit.circuit.from_framework import FromCirq, FromQiskit, FromTKET
 from qickit.predicates import is_unitary_matrix
 from qickit.primitives import Bra, Ket, Operator
+from qickit.synthesis.gate_decompositions.multi_controlled_decomposition import MCRX, MCRY, MCRZ
 from qickit.synthesis.statepreparation import Isometry
 from qickit.synthesis.unitarypreparation import (
     UnitaryPreparation, ShannonDecomposition
@@ -64,6 +67,7 @@ QUBIT_KEYS = frozenset([
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
 ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
+GATES = Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase", "U3"]
 
 
 class Circuit(ABC):
@@ -87,6 +91,8 @@ class Circuit(ABC):
         Number of qubits in the circuit.
     `circuit` : Circuit_Type
         The circuit framework type.
+    `gate_mapping` : dict[str, Callable]
+        The mapping of the gates to the circuit.
     `measured_qubits` : set[int]
         The set of measured qubits indices.
     `circuit_log` : list[dict]
@@ -117,6 +123,7 @@ class Circuit(ABC):
 
         self.num_qubits = num_qubits
         self.circuit: Any
+        self.gate_mapping: dict[str, Callable] = self._define_gate_mapping()
         self.measured_qubits: set[int] = set()
         self.circuit_log: list[dict] = []
         self.global_phase: float = 0
@@ -166,6 +173,7 @@ class Circuit(ABC):
         Returns
         -------
         `value` : int | list[int]
+            The value of the parameter.
 
         Raises
         ------
@@ -301,60 +309,64 @@ class Circuit(ABC):
 
         self.circuit_log.append({"gate": gate, **params})
 
-    @abstractmethod
-    def _single_qubit_gate(
-            self,
-            gate: Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            qubit_indices: int | Sequence[int],
-            angle: float=0
-        ) -> None:
-        """ Apply a single qubit gate to the circuit.
-
-        Parameters
-        ----------
-        `gate` : Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"]
-            The gate to apply to the circuit.
-        `qubit_indices` : int | Sequence[int]
-            The index of the qubit(s) to apply the gate to.
-        `angle` : float, optional, default=0
-            The rotation angle in radians.
-
-        Raises
-        ------
-        TypeError
-            - Qubit index must be an integer.
-            - Angle must be a float or integer.
-        ValueError
-            - Gate not supported.
-            - Qubit index out of range.
+    @contextmanager
+    def suppress_logs(self):
+        """ Suppress the logging of the gate parameters.
 
         Usage
         -----
-        >>> circuit._single_qubit_gate(gate="X", qubit_indices=0)
-        >>> circuit._single_qubit_gate(gate="X", qubit_indices=[0, 1])
-        >>> circuit._single_qubit_gate(gate="RX", qubit_indices=0, angle=np.pi/2)
+        >>> with circuit.suppress_gate_logging():
+        >>>     circuit.X(qubit_indices=0)
+        """
+        # Store the current flag value for after the context manager
+        current_flag = self.process_gate_params_flag
+
+        self.process_gate_params_flag = False
+
+        try:
+            yield
+        finally:
+            self.process_gate_params_flag = current_flag
+
+    @staticmethod
+    @abstractmethod
+    def _define_gate_mapping() -> dict[str, Callable]:
+        """ Define the gate mapping for the circuit.
+
+        Notes
+        -----
+        The gate mapping is defined for each QC framework, and is meant to be used internally.
+
+        Returns
+        -------
+        `gate_mapping` : dict[str, Callable]
+            The mapping of the gates to the circuit.
         """
 
     @abstractmethod
-    def _controlled_qubit_gate(
+    def _gate_mapping(
             self,
-            gate: Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"],
-            control_indices: int | Sequence[int],
+            gate: GATES,
             target_indices: int | Sequence[int],
-            angle: float=0
+            control_indices: int | Sequence[int] = [],
+            angles: Sequence[float] = [0, 0, 0]
         ) -> None:
-        """ Apply a controlled gate to the circuit.
+        """ Apply a gate to the circuit.
+
+        Notes
+        -----
+        The gate mapping is defined for each QC framework, and is meant to be used internally.
 
         Parameters
         ----------
-        `gate` : Literal["X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase"]
+        `gate` : GATES
             The gate to apply to the circuit.
-        `control_indices` : int | Collection[int]
-            The index of the control qubit(s).
-        `target_indices` : int | Collection[int]
+        `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
-        `angle` : float, optional, default=0
-            The rotation angle in radians.
+        `control_indices` : int | Sequence[int], optional, default=[]
+            The index of the control qubit(s).
+        `angles` : Sequence[float], optional, default=[0, 0, 0]
+            The rotation angles in radians.
 
         Raises
         ------
@@ -367,10 +379,18 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> circuit._non_parameterized_controlled_gate(gate="X", control_indices=0, target_indices=1)
-        >>> circuit._non_parameterized_controlled_gate(gate="X", control_indices=[0, 1], target_indices=[2, 3])
-        >>> circuit._parameterized_controlled_gate(gate="RX", angles=np.pi/2, control_indices=0, target_indices=1)
-        >>> circuit._parameterized_controlled_gate(gate="RX", angles=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit._gate_mapping(gate="X", target_indices=0)
+        >>> circuit._gate_mapping(gate="X", target_indices=[0, 1])
+        >>> circuit._gate_mapping(gate="RX", target_indices=0, angles=[np.pi/2])
+        >>> circuit._gate_mapping(gate="RX", target_indices=[0, 1], angles=[np.pi/2])
+        >>> circuit._gate_mapping(gate="U3", target_indices=0, angles=[np.pi/2, np.pi/2, np.pi/2])
+        >>> circuit._gate_mapping(gate="U3", target_indices=[0, 1], angles=[np.pi/2, np.pi/2, np.pi/2])
+        >>> circuit._gate_mapping(gate="MCX", target_indices=2, control_indices=[0, 1])
+        >>> circuit._gate_mapping(gate="MCX", target_indices=[2, 3], control_indices=[0, 1])
+        >>> circuit._gate_mapping(gate="MCRX", target_indices=2, control_indices=[0, 1], angles=[np.pi/2])
+        >>> circuit._gate_mapping(gate="MCRX", target_indices=[2, 3], control_indices=[0, 1], angles=[np.pi/2])
+        >>> circuit._gate_mapping(gate="MCU3", target_indices=2, control_indices=[0, 1], angles=[np.pi/2, np.pi/2, np.pi/2])
+        >>> circuit._gate_mapping(gate="MCU3", target_indices=[2, 3], control_indices=[0, 1], angles=[np.pi/2, np.pi/2, np.pi/2])
         """
 
     def Identity(
@@ -397,7 +417,10 @@ class Circuit(ABC):
         >>> circuit.Identity(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.Identity.__name__, params=locals())
-        self._single_qubit_gate(gate="I", qubit_indices=qubit_indices)
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([0, 0, 0], qubit_indices)
 
     def X(
             self,
@@ -423,7 +446,10 @@ class Circuit(ABC):
         >>> circuit.X(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.X.__name__, params=locals())
-        self._single_qubit_gate(gate="X", qubit_indices=qubit_indices)
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([np.pi, 0, np.pi], qubit_indices)
 
     def Y(
             self,
@@ -449,7 +475,10 @@ class Circuit(ABC):
         >>> circuit.Y(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.Y.__name__, params=locals())
-        self._single_qubit_gate(gate="Y", qubit_indices=qubit_indices)
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([np.pi, np.pi/2, np.pi/2], qubit_indices)
 
     def Z(
             self,
@@ -475,7 +504,10 @@ class Circuit(ABC):
         >>> circuit.Z(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.Z.__name__, params=locals())
-        self._single_qubit_gate(gate="Z", qubit_indices=qubit_indices)
+
+        # Suppress the logging of Phase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(np.pi, qubit_indices)
 
     def H(
             self,
@@ -501,7 +533,10 @@ class Circuit(ABC):
         >>> circuit.H(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.H.__name__, params=locals())
-        self._single_qubit_gate(gate="H", qubit_indices=qubit_indices)
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([np.pi/2, 0, np.pi], qubit_indices)
 
     def S(
             self,
@@ -527,7 +562,10 @@ class Circuit(ABC):
         >>> circuit.S(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.S.__name__, params=locals())
-        self._single_qubit_gate(gate="S", qubit_indices=qubit_indices)
+
+        # Suppress the logging of Phase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(np.pi/2, qubit_indices)
 
     def Sdg(
             self,
@@ -553,7 +591,10 @@ class Circuit(ABC):
         >>> circuit.Sdg(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.Sdg.__name__, params=locals())
-        self._single_qubit_gate(gate="Sdg", qubit_indices=qubit_indices)
+
+        # Suppress the logging of Phase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(-np.pi/2, qubit_indices)
 
     def T(
             self,
@@ -579,7 +620,10 @@ class Circuit(ABC):
         >>> circuit.T(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.T.__name__, params=locals())
-        self._single_qubit_gate(gate="T", qubit_indices=qubit_indices)
+
+        # Suppress the logging of Phase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(np.pi/4, qubit_indices)
 
     def Tdg(
             self,
@@ -605,7 +649,10 @@ class Circuit(ABC):
         >>> circuit.Tdg(qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.Tdg.__name__, params=locals())
-        self._single_qubit_gate(gate="Tdg", qubit_indices=qubit_indices)
+
+        # Suppress the logging of Phase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(-np.pi/4, qubit_indices)
 
     def RX(
             self,
@@ -635,11 +682,10 @@ class Circuit(ABC):
         >>> circuit.RX(angle=np.pi/2, qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.RX.__name__, params=locals())
-        self._single_qubit_gate(
-            gate="RX",
-            angle=angle,
-            qubit_indices=qubit_indices
-        )
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([angle, -np.pi/2, np.pi/2], qubit_indices)
 
     def RY(
             self,
@@ -669,11 +715,10 @@ class Circuit(ABC):
         >>> circuit.RY(angle=np.pi/2, qubit_index=[0, 1])
         """
         self.process_gate_params(gate=self.RY.__name__, params=locals())
-        self._single_qubit_gate(
-            gate="RY",
-            angle=angle,
-            qubit_indices=qubit_indices
-        )
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([angle, 0, 0], qubit_indices)
 
     def RZ(
             self,
@@ -703,11 +748,14 @@ class Circuit(ABC):
         >>> circuit.RZ(angle=np.pi/2, qubit_indices=[0, 1])
         """
         self.process_gate_params(gate=self.RZ.__name__, params=locals())
-        self._single_qubit_gate(
-            gate="RZ",
-            angle=angle,
-            qubit_indices=qubit_indices
-        )
+
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
+        # Suppress the logging of RX and RY gates to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.RX(np.pi/2, qubit_indices)
+            self.RY(-angle, qubit_indices)
+            self.RX(-np.pi/2, qubit_indices)
 
     def Phase(
             self,
@@ -736,11 +784,10 @@ class Circuit(ABC):
         >>> circuit.Phase(angle=np.pi/2, qubit_index=0)
         """
         self.process_gate_params(gate=self.Phase.__name__, params=locals())
-        self._single_qubit_gate(
-            gate="Phase",
-            angle=angle,
-            qubit_indices=qubit_indices
-        )
+
+        # Suppress the logging of U3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.U3([0, 0, angle], qubit_indices)
 
     def XPow(
             self,
@@ -970,11 +1017,10 @@ class Circuit(ABC):
         self.RZ(angle, second_qubit_index)
         self.CX(first_qubit_index, second_qubit_index)
 
-    @abstractmethod
     def U3(
             self,
             angles: Sequence[float],
-            qubit_index: int
+            qubit_indices: int | Sequence[int]
         ) -> None:
         """ Apply a U3 gate to the circuit.
 
@@ -982,8 +1028,8 @@ class Circuit(ABC):
         ----------
         `angles` : Sequence[float]
             The rotation angles in radians.
-        `qubit_index` : int
-            The index of the qubit to apply the gate to.
+        `qubit_indices` : int
+            The index of the qubit(s) to apply the gate to.
 
         Raises
         ------
@@ -997,8 +1043,13 @@ class Circuit(ABC):
         -----
         >>> circuit.U3(angles=[np.pi/2, np.pi/2, np.pi/2], qubit_index=0)
         """
+        self.process_gate_params(gate=self.U3.__name__, params=locals())
+        self._gate_mapping(
+            gate="U3",
+            angles=angles,
+            target_indices=qubit_indices
+        )
 
-    @abstractmethod
     def SWAP(
             self,
             first_qubit_index: int,
@@ -1024,6 +1075,13 @@ class Circuit(ABC):
         -----
         >>> circuit.SWAP(first_qubit_index=0, second_qubit_index=1)
         """
+        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
+
+        # Suppress the logging of the SWAP gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.CX(first_qubit_index, second_qubit_index)
+            self.CX(second_qubit_index, first_qubit_index)
+            self.CX(first_qubit_index, second_qubit_index)
 
     def CX(
             self,
@@ -1051,7 +1109,7 @@ class Circuit(ABC):
         >>> circuit.CX(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CX.__name__, params=locals())
-        self._controlled_qubit_gate(
+        self._gate_mapping(
             gate="X",
             control_indices=control_index,
             target_indices=target_index
@@ -1083,11 +1141,12 @@ class Circuit(ABC):
         >>> circuit.CY(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CY.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Y",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CY gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Sdg(target_index)
+            self.CX(control_index, target_index)
+            self.S(target_index)
 
     def CZ(
             self,
@@ -1115,11 +1174,12 @@ class Circuit(ABC):
         >>> circuit.CZ(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CZ.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Z",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CZ gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.H(target_index)
+            self.CX(control_index, target_index)
+            self.H(target_index)
 
     def CH(
             self,
@@ -1147,11 +1207,16 @@ class Circuit(ABC):
         >>> circuit.CH(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CH.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="H",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CH gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.S(target_index)
+            self.H(target_index)
+            self.T(target_index)
+            self.CX(control_index, target_index)
+            self.Tdg(target_index)
+            self.H(target_index)
+            self.Sdg(target_index)
 
     def CS(
             self,
@@ -1179,11 +1244,14 @@ class Circuit(ABC):
         >>> circuit.CS(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CS.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="S",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CS gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.T(control_index)
+            self.CX(control_index, target_index)
+            self.Tdg(target_index)
+            self.CX(control_index, target_index)
+            self.T(target_index)
 
     def CSdg(
             self,
@@ -1211,11 +1279,14 @@ class Circuit(ABC):
         >>> circuit.CSdg(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CSdg.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Sdg",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CSdg gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Tdg(control_index)
+            self.CX(control_index, target_index)
+            self.T(target_index)
+            self.CX(control_index, target_index)
+            self.Tdg(target_index)
 
     def CT(
             self,
@@ -1243,11 +1314,14 @@ class Circuit(ABC):
         >>> circuit.CT(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CT.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="T",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CT gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(np.pi/8, target_index)
+            self.CX(control_index, target_index)
+            self.Phase(-np.pi/8, target_index)
+            self.CX(control_index, target_index)
+            self.Phase(np.pi/8, control_index)
 
     def CTdg(
             self,
@@ -1275,11 +1349,14 @@ class Circuit(ABC):
         >>> circuit.CTdg(control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CTdg.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Tdg",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CTdg gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(-np.pi/8, control_index)
+            self.CX(control_index, target_index)
+            self.Phase(np.pi/8, target_index)
+            self.CX(control_index, target_index)
+            self.Phase(-np.pi/8, target_index)
 
     def CRX(
             self,
@@ -1311,12 +1388,11 @@ class Circuit(ABC):
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CRX.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="RX",
-            angle=angle,
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CRX gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            # Explicit optimal implementation covered in MCRX
+            self.MCRX(angle, control_index, target_index)
 
     def CRY(
             self,
@@ -1348,12 +1424,11 @@ class Circuit(ABC):
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CRY.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="RY",
-            angle=angle,
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CRY gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            # Explicit optimal implementation covered in MCRY
+            self.MCRY(angle, control_index, target_index)
 
     def CRZ(
             self,
@@ -1385,12 +1460,11 @@ class Circuit(ABC):
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CRZ.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="RZ",
-            angle=angle,
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CRZ gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            # Explicit optimal implementation covered in MCRZ
+            self.MCRZ(angle, control_index, target_index)
 
     def CPhase(
             self,
@@ -1422,12 +1496,14 @@ class Circuit(ABC):
         >>> circuit.CPhase(angle=np.pi/2, control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CPhase.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Phase",
-            angle=angle,
-            control_indices=control_index,
-            target_indices=target_index
-        )
+
+        # Suppress the logging the decomposition of CPhase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Phase(angle/2, control_index)
+            self.CX(control_index, target_index)
+            self.Phase(-angle/2, target_index)
+            self.CX(control_index, target_index)
+            self.Phase(angle/2, target_index)
 
     def CXPow(
             self,
@@ -1714,14 +1790,11 @@ class Circuit(ABC):
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
         self.process_gate_params(gate=self.CU3.__name__, params=locals())
-        self.MCU3(
-            angles=angles,
-            control_indices=control_index,
-            target_indices=target_index
-        )
-        # Remove the last operation from the log to avoid duplication (This is to not add MCU3 to the log after CU3)
-        if self.process_gate_params_flag:
-            _ = self.circuit_log.pop()
+
+        # Suppress the logging the decomposition of CU3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            # Explicit optimal implementation covered in MCU3
+            self.MCU3(angles, control_index, target_index)
 
     def CSWAP(
             self,
@@ -1751,14 +1824,11 @@ class Circuit(ABC):
         -----
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
         """
-        self.process_gate_params(gate=self.CSWAP.__name__, params=locals())
         self.MCSWAP(
             control_indices=control_index,
             first_target_index=first_target_index,
-            second_target_index=second_target_index)
-        # Remove the last operation from the log to avoid duplication (This is to not add MCSWAP to the log after CSWAP)
-        if self.process_gate_params_flag:
-            _ = self.circuit_log.pop()
+            second_target_index=second_target_index
+        )
 
     def MCX(
             self,
@@ -1789,11 +1859,15 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCX.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="X",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCX gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.H(target_indices)
+            self.MCPhase(np.pi, control_indices, target_indices)
+            self.H(target_indices)
 
     def MCY(
             self,
@@ -1824,11 +1898,15 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCY.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Y",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCY gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.Sdg(target_indices)
+            self.MCX(control_indices, target_indices)
+            self.S(target_indices)
 
     def MCZ(
             self,
@@ -1859,11 +1937,15 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCZ.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Z",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCZ gate to avoid unnecessary log entrie
+        with self.suppress_logs():
+            self.H(target_indices)
+            self.MCX(control_indices, target_indices)
+            self.H(target_indices)
 
     def MCH(
             self,
@@ -1894,11 +1976,19 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCH.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="H",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCH gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.S(target_indices)
+            self.H(target_indices)
+            self.T(target_indices)
+            self.MCX(control_indices, target_indices)
+            self.Tdg(target_indices)
+            self.H(target_indices)
+            self.Sdg(target_indices)
 
     def MCS(
             self,
@@ -1929,11 +2019,13 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCS.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="S",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCS gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.MCPhase(np.pi/2, control_indices, target_indices)
 
     def MCSdg(
             self,
@@ -1964,11 +2056,13 @@ class Circuit(ABC):
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCSdg.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Sdg",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCSdg gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.MCPhase(-np.pi/2, control_indices, target_indices)
 
     def MCT(
             self,
@@ -1999,11 +2093,13 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCT.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="T",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCT gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.MCPhase(np.pi/4, control_indices, target_indices)
 
     def MCTdg(
             self,
@@ -2034,11 +2130,13 @@ class Circuit(ABC):
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCTdg.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Tdg",
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCTdg gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.MCPhase(-np.pi/4, control_indices, target_indices)
 
     def MCRX(
             self,
@@ -2073,12 +2171,14 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCRX.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="RX",
-            angle=angle,
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCRX gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            for target_index in target_indices:
+                MCRX(self, angle, list(control_indices), target_index)
 
     def MCRY(
             self,
@@ -2113,12 +2213,14 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCRY.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="RY",
-            angle=angle,
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCRY gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            for target_index in target_indices:
+                MCRY(self, angle, list(control_indices), target_index)
 
     def MCRZ(
             self,
@@ -2153,12 +2255,14 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCRZ.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="RZ",
-            angle=angle,
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCRZ gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            for target_index in target_indices:
+                MCRZ(self, angle, list(control_indices), target_index)
 
     def MCPhase(
             self,
@@ -2193,12 +2297,23 @@ class Circuit(ABC):
         >>> circuit.MCPhase(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
         self.process_gate_params(gate=self.MCPhase.__name__, params=locals())
-        self._controlled_qubit_gate(
-            gate="Phase",
-            angle=angle,
-            control_indices=control_indices,
-            target_indices=target_indices
-        )
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        num_controls = len(control_indices)
+
+        # Suppress the logging the decomposition of MCPhase gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            for target_index in target_indices:
+                new_target_index = target_index
+                new_control_indices = list(control_indices).copy()
+
+                for k in range(num_controls):
+                    self.MCRZ(angle / (2**k), new_control_indices, new_target_index)
+                    new_target_index = new_control_indices.pop()
+
+                self.Phase(angle / 2**num_controls, new_target_index)
 
     def MCXPow(
             self,
@@ -2533,7 +2648,6 @@ class Circuit(ABC):
             target_indices=second_target_index
         )
 
-    @abstractmethod
     def MCU3(
             self,
             angles: Sequence[float],
@@ -2566,8 +2680,17 @@ class Circuit(ABC):
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=2)
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=[2, 3])
         """
+        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
-    @abstractmethod
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+
+        # Suppress the logging the decomposition of MCU3 gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.MCPhase(angles[2], control_indices, target_indices)
+            self.MCRY(angles[0], control_indices, target_indices)
+            self.MCPhase(angles[1], control_indices, target_indices)
+
     def MCSWAP(
             self,
             control_indices: int | Sequence[int],
@@ -2597,6 +2720,15 @@ class Circuit(ABC):
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
         >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3)
         """
+        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
+
+        control_indices = [control_indices] if isinstance(control_indices, int) else list(control_indices)
+
+        # Suppress the logging the decomposition of MCSWAP gate to avoid unnecessary log entries
+        with self.suppress_logs():
+            self.CX(second_target_index, first_target_index)
+            self.MCX(control_indices + [first_target_index], second_target_index)
+            self.CX(second_target_index, first_target_index)
 
     def UCPauliRot(
             self,
@@ -3225,46 +3357,6 @@ class Circuit(ABC):
             qubit_indices=qubit_indices
         )
 
-    def clbit_condition(
-            self,
-            clbit_index: int,
-            clbit_value: int
-        ) -> bool:
-        """ Check if a classical bit meets a condition.
-
-        Parameters
-        ----------
-        `clbit_index` : int
-            The index of the classical bit to check.
-        `clbit_value` : int
-            The value to check the classical bit against.
-
-        Returns
-        -------
-        `condition` : bool
-            Whether the condition is met.
-
-        Notes
-        -----
-        This method measures the classical bit at the specified index, and checks if it matches
-        the specified value. This can be used to perform conditional operations in the circuit.
-
-        Usage
-        -----
-        >>> if circuit.conditional(clbit_index=0, clbit_value=0):
-        ...     circuit.X(qubit_indices=0)
-        """
-        # Measure the specified qubit
-        self.measure(qubit_indices=clbit_index)
-
-        for key, value in self.get_counts(num_shots=1).items():
-            if value == 1:
-                # Check if the value of the measurement matches the specified value
-                condition = int(key[clbit_index]) == clbit_value
-                break
-
-        return condition
-
     def vertical_reverse(self) -> None:
         """ Perform a vertical reverse operation.
 
@@ -3390,11 +3482,6 @@ class Circuit(ABC):
         ----------
         `qubit_indices` : int | Sequence[int]
             The indices of the qubits to measure.
-
-        Raises
-        ------
-        ValueError
-            - If an index in `qubit_indices` has priorly been measured.
 
         Usage
         -----
@@ -3530,9 +3617,8 @@ class Circuit(ABC):
 
         # Filter out the measurement instructions
         for operation in self.circuit_log:
-            if operation["gate"] == "measure":
-                continue
-            instructions.append(operation)
+            if not operation["gate"] == "measure":
+                instructions.append(operation)
 
         return instructions
 
@@ -3569,6 +3655,27 @@ class Circuit(ABC):
             ops[gate] = ops.get(gate, 0) + 1
 
         return ops
+
+    @abstractmethod
+    def reset_qubit(
+            self,
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Reset the qubits in the circuit.
+
+        Parameters
+        ----------
+        `qubit_indices` : int | Sequence[int]
+            The indices of the qubits to reset.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+            - Qubit index must be a sequence of integers.
+        ValueError
+            - Qubit index out of range.
+        """
 
     def _remove_measurements_inplace(self) -> None:
         """ Remove the measurement instructions from the circuit inplace.
@@ -3841,77 +3948,54 @@ class Circuit(ABC):
         # Create a copy of the circuit
         circuit = self.copy()
 
-        # Remove Global Phase gates
         # When a target gate has global phase, we need to account for that by resetting
         # the global phase, and then applying it to the control indices using the Phase
         # or MCPhase gates depending on the number of control indices
-        for operation in circuit.circuit_log:
-            if operation["gate"] == "GlobalPhase":
-                circuit.circuit_log.remove(operation)
+        circuit.circuit_log = [op for op in circuit.circuit_log if op["gate"] != "GlobalPhase"]
 
         # Define a controlled circuit
         controlled_circuit = type(circuit)(num_qubits=circuit.num_qubits + num_controls)
 
+        # Define the mapping for the keys
+        control_mapping = {
+            "qubit_indices": "target_indices",
+            "control_index": "control_indices",
+            "control_indices": "control_indices",
+            "target_index": "target_indices",
+            "target_indices": "target_indices",
+            "first_qubit_index": "first_target_index",
+            "second_qubit_index": "second_target_index",
+            "first_target_index": "first_target_index",
+            "second_target_index": "second_target_index"
+        }
+
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit.circuit_log:
             # Extract gate name and remove it from gate_info for kwargs
-            gate_name = gate_info.pop("gate", None)
+            gate_name = gate_info.pop("gate")
 
             # Change the gate name from single qubit and controlled to multi-controlled
-            match gate_name[0]:
-                case "C":
-                    gate_name = f"M{gate_name}"
-                case "M":
-                    pass
-                case _:
-                    gate_name = f"MC{gate_name}"
+            gate_name = f"{dict(C='M', M='').get(gate_name[0], 'MC')}{gate_name}"
 
-            if not any(key in gate_info for key in ["control_index", "control_indices"]):
-                # For single qubit gates
-                if "qubit_indices" in gate_info:
-                    qubit_indices = gate_info.pop("qubit_indices", None)
-                    if isinstance(qubit_indices, int):
-                        qubit_indices = [qubit_indices]
-                    gate_info["target_indices"] = [qubit_index + num_controls for qubit_index in qubit_indices]
-                    gate_info["control_indices"] = []
+            # Update any key from ALL_QUBIT_KEYS that is present in gate_info
+            # Additionally, if a gate is not controlled to begin with, we add the control indices
+            for key in set(gate_info.keys()).intersection(ALL_QUBIT_KEYS):
+                current_indices = gate_info.pop(key)
 
-                # For U3 gate
-                elif "qubit_index" in gate_info:
-                    gate_info["target_indices"] = gate_info.pop("qubit_index", None) + num_controls
-                    gate_info["control_indices"] = []
+                gate_info[control_mapping[key]] = (
+                    current_indices + num_controls if isinstance(current_indices, int) 
+                    else [index + num_controls for index in current_indices]
+                )
 
-                # For SWAP gate
-                elif "first_qubit_index" in gate_info:
-                    gate_info["first_target_index"] = gate_info.pop("first_qubit_index", None) + num_controls
-                    gate_info["second_target_index"] = gate_info.pop("second_qubit_index", None) + num_controls
-                    gate_info["control_indices"] = []
+            # If the gate is not controlled, we add the control indices
+            control_indices = gate_info.get("control_indices", [])
 
-            else:
-                # For controlled gates
-                if "target_indices" in gate_info:
-                    target_indices = gate_info.pop("target_indices", None)
-                    control_indices = gate_info.pop("control_indices", None)
-                    if isinstance(target_indices, int):
-                        target_indices = [target_indices]
-                    gate_info["target_indices"] = [target_index + num_controls for target_index in target_indices]
-                    gate_info["control_indices"] = [control_index + num_controls for control_index in control_indices]
+            if isinstance(control_indices, int):
+                control_indices = [control_indices]
 
-                # For single-controlled gates
-                elif "target_index" in gate_info:
-                    gate_info["target_indices"] = gate_info.pop("target_index", None) + num_controls
-                    gate_info["control_indices"] = [gate_info.pop("control_index", None) + num_controls]
-
-                # For CSWAP and MCSWAP gates
-                elif "first_target_index" in gate_info:
-                    gate_info["first_target_index"] = gate_info.pop("first_target_index", None) + num_controls
-                    gate_info["second_target_index"] = gate_info.pop("second_target_index", None) + num_controls
-                    if "control_indices" in gate_info:
-                        control_indices = gate_info.pop("control_indices", None)
-                        gate_info["control_indices"] = [control_index + num_controls for control_index in control_indices]
-                    else:
-                        gate_info["control_indices"] = [gate_info.pop("control_index", None) + num_controls]
-
-            gate_info["control_indices"] = list(range(num_controls)) + gate_info.pop("control_indices", None)
+            # Add control indices
+            gate_info["control_indices"] = list(range(num_controls)) + \
+                [idx for idx in control_indices if idx not in range(num_controls)]
 
             # Use the gate mapping to apply the corresponding gate with remaining kwargs
             # Add the control indices as the first indices given the number of control qubits
@@ -4049,234 +4133,8 @@ class Circuit(ABC):
         -----
         >>> circuit.from_cirq(cirq_circuit)
         """
-        if not issubclass(output_framework, Circuit):
-            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
-
-        # Define a circuit
-        num_qubits = len(cirq_circuit.all_qubits())
-        circuit = output_framework(num_qubits=num_qubits)
-
-        # Define the list of all circuit operations
-        ops = list(cirq_circuit.all_operations())
-
-        # Iterate over the operations in the Cirq circuit
-        for operation in ops:
-            gate = operation.gate
-            gate_type = type(gate).__name__
-
-            qubits = operation.qubits
-            if gate_type != "GlobalPhaseGate":
-                qubit_indices = [qubit.x for qubit in qubits] if len(qubits) > 1 else qubits[0].x # type: ignore
-
-            # Extract the parameters of the gate
-            parameters = gate._json_dict_() # type: ignore
-
-            # TODO: Add U3, CU3, and MCU3 support (Note: Cirq doesn't have built-in U3 gate)
-            if gate_type == "IdentityGate":
-                circuit.Identity(qubit_indices)
-
-            elif gate_type == "_PauliX":
-                circuit.X(qubit_indices)
-
-            elif gate_type == "_PauliY":
-                circuit.Y(qubit_indices)
-
-            elif gate_type == "_PauliZ":
-                circuit.Z(qubit_indices)
-
-            elif gate_type == "HPowGate":
-                circuit.H(qubit_indices)
-
-            elif gate_type == "ZPowGate":
-                if parameters["exponent"] == 0.5:
-                    circuit.S(qubit_indices)
-                elif parameters["exponent"] == 0.25:
-                    circuit.T(qubit_indices)
-                elif parameters["exponent"] == -0.5:
-                    circuit.Sdg(qubit_indices)
-                elif parameters["exponent"] == -0.25:
-                    circuit.Tdg(qubit_indices)
-                else:
-                    circuit.Phase(parameters["exponent"] * np.pi, qubit_indices)
-
-                    if parameters["global_shift"] != 0:
-                        circuit.GlobalPhase(parameters["global_shift"] * np.pi/2)
-
-            elif gate_type == "S":
-                circuit.S(qubit_indices)
-
-            elif gate_type == "T":
-                circuit.T(qubit_indices)
-
-            elif gate_type == "Rx":
-                if isinstance(qubit_indices, list):
-                    for qubit_index in qubit_indices:
-                        circuit.RX(parameters["rads"], qubit_index)
-                else:
-                    circuit.RX(parameters["rads"], qubit_indices)
-
-            elif gate_type == "Ry":
-                if isinstance(qubit_indices, list):
-                    for qubit_index in qubit_indices:
-                        circuit.RY(parameters["rads"], qubit_index)
-                else:
-                    circuit.RY(parameters["rads"], qubit_indices)
-
-            elif gate_type == "Rz":
-                if isinstance(qubit_indices, list):
-                    for qubit_index in qubit_indices:
-                        circuit.RZ(parameters["rads"], qubit_index)
-                else:
-                    circuit.RZ(parameters["rads"], qubit_indices)
-
-            elif gate_type == "SwapPowGate":
-                circuit.SWAP(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "GlobalPhaseGate":
-                global_phase_angle: float = abs(
-                    np.log(parameters["coefficient"])
-                )
-                circuit.GlobalPhase(global_phase_angle)
-
-            elif gate_type == "MeasurementGate":
-                circuit.measure(qubit_indices)
-
-            elif gate_type == "ControlledGate":
-                if parameters["sub_gate"] == cirq.X:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCX(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CX(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.Y:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCY(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CY(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.Z:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCZ(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CZ(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.H:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCH(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CH(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.S:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCS(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CS(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.S**-1:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCSdg(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CSdg(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.T:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCT(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CT(qubit_indices[0], qubit_indices[1])
-
-                elif parameters["sub_gate"] == cirq.T**-1:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCTdg(
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CTdg(qubit_indices[0], qubit_indices[1])
-
-                elif isinstance(parameters["sub_gate"], cirq.Rx):
-                    angle = parameters["sub_gate"]._json_dict_()["rads"]
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCRX(
-                            angle,
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CRX(angle, qubit_indices[0], qubit_indices[1])
-
-                elif isinstance(parameters["sub_gate"], cirq.Ry):
-                    angle = parameters["sub_gate"]._json_dict_()["rads"]
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCRY(
-                            angle,
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CRY(angle, qubit_indices[0], qubit_indices[1])
-
-                elif isinstance(parameters["sub_gate"], cirq.Rz):
-                    angle = parameters["sub_gate"]._json_dict_()["rads"]
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCRZ(
-                            angle,
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CRZ(angle, qubit_indices[0], qubit_indices[1])
-
-                elif isinstance(parameters["sub_gate"], cirq.ZPowGate):
-                    angle = parameters["sub_gate"]._json_dict_()["exponent"]
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCPhase(
-                            angle,
-                            control_indices=qubit_indices[:-1],
-                            target_indices=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CPhase(angle, qubit_indices[0], qubit_indices[1])
-
-                    if parameters["sub_gate"]._json_dict_()["global_shift"] != 0:
-                        global_phase_angle: float = abs( # type: ignore
-                            np.log(parameters["sub_gate"]._json_dict_()["global_shift"])
-                        )
-                        circuit.GlobalPhase(global_phase_angle)
-
-                elif parameters["sub_gate"] == cirq.SWAP:
-                    if len(parameters["control_qid_shape"]) > 1:
-                        circuit.MCSWAP(
-                            control_indices=qubit_indices[:-2],
-                            first_target_index=qubit_indices[-2],
-                            second_target_index=qubit_indices[-1]
-                        )
-                    else:
-                        circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
-
-            else:
-                raise ValueError(f"Gate not supported.\n{operation} ")
-
+        cirq_converter = FromCirq(output_framework=output_framework)
+        circuit = cirq_converter.convert(cirq_circuit)
         return circuit
 
     @staticmethod
@@ -4343,193 +4201,10 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> circuit.from_qiskit(qiskit_circuit)
+        >>> converted_circuit = circuit.from_qiskit(qiskit_circuit)
         """
-        if not issubclass(output_framework, Circuit):
-            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
-
-        def match_pattern(
-                string: str,
-                gate_name: str
-            ) -> bool:
-            """ Check if the string matches the pattern.
-
-            Parameters
-            ----------
-            `string` : str
-                The string to check.
-            `gate_name` : str
-                The name of the gate.
-
-            Returns
-            -------
-            `match` : bool
-                Whether or not the string matches the pattern.
-            """
-            prefix = (f"c{gate_name}", f"cc{gate_name}", f"mc{gate_name}")
-            if string in prefix:
-                return True
-            return False
-
-        # Define a circuit
-        num_qubits = qiskit_circuit.num_qubits
-        circuit = output_framework(num_qubits=num_qubits)
-
-        # Define the gates to skip
-        skip_gates = ["barrier", "global_phase"]
-
-        # Iterate over the operations in the Qiskit circuit
-        for gate in qiskit_circuit.data:
-            gate_type = gate.operation.name
-
-            if gate_type not in skip_gates:
-                qubit_indices = [int(qubit._index) for qubit in gate.qubits] if len(gate.qubits) > 1 else [int(gate.qubits[0]._index)]
-            elif gate_type == "global_phase":
-                pass
-            else:
-                continue
-
-            if gate_type == "id":
-                circuit.Identity(qubit_indices)
-
-            elif gate_type == "x":
-                circuit.X(qubit_indices)
-
-            elif gate_type == "y":
-                circuit.Y(qubit_indices)
-
-            elif gate_type == "z":
-                circuit.Z(qubit_indices)
-
-            elif gate_type == "h":
-                circuit.H(qubit_indices)
-
-            elif gate_type == "s":
-                circuit.S(qubit_indices)
-
-            elif gate_type == "sdg":
-                circuit.Sdg(qubit_indices)
-
-            elif gate_type == "t":
-                circuit.T(qubit_indices)
-
-            elif gate_type == "tdg":
-                circuit.Tdg(qubit_indices)
-
-            elif gate_type == "rx":
-                circuit.RX(gate.operation.params[0], qubit_indices)
-
-            elif gate_type == "ry":
-                circuit.RY(gate.operation.params[0], qubit_indices)
-
-            elif gate_type == "rz":
-                circuit.RZ(gate.operation.params[0], qubit_indices)
-
-            elif gate_type == "p":
-                circuit.Phase(gate.operation.params[0], qubit_indices)
-
-            elif gate_type in ["u", "u3"]:
-                circuit.U3(gate.operation.params, qubit_indices[0])
-
-            elif gate_type == "swap":
-                circuit.SWAP(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cx":
-                circuit.CX(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cy":
-                circuit.CY(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cz":
-                circuit.CZ(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "ch":
-                circuit.CH(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cs":
-                circuit.CS(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "csdg":
-                circuit.CSdg(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "ct":
-                circuit.CT(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "ctdg":
-                circuit.CTdg(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "crx":
-                circuit.CRX(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cry":
-                circuit.CRY(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "crz":
-                circuit.CRZ(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cp":
-                circuit.CPhase(gate.operation.params[0], qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cu3":
-                circuit.CU3(gate.operation.params, qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "cswap":
-                circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
-
-            elif gate_type == "measure":
-                circuit.measure(qubit_indices)
-
-            elif gate_type == "global_phase":
-                circuit.GlobalPhase(gate.operation.params[0])
-
-            elif match_pattern(gate_type, "x"):
-                circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "y"):
-                circuit.MCY(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "z"):
-                circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "h"):
-                circuit.MCH(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "s"):
-                circuit.MCS(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "sdg"):
-                circuit.MCSdg(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "t"):
-                circuit.MCT(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "tdg"):
-                circuit.MCTdg(qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "rx"):
-                circuit.MCRX(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "ry"):
-                circuit.MCRY(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "rz"):
-                circuit.MCRZ(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "phase"):
-                circuit.MCPhase(gate.operation.params[0], qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "u3"):
-                circuit.MCU3(gate.operation.params, qubit_indices[:-1], qubit_indices[-1])
-
-            elif match_pattern(gate_type, "swap"):
-                circuit.MCSWAP(qubit_indices[:-2], qubit_indices[-2], qubit_indices[-1])
-
-            else:
-                raise ValueError(f"Gate not supported.\n{gate_type} ")
-
-        # Apply the global phase of the `qiskit_circuit`
-        circuit.GlobalPhase(qiskit_circuit.global_phase)
-
+        qiskit_converter = FromQiskit(output_framework=output_framework)
+        circuit = qiskit_converter.convert(qiskit_circuit)
         return circuit
 
     @staticmethod
@@ -4560,204 +4235,8 @@ class Circuit(ABC):
         -----
         >>> circuit.from_tket(tket_circuit)
         """
-        if not issubclass(output_framework, Circuit):
-            raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
-
-        # Define a circuit
-        num_qubits = tket_circuit.n_qubits
-        circuit = output_framework(num_qubits=num_qubits)
-
-        # Iterate over the operations in the Qiskit circuit
-        for gate in tket_circuit:
-            gate_type = str(gate.op.type)
-
-            qubit_indices = [
-                int(qubit.index[0]) for qubit in gate.qubits
-            ] if len(gate.qubits) > 1 else [gate.qubits[0].index[0]]
-
-            if gate_type == "OpType.noop":
-                circuit.Identity(qubit_indices)
-
-            elif gate_type == "OpType.X":
-                circuit.X(qubit_indices)
-
-            elif gate_type == "OpType.Y":
-                circuit.Y(qubit_indices)
-
-            elif gate_type == "OpType.Z":
-                circuit.Z(qubit_indices)
-
-            elif gate_type == "OpType.H":
-                circuit.H(qubit_indices)
-
-            elif gate_type == "OpType.S":
-                circuit.S(qubit_indices)
-
-            elif gate_type == "OpType.Sdg":
-                circuit.Sdg(qubit_indices)
-
-            elif gate_type == "OpType.T":
-                circuit.T(qubit_indices)
-
-            elif gate_type == "OpType.Tdg":
-                circuit.Tdg(qubit_indices)
-
-            elif gate_type == "OpType.Rx":
-                circuit.RX(float(gate.op.params[0]), qubit_indices[0])
-
-            elif gate_type == "OpType.Ry":
-                circuit.RY(float(gate.op.params[0]), qubit_indices[0])
-
-            elif gate_type == "OpType.Rz":
-                circuit.RZ(float(gate.op.params[0]), qubit_indices[0])
-
-            elif gate_type == "OpType.U1":
-                circuit.Phase(float(gate.op.params[0]), qubit_indices[0])
-
-            elif gate_type == "OpType.U3":
-                circuit.U3([float(param) for param in gate.op.params], qubit_indices[0])
-
-            elif gate_type == "OpType.SWAP":
-                circuit.SWAP(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CX":
-                circuit.CX(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CY":
-                circuit.CY(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CZ":
-                circuit.CZ(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CH":
-                circuit.CH(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CS":
-                circuit.CS(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CSdg":
-                circuit.CSdg(qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CRx":
-                circuit.CRX(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CRy":
-                circuit.CRY(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CRz":
-                circuit.CRZ(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CU1":
-                circuit.CPhase(float(gate.op.params[0]), qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CU3":
-                circuit.CU3([float(param) for param in gate.op.params], qubit_indices[0], qubit_indices[1])
-
-            elif gate_type == "OpType.CSWAP":
-                circuit.CSWAP(qubit_indices[0], qubit_indices[1], qubit_indices[2])
-
-            elif gate_type == "OpType.CnX":
-                circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
-
-            elif gate_type == "OpType.CnY":
-                circuit.MCY(qubit_indices[:-1], qubit_indices[-1])
-
-            elif gate_type == "OpType.CnZ":
-                circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
-
-            elif gate_type == "OpType.Measure":
-                circuit.measure(qubit_indices)
-
-            elif isinstance(gate.op, pytket.circuit.QControlBox):
-                qcontrolbox = gate.op
-
-                if "X" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCX(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CX(qubit_indices[0], qubit_indices[1])
-
-                elif "Y" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCY(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CY(qubit_indices[0], qubit_indices[1])
-
-                elif "Z" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCZ(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CZ(qubit_indices[0], qubit_indices[1])
-
-                elif "H" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCH(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CH(qubit_indices[0], qubit_indices[1])
-
-                elif "SWAP" in str(qcontrolbox.get_op()):
-                    circuit.MCSWAP(qubit_indices[:-2], qubit_indices[-2], qubit_indices[-1])
-
-                elif "Sdg" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCSdg(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CSdg(qubit_indices[0], qubit_indices[1])
-
-                elif "S" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCS(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CS(qubit_indices[0], qubit_indices[1])
-
-                elif "Tdg" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCTdg(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CTdg(qubit_indices[0], qubit_indices[1])
-
-                elif "T" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCT(qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CT(qubit_indices[0], qubit_indices[1])
-
-                elif "Rx" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCRX(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CRX(float(gate.op.get_op().params[0]), qubit_indices[0], qubit_indices[1])
-
-                elif "Ry" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCRY(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CRY(float(gate.op.get_op().params[0]), qubit_indices[0], qubit_indices[1])
-
-                elif "Rz" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCRZ(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CRZ(float(gate.op.get_op().params[0]), qubit_indices[0], qubit_indices[1])
-
-                elif "U1" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCPhase(float(gate.op.get_op().params[0]), qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CPhase(float(gate.op.get_op().params[0]), qubit_indices[0], qubit_indices[1])
-
-                elif "U3" in str(qcontrolbox.get_op()):
-                    if len(qubit_indices) > 2:
-                        circuit.MCU3([float(param) for param in gate.op.get_op().params], qubit_indices[:-1], qubit_indices[-1])
-                    else:
-                        circuit.CU3([float(param) for param in gate.op.get_op().params], qubit_indices[0], qubit_indices[1])
-
-            else:
-                raise ValueError(f"Gate not supported.\n{gate_type} ")
-
-        # Apply the global phase of the `tket_circuit`
-        circuit.GlobalPhase(float(tket_circuit.phase))
-
+        tket_converter = FromTKET(output_framework=output_framework)
+        circuit = tket_converter.convert(tket_circuit)
         return circuit
 
     @staticmethod
@@ -4791,11 +4270,12 @@ class Circuit(ABC):
         if not issubclass(output_framework, Circuit):
             raise TypeError("The circuit framework must be a subclass of `qickit.circuit.Circuit`.")
 
-        # Define a circuit
-        num_qubits = 0
-        circuit = output_framework(num_qubits=num_qubits)
+        # Convert the QASM to qiskit circuit
+        qiskit_circuit = qiskit.QuantumCircuit.from_qasm_str(qasm)
 
-        # TODO: Implement the conversion from QASM to Qickit
+        # Convert the qiskit circuit to the output framework
+        circuit = Circuit.from_qiskit(qiskit_circuit, output_framework)
+
         return circuit
 
     @staticmethod
