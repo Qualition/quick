@@ -178,16 +178,15 @@ def mcx_vchain_decomposition(
     circuit = output_framework(num_qubits)
 
     # The V-chain decomposition for the MCX gate only works for 4+ control qubits
-    match num_control_qubits:
-        case 1:
-            circuit.CX(0, 1)
-            return circuit
-        case 2:
-            _CCX(circuit, [0, 1], 2)
-            return circuit
-        case 3:
-            _C3X(circuit, [0, 1, 2], 3)
-            return circuit
+    if num_control_qubits == 1:
+        circuit.CX(0, 1)
+        return circuit
+    elif num_control_qubits == 2:
+        _CCX(circuit, [0, 1], 2)
+        return circuit
+    elif num_control_qubits == 3:
+        _C3X(circuit, [0, 1, 2], 3)
+        return circuit
 
     # Define the control, target and ancilla qubits
     control_indices = qubits[:num_control_qubits]
@@ -197,37 +196,39 @@ def mcx_vchain_decomposition(
     targets = [target_index] + ancilla_indices[:num_ancillas][::-1]
 
     # Perform V-Chain decomposition of the MCX gate
-    for i in range(num_control_qubits):
-        if i < num_control_qubits - 2:
-            if targets[i] != target_index:
+    for _ in range(2):
+        for i in range(num_control_qubits):
+            if i < num_control_qubits - 2:
+                if targets[i] != target_index:
+                    circuit.H(targets[i])
+                    circuit.T(targets[i])
+                    circuit.CX(control_indices[num_control_qubits - i - 1], targets[i])
+                    circuit.Tdg(targets[i])
+                    circuit.CX(ancilla_indices[num_ancillas - i - 1], targets[i])
+                else:
+                    controls = [
+                        control_indices[num_control_qubits - i - 1],
+                        ancilla_indices[num_ancillas - i - 1],
+                    ]
+
+                    _CCX(circuit, [controls[0], controls[1]], targets[i])
+            else:
                 circuit.H(targets[i])
                 circuit.T(targets[i])
-                circuit.CX(control_indices[num_control_qubits - i - 1], targets[i])
+                circuit.CX(control_indices[num_control_qubits - i - 2], targets[i])
                 circuit.Tdg(targets[i])
-                circuit.CX(ancilla_indices[num_ancillas - i - 1], targets[i])
-            else:
-                controls = [
-                    control_indices[num_control_qubits - i - 1],
-                    ancilla_indices[num_ancillas - i - 1],
-                ]
-                _CCX(circuit, [controls[0], controls[1]], targets[i])
-        else:
-            circuit.H(targets[i])
-            circuit.T(targets[i])
-            circuit.CX(control_indices[num_control_qubits - i - 2], targets[i])
-            circuit.Tdg(targets[i])
-            circuit.CX(control_indices[num_control_qubits - i - 1], targets[i])
-            circuit.Tdg(targets[i])
-            circuit.CX(control_indices[num_control_qubits - i - 2], targets[i])
-            circuit.Tdg(targets[i])
-            circuit.H(targets[i])
-            break
+                circuit.CX(control_indices[num_control_qubits - i - 1], targets[i])
+                circuit.T(targets[i])
+                circuit.CX(control_indices[num_control_qubits - i - 2], targets[i])
+                circuit.Tdg(targets[i])
+                circuit.H(targets[i])
+                break
 
-    for i in range(num_ancillas - 1):
-        circuit.CX(ancilla_indices[i], ancilla_indices[i + 1])
-        circuit.T(ancilla_indices[i + 1])
-        circuit.CX(control_indices[2 + i], ancilla_indices[i + 1])
-        circuit.Tdg(ancilla_indices[i + 1])
-        circuit.H(ancilla_indices[i + 1])
+        for i in range(num_ancillas - 1):
+            circuit.CX(ancilla_indices[i], ancilla_indices[i + 1])
+            circuit.T(ancilla_indices[i + 1])
+            circuit.CX(control_indices[2 + i], ancilla_indices[i + 1])
+            circuit.Tdg(ancilla_indices[i + 1])
+            circuit.H(ancilla_indices[i + 1])
 
     return circuit

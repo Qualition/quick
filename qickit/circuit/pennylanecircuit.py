@@ -28,9 +28,8 @@ import pennylane as qml # type: ignore
 
 if TYPE_CHECKING:
     from qickit.backend import Backend
-from qickit.circuit import Circuit, QiskitCircuit
+from qickit.circuit import Circuit
 from qickit.circuit.circuit import GATES
-from qickit.synthesis.unitarypreparation import UnitaryPreparation
 
 
 class PennylaneCircuit(Circuit):
@@ -277,10 +276,6 @@ class PennylaneCircuit(Circuit):
 
         return counts
 
-    def get_depth(self) -> int:
-        circuit = self.convert(QiskitCircuit)
-        return circuit.get_depth()
-
     def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the operations are applied inplace
         circuit: PennylaneCircuit = self.copy() # type: ignore
@@ -328,28 +323,12 @@ class PennylaneCircuit(Circuit):
         for qubit_index in qubit_indices:
             self.circuit.append((qml.measure(qubit_index), True)) # type: ignore
 
-    def transpile(
-            self,
-            direct_transpile: bool=True,
-            synthesis_method: UnitaryPreparation | None = None
-        ) -> None:
-
-        # Convert to `qickit.circuit.QiskitCircuit` to transpile the circuit
-        qiskit_circuit = self.convert(QiskitCircuit)
-        qiskit_circuit.transpile(
-            direct_transpile=direct_transpile,
-            synthesis_method=synthesis_method
-        )
-
-        # Convert back to `qickit.circuit.PennylaneCircuit` to update the circuit
-        updated_circuit = qiskit_circuit.convert(PennylaneCircuit)
-        self.circuit_log = updated_circuit.circuit_log
-        self.circuit = updated_circuit.circuit
-
     def to_qasm(
             self,
             qasm_version: int=2
         ) -> str:
+
+        from qickit.circuit import QiskitCircuit
 
         return self.convert(QiskitCircuit).to_qasm(qasm_version=qasm_version)
 

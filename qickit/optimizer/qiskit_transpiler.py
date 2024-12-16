@@ -20,6 +20,11 @@ from __future__ import annotations
 __all__ = ["QiskitTranspiler"]
 
 from qiskit.transpiler import PassManager # type: ignore
+from qiskit.transpiler.passes import ( # type: ignore
+    Collect2qBlocks, # type: ignore
+    ConsolidateBlocks, # type: ignore
+    UnitarySynthesis # type: ignore
+)
 
 from qickit.circuit import Circuit, QiskitCircuit
 from qickit.optimizer.optimizer import Optimizer
@@ -48,6 +53,19 @@ class QiskitTranspiler(Optimizer):
     -----
     >>> optimizer = QiskitTranspiler()
     """
+    def __init__(self) -> None:
+        """ Initialize the Qiskit transpiler optimizer.
+        """
+        basis_gates = ["u3", "cx"]
+
+        self.pass_manager = PassManager(
+            [
+                Collect2qBlocks(), # type: ignore
+                ConsolidateBlocks(basis_gates=basis_gates), # type: ignore
+                UnitarySynthesis(basis_gates), # type: ignore
+            ]
+        )
+
     def optimize(
             self,
             circuit: Circuit
@@ -69,13 +87,8 @@ class QiskitTranspiler(Optimizer):
         if not isinstance(circuit, QiskitCircuit):
             circuit = circuit.convert(QiskitCircuit)
 
-        # TODO: Speculate the role of the pass manager,
-        # and how it is used to optimize the circuit
-        # Create a pass manager to optimize the circuit
-        pass_manager = PassManager()
-
         # Apply the transpilation pass to optimize the circuit
-        transpiled_circuit = pass_manager.run(circuit.circuit)
+        transpiled_circuit = self.pass_manager.run(circuit.circuit)
 
         optimized_circuit = Circuit.from_qiskit(transpiled_circuit, circuit_type)
 

@@ -335,10 +335,12 @@ class TestFakeIBMBackend(Template):
         tket_operator = backend.get_operator(tket_circuit)
 
         # Define the output operator for checking purposes
-        output_operator = np.array([[0.70710678+0.j, 0.70710678+0.j, 0.+0.j, 0.+0.j],
-                                    [0.+0.j, 0.+0.j, 0.70710678+0.j, -0.70710678+0.j],
-                                    [0.+0.j, 0.+0.j, 0.70710678+0.j, 0.70710678+0.j],
-                                    [0.70710678+0.j, -0.70710678+0.j, 0.+0.j, 0.+0.j]])
+        output_operator = np.array([
+            [0.70710678+0.j, 0.70710678+0.j, 0.+0.j, 0.+0.j],
+            [0.+0.j, 0.+0.j, 0.70710678+0.j, -0.70710678+0.j],
+            [0.+0.j, 0.+0.j, 0.70710678+0.j, 0.70710678+0.j],
+            [0.70710678+0.j, -0.70710678+0.j, 0.+0.j, 0.+0.j]
+        ])
 
         # Ensure the resulting statevectors are close enough (99 percent fidelity)
         assert 1 - distance.cosine(cirq_operator.flatten(), output_operator.flatten()) > 0.99

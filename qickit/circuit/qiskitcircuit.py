@@ -24,7 +24,7 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Callable, TYPE_CHECKING
 
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile # type: ignore
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister # type: ignore
 from qiskit.circuit.library import ( # type: ignore
     RXGate, RYGate, RZGate, HGate, XGate, YGate, # type: ignore
     ZGate, SGate, SdgGate, TGate, TdgGate, U3Gate, # type: ignore
@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from qickit.backend import Backend
 from qickit.circuit import Circuit
 from qickit.circuit.circuit import GATES
-from qickit.synthesis.unitarypreparation import UnitaryPreparation, QiskitUnitaryTranspiler
 
 
 class QiskitCircuit(Circuit):
@@ -245,15 +244,6 @@ class QiskitCircuit(Circuit):
 
         return counts
 
-    def get_depth(self) -> int:
-        # Copy the circuit as the transpilation operation is inplace
-        circuit: QiskitCircuit = self.copy() # type: ignore
-
-        # Transpile the circuit to U3 and CX gates
-        circuit.transpile()
-
-        return circuit.circuit.depth()
-
     def get_unitary(self) -> NDArray[np.complex128]:
         # Copy the circuit as the transpilation operation is inplace
         circuit: QiskitCircuit = self.copy() # type: ignore
@@ -275,39 +265,6 @@ class QiskitCircuit(Circuit):
 
         for qubit_index in qubit_indices:
             self.circuit.reset(qubit_index)
-
-    def transpile(
-            self,
-            direct_transpile: bool=True,
-            synthesis_method: UnitaryPreparation | None = None
-        ) -> None:
-
-        if direct_transpile:
-            # Transpile the circuit (this returns a `qiskit.QuantumCircuit` instance)
-            transpiled_circuit = transpile(
-                self.circuit,
-                optimization_level=3,
-                basis_gates=["u3", "cx"],
-                seed_transpiler=0
-            )
-
-            # Define a `qickit.circuit.QiskitCircuit` instance from the transpiled circuit
-            transpiled_circuit = self.from_qiskit(transpiled_circuit, QiskitCircuit)
-
-        else:
-            if synthesis_method is None:
-                # If no synthesis method is provided, use the default QiskitUnitaryTranspiler
-                synthesis_method = QiskitUnitaryTranspiler(output_framework=type(self))
-
-            # Get the unitary matrix of the circuit
-            unitary_matrix = self.get_unitary()
-
-            # Prepare the unitary matrix
-            transpiled_circuit = synthesis_method.prepare_unitary(unitary_matrix)
-
-        # Update the circuit
-        self.circuit_log = transpiled_circuit.circuit_log
-        self.circuit = transpiled_circuit.circuit
 
     def to_qasm(
             self,

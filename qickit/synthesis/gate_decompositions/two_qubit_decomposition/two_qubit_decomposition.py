@@ -60,12 +60,12 @@ class TwoQubitDecomposition(UnitaryPreparation):
 
     Parameters
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
 
     Attributes
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
     `one_qubit_decomposition` : qickit.synthesis.gate_decompositions.OneQubitDecomposition
         The one-qubit decomposition class.

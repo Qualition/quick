@@ -16,7 +16,6 @@ from __future__ import annotations
 
 __all__ = ["TestControlled"]
 
-from numpy.testing import assert_almost_equal
 import pytest
 from typing import Type
 

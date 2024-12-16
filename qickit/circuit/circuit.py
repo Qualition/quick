@@ -28,7 +28,9 @@ import matplotlib.pyplot as plt # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
-from typing import Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
+from typing import (
+    Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
+)
 
 import qiskit # type: ignore
 import cirq # type: ignore
@@ -42,13 +44,14 @@ if TYPE_CHECKING:
 from qickit.circuit.circuit_utils import (
     extract_rz, decompose_uc_rotations, decompose_ucg_help, simplify
 )
+from qickit.circuit.dag import DAGCircuit
 from qickit.circuit.from_framework import FromCirq, FromQiskit, FromTKET
 from qickit.predicates import is_unitary_matrix
 from qickit.primitives import Bra, Ket, Operator
 from qickit.synthesis.gate_decompositions.multi_controlled_decomposition import MCRX, MCRY, MCRZ
 from qickit.synthesis.statepreparation import Isometry
 from qickit.synthesis.unitarypreparation import (
-    UnitaryPreparation, ShannonDecomposition
+    UnitaryPreparation, ShannonDecomposition, QiskitUnitaryTranspiler
 )
 
 EPSILON = 1e-10
@@ -97,6 +100,8 @@ class Circuit(ABC):
         The set of measured qubits indices.
     `circuit_log` : list[dict]
         The log of the circuit operations.
+    `stack` : list[list[dict]]
+        The stack of the circuit log. Used for logging gate definitions.
     `global_phase` : float
         The global phase of the circuit.
     `process_gate_params_flag` : bool
@@ -126,6 +131,7 @@ class Circuit(ABC):
         self.gate_mapping: dict[str, Callable] = self._define_gate_mapping()
         self.measured_qubits: set[int] = set()
         self.circuit_log: list[dict] = []
+        self.stack: list[list[dict]] = [self.circuit_log]
         self.global_phase: float = 0
         self.process_gate_params_flag: bool = True
 
@@ -263,7 +269,7 @@ class Circuit(ABC):
             self,
             gate: str,
             params: dict
-        ) -> None:
+        ) -> dict | None:
         """ Process the gate parameters for the circuit.
 
         Parameters
@@ -272,6 +278,12 @@ class Circuit(ABC):
             The gate to apply to the circuit.
         `params` : dict
             The parameters of the gate.
+
+        Returns
+        -------
+        `gate_dict` : dict | None
+            The dictionary of the gate parameters. If no
+            operation is needed, return None.
 
         Raises
         ------
@@ -283,10 +295,10 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> self.process_gate_params(gate="X", params={"qubit_indices": 0})
+        >>> gate = self.process_gate_params(gate="X", params={"qubit_indices": 0})
         """
         if not self.process_gate_params_flag:
-            return
+            return None
 
         # Remove the "self" key from the dictionary to avoid the inclusion of str(circuit)
         # in the circuit log
@@ -303,30 +315,48 @@ class Circuit(ABC):
 
             # Indicate no operation needed
             if value is None:
-                return
+                return None
 
             params[name] = value
 
-        self.circuit_log.append({"gate": gate, **params})
+        # Add the gate to the circuit log
+        gate_dict = {"gate": gate, **params, "definition": []}
+        self.stack[-1].append(gate_dict)
+
+        return gate_dict
 
     @contextmanager
-    def suppress_logs(self):
-        """ Suppress the logging of the gate parameters.
+    def decompose_last(
+            self,
+            gate: dict | None
+        ):
+        """ Decompose the last gate in the circuit.
+
+        Notes
+        -----
+        This context manager is used to define new gates by labelling a sequence
+        of operations as a new gate. This is useful for defining new gates in the
+        circuit without introducing breaking changes.
 
         Usage
         -----
-        >>> with circuit.suppress_gate_logging():
-        >>>     circuit.X(qubit_indices=0)
+        >>> def NewGate(qubit_indices: int | Sequence[int]):
+        >>>     gate = self.process_gate_params(gate="NewGate", params=locals())
+        >>>     with circuit.decompose_last():
+        >>>         circuit.X(qubit_indices)
         """
-        # Store the current flag value for after the context manager
-        current_flag = self.process_gate_params_flag
+        # If the gate is parameterized, and its rotation is effectively zero, return
+        # as no operation is needed
+        if gate is None:
+            yield
+            return
 
-        self.process_gate_params_flag = False
+        self.stack.append(gate["definition"])
 
         try:
             yield
         finally:
-            self.process_gate_params_flag = current_flag
+            self.stack.pop()
 
     @staticmethod
     @abstractmethod
@@ -416,10 +446,9 @@ class Circuit(ABC):
         >>> circuit.Identity(qubit_indices=0)
         >>> circuit.Identity(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Identity.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.Identity.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([0, 0, 0], qubit_indices)
 
     def X(
@@ -445,10 +474,9 @@ class Circuit(ABC):
         >>> circuit.X(qubit_indices=0)
         >>> circuit.X(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.X.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.X.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([np.pi, 0, np.pi], qubit_indices)
 
     def Y(
@@ -474,10 +502,9 @@ class Circuit(ABC):
         >>> circuit.Y(qubit_indices=0)
         >>> circuit.Y(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Y.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.Y.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([np.pi, np.pi/2, np.pi/2], qubit_indices)
 
     def Z(
@@ -503,10 +530,9 @@ class Circuit(ABC):
         >>> circuit.Z(qubit_indices=0)
         >>> circuit.Z(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Z.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.Z.__name__, params=locals())
 
-        # Suppress the logging of Phase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(np.pi, qubit_indices)
 
     def H(
@@ -532,10 +558,9 @@ class Circuit(ABC):
         >>> circuit.H(qubit_indices=0)
         >>> circuit.H(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.H.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.H.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([np.pi/2, 0, np.pi], qubit_indices)
 
     def S(
@@ -561,10 +586,9 @@ class Circuit(ABC):
         >>> circuit.S(qubit_indices=0)
         >>> circuit.S(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.S.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.S.__name__, params=locals())
 
-        # Suppress the logging of Phase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(np.pi/2, qubit_indices)
 
     def Sdg(
@@ -590,10 +614,9 @@ class Circuit(ABC):
         >>> circuit.Sdg(qubit_indices=0)
         >>> circuit.Sdg(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Sdg.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.Sdg.__name__, params=locals())
 
-        # Suppress the logging of Phase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(-np.pi/2, qubit_indices)
 
     def T(
@@ -619,10 +642,9 @@ class Circuit(ABC):
         >>> circuit.T(qubit_indices=0)
         >>> circuit.T(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.T.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.T.__name__, params=locals())
 
-        # Suppress the logging of Phase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(np.pi/4, qubit_indices)
 
     def Tdg(
@@ -648,10 +670,9 @@ class Circuit(ABC):
         >>> circuit.Tdg(qubit_indices=0)
         >>> circuit.Tdg(qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.Tdg.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.Tdg.__name__, params=locals())
 
-        # Suppress the logging of Phase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(-np.pi/4, qubit_indices)
 
     def RX(
@@ -681,10 +702,9 @@ class Circuit(ABC):
         >>> circuit.RX(angle=np.pi/2, qubit_indices=0)
         >>> circuit.RX(angle=np.pi/2, qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.RX.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.RX.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([angle, -np.pi/2, np.pi/2], qubit_indices)
 
     def RY(
@@ -714,10 +734,9 @@ class Circuit(ABC):
         >>> circuit.RY(angle=np.pi/2, qubit_index=0)
         >>> circuit.RY(angle=np.pi/2, qubit_index=[0, 1])
         """
-        self.process_gate_params(gate=self.RY.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.RY.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([angle, 0, 0], qubit_indices)
 
     def RZ(
@@ -747,12 +766,11 @@ class Circuit(ABC):
         >>> circuit.RZ(angle=np.pi/2, qubit_indices=0)
         >>> circuit.RZ(angle=np.pi/2, qubit_indices=[0, 1])
         """
-        self.process_gate_params(gate=self.RZ.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.RZ.__name__, params=locals())
 
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
-        # Suppress the logging of RX and RY gates to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.RX(np.pi/2, qubit_indices)
             self.RY(-angle, qubit_indices)
             self.RX(-np.pi/2, qubit_indices)
@@ -783,10 +801,9 @@ class Circuit(ABC):
         -----
         >>> circuit.Phase(angle=np.pi/2, qubit_index=0)
         """
-        self.process_gate_params(gate=self.Phase.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.Phase.__name__, params=locals())
 
-        # Suppress the logging of U3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.U3([0, 0, angle], qubit_indices)
 
     def XPow(
@@ -825,6 +842,7 @@ class Circuit(ABC):
         >>> circuit.XPow(power=0.5, qubit_indices=[0, 1])
         >>> circuit.XPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
         """
+
         qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         self.RX(power * np.pi, qubit_indices)
@@ -1043,7 +1061,8 @@ class Circuit(ABC):
         -----
         >>> circuit.U3(angles=[np.pi/2, np.pi/2, np.pi/2], qubit_index=0)
         """
-        self.process_gate_params(gate=self.U3.__name__, params=locals())
+        _ = self.process_gate_params(gate=self.U3.__name__, params=locals())
+
         self._gate_mapping(
             gate="U3",
             angles=angles,
@@ -1075,10 +1094,9 @@ class Circuit(ABC):
         -----
         >>> circuit.SWAP(first_qubit_index=0, second_qubit_index=1)
         """
-        self.process_gate_params(gate=self.SWAP.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.SWAP.__name__, params=locals())
 
-        # Suppress the logging of the SWAP gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.CX(first_qubit_index, second_qubit_index)
             self.CX(second_qubit_index, first_qubit_index)
             self.CX(first_qubit_index, second_qubit_index)
@@ -1108,7 +1126,8 @@ class Circuit(ABC):
         -----
         >>> circuit.CX(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CX.__name__, params=locals())
+        _ = self.process_gate_params(gate=self.CX.__name__, params=locals())
+
         self._gate_mapping(
             gate="X",
             control_indices=control_index,
@@ -1140,10 +1159,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CY(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CY.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CY.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CY gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Sdg(target_index)
             self.CX(control_index, target_index)
             self.S(target_index)
@@ -1173,10 +1191,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CZ(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CZ.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CZ.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CZ gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.H(target_index)
             self.CX(control_index, target_index)
             self.H(target_index)
@@ -1206,10 +1223,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CH(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CH.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CH.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CH gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.S(target_index)
             self.H(target_index)
             self.T(target_index)
@@ -1243,10 +1259,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CS(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CS.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CS.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CS gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.T(control_index)
             self.CX(control_index, target_index)
             self.Tdg(target_index)
@@ -1278,10 +1293,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CSdg(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CSdg.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CSdg.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CSdg gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Tdg(control_index)
             self.CX(control_index, target_index)
             self.T(target_index)
@@ -1313,10 +1327,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CT(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CT.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CT.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CT gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(np.pi/8, target_index)
             self.CX(control_index, target_index)
             self.Phase(-np.pi/8, target_index)
@@ -1348,10 +1361,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CTdg(control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CTdg.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CTdg.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CTdg gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(-np.pi/8, control_index)
             self.CX(control_index, target_index)
             self.Phase(np.pi/8, target_index)
@@ -1387,10 +1399,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CRX(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CRX.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CRX.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CRX gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             # Explicit optimal implementation covered in MCRX
             self.MCRX(angle, control_index, target_index)
 
@@ -1423,10 +1434,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CRY(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CRY.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CRY.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CRY gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             # Explicit optimal implementation covered in MCRY
             self.MCRY(angle, control_index, target_index)
 
@@ -1459,10 +1469,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CRZ(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CRZ.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CRZ.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CRZ gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             # Explicit optimal implementation covered in MCRZ
             self.MCRZ(angle, control_index, target_index)
 
@@ -1495,10 +1504,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CPhase(angle=np.pi/2, control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CPhase.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CPhase.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CPhase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Phase(angle/2, control_index)
             self.CX(control_index, target_index)
             self.Phase(-angle/2, target_index)
@@ -1789,10 +1797,9 @@ class Circuit(ABC):
         -----
         >>> circuit.CU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_index=0, target_index=1)
         """
-        self.process_gate_params(gate=self.CU3.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.CU3.__name__, params=locals())
 
-        # Suppress the logging the decomposition of CU3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             # Explicit optimal implementation covered in MCU3
             self.MCU3(angles, control_index, target_index)
 
@@ -1858,13 +1865,12 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCX.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCX.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCX gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.H(target_indices)
             self.MCPhase(np.pi, control_indices, target_indices)
             self.H(target_indices)
@@ -1897,13 +1903,12 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCY.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCY.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCY gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.Sdg(target_indices)
             self.MCX(control_indices, target_indices)
             self.S(target_indices)
@@ -1936,13 +1941,12 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCZ.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCZ.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCZ gate to avoid unnecessary log entrie
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.H(target_indices)
             self.MCX(control_indices, target_indices)
             self.H(target_indices)
@@ -1975,13 +1979,12 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCH.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCH.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCH gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.S(target_indices)
             self.H(target_indices)
             self.T(target_indices)
@@ -2018,13 +2021,12 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCS.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCS.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCS gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.MCPhase(np.pi/2, control_indices, target_indices)
 
     def MCSdg(
@@ -2055,13 +2057,12 @@ class Circuit(ABC):
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCSdg.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCSdg.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCSdg gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.MCPhase(-np.pi/2, control_indices, target_indices)
 
     def MCT(
@@ -2092,13 +2093,12 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCT.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCT.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCT gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.MCPhase(np.pi/4, control_indices, target_indices)
 
     def MCTdg(
@@ -2129,13 +2129,12 @@ class Circuit(ABC):
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCTdg.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCTdg.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCTdg gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.MCPhase(-np.pi/4, control_indices, target_indices)
 
     def MCRX(
@@ -2170,13 +2169,12 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRX(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCRX.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCRX.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCRX gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             for target_index in target_indices:
                 MCRX(self, angle, list(control_indices), target_index)
 
@@ -2212,13 +2210,12 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRY(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCRY.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCRY.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCRY gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             for target_index in target_indices:
                 MCRY(self, angle, list(control_indices), target_index)
 
@@ -2254,13 +2251,12 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRZ(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCRZ.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCRZ.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCRZ gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             for target_index in target_indices:
                 MCRZ(self, angle, list(control_indices), target_index)
 
@@ -2296,15 +2292,14 @@ class Circuit(ABC):
         >>> circuit.MCPhase(angle=np.pi/2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCPhase(angle=np.pi/2, control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCPhase.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCPhase.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
         num_controls = len(control_indices)
 
-        # Suppress the logging the decomposition of MCPhase gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             for target_index in target_indices:
                 new_target_index = target_index
                 new_control_indices = list(control_indices).copy()
@@ -2680,13 +2675,12 @@ class Circuit(ABC):
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=2)
         >>> circuit.MCU3(angles=[np.pi/2, np.pi/2, np.pi/2], control_indices=[0, 1], target_indices=[2, 3])
         """
-        self.process_gate_params(gate=self.MCU3.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCU3.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        # Suppress the logging the decomposition of MCU3 gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.MCPhase(angles[2], control_indices, target_indices)
             self.MCRY(angles[0], control_indices, target_indices)
             self.MCPhase(angles[1], control_indices, target_indices)
@@ -2720,12 +2714,11 @@ class Circuit(ABC):
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
         >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3)
         """
-        self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
+        gate = self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
 
         control_indices = [control_indices] if isinstance(control_indices, int) else list(control_indices)
 
-        # Suppress the logging the decomposition of MCSWAP gate to avoid unnecessary log entries
-        with self.suppress_logs():
+        with self.decompose_last(gate):
             self.CX(second_target_index, first_target_index)
             self.MCX(control_indices + [first_target_index], second_target_index)
             self.CX(second_target_index, first_target_index)
@@ -3465,11 +3458,15 @@ class Circuit(ABC):
             # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate", None)
 
+            # Extract gate definition and remove it from gate_info for kwargs
+            gate_definition = gate_info.pop("definition", None)
+
             # Use the gate mapping to apply the corresponding gate with remaining kwargs
             getattr(self, gate_name)(**gate_info)
 
-            # Re-insert gate name into gate_info if needed elsewhere
+            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
+            gate_info["definition"] = gate_definition
 
     @abstractmethod
     def measure(
@@ -3552,7 +3549,6 @@ class Circuit(ABC):
         >>> circuit.get_counts(num_shots=1024, backend=backend)
         """
 
-    @abstractmethod
     def get_depth(self) -> int:
         """ Get the depth of the circuit.
 
@@ -3565,6 +3561,15 @@ class Circuit(ABC):
         -----
         >>> circuit.get_depth()
         """
+        circuit = self.copy()
+
+        # Transpile the circuit to both simplify and optimize it
+        circuit.transpile()
+
+        # Get the depth of the circuit
+        depth = circuit.get_dag().get_depth()
+
+        return depth
 
     def get_width(self) -> int:
         """ Get the width of the circuit.
@@ -3621,6 +3626,25 @@ class Circuit(ABC):
                 instructions.append(operation)
 
         return instructions
+
+    def get_dag(self) -> DAGCircuit:
+        """ Get the DAG representation of the circuit.
+
+        Returns
+        -------
+        `dag` : qickit.dag.DAGCircuit
+            The DAG representation of the circuit.
+
+        Usage
+        -----
+        >>> dag = circuit.get_dag()
+        """
+        dag = DAGCircuit(self.num_qubits)
+
+        for operation in self.circuit_log:
+            dag.add_operation(operation)
+
+        return dag
 
     def get_global_phase(self) -> float:
         """ Get the global phase of the circuit.
@@ -3754,7 +3778,73 @@ class Circuit(ABC):
 
         return self._remove_measurements()
 
-    @abstractmethod
+    def decompose(
+            self,
+            reps: int=1,
+            full: bool=False
+        ) -> Circuit:
+        """ Decompose the gates in the circuit to their implementation gates.
+
+        Parameters
+        ----------
+        `reps` : int, optional, default=1
+            The number of times to decompose the gates.
+        `full` : bool, optional, default=False
+            Whether or not to fully decompose the gates.
+
+        Returns
+        -------
+        `circuit` : qickit.circuit.Circuit
+            The circuit with decomposed gates.
+
+        Usage
+        -----
+        >>> new_circuit = circuit.decompose(reps=3)
+        """
+        # Create a new circuit to store the decomposed gates
+        circuit = type(self)(self.num_qubits)
+
+        # Create a copy of the circuit log to use as placeholder for each layer of decomposition
+        circuit_log_copy = copy.deepcopy(self.circuit_log)
+
+        # Iterate over the circuit log, and use the `definition` key to define the decomposition
+        # Continue until the circuit log is fully decomposed
+        if full:
+            while True:
+                gates = set([operation["gate"] for operation in circuit_log_copy])
+
+                if gates.issubset(set(["U3", "CX", "GlobalPhase", "measure"])):
+                    break
+
+                for operation in circuit_log_copy:
+                    if operation["definition"] != []:
+                        for op in operation["definition"]:
+                            circuit.circuit_log.append(op)
+                    else:
+                        circuit.circuit_log.append(operation)
+
+                circuit_log_copy = circuit.circuit_log
+                circuit.circuit_log = []
+
+        # Iterate over the circuit log, and use the `definition` key to define the decomposition
+        # Each rep will decompose the circuit one layer further
+        else:
+            for _ in range(reps):
+                for operation in circuit_log_copy:
+                    if operation["definition"] != []:
+                        for op in operation["definition"]:
+                            circuit.circuit_log.append(op)
+                    else:
+                        circuit.circuit_log.append(operation)
+                circuit_log_copy = circuit.circuit_log
+                circuit.circuit_log = []
+
+        circuit.circuit_log = circuit_log_copy
+
+        circuit.update()
+
+        return circuit
+
     def transpile(
             self,
             direct_transpile: bool=True,
@@ -3779,6 +3869,23 @@ class Circuit(ABC):
         -----
         >>> circuit.transpile()
         """
+        from qickit.optimizer import QiskitTranspiler
+
+        if direct_transpile:
+            transpiled_circuit = type(self)(self.num_qubits)
+            transpiler = QiskitTranspiler()
+            transpiled_circuit = transpiler.optimize(self)
+
+        else:
+            if synthesis_method is None:
+                synthesis_method = QiskitUnitaryTranspiler(output_framework=type(self))
+
+            unitary_matrix = self.get_unitary()
+            transpiled_circuit = synthesis_method.prepare_unitary(unitary_matrix)
+
+        # Update the circuit
+        self.circuit_log = transpiled_circuit.circuit_log
+        self.circuit = transpiled_circuit.circuit
 
     def compress(
             self,
@@ -3900,25 +4007,20 @@ class Circuit(ABC):
         # Define the new circuit using the provided framework
         converted_circuit = circuit_framework(self.num_qubits)
 
-        # Set the circuit log of the new circuit to the current circuit log
-        # We do this so that we can disable the processing of gate parameters
-        # and directly apply the gates in the new framework
-        converted_circuit.circuit_log = self.circuit_log
-        converted_circuit.process_gate_params_flag = False
-
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in self.circuit_log:
             # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate", None)
 
+            # Extract gate definition and remove it from gate_info for kwargs
+            gate_definition = gate_info.pop("definition", None)
+
             # Use the gate mapping to apply the corresponding gate with remaining kwargs
             getattr(converted_circuit, gate_name)(**gate_info)
 
-            # Re-insert gate name into gate_info if needed elsewhere
+            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
-
-        # Re-enable the processing of gate parameters
-        converted_circuit.process_gate_params_flag = True
+            gate_info["definition"] = gate_definition
 
         return converted_circuit
 
@@ -3974,6 +4076,9 @@ class Circuit(ABC):
             # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate")
 
+            # Extract gate definition and remove it from gate_info for kwargs
+            gate_definition = gate_info.pop("definition", None)
+
             # Change the gate name from single qubit and controlled to multi-controlled
             gate_name = f"{dict(C='M', M='').get(gate_name[0], 'MC')}{gate_name}"
 
@@ -3983,7 +4088,7 @@ class Circuit(ABC):
                 current_indices = gate_info.pop(key)
 
                 gate_info[control_mapping[key]] = (
-                    current_indices + num_controls if isinstance(current_indices, int) 
+                    current_indices + num_controls if isinstance(current_indices, int)
                     else [index + num_controls for index in current_indices]
                 )
 
@@ -4001,8 +4106,12 @@ class Circuit(ABC):
             # Add the control indices as the first indices given the number of control qubits
             getattr(controlled_circuit, gate_name)(**gate_info)
 
-            # Re-insert gate name into gate_info if needed elsewhere
+            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
+            gate_info["definition"] = gate_definition
+
+        if circuit.global_phase == 0:
+            return controlled_circuit
 
         # Apply MCPhase on the control qubits to account for the global phase of the target gate
         # This essentially performs a relative phase correction to the control indices
@@ -4454,7 +4563,13 @@ class Circuit(ABC):
         -----
         >>> repr(circuit)
         """
-        return f"{self.__class__.__name__}(num_qubits={self.num_qubits}, circuit_log={self.circuit_log})"
+        repr_dict = []
+
+        for operation in self.circuit_log:
+            gate = {k:v for k,v in operation.items() if k != "definition"}
+            repr_dict.append(gate)
+
+        return f"{self.__class__.__name__}(num_qubits={self.num_qubits}, circuit_log={repr_dict})"
 
     @classmethod
     def __subclasscheck__(cls, C) -> bool:

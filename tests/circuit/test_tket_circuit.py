@@ -261,6 +261,9 @@ from tests.circuit.gate_utils import (
     MCRX_unitary_matrix_pi_over_4_012_345_qubits,
     MCRX_unitary_matrix_pi_over_4_01_2_qubits,
     MCRX_unitary_matrix_pi_over_4_0_23_qubits,
+    MCRX_unitary_matrix_0dot1_012345_6_qubits,
+    MCRX_unitary_matrix_0dot1_0123456_7_qubits,
+    MCRX_unitary_matrix_0dot1_01234567_8_qubits,
     MCRY_unitary_matrix_pi_over_4_01_23_qubits,
     MCRY_unitary_matrix_pi_over_4_10_23_qubits,
     MCRY_unitary_matrix_1_over_4_02_13_qubits,
@@ -272,6 +275,9 @@ from tests.circuit.gate_utils import (
     MCRY_unitary_matrix_pi_over_4_012_345_qubits,
     MCRY_unitary_matrix_pi_over_4_01_2_qubits,
     MCRY_unitary_matrix_pi_over_4_0_23_qubits,
+    MCRY_unitary_matrix_0dot1_012345_6_qubits,
+    MCRY_unitary_matrix_0dot1_0123456_7_qubits,
+    MCRY_unitary_matrix_0dot1_01234567_8_qubits,
     MCRZ_unitary_matrix_pi_over_4_01_23_qubits,
     MCRZ_unitary_matrix_pi_over_4_10_23_qubits,
     MCRZ_unitary_matrix_1_over_4_02_13_qubits,
@@ -283,6 +289,9 @@ from tests.circuit.gate_utils import (
     MCRZ_unitary_matrix_pi_over_4_012_345_qubits,
     MCRZ_unitary_matrix_pi_over_4_01_2_qubits,
     MCRZ_unitary_matrix_pi_over_4_0_23_qubits,
+    MCRZ_unitary_matrix_0dot1_012345_6_qubits,
+    MCRZ_unitary_matrix_0dot1_0123456_7_qubits,
+    MCRZ_unitary_matrix_0dot1_01234567_8_qubits,
     MCPhase_unitary_matrix_pi_over_4_01_23_qubits,
     MCPhase_unitary_matrix_pi_over_4_10_23_qubits,
     MCPhase_unitary_matrix_1_over_4_02_13_qubits,
@@ -1647,7 +1656,10 @@ class TestTKETCircuit(Template):
         [5, [0, 1], [2, 3, 4], 1/3, MCRX_unitary_matrix_1_over_3_01_234_qubits],
         [6, [0, 1, 2], [3, 4, 5], np.pi/4, MCRX_unitary_matrix_pi_over_4_012_345_qubits],
         [4, [0, 1], [2], np.pi/4, MCRX_unitary_matrix_pi_over_4_01_2_qubits],
-        [4, [0], [2, 3], np.pi/4, MCRX_unitary_matrix_pi_over_4_0_23_qubits]
+        [4, [0], [2, 3], np.pi/4, MCRX_unitary_matrix_pi_over_4_0_23_qubits],
+        [7, [0, 1, 2, 3, 4, 5], [6], 0.1, MCRX_unitary_matrix_0dot1_012345_6_qubits],
+        [8, [0, 1, 2, 3, 4, 5, 6], [7], 0.1, MCRX_unitary_matrix_0dot1_0123456_7_qubits],
+        [9, [0, 1, 2, 3, 4, 5, 6, 7], [8], 0.1, MCRX_unitary_matrix_0dot1_01234567_8_qubits]
     ])
     def test_MCRX(
             self,
@@ -1676,7 +1688,10 @@ class TestTKETCircuit(Template):
         [5, [0, 1], [2, 3, 4], 1/3, MCRY_unitary_matrix_1_over_3_01_234_qubits],
         [6, [0, 1, 2], [3, 4, 5], np.pi/4, MCRY_unitary_matrix_pi_over_4_012_345_qubits],
         [4, [0, 1], [2], np.pi/4, MCRY_unitary_matrix_pi_over_4_01_2_qubits],
-        [4, [0], [2, 3], np.pi/4, MCRY_unitary_matrix_pi_over_4_0_23_qubits]
+        [4, [0], [2, 3], np.pi/4, MCRY_unitary_matrix_pi_over_4_0_23_qubits],
+        [7, [0, 1, 2, 3, 4, 5], [6], 0.1, MCRY_unitary_matrix_0dot1_012345_6_qubits],
+        [8, [0, 1, 2, 3, 4, 5, 6], [7], 0.1, MCRY_unitary_matrix_0dot1_0123456_7_qubits],
+        [9, [0, 1, 2, 3, 4, 5, 6, 7], [8], 0.1, MCRY_unitary_matrix_0dot1_01234567_8_qubits]
     ])
     def test_MCRY(
             self,
@@ -1705,7 +1720,10 @@ class TestTKETCircuit(Template):
         [5, [0, 1], [2, 3, 4], 1/3, MCRZ_unitary_matrix_1_over_3_01_234_qubits],
         [6, [0, 1, 2], [3, 4, 5], np.pi/4, MCRZ_unitary_matrix_pi_over_4_012_345_qubits],
         [4, [0, 1], [2], np.pi/4, MCRZ_unitary_matrix_pi_over_4_01_2_qubits],
-        [4, [0], [2, 3], np.pi/4, MCRZ_unitary_matrix_pi_over_4_0_23_qubits]
+        [4, [0], [2, 3], np.pi/4, MCRZ_unitary_matrix_pi_over_4_0_23_qubits],
+        [7, [0, 1, 2, 3, 4, 5], [6], 0.1, MCRZ_unitary_matrix_0dot1_012345_6_qubits],
+        [8, [0, 1, 2, 3, 4, 5, 6], [7], 0.1, MCRZ_unitary_matrix_0dot1_0123456_7_qubits],
+        [9, [0, 1, 2, 3, 4, 5, 6, 7], [8], 0.1, MCRZ_unitary_matrix_0dot1_01234567_8_qubits]
     ])
     def test_MCRZ(
             self,

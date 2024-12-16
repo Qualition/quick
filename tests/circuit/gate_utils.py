@@ -247,6 +247,9 @@ __all__ = [
     "MCRX_unitary_matrix_pi_over_4_012_345_qubits",
     "MCRX_unitary_matrix_pi_over_4_01_2_qubits",
     "MCRX_unitary_matrix_pi_over_4_0_23_qubits",
+    "MCRX_unitary_matrix_0dot1_012345_6_qubits",
+    "MCRX_unitary_matrix_0dot1_0123456_7_qubits",
+    "MCRX_unitary_matrix_0dot1_01234567_8_qubits",
     "MCRY_unitary_matrix_pi_over_4_01_23_qubits",
     "MCRY_unitary_matrix_pi_over_4_10_23_qubits",
     "MCRY_unitary_matrix_1_over_4_02_13_qubits",
@@ -258,6 +261,9 @@ __all__ = [
     "MCRY_unitary_matrix_pi_over_4_012_345_qubits",
     "MCRY_unitary_matrix_pi_over_4_01_2_qubits",
     "MCRY_unitary_matrix_pi_over_4_0_23_qubits",
+    "MCRY_unitary_matrix_0dot1_012345_6_qubits",
+    "MCRY_unitary_matrix_0dot1_0123456_7_qubits",
+    "MCRY_unitary_matrix_0dot1_01234567_8_qubits",
     "MCRZ_unitary_matrix_pi_over_4_01_23_qubits",
     "MCRZ_unitary_matrix_pi_over_4_10_23_qubits",
     "MCRZ_unitary_matrix_1_over_4_02_13_qubits",
@@ -269,6 +275,9 @@ __all__ = [
     "MCRZ_unitary_matrix_pi_over_4_012_345_qubits",
     "MCRZ_unitary_matrix_pi_over_4_01_2_qubits",
     "MCRZ_unitary_matrix_pi_over_4_0_23_qubits",
+    "MCRZ_unitary_matrix_0dot1_012345_6_qubits",
+    "MCRZ_unitary_matrix_0dot1_0123456_7_qubits",
+    "MCRZ_unitary_matrix_0dot1_01234567_8_qubits",
     "MCPhase_unitary_matrix_pi_over_4_01_23_qubits",
     "MCPhase_unitary_matrix_pi_over_4_10_23_qubits",
     "MCPhase_unitary_matrix_1_over_4_02_13_qubits",
@@ -2644,6 +2653,36 @@ Parameters
 """
 MCRX_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCRX_unitary_matrix_pi_over_4_0_23_qubits.npy")
 
+""" circuit.MCRX() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5]
+`target_qubits` = [6]
+"""
+MCRX_unitary_matrix_0dot1_012345_6_qubits = np.load(prefix + "MCRX_unitary_matrix_0dot1_012345_6_qubits.npy")
+
+""" circuit.MCRX() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5, 6]
+`target_qubits` = [7]
+"""
+MCRX_unitary_matrix_0dot1_0123456_7_qubits = np.load(prefix + "MCRX_unitary_matrix_0dot1_0123456_7_qubits.npy")
+
+""" circuit.MCRX() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5, 6, 7]
+`target_qubits` = [8]
+"""
+MCRX_unitary_matrix_0dot1_01234567_8_qubits = np.load(prefix + "MCRX_unitary_matrix_0dot1_01234567_8_qubits.npy")
+
 """ circuit.MCRY() tester
 
 Parameters
@@ -2754,6 +2793,36 @@ Parameters
 """
 MCRY_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCRY_unitary_matrix_pi_over_4_0_23_qubits.npy")
 
+""" circuit.MCRY() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5]
+`target_qubits` = [6]
+"""
+MCRY_unitary_matrix_0dot1_012345_6_qubits = np.load(prefix + "MCRY_unitary_matrix_0dot1_012345_6_qubits.npy")
+
+""" circuit.MCRY() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5, 6]
+`target_qubits` = [7]
+"""
+MCRY_unitary_matrix_0dot1_0123456_7_qubits = np.load(prefix + "MCRY_unitary_matrix_0dot1_0123456_7_qubits.npy")
+
+""" circuit.MCRY() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5, 6, 7]
+`target_qubits` = [8]
+"""
+MCRY_unitary_matrix_0dot1_01234567_8_qubits = np.load(prefix + "MCRY_unitary_matrix_0dot1_01234567_8_qubits.npy")
+
 """ circuit.MCRZ() tester
 
 Parameters
@@ -2863,6 +2932,36 @@ Parameters
 `target_qubits` = [2, 3]
 """
 MCRZ_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCRZ_unitary_matrix_pi_over_4_0_23_qubits.npy")
+
+""" circuit.MCRZ() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5]
+`target_qubits` = [6]
+"""
+MCRZ_unitary_matrix_0dot1_012345_6_qubits = np.load(prefix + "MCRZ_unitary_matrix_0dot1_012345_6_qubits.npy")
+
+""" circuit.MCRZ() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5, 6]
+`target_qubits` = [7]
+"""
+MCRZ_unitary_matrix_0dot1_0123456_7_qubits = np.load(prefix + "MCRZ_unitary_matrix_0dot1_0123456_7_qubits.npy")
+
+""" circuit.MCRZ() tester
+
+Parameters
+----------
+`angle` = 0.1
+`control_qubits` = [0, 1, 2, 3, 4, 5, 6, 7]
+`target_qubits` = [8]
+"""
+MCRZ_unitary_matrix_0dot1_01234567_8_qubits = np.load(prefix + "MCRZ_unitary_matrix_0dot1_01234567_8_qubits.npy")
 
 """ circuit.MCPhase() tester
 

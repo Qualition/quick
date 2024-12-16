@@ -14,8 +14,10 @@
 
 __all__ = [
     "Optimizer",
+    "QiskitTranspiler",
     "TKET2Optimizer"
 ]
 
 from qickit.optimizer.optimizer import Optimizer
+from qickit.optimizer.qiskit_transpiler import QiskitTranspiler
 from qickit.optimizer.tket2optimizer import TKET2Optimizer

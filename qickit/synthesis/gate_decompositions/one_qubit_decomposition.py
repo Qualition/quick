@@ -43,9 +43,16 @@ class OneQubitDecomposition(UnitaryPreparation):
 
     Parameters
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[qickit.circuit.Circuit]
         The quantum circuit framework.
     `basis` : Literal["zyz", "u3"], optional, default="u3"
+        The basis for the decomposition.
+
+    Attributes
+    ----------
+    `output_framework` : type[qickit.circuit.Circuit]
+        The quantum circuit framework.
+    `basis` : Literal["zyz", "u3"]
         The basis for the decomposition.
 
     Raises

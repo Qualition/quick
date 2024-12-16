@@ -13,6 +13,7 @@
 # limitations under the License.
 
 __all__ = [
+    "dag",
     "gate_matrix",
     "from_framework",
     "Circuit",
@@ -30,3 +31,4 @@ from qickit.circuit.cirqcircuit import CirqCircuit
 from qickit.circuit.pennylanecircuit import PennylaneCircuit
 from qickit.circuit.tketcircuit import TKETCircuit
 import qickit.circuit.from_framework as from_framework
+import qickit.circuit.dag as dag
