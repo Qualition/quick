@@ -14,8 +14,7 @@
 
 ### Prerequisites
 
-- python 3.11.9
-- Ubuntu OS
+- python 3.10, 3.11, 3.12
 
 ### Quick Installation
 
@@ -41,8 +40,6 @@ The `/notebooks` directory contains pedagogical material for utilizing `qickit`:
 : This notebook demonstrates how to prepare arbitrary statevectors and unitary operators to quantum circuits using exact encoding schema.
 - [`Running Quantum Circuits`](https://github.com/Qualition/QICKIT/blob/main/notebooks/Running%20Quantum%20Circuits.ipynb)
 : This notebook demonstrates the different backends available for running circuits, ranging from simulators to QPUs.
-- [`Using Bra-Ket Interface`](https://github.com/Qualition/QICKIT/blob/main/notebooks/Using%20Bra-Ket%20Interface.ipynb)
-: This notebook demonstrates how the Bra-Ket interface is used for performing quantum computing.
 
 ## Testing
 
