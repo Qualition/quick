@@ -1515,52 +1515,6 @@ class Template(ABC):
         """
 
     @abstractmethod
-    def test_remove_measurement(self) -> None:
-        """ Test the removal of measurement gate.
-        """
-
-    @abstractmethod
-    def test_qubit_out_of_range(self) -> None:
-        """ Test the error raised when the qubit index is out of range.
-        """
-
-    @abstractmethod
-    def test_control_out_of_range(self) -> None:
-        """ Test the error raised when the control index is out of range.
-        """
-
-    @abstractmethod
-    def test_target_out_of_range(self) -> None:
-        """ Test the error raised when the target index is out of range.
-        """
-
-    @abstractmethod
-    def test_initialize(
-            self,
-            num_qubits: int
-        ) -> None:
-        """ Test the initialization of the state.
-
-        Parameters
-        ----------
-        `num_qubits`: int
-            The number of qubits in the statevector.
-        """
-
-    @abstractmethod
-    def test_unitary(
-            self,
-            num_qubits: int
-        ) -> None:
-        """ Test the unitary gate.
-
-        Parameters
-        ----------
-        `num_qubits`: int
-            The number of qubits in the operator.
-        """
-
-    @abstractmethod
     def test_get_statevector(self) -> None:
         """ Test the `circuit.get_statevector()` operation.
         """
@@ -1578,64 +1532,4 @@ class Template(ABC):
     @abstractmethod
     def test_get_counts(self) -> None:
         """ Test the `circuit.get_counts()` operation.
-        """
-
-    @abstractmethod
-    def test_get_global_phase(self) -> None:
-        """ Test the `circuit.get_global_phase()` operation.
-        """
-
-    @abstractmethod
-    def test_vertical_reverse(self) -> None:
-        """ Test the vertical reverse operation.
-        """
-
-    @abstractmethod
-    def test_horizontal_reverse(self) -> None:
-        """ Test the horizontal reverse operation.
-        """
-
-    @abstractmethod
-    def test_add(self) -> None:
-        """ Test the addition operation.
-        """
-
-    @abstractmethod
-    def test_add_fail(self) -> None:
-        """ Test the failure of the addition operation.
-        """
-
-    @abstractmethod
-    def test_transpile(self) -> None:
-        """ Test the transpile operation.
-        """
-
-    @abstractmethod
-    def test_get_depth(self) -> None:
-        """ Test the `circuit.get_depth()` operation.
-        """
-
-    @abstractmethod
-    def test_get_width(self) -> None:
-        """ Test the `circuit.get_width()` operation.
-        """
-
-    @abstractmethod
-    def test_compress(self) -> None:
-        """ Test the compress operation.
-        """
-
-    @abstractmethod
-    def test_compress_fail(self) -> None:
-        """ Test the failure of the compress operation.
-        """
-
-    @abstractmethod
-    def test_change_mapping(self) -> None:
-        """ Test the change_mapping operation.
-        """
-
-    @abstractmethod
-    def test_reset(self) -> None:
-        """ Test the reset operation.
         """

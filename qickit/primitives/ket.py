@@ -274,24 +274,23 @@ class Ket:
         -----
         >>> ket.to_ket(data)
         """
-        match data.ndim:
-            case 0:
+        if data.ndim == 0:
+            raise ValueError("Cannot convert a scalar to a ket.")
+        elif data.ndim == 1:
+            if data.shape[0] == 1:
                 raise ValueError("Cannot convert a scalar to a ket.")
-            case 1:
+            else:
+                self.data = data.reshape(-1, 1)
+        elif data.ndim == 2:
+            if data.shape[1] == 1:
                 if data.shape[0] == 1:
                     raise ValueError("Cannot convert a scalar to a ket.")
                 else:
-                    self.data = data.reshape(-1, 1)
-            case 2:
-                if data.shape[1] == 1:
-                    if data.shape[0] == 1:
-                        raise ValueError("Cannot convert a scalar to a ket.")
-                    else:
-                        self.data = data
-                else:
-                    raise ValueError("Cannot convert an operator to a ket.")
-            case _:
-                raise ValueError("Cannot convert a N-dimensional array to a ket.")
+                    self.data = data
+            else:
+                raise ValueError("Cannot convert an operator to a ket.")
+        else:
+            raise ValueError("Cannot convert a N-dimensional array to a ket.")
 
         self.data = self.data.astype(np.complex128)
 
@@ -388,14 +387,16 @@ class Ket:
         NotImplementedError
             - If the `other` type is incompatible.
         """
-        match other:
-            case SupportsFloat() | complex():
-                pass
-            case bra.Bra() | Ket():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot contract two incompatible vectors.")
-            case _:
-                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return
+        elif isinstance(other, bra.Bra):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot contract two incompatible vectors.")
+        elif isinstance(other, Ket):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot contract two incompatible vectors.")
+        else:
+            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __eq__(
             self,
@@ -543,19 +544,18 @@ class Ket:
         >>> ket2 = Ket(np.array([1+0j, 0+0j]))
         >>> ket3 = ket1 * ket2
         """
-        match other:
-            case SupportsFloat() | complex():
-                return Ket((self.data * other).astype(np.complex128)) # type: ignore
-            case bra.Bra():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot contract two incompatible vectors.")
-                return operator.Operator(np.outer(self.data, other.data.conj())) # type: ignore
-            case Ket():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot contract two incompatible vectors.")
-                return Ket(np.kron(self.data, other.data)) # type: ignore
-            case _:
-                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return Ket((self.data * other).astype(np.complex128)) # type: ignore
+        elif isinstance(other, bra.Bra):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot contract two incompatible vectors.")
+            return operator.Operator(np.outer(self.data, other.data.conj()))
+        elif isinstance(other, Ket):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot contract two incompatible vectors.")
+            return Ket(np.kron(self.data, other.data))
+        else:
+            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __rmul__(
             self,

@@ -43,10 +43,16 @@ The `/notebooks` directory contains pedagogical material for utilizing `qickit`:
 
 ## Testing
 
-Run all tests with the command:
+Run tests with the command:
 
 ```
 py -m pytest tests
+```
+
+To run all tests including slow ones, use:
+
+```
+py -m pytest tests --runslow
 ```
 
 ## Contribution Guidelines

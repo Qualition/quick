@@ -143,17 +143,16 @@ class Operator:
         NotImplementedError
             - If the `other` type is incompatible.
         """
-        match other:
-            case SupportsFloat() | complex():
-                pass
-            case ket.Ket():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot multiply an operator with an incompatible ket.")
-            case Operator():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot multiply two incompatible operators.")
-            case _:
-                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return
+        elif isinstance(other, ket.Ket):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot multiply an operator with an incompatible ket.")
+        elif isinstance(other, Operator):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot multiply two incompatible operators.")
+        else:
+            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     @overload
     def __mul__(
@@ -228,19 +227,18 @@ class Operator:
         ...                       [0+0j, 1+0j]])
         >>> operator1 * operator2
         """
-        match other:
-            case SupportsFloat() | complex():
-                return Operator((self.data * other).astype(np.complex128)) # type: ignore
-            case ket.Ket():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot multiply an operator with an incompatible ket.")
-                return ket.Ket((self.data @ other.data).astype(np.complex128)) # type: ignore
-            case Operator():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot multiply two incompatible operators.")
-                return Operator(self.data @ other.data)
-            case _:
-                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return Operator((self.data * other).astype(np.complex128)) # type: ignore
+        elif isinstance(other, ket.Ket):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot multiply an operator with an incompatible ket.")
+            return ket.Ket((self.data @ other.data).astype(np.complex128)) # type: ignore
+        elif isinstance(other, Operator):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot multiply two incompatible operators.")
+            return Operator(self.data @ other.data)
+        else:
+            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __rmul__(
             self,

@@ -70,6 +70,21 @@ QUBIT_KEYS = frozenset([
 QUBIT_LIST_KEYS = frozenset(["qubit_indices", "control_indices", "target_indices"])
 ANGLE_KEYS = frozenset(["angle", "angles"])
 ALL_QUBIT_KEYS = QUBIT_KEYS.union(QUBIT_LIST_KEYS)
+
+# Define the mapping for controlled operation
+CONTROL_MAPPING = {
+    "qubit_indices": "target_indices",
+    "control_index": "control_indices",
+    "control_indices": "control_indices",
+    "target_index": "target_indices",
+    "target_indices": "target_indices",
+    "first_qubit_index": "first_target_index",
+    "second_qubit_index": "second_target_index",
+    "first_target_index": "first_target_index",
+    "second_target_index": "second_target_index"
+}
+
+# List of 1Q gates wrapped by individual frameworks
 GATES = Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase", "U3"]
 
 
@@ -151,15 +166,14 @@ class Circuit(ABC):
         `value` : int | float | list
             The converted value.
         """
-        match value:
-            case range() | tuple() | Sequence():
-                value = list(value)
-            case np.ndarray():
-                value = value.tolist()
-            case SupportsIndex():
-                value = int(value)
-            case SupportsFloat():
-                value = float(value)
+        if isinstance(value, (range, tuple, Sequence)):
+            value = list(value)
+        elif isinstance(value, np.ndarray):
+            value = value.tolist()
+        elif isinstance(value, SupportsIndex):
+            value = int(value)
+        elif isinstance(value, SupportsFloat):
+            value = float(value)
         return value
 
     def _validate_qubit_index(
@@ -189,34 +203,33 @@ class Circuit(ABC):
             - Qubit index out of range.
         """
         if name in ALL_QUBIT_KEYS:
-            match value:
-                case list():
-                    if len(value) == 1:
-                        value = value[0]
+            if isinstance(value, list):
+                if len(value) == 1:
+                    value = value[0]
 
-                        if not isinstance(value, int):
-                            raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
+                    if not isinstance(value, int):
+                        raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
 
-                        if value >= self.num_qubits or value < -self.num_qubits:
-                            raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
-
-                        value = value if value >= 0 else self.num_qubits + value
-
-                    else:
-                        for i, index in enumerate(value):
-                            if not isinstance(index, int):
-                                raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
-
-                            if index >= self.num_qubits or index < -self.num_qubits:
-                                raise IndexError(f"Qubit index {index} out of range {self.num_qubits-1}.")
-
-                            value[i] = index if index >= 0 else self.num_qubits + index
-
-                case int():
                     if value >= self.num_qubits or value < -self.num_qubits:
                         raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
 
                     value = value if value >= 0 else self.num_qubits + value
+
+                else:
+                    for i, index in enumerate(value):
+                        if not isinstance(index, int):
+                            raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
+
+                        if index >= self.num_qubits or index < -self.num_qubits:
+                            raise IndexError(f"Qubit index {index} out of range {self.num_qubits-1}.")
+
+                        value[i] = index if index >= 0 else self.num_qubits + index
+
+            elif isinstance(value, int):
+                if value >= self.num_qubits or value < -self.num_qubits:
+                    raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
+
+                value = value if value >= 0 else self.num_qubits + value
 
         return value
 
@@ -246,22 +259,22 @@ class Circuit(ABC):
             - Angle must be a number.
         """
         if name in ANGLE_KEYS:
-            match value:
-                case list():
-                    for angle in value:
-                        if not isinstance(angle, (int, float)):
-                            raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
-                        if abs(angle) <= EPSILON or abs(angle % (2 * np.pi)) <= EPSILON:
-                            angle = 0
-                    if all(angle == 0 for angle in value):
-                        # Indicate no operation needed
-                        return None
-                case _:
-                    if not isinstance(value, (int, float)):
-                        raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
-                    if abs(value) <= EPSILON or abs(value % (2 * np.pi)) <= EPSILON:
-                        # Indicate no operation needed
-                        return None
+            if isinstance(value, list):
+                for angle in value:
+                    if not isinstance(angle, (int, float)):
+                        raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
+                    if abs(angle) <= EPSILON or abs(angle % (2 * np.pi)) <= EPSILON:
+                        angle = 0
+
+                if all(angle == 0 for angle in value):
+                    # Indicate no operation needed
+                    return None
+            else:
+                if not isinstance(value, (int, float)):
+                    raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
+                if abs(value) <= EPSILON or abs(value % (2 * np.pi)) <= EPSILON:
+                    # Indicate no operation needed
+                    return None
 
         return value
 
@@ -842,11 +855,13 @@ class Circuit(ABC):
         >>> circuit.XPow(power=0.5, qubit_indices=[0, 1])
         >>> circuit.XPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
         """
+        gate = self.process_gate_params(gate=self.XPow.__name__, params=locals())
 
-        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+        with self.decompose_last(gate):
+            qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
-        self.RX(power * np.pi, qubit_indices)
-        self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
+            self.RX(power * np.pi, qubit_indices)
+            self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
 
     def YPow(
             self,
@@ -884,10 +899,13 @@ class Circuit(ABC):
         >>> circuit.YPow(power=0.5, qubit_indices=[0, 1])
         >>> circuit.YPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
         """
-        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+        gate = self.process_gate_params(gate=self.YPow.__name__, params=locals())
 
-        self.RY(power * np.pi, qubit_indices)
-        self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
+        with self.decompose_last(gate):
+            qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
+            self.RY(power * np.pi, qubit_indices)
+            self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
 
     def ZPow(
             self,
@@ -925,10 +943,13 @@ class Circuit(ABC):
         >>> circuit.ZPow(power=0.5, qubit_indices=[0, 1])
         >>> circuit.ZPow(power=0.5, global_shift=0.5, qubit_indices=[0, 1])
         """
-        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+        gate = self.process_gate_params(gate=self.ZPow.__name__, params=locals())
 
-        self.RZ(power * np.pi, qubit_indices)
-        self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
+        with self.decompose_last(gate):
+            qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
+
+            self.RZ(power * np.pi, qubit_indices)
+            self.GlobalPhase(power * np.pi * (global_shift + 0.5) * len(qubit_indices))
 
     def RXX(
             self,
@@ -959,11 +980,14 @@ class Circuit(ABC):
         -----
         >>> circuit.RXX(first_qubit_index=0, second_qubit_index=1, angle=np.pi/2)
         """
-        self.H([first_qubit_index, second_qubit_index])
-        self.CX(first_qubit_index, second_qubit_index)
-        self.RZ(angle, second_qubit_index)
-        self.CX(first_qubit_index, second_qubit_index)
-        self.H([first_qubit_index, second_qubit_index])
+        gate = self.process_gate_params(gate=self.RXX.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self.H([first_qubit_index, second_qubit_index])
+            self.CX(first_qubit_index, second_qubit_index)
+            self.RZ(angle, second_qubit_index)
+            self.CX(first_qubit_index, second_qubit_index)
+            self.H([first_qubit_index, second_qubit_index])
 
     def RYY(
             self,
@@ -994,13 +1018,16 @@ class Circuit(ABC):
         -----
         >>> circuit.RYY(first_qubit_index=0, second_qubit_index=1, angle=np.pi/2)
         """
-        self.RX(np.pi/2, first_qubit_index)
-        self.RX(np.pi/2, second_qubit_index)
-        self.CX(first_qubit_index, second_qubit_index)
-        self.RZ(angle, second_qubit_index)
-        self.CX(first_qubit_index, second_qubit_index)
-        self.RX(-np.pi/2, first_qubit_index)
-        self.RX(-np.pi/2, second_qubit_index)
+        gate = self.process_gate_params(gate=self.RYY.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self.RX(np.pi/2, first_qubit_index)
+            self.RX(np.pi/2, second_qubit_index)
+            self.CX(first_qubit_index, second_qubit_index)
+            self.RZ(angle, second_qubit_index)
+            self.CX(first_qubit_index, second_qubit_index)
+            self.RX(-np.pi/2, first_qubit_index)
+            self.RX(-np.pi/2, second_qubit_index)
 
     def RZZ(
             self,
@@ -1031,9 +1058,12 @@ class Circuit(ABC):
         -----
         >>> circuit.RZZ(first_qubit_index=0, second_qubit_index=1, angle=np.pi/2)
         """
-        self.CX(first_qubit_index, second_qubit_index)
-        self.RZ(angle, second_qubit_index)
-        self.CX(first_qubit_index, second_qubit_index)
+        gate = self.process_gate_params(gate=self.RZZ.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self.CX(first_qubit_index, second_qubit_index)
+            self.RZ(angle, second_qubit_index)
+            self.CX(first_qubit_index, second_qubit_index)
 
     def U3(
             self,
@@ -1551,12 +1581,15 @@ class Circuit(ABC):
         >>> circuit.CXPow(power=0.5, control_index=0, target_index=1)
         >>> circuit.CXPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
         """
-        self.CRX(power * np.pi, control_index, target_index)
+        gate = self.process_gate_params(gate=self.CXPow.__name__, params=locals())
 
-        # Apply the relative phase correction to the control index
-        # to account for the global phase shift created by the target
-        # gate
-        self.Phase(power * np.pi * (global_shift + 0.5), control_index)
+        with self.decompose_last(gate):
+            self.CRX(power * np.pi, control_index, target_index)
+
+            # Apply the relative phase correction to the control index
+            # to account for the global phase shift created by the target
+            # gate
+            self.Phase(power * np.pi * (global_shift + 0.5), control_index)
 
     def CYPow(
             self,
@@ -1596,12 +1629,15 @@ class Circuit(ABC):
         >>> circuit.CYPow(power=0.5, control_index=0, target_index=1)
         >>> circuit.CYPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
         """
-        self.CRY(power * np.pi, control_index, target_index)
+        gate = self.process_gate_params(gate=self.CYPow.__name__, params=locals())
 
-        # Apply the relative phase correction to the control index
-        # to account for the global phase shift created by the target
-        # gate
-        self.Phase(power * np.pi * (global_shift + 0.5), control_index)
+        with self.decompose_last(gate):
+            self.CRY(power * np.pi, control_index, target_index)
+
+            # Apply the relative phase correction to the control index
+            # to account for the global phase shift created by the target
+            # gate
+            self.Phase(power * np.pi * (global_shift + 0.5), control_index)
 
     def CZPow(
             self,
@@ -1641,12 +1677,15 @@ class Circuit(ABC):
         >>> circuit.CZPow(power=0.5, control_index=0, target_index=1)
         >>> circuit.CZPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
         """
-        self.CRZ(power * np.pi, control_index, target_index)
+        gate = self.process_gate_params(gate=self.CZPow.__name__, params=locals())
 
-        # Apply the relative phase correction to the control index
-        # to account for the global phase shift created by the target
-        # gate
-        self.Phase(power * np.pi * (global_shift + 0.5), control_index)
+        with self.decompose_last(gate):
+            self.CRZ(power * np.pi, control_index, target_index)
+
+            # Apply the relative phase correction to the control index
+            # to account for the global phase shift created by the target
+            # gate
+            self.Phase(power * np.pi * (global_shift + 0.5), control_index)
 
     def CRXX(
             self,
@@ -2348,23 +2387,26 @@ class Circuit(ABC):
         >>> circuit.MCXPow(power=0.5, control_indices=0, target_indices=1)
         >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
         """
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        gate = self.process_gate_params(gate=self.MCXPow.__name__, params=locals())
 
-        for target_index in target_indices:
-            self.MCRX(power * np.pi, control_indices=control_indices, target_indices=target_index)
+        with self.decompose_last(gate):
+            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+            target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-            # Apply the relative phase correction to the control indices
-            # to account for the global phase shift created by the target
-            # gate
-            if len(control_indices) > 1:
-                self.MCPhase(
-                    power * np.pi * (global_shift + 0.5),
-                    control_indices=control_indices[:-1],
-                    target_indices=control_indices[-1]
-                )
-            else:
-                self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
+            for target_index in target_indices:
+                self.MCRX(power * np.pi, control_indices=control_indices, target_indices=target_index)
+
+                # Apply the relative phase correction to the control indices
+                # to account for the global phase shift created by the target
+                # gate
+                if len(control_indices) > 1:
+                    self.MCPhase(
+                        power * np.pi * (global_shift + 0.5),
+                        control_indices=control_indices[:-1],
+                        target_indices=control_indices[-1]
+                    )
+                else:
+                    self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
 
     def MCYPow(
             self,
@@ -2404,23 +2446,26 @@ class Circuit(ABC):
         >>> circuit.MCYPow(power=0.5, control_indices=0, target_indices=1)
         >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
         """
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        gate = self.process_gate_params(gate=self.MCYPow.__name__, params=locals())
 
-        for target_index in target_indices:
-            self.MCRY(power * np.pi, control_indices=control_indices, target_indices=target_index)
+        with self.decompose_last(gate):
+            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+            target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-            # Apply the relative phase correction to the control indices
-            # to account for the global phase shift created by the target
-            # gate
-            if len(control_indices) > 1:
-                self.MCPhase(
-                    power * np.pi * (global_shift + 0.5),
-                    control_indices=control_indices[:-1],
-                    target_indices=control_indices[-1]
-                )
-            else:
-                self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
+            for target_index in target_indices:
+                self.MCRY(power * np.pi, control_indices=control_indices, target_indices=target_index)
+
+                # Apply the relative phase correction to the control indices
+                # to account for the global phase shift created by the target
+                # gate
+                if len(control_indices) > 1:
+                    self.MCPhase(
+                        power * np.pi * (global_shift + 0.5),
+                        control_indices=control_indices[:-1],
+                        target_indices=control_indices[-1]
+                    )
+                else:
+                    self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
 
     def MCZPow(
             self,
@@ -2460,23 +2505,26 @@ class Circuit(ABC):
         >>> circuit.MCZPow(power=0.5, control_indices=0, target_indices=1)
         >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
         """
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        gate = self.process_gate_params(gate=self.MCZPow.__name__, params=locals())
 
-        for target_index in target_indices:
-            self.MCRZ(power * np.pi, control_indices=control_indices, target_indices=target_index)
+        with self.decompose_last(gate):
+            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+            target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-            # Apply the relative phase correction to the control indices
-            # to account for the global phase shift created by the target
-            # gate
-            if len(control_indices) > 1:
-                self.MCPhase(
-                    power * np.pi * (global_shift + 0.5),
-                    control_indices=control_indices[:-1],
-                    target_indices=control_indices[-1]
-                )
-            else:
-                self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
+            for target_index in target_indices:
+                self.MCRZ(power * np.pi, control_indices=control_indices, target_indices=target_index)
+
+                # Apply the relative phase correction to the control indices
+                # to account for the global phase shift created by the target
+                # gate
+                if len(control_indices) > 1:
+                    self.MCPhase(
+                        power * np.pi * (global_shift + 0.5),
+                        control_indices=control_indices[:-1],
+                        target_indices=control_indices[-1]
+                    )
+                else:
+                    self.Phase(power * np.pi * (global_shift + 0.5), control_indices[0])
 
     def MCRXX(
             self,
@@ -2513,21 +2561,24 @@ class Circuit(ABC):
         >>> circuit.MCRXX(angle=np.pi/2, control_indices=[0, 1],
         ...               first_target_index=2, second_target_index=3)
         """
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        gate = self.process_gate_params(gate=self.MCRXX.__name__, params=locals())
 
-        self.MCH(control_indices=control_indices, target_indices=first_target_index)
-        self.MCH(control_indices=control_indices, target_indices=second_target_index)
-        self.MCX(
-            control_indices=list(control_indices) + [first_target_index],
-            target_indices=second_target_index
-        )
-        self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
-        self.MCX(
-            control_indices=list(control_indices) + [first_target_index],
-            target_indices=second_target_index
-        )
-        self.MCH(control_indices=control_indices, target_indices=first_target_index)
-        self.MCH(control_indices=control_indices, target_indices=second_target_index)
+        with self.decompose_last(gate):
+            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+            self.MCH(control_indices=control_indices, target_indices=first_target_index)
+            self.MCH(control_indices=control_indices, target_indices=second_target_index)
+            self.MCX(
+                control_indices=list(control_indices) + [first_target_index],
+                target_indices=second_target_index
+            )
+            self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+            self.MCX(
+                control_indices=list(control_indices) + [first_target_index],
+                target_indices=second_target_index
+            )
+            self.MCH(control_indices=control_indices, target_indices=first_target_index)
+            self.MCH(control_indices=control_indices, target_indices=second_target_index)
 
     def MCRYY(
             self,
@@ -2564,37 +2615,40 @@ class Circuit(ABC):
         >>> circuit.MCRYY(angle=np.pi/2, control_indices=[0, 1],
         ...               first_target_index=2, second_target_index=3)
         """
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        gate = self.process_gate_params(gate=self.MCRYY.__name__, params=locals())
 
-        self.MCRX(
-            angle=np.pi/2,
-            control_indices=control_indices,
-            target_indices=first_target_index
-        )
-        self.MCRX(
-            angle=np.pi/2,
-            control_indices=control_indices,
-            target_indices=second_target_index
-        )
-        self.MCX(
-            control_indices=list(control_indices) + [first_target_index],
-            target_indices=second_target_index
-        )
-        self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
-        self.MCX(
-            control_indices=list(control_indices) + [first_target_index],
-            target_indices=second_target_index
-        )
-        self.MCRX(
-            angle=-np.pi/2,
-            control_indices=control_indices,
-            target_indices=first_target_index
-        )
-        self.MCRX(
-            angle=-np.pi/2,
-            control_indices=control_indices,
-            target_indices=second_target_index
-        )
+        with self.decompose_last(gate):
+            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+            self.MCRX(
+                angle=np.pi/2,
+                control_indices=control_indices,
+                target_indices=first_target_index
+            )
+            self.MCRX(
+                angle=np.pi/2,
+                control_indices=control_indices,
+                target_indices=second_target_index
+            )
+            self.MCX(
+                control_indices=list(control_indices) + [first_target_index],
+                target_indices=second_target_index
+            )
+            self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+            self.MCX(
+                control_indices=list(control_indices) + [first_target_index],
+                target_indices=second_target_index
+            )
+            self.MCRX(
+                angle=-np.pi/2,
+                control_indices=control_indices,
+                target_indices=first_target_index
+            )
+            self.MCRX(
+                angle=-np.pi/2,
+                control_indices=control_indices,
+                target_indices=second_target_index
+            )
 
     def MCRZZ(
             self,
@@ -2631,17 +2685,20 @@ class Circuit(ABC):
         >>> circuit.MCRZZ(angle=np.pi/2, control_indices=[0, 1],
         ...               first_target_index=2, second_target_index=3)
         """
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        gate = self.process_gate_params(gate=self.MCRZZ.__name__, params=locals())
 
-        self.MCX(
-            control_indices=list(control_indices) + [first_target_index],
-            target_indices=second_target_index
-        )
-        self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
-        self.MCX(
-            control_indices=list(control_indices) + [first_target_index],
-            target_indices=second_target_index
-        )
+        with self.decompose_last(gate):
+            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+            self.MCX(
+                control_indices=list(control_indices) + [first_target_index],
+                target_indices=second_target_index
+            )
+            self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+            self.MCX(
+                control_indices=list(control_indices) + [first_target_index],
+                target_indices=second_target_index
+            )
 
     def MCU3(
             self,
@@ -2857,7 +2914,10 @@ class Circuit(ABC):
         -----
         >>> circuit.UCRX(angles=[np.pi/2, np.pi/2], control_indices=0, target_index=1)
         """
-        self.UCPauliRot(angles, "X", control_indices, target_index)
+        gate = self.process_gate_params(gate=self.UCRX.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self.UCPauliRot(angles, "X", control_indices, target_index)
 
     def UCRY(
             self,
@@ -2890,7 +2950,10 @@ class Circuit(ABC):
         -----
         >>> circuit.UCRY(angles=[np.pi/2, np.pi/2], control_indices=0, target_index=1)
         """
-        self.UCPauliRot(angles, "Y", control_indices, target_index)
+        gate = self.process_gate_params(gate=self.UCRY.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self.UCPauliRot(angles, "Y", control_indices, target_index)
 
     def UCRZ(
             self,
@@ -2923,7 +2986,10 @@ class Circuit(ABC):
         -----
         >>> circuit.UCRZ(angles=[np.pi/2, np.pi/2], control_indices=0, target_index=1)
         """
-        self.UCPauliRot(angles, "Z", control_indices, target_index)
+        gate = self.process_gate_params(gate=self.UCRZ.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self.UCPauliRot(angles, "Z", control_indices, target_index)
 
     def Diagonal(
             self,
@@ -3396,6 +3462,8 @@ class Circuit(ABC):
                     operation["angle"] = -operation["angle"]
                 elif "angles" in operation:
                     operation["angles"] = [-operation["angles"][0], -operation["angles"][2], -operation["angles"][1]]
+                elif "power" in operation:
+                    operation["power"] = -operation["power"]
                 elif operation["gate"] in ["Sdg", "Tdg", "CSdg", "CTdg", "MCSdg", "MCTdg"]:
                     operation["gate"] = operation["gate"].replace("dg", "")
                 elif operation["gate"] in ["S", "T", "CS", "CT", "MCS", "MCT"]:
@@ -3447,11 +3515,10 @@ class Circuit(ABC):
 
         for operation in circuit_log:
             for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
-                match operation[key]:
-                    case Sequence():
-                        operation[key] = [qubit_indices[index] for index in operation[key]] # type: ignore
-                    case _:
-                        operation[key] = list(qubit_indices)[operation[key]] # type: ignore
+                if isinstance(operation[key], Sequence):
+                    operation[key] = [qubit_indices[index] for index in operation[key]] # type: ignore
+                else:
+                    operation[key] = list(qubit_indices)[operation[key]] # type: ignore
 
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit_log:
@@ -3941,8 +4008,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            - Qubit indices must be a collection.
-            - All qubit indices must be integers.
+            - Qubit indices must be a collection of integers.
         ValueError
             - The number of qubits must match the number of qubits in the circuit.
 
@@ -3950,17 +4016,13 @@ class Circuit(ABC):
         -----
         >>> circuit.change_mapping(qubit_indices=[1, 0])
         """
-        match qubit_indices:
-            case Sequence():
-                qubit_indices = list(qubit_indices)
-            case np.ndarray():
-                qubit_indices = qubit_indices.tolist()
-
-        if not isinstance(qubit_indices, Sequence):
-            raise TypeError("Qubit indices must be a collection.")
-
         if not all(isinstance(index, int) for index in qubit_indices):
-            raise TypeError("All qubit indices must be integers.")
+            raise TypeError("Qubit indices must be a collection of integers.")
+
+        if isinstance(qubit_indices, Sequence):
+            qubit_indices = list(qubit_indices)
+        elif isinstance(qubit_indices, np.ndarray):
+            qubit_indices = qubit_indices.tolist()
 
         if self.num_qubits != len(qubit_indices):
             raise ValueError("The number of qubits must match the number of qubits in the circuit.")
@@ -3968,11 +4030,10 @@ class Circuit(ABC):
         # Update the qubit indices
         for operation in self.circuit_log:
             for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
-                match operation[key]:
-                    case list():
-                        operation[key] = [qubit_indices[index] for index in operation[key]]
-                    case _:
-                        operation[key] = qubit_indices[operation[key]]
+                if isinstance(operation[key], list):
+                    operation[key] = [qubit_indices[index] for index in operation[key]]
+                else:
+                    operation[key] = qubit_indices[operation[key]]
 
         self.update()
 
@@ -4058,19 +4119,6 @@ class Circuit(ABC):
         # Define a controlled circuit
         controlled_circuit = type(circuit)(num_qubits=circuit.num_qubits + num_controls)
 
-        # Define the mapping for the keys
-        control_mapping = {
-            "qubit_indices": "target_indices",
-            "control_index": "control_indices",
-            "control_indices": "control_indices",
-            "target_index": "target_indices",
-            "target_indices": "target_indices",
-            "first_qubit_index": "first_target_index",
-            "second_qubit_index": "second_target_index",
-            "first_target_index": "first_target_index",
-            "second_target_index": "second_target_index"
-        }
-
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit.circuit_log:
             # Extract gate name and remove it from gate_info for kwargs
@@ -4087,7 +4135,7 @@ class Circuit(ABC):
             for key in set(gate_info.keys()).intersection(ALL_QUBIT_KEYS):
                 current_indices = gate_info.pop(key)
 
-                gate_info[control_mapping[key]] = (
+                gate_info[CONTROL_MAPPING[key]] = (
                     current_indices + num_controls if isinstance(current_indices, int)
                     else [index + num_controls for index in current_indices]
                 )
@@ -4570,6 +4618,31 @@ class Circuit(ABC):
             repr_dict.append(gate)
 
         return f"{self.__class__.__name__}(num_qubits={self.num_qubits}, circuit_log={repr_dict})"
+
+    def generate_calls(self) -> str:
+        """ Generate the method calls by the circuit for
+        reproducing the circuit. This method uses the circuit
+        log to generate the method calls.
+
+        Returns
+        -------
+        `calls` : str
+            The method calls by the circuit.
+        """
+        calls = ""
+
+        repr_dict = []
+
+        for operation in self.circuit_log:
+            gate = {k:v for k,v in operation.items() if k != "definition"}
+            repr_dict.append(gate)
+
+        for operation in repr_dict:
+            gate = operation["gate"]
+            args = ", ".join([f"{key}={value}" for key, value in operation.items() if key != "gate"])
+            calls += f"circuit.{gate}({args})\n"
+
+        return calls
 
     @classmethod
     def __subclasscheck__(cls, C) -> bool:

@@ -14,7 +14,7 @@
 
 __all__ = [
     "CIRCUIT_FRAMEWORKS",
-    "test_from_circuit",
+    "TestCircuitBase",
     "TestControlled",
     "Template",
     "TestCirqCircuit",
@@ -26,10 +26,6 @@ __all__ = [
     "test_qft_swap_no_inverse",
     "test_qft_no_swap_inverse",
     "test_qft_swap_inverse",
-    "test_eq",
-    "test_len",
-    "test_str",
-    "test_repr"
 ]
 
 from qickit.circuit import CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
@@ -42,14 +38,13 @@ CIRCUIT_FRAMEWORKS = [
     TKETCircuit
 ]
 
-from tests.circuit.test_circuit_convert import test_from_circuit
+from tests.circuit.test_circuit_base import TestCircuitBase
 from tests.circuit.test_circuit_to_controlled import TestControlled
 from tests.circuit.test_circuit import Template
 from tests.circuit.test_cirq_circuit import TestCirqCircuit
 from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit
 from tests.circuit.test_qiskit_circuit import TestQiskitCircuit
 from tests.circuit.test_tket_circuit import TestTKETCircuit
-from tests.circuit.test_circuit_dunder_methods import test_eq, test_len, test_str, test_repr
 from tests.circuit.test_qft_circuit import (
     test_qft_no_swap_no_inverse,
     test_qft_swap_no_inverse,

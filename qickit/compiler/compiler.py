@@ -187,9 +187,7 @@ class Compiler:
         return optimized_circuit
 
     @staticmethod
-    def _check_primitive(
-            primitive: PRIMITIVE
-        ) -> None:
+    def _check_primitive(primitive: PRIMITIVE) -> None:
         """ Check if the primitive object is valid.
 
         Parameters
@@ -241,9 +239,7 @@ class Compiler:
             raise ValueError("The number of qubits should be the same as the number of qubits required.")
 
     @staticmethod
-    def _check_primitives(
-            primitives: PRIMITIVES
-        ) -> None:
+    def _check_primitives(primitives: PRIMITIVES) -> None:
         """ Check if the primitives object is valid. The primitives object should be a list of
         tuples containing the primitive object and the qubits they need to be applied to.
         Furthermore, the list of qubits should be the same length as the number of qubits
@@ -289,20 +285,19 @@ class Compiler:
         """
         self._check_primitive(primitive)
 
-        match primitive:
-            case Bra() | Ket():
-                return self.state_preparation(primitive)
-            case Operator():
-                return self.unitary_preparation(primitive)
-            case np.ndarray():
-                if primitive.ndim == 1:
-                    return self.state_preparation(Ket(primitive))
-                else:
-                    return self.unitary_preparation(Operator(primitive))
+        if isinstance(primitive, (Bra, Ket)):
+            return self.state_preparation(primitive)
+        elif isinstance(primitive, Operator):
+            return self.unitary_preparation(primitive)
+        elif isinstance(primitive, np.ndarray):
+            if primitive.ndim == 1:
+                return self.state_preparation(Ket(primitive))
+            else:
+                return self.unitary_preparation(Operator(primitive))
 
     def compile(
-        self,
-        primitives: PRIMITIVE | PRIMITIVES
+            self,
+            primitives: PRIMITIVE | PRIMITIVES
         ) -> Circuit:
         """ Compile the primitives object into a circuit object.
 

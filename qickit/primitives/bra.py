@@ -272,26 +272,25 @@ class Bra:
         >>> data = np.array([1, 2, 3, 4])
         >>> to_bra(data)
         """
-        match data.ndim:
-            case 0:
+        if data.ndim == 0:
+            raise ValueError("Cannot convert a scalar to a bra.")
+        elif data.ndim == 1:
+            if data.shape[0] == 1:
                 raise ValueError("Cannot convert a scalar to a bra.")
-            case 1:
-                if data.shape[0] == 1:
+            else:
+                self.data = data
+                self.shape = self.data.shape
+        elif data.ndim == 2:
+            if data.shape[0] == 1:
+                if data.shape[1] == 1:
                     raise ValueError("Cannot convert a scalar to a bra.")
                 else:
-                    self.data = data
+                    self.data = data.reshape(1, -1)[0]
                     self.shape = self.data.shape
-            case 2:
-                if data.shape[0] == 1:
-                    if data.shape[1] == 1:
-                        raise ValueError("Cannot convert a scalar to a bra.")
-                    else:
-                        self.data: NDArray = data.reshape(1, -1)[0] # type: ignore
-                        self.shape = self.data.shape
-                else:
-                    raise ValueError("Cannot convert an operator to a bra.")
-            case _:
-                raise ValueError("Cannot convert a N-dimensional array to a bra.")
+            else:
+                raise ValueError("Cannot convert an operator to a bra.")
+        else:
+            raise ValueError("Cannot convert a N-dimensional array to a bra.")
 
         self.data = self.data.astype(np.complex128)
 
@@ -386,17 +385,16 @@ class Bra:
         NotImplementedError
             - If the `other` type is incompatible.
         """
-        match other:
-            case SupportsFloat() | complex():
-                pass
-            case ket.Ket():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot contract two incompatible vectors.")
-            case operator.Operator():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot multiply the bra with an incompatible operator.")
-            case _:
-                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return
+        elif isinstance(other, ket.Ket):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot contract two incompatible vectors.")
+        elif isinstance(other, operator.Operator):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot multiply two incompatible vectors.")
+        else:
+            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __eq__(
             self,
@@ -543,19 +541,18 @@ class Bra:
         ...                      [0+0j, 1+0j]])
         >>> bra * operator
         """
-        match other:
-            case SupportsFloat() | complex():
-                return Bra((self.data * other).astype(np.complex128)) # type: ignore
-            case ket.Ket():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot contract two incompatible vectors.")
-                return np.dot(self.data, other.data).flatten()[0]
-            case operator.Operator():
-                if self.num_qubits != other.num_qubits:
-                    raise ValueError("Cannot multiply two incompatible vectors.")
-                return Bra(self.data @ other.data)
-            case _:
-                raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
+        if isinstance(other, (SupportsFloat, complex)):
+            return Bra((self.data * other).astype(np.complex128)) # type: ignore
+        elif isinstance(other, ket.Ket):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot contract two incompatible vectors.")
+            return np.dot(self.data, other.data).flatten()[0]
+        elif isinstance(other, operator.Operator):
+            if self.num_qubits != other.num_qubits:
+                raise ValueError("Cannot multiply two incompatible vectors.")
+            return Bra(self.data @ other.data)
+        else:
+            raise NotImplementedError(f"Multiplication with {type(other)} is not supported.")
 
     def __rmul__(
             self,

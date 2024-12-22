@@ -193,8 +193,10 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
         # Fill the counts dict with zeros for the missing states
         num_qubits_to_measure = len(circuit.measured_qubits)
 
-        counts = {f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
-                  for i in range(2**num_qubits_to_measure)}
+        counts = {
+            f'{i:0{num_qubits_to_measure}b}': counts.get(f'{i:0{num_qubits_to_measure}b}', 0) \
+            for i in range(2**num_qubits_to_measure)
+        }
 
         # Sort the counts by their keys (basis states)
         counts = dict(sorted(counts.items()))

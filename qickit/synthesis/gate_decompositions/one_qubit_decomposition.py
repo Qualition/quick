@@ -20,7 +20,6 @@ from __future__ import annotations
 __all__ = ["OneQubitDecomposition"]
 
 from collections.abc import Sequence
-import math
 import numpy as np
 from numpy.typing import NDArray
 from typing import Literal, SupportsIndex, TYPE_CHECKING
@@ -79,6 +78,22 @@ class OneQubitDecomposition(UnitaryPreparation):
         self.basis = basis
 
     @staticmethod
+    def one_qubit_det(U: NDArray[np.complex128]) -> float:
+        """ Calculate the determinant of a 2x2 unitary matrix.
+
+        Parameters
+        ----------
+        `U` : NDArray[np.complex128]
+            2x2 unitary matrix.
+
+        Returns
+        -------
+        `det` : float
+            The determinant of the unitary matrix.
+        """
+        return U[0, 0] * U[1, 1] - U[0, 1] * U[1, 0]
+
+    @staticmethod
     def params_zyz(U: NDArray[np.complex128]) -> tuple[float, tuple[float, float, float]]:
         """ Calculate the ZYZ decomposition of a 2x2 unitary matrix.
 
@@ -105,15 +120,21 @@ class OneQubitDecomposition(UnitaryPreparation):
         `lam` : float
             The angle of the second Z rotation.
         """
-        coe = np.linalg.det(U) ** (-0.5)
-        alpha = - np.angle(coe)
-        v = coe * U
-        v = v.round(10)
-        theta = 2 * math.atan2(abs(v[1, 0]), abs(v[0, 0]))
-        phi_lam_sum = 2 * np.angle(v[1, 1])
-        phi_lam_diff = 2 * np.angle(v[1, 0])
-        phi = (phi_lam_sum + phi_lam_diff) / 2
-        lam = (phi_lam_sum - phi_lam_diff) / 2
+        det_arg = OneQubitDecomposition.one_qubit_det(U)
+
+        # Calculate the principal argument of the determinant
+        det_arg = np.arctan2(det_arg.imag, det_arg.real)
+
+        # Calculate the global phase
+        alpha = 0.5 * det_arg
+
+        # Calculate the ZYZ decomposition
+        theta = 2. * np.arctan2(np.abs(U[1, 0]), np.abs(U[0, 0]))
+        angle_1 = np.arctan2(U[1, 1].imag, U[1, 1].real)
+        angle_2 = np.arctan2(U[1, 0].imag, U[1, 0].real)
+        phi = angle_1 + angle_2 - det_arg
+        lam = angle_1 - angle_2
+
         return alpha, (theta, phi, lam)
 
     @staticmethod

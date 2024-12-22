@@ -17,7 +17,7 @@ the `main` branch. After following the instruction for [setting up your
 development environment](./Dev_Setup.md), you should be able to confirm that
 you can run the tests and examples using your local clone. Upon making a change,
 you should make a pull request with a detailed summary of what the PR proposes.
-The PR will be reviewed ASAP by the Qualition team, and if accepted it will be merged
+The PR will be reviewed ASAP by the team, and if accepted it will be merged
 with the [`main`](https://github.com/Qualition/QICKIT/tree/main) branch.
 
 ## Code style
