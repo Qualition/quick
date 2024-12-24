@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qickit"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
     "cirq-core == 1.4.1",
     "mypy == 1.13.0",
@@ -39,7 +39,8 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12"
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent"
 ]
 
 [project.urls]
