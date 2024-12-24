@@ -8,7 +8,6 @@ version = "0.0.0rc"
 dependencies = [
     "cirq-core == 1.4.1",
     "genQC == 0.1.0",
-    "mypy == 1.14.0",
     "numpy ~= 1.23",
     "pennylane == 0.39.0",
     "pytket == 1.37.0",
@@ -43,17 +42,20 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest == 8.3.4",
-  "pytest-mock == 3.14.0"
   "ruff == 0.8.4",
+  "mypy == 1.14.0",
+  "pytest == 8.3.4",
+  "pytest-mock == 3.14.0",
+  "pytest-cov == 6.0.0",
+  "coverage == 7.6.9",
 ]
 
 [project.urls]
 Repository = "https://github.com/qualition/qickit.git"
 "Bug Tracker" = "https://github.com/qualition/qickit/issues"
 
-[tool.setuptools]
-py-modules = ["qickit"]
+[tool.setuptools.packages.find]
+include = ["qickit*"]
 
 [tool.codeflash]
 # All paths are relative to this pyproject.toml's directory.
