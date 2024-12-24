@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.0'
+VERSION = '0.0.0rc'
 DESCRIPTION = 'Framework-agnostic quantum circuit library.'
 LONG_DESCRIPTION = '`qickit` is an agnostic gate-based circuit SDK, providing an integrated interface for using any supported quantum circuit framework seamlessly.'
 

@@ -104,7 +104,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
 
         # Get the specified backend from the runtime service
         self._backend_name = hardware_name
-        backend = qiskit_runtime.get_backend(self._backend_name)
+        backend = qiskit_runtime.backend(self._backend_name)
 
         # Set the maximum number of qubits the backend can handle
         self._max_num_qubits = backend.num_qubits
