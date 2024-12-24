@@ -57,7 +57,7 @@ py -m pytest tests --runslow
 
 ## Contribution Guidelines
 
-If you'd like to contribute to `qickit`, please take a look at our [`contribution guidelines`](). By participating, you are expected to uphold our code of conduct.
+If you'd like to contribute to `qickit`, please take a look at our [`contribution guidelines`](CONTRIBUTING.md). By participating, you are expected to uphold our code of conduct.
 
 We use [`GitHub issues`](https://github.com/Qualition/QICKIT/issues) for tracking requests and bugs.
 
