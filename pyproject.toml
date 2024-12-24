@@ -54,8 +54,8 @@ dev = [
 Repository = "https://github.com/qualition/qickit.git"
 "Bug Tracker" = "https://github.com/qualition/qickit/issues"
 
-[tool.setuptools]
-packages = ["qickit"]
+[tool.setuptools.packages.find]
+include = ["qickit*"]
 
 [tool.codeflash]
 # All paths are relative to this pyproject.toml's directory.
