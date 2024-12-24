@@ -13,37 +13,28 @@ jobs:
                 python-version: ["3.10", "3.11", "3.12"]
 
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
         - name: Set up Python
-          uses: actions/setup-python@v4
+          uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
           with:
             python-version: ${{ matrix.python-version }}
 
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install -r requirements.txt
-            pip install pydantic==2.6.4
-            pip install coverage
+            pip install .[dev]
 
         - name: Run tests with pytest
-          run: |
-            pip install pytest
-            pip install pytest-cov
-            pytest tests/ --cov=qickit --cov-report=xml
+          run: pytest tests/ --cov=qickit --cov-report=xml
 
         - name: Run mypy
-          run: |
-            pip install mypy
-            mypy qickit
+          run: mypy qickit
 
         - name: Run ruff
-          run: |
-            pip install ruff
-            ruff check qickit
+          run: ruff check qickit
 
         - name: Upload coverage reports to Codecov
-          uses: codecov/codecov-action@v4.0.1
+          uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
           with:
             files: ./coverage.xml
