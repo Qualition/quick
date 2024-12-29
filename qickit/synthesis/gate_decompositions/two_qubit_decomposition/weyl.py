@@ -213,7 +213,7 @@ def remove_global_phase(
     return (vector[index] / absolute[index]).conjugate() * vector
 
 def diagonalize_unitary_complex_symmetric(
-        U,
+        U: NDArray[np.complex128],
         atol=1e-13
     ) -> tuple[NDArray[np.complex128], NDArray[np.complex128]]:
     """ Diagonalize the unitary complex-symmetric ``U`` with a complex

@@ -33,36 +33,111 @@ class TestCircuitBase:
     of the `qickit.circuit.Circuit` class.
     """
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_remove_measurement(
+    def test_init(
             self,
             circuit_framework: Type[Circuit]
         ) -> None:
-        """ Test the removal of measurement gate.
+        """ Test the initialization of the circuit.
 
         Parameters
         ----------
         `circuit_framework`: type[qickit.circuit.Circuit]
             The circuit framework to test.
         """
+        circuit_framework(2)
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_num_qubits_value_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test to see if the error is raised when the number of qubits
+        is less than or equal to 0.
+        """
+        # Ensure the error is raised when the number of qubits is less than or equal to 0
+        with pytest.raises(ValueError):
+            circuit_framework(0)
+
+        with pytest.raises(ValueError):
+            circuit_framework(-1)
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_num_qubits_type_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test to see if the error is raised when the number of qubits
+        is not an integer.
+        """
+        # Ensure the error is raised when the number of qubits is not an integer
+        with pytest.raises(TypeError):
+            circuit_framework(1.0) # type: ignore
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_single_qubit_gate_from_range(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the single qubit gate when indices are passed as a range instance.
+        """
         # Define the `qickit.circuit.Circuit` instance
-        circuit = circuit_framework(2)
-        no_measurement_circuit = circuit_framework(2)
+        circuit = circuit_framework(3)
 
-        # Apply the measurement gate
-        circuit.measure([0, 1])
+        # Define the qubit indices as a range of ints
+        qubit_indices = range(3)
 
-        # Ensure both qubits are measured
-        assert circuit.measured_qubits == {0, 1}
+        # Apply the Pauli-X gate
+        circuit.X(qubit_indices)
 
-        # Remove the measurement gate
-        circuit = circuit._remove_measurements()
+        # Define the checker
+        checker_circuit = circuit_framework(3)
+        checker_circuit.X([0, 1, 2])
 
-        # Ensure no qubits are measured
-        assert len(circuit.measured_qubits) == 0
+        assert circuit == checker_circuit
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
-        # ensure they are equivalent
-        assert circuit == no_measurement_circuit
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_single_qubit_gate_from_tuple(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the single qubit gate when indices are passed as a tuple instance.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(3)
+
+        # Define the qubit indices as a tuple of ints
+        qubit_indices = (0, 1, 2)
+
+        # Apply the Pauli-X gate
+        circuit.X(qubit_indices)
+
+        # Define the checker
+        checker_circuit = circuit_framework(3)
+        checker_circuit.X([0, 1, 2])
+
+        assert circuit == checker_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_single_qubit_gate_from_ndarray(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the single qubit gate when indices are passed as a numpy.ndarray instance.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(3)
+
+        # Define the qubit indices as a ndarray of ints
+        qubit_indices = np.array([0, 1, 2])
+
+        # Apply the Pauli-X gate
+        circuit.X(qubit_indices) # type: ignore
+
+        # Define the checker
+        checker_circuit = circuit_framework(3)
+        checker_circuit.X([0, 1, 2])
+
+        assert circuit == checker_circuit
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_qubit_out_of_range(
@@ -714,6 +789,38 @@ class TestCircuitBase:
         reset_circuit = circuit_framework(2)
 
         assert circuit == reset_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_remove_measurement(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the removal of measurement gate.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+        no_measurement_circuit = circuit_framework(2)
+
+        # Apply the measurement gate
+        circuit.measure([0, 1])
+
+        # Ensure both qubits are measured
+        assert circuit.measured_qubits == {0, 1}
+
+        # Remove the measurement gate
+        circuit = circuit._remove_measurements()
+
+        # Ensure no qubits are measured
+        assert len(circuit.measured_qubits) == 0
+
+        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        assert circuit == no_measurement_circuit
 
     @pytest.mark.parametrize("circuit_frameworks", [CIRCUIT_FRAMEWORKS])
     def test_eq(

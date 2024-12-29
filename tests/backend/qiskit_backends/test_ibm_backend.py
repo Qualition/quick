@@ -86,10 +86,12 @@ class MockIBMBackend(FakeBackend):
 
         # This is a mock implementation, so we will return the expected result without
         # using the api call to the IBM Quantum service
-        return np.array([[0.70710678+0.j, 0.70710678+0.j, 0.+0.j, 0.+0.j],
-                         [0.+0.j, 0.+0.j, 0.70710678+0.j, -0.70710678+0.j],
-                         [0.+0.j, 0.+0.j, 0.70710678+0.j, 0.70710678+0.j],
-                         [0.70710678+0.j, -0.70710678+0.j, 0.+0.j, 0.+0.j]])
+        return np.array([
+            [0.70710678+0.j, 0.70710678+0.j, 0.+0.j, 0.+0.j],
+            [0.+0.j, 0.+0.j, 0.70710678+0.j, -0.70710678+0.j],
+            [0.+0.j, 0.+0.j, 0.70710678+0.j, 0.70710678+0.j],
+            [0.70710678+0.j, -0.70710678+0.j, 0.+0.j, 0.+0.j]
+        ])
 
     @Backend.backendmethod
     def get_counts(
@@ -106,20 +108,25 @@ class MockIBMBackend(FakeBackend):
         # using the api call to the IBM Quantum service
         counts = {"000": 501, "011": 523}
 
-        partial_counts = {}
+        partial_counts: dict[str, int] = {}
 
         # Parse the binary strings to filter out the unmeasured qubits
         for key in counts.keys():
             new_key = ''.join(key[::-1][i] for i in range(len(key)) if i in circuit.measured_qubits)
-            partial_counts[new_key[::-1]] = counts[key]
+            if new_key in partial_counts:
+                partial_counts[new_key] += counts[key]
+            else:
+                partial_counts[new_key[::-1]] = counts[key]
 
         counts = partial_counts
 
         # Fill the counts dict with zeros for the missing states
         num_qubits_to_measure = len(circuit.measured_qubits)
 
-        counts = {f"{i:0{num_qubits_to_measure}b}": counts.get(f"{i:0{num_qubits_to_measure}b}", 0) \
-                  for i in range(2**num_qubits_to_measure)}
+        counts = {
+            f"{i:0{num_qubits_to_measure}b}": counts.get(f"{i:0{num_qubits_to_measure}b}", 0) \
+            for i in range(2**num_qubits_to_measure)
+        }
 
         # Sort the counts by their keys (basis states)
         counts = dict(sorted(counts.items()))

@@ -554,7 +554,7 @@ class TwoQubitDecomposition(UnitaryPreparation):
 
         # Hardcoded global phase for supercontrolled basis ~Ud(pi/4, b, 0),
         # all b when using CX as KAK basis
-        cx_basis_global_phase = -0.7853981633974483
+        cx_basis_global_phase = -np.pi/4
 
         target_decomposed = TwoQubitWeylDecomposition(unitary.data)
 
