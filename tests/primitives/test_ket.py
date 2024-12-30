@@ -30,10 +30,12 @@ class TestKet:
         """ Test the initialization of the `qickit.primitives.Ket` class.
         """
         ket = Ket(np.array([1, 0, 0, 0]))
-        assert_allclose(ket.data, np.array([[1+0j],
-                                            [0+0j],
-                                            [0+0j],
-                                            [0+0j]]))
+        assert_allclose(ket.data, np.array([
+            [1+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j]
+        ]))
 
     def test_from_scalar_fail(self) -> None:
         """ Test the failure of defining a `qickit.primitives.Ket` object from a scalar.
@@ -65,6 +67,14 @@ class TestKet:
         data = np.array([1, 0, 0, 1])
         assert_allclose(Ket.normalize_data(data, np.linalg.norm(data)), np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
 
+        ket = Ket(data)
+        ket.normalize()
+        assert_allclose(ket.data.flatten(), np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+
+        # Re-normalize the already normalized to cover the case where if normalized we simply return
+        ket.normalize()
+        assert_allclose(ket.data.flatten(), np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+
     def test_check_padding(self) -> None:
         """ Test the padding of the `qickit.primitives.Ket` object.
         """
@@ -82,10 +92,20 @@ class TestKet:
         """
         data = np.array([1, 0, 0])
         padded_data, _ = Ket.pad_data(data, 4)
-        assert_allclose(padded_data, np.array([[1],
-                                               [0],
-                                               [0],
-                                               [0]]))
+        assert_allclose(padded_data, np.array([
+            [1],
+            [0],
+            [0],
+            [0]
+        ]))
+
+        ket = Ket(data)
+        ket.pad()
+        assert_allclose(ket.data.flatten(), np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+        # Re-pad the already padded to cover the case where if padded we simply return
+        ket.pad()
+        assert_allclose(ket.data.flatten(), np.array([1+0j, 0+0j, 0+0j, 0+0j]))
 
     def test_to_bra(self) -> None:
         """ Test the conversion of the `qickit.primitives.Ket` object to a `qickit.primitives.Bra` object.
@@ -99,22 +119,28 @@ class TestKet:
         """
         ket = Ket(np.array([1, 0, 0, 0]))
         ket.change_indexing("snake")
-        assert_allclose(ket.data, np.array([[1+0j],
-                                            [0+0j],
-                                            [0+0j],
-                                            [0+0j]]))
+        assert_allclose(ket.data, np.array([
+            [1+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j]
+        ]))
 
-        ket = Ket(np.array([1, 0, 0, 0,
-                            1, 0, 0, 0]))
+        ket = Ket(np.array([
+            1, 0, 0, 0,
+            1, 0, 0, 0
+        ]))
         ket.change_indexing("snake")
-        assert_allclose(ket.data, np.array([[(1+0j)/np.sqrt(2)],
-                                            [0+0j],
-                                            [0+0j],
-                                            [0+0j],
-                                            [0+0j],
-                                            [0+0j],
-                                            [0+0j],
-                                            [(1+0j)/np.sqrt(2)]]))
+        assert_allclose(ket.data, np.array([
+            [(1+0j)/np.sqrt(2)],
+            [0+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j],
+            [(1+0j)/np.sqrt(2)]
+        ]))
 
     def test_change_indexing_fail(self) -> None:
         """ Test the failure of the change of indexing of the `qickit.primitives.Ket` object.
@@ -172,10 +198,12 @@ class TestKet:
         ket1 = Ket(np.array([1, 0, 0, 0]))
         ket2 = Ket(np.array([0, 1, 0, 0]))
         print(ket1 + ket2)
-        assert_allclose((ket1 + ket2).data, np.array([[(1+0j)/np.sqrt(2)],
-                                                      [(1+0j)/np.sqrt(2)],
-                                                      [0+0j],
-                                                      [0+0j]]))
+        assert_allclose((ket1 + ket2).data, np.array([
+            [(1+0j)/np.sqrt(2)],
+            [(1+0j)/np.sqrt(2)],
+            [0+0j],
+            [0+0j]
+        ]))
 
     def test_add_fail(self) -> None:
         """ Test the failure of the addition of the `qickit.primitives.Ket` objects.
@@ -193,10 +221,12 @@ class TestKet:
         """ Test the multiplication of the `qickit.primitives.Ket` object with a scalar.
         """
         ket = Ket(np.array([1, 0, 0, 0]))
-        assert_allclose((ket * 2).data, np.array([[1+0j],
-                                                  [0+0j],
-                                                  [0+0j],
-                                                  [0+0j]]))
+        assert_allclose((ket * 2).data, np.array([
+            [1+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j]
+        ]))
 
     def test_mul_bra(self) -> None:
         """ Test the multiplication of the `qickit.primitives.Ket` object with a `qickit.primitives.Bra` object.
@@ -224,10 +254,12 @@ class TestKet:
         """ Test the multiplication of a `qickit.primitives.Ket` object with a scalar.
         """
         ket = Ket(np.array([1, 0, 0, 0]))
-        assert_allclose((2 * ket).data, np.array([[1+0j],
-                                                  [0+0j],
-                                                  [0+0j],
-                                                  [0+0j]]))
+        assert_allclose((2 * ket).data, np.array([
+            [1+0j],
+            [0+0j],
+            [0+0j],
+            [0+0j]
+        ]))
 
     def test_str(self) -> None:
         """ Test the string representation of the `qickit.primitives.Ket` object.

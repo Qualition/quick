@@ -3438,19 +3438,11 @@ class Circuit(ABC):
         `adjoint` : bool
             Whether or not to apply the adjoint of the circuit.
 
-        Raises
-        ------
-        TypeError
-            - Adjoint must be a boolean.
-
         Usage
         -----
         >>> circuit.horizontal_reverse()
         >>> circuit.horizontal_reverse(adjoint=False)
         """
-        if not isinstance(adjoint, bool):
-            raise TypeError("Adjoint must be a boolean.")
-
         # Reverse the order of the operations
         self.circuit_log = self.circuit_log[::-1]
 

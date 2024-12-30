@@ -62,6 +62,14 @@ class TestBra:
         data = np.array([1, 0, 0, 1])
         assert_allclose(Bra.normalize_data(data, np.linalg.norm(data)), np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
 
+        bra = Bra(data)
+        bra.normalize()
+        assert_allclose(bra.data, np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+
+        # Re-normalize the already normalized to cover the case where if normalized we simply return
+        bra.normalize()
+        assert_allclose(bra.data, np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+
     def test_check_padding(self) -> None:
         """ Test the padding of the `qickit.primitives.Bra` object.
         """
@@ -81,15 +89,25 @@ class TestBra:
         padded_data, _ = Bra.pad_data(data, 4)
         assert_allclose(padded_data, np.array([1, 0, 0, 0]))
 
+        bra = Bra(data)
+        bra.pad()
+        assert_allclose(bra.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+        # Re-pad the already padded to cover the case where if padded we simply return
+        bra.pad()
+        assert_allclose(bra.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
     def test_to_ket(self) -> None:
         """ Test the conversion of the `qickit.primitives.Bra` object to a `qickit.primitives.Ket` object.
         """
         bra = Bra(np.array([1+0j, 0+0j, 0+0j, 0+0j]))
         ket = bra.to_ket()
-        assert_allclose(ket.data, np.array([[1-0j],
-                                            [0-0j],
-                                            [0-0j],
-                                            [0-0j]]))
+        assert_allclose(ket.data, np.array([
+            [1-0j],
+            [0-0j],
+            [0-0j],
+            [0-0j]
+        ]))
 
     def test_change_indexing(self) -> None:
         """ Test the change of indexing of the `qickit.primitives.Bra` object.
@@ -101,8 +119,10 @@ class TestBra:
         bra = Bra(np.array([1, 0, 0, 0,
                             1, 0, 0, 0]))
         bra.change_indexing("snake")
-        assert_allclose(bra.data, np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, 0+0j,
-                                            0+0j, 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+        assert_allclose(bra.data, np.array([
+            (1+0j)/np.sqrt(2), 0+0j, 0+0j, 0+0j,
+            0+0j, 0+0j, 0+0j, (1+0j)/np.sqrt(2)
+        ]))
 
     def test_change_indexing_fail(self) -> None:
         """ Test the failure of the change of indexing of the `qickit.primitives.Bra` object.

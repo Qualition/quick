@@ -140,6 +140,28 @@ class TestCircuitBase:
         assert circuit == checker_circuit
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_qubit_type_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the qubit type error.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(1)
+
+        # Apply the Pauli-X gate
+        with pytest.raises(TypeError):
+            circuit.X("qubit") # type: ignore
+
+        with pytest.raises(TypeError):
+            circuit.X(["qubit1", "qubit2"]) # type: ignore
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_qubit_out_of_range(
             self,
             circuit_framework: Type[Circuit]
@@ -157,6 +179,9 @@ class TestCircuitBase:
         # Apply the Pauli-X gate
         with pytest.raises(IndexError):
             circuit.X(2)
+
+        with pytest.raises(IndexError):
+            circuit.X([0, 1])
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_control_out_of_range(
@@ -195,6 +220,28 @@ class TestCircuitBase:
         # Apply the CX gate
         with pytest.raises(IndexError):
             circuit.CX(0, 2)
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_angle_type_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the angle type error.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(1)
+
+        # Apply the RX gate
+        with pytest.raises(TypeError):
+            circuit.RX("angle", 0) # type: ignore
+
+        with pytest.raises(TypeError):
+            circuit.U3(["theta", "phi", "lambda"], 0) # type: ignore
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     @pytest.mark.parametrize("num_qubits", [
@@ -471,6 +518,10 @@ class TestCircuitBase:
         with pytest.raises(ValueError):
             circuit1.add(circuit2, [0, 1])
 
+        # Ensure the error is raised when the qubit indices are not integers
+        with pytest.raises(TypeError):
+            circuit1.add(circuit2, [0, "index", 0.2]) # type: ignore
+
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_transpile(
             self,
@@ -541,6 +592,71 @@ class TestCircuitBase:
         assert width == 4
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_get_instructions(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the instructions of the circuit.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(4)
+
+        # Apply the MCX gate
+        circuit.MCX([0, 1], [2, 3])
+
+        # Get the instructions of the circuit, and ensure they are correct
+        instructions = circuit.get_instructions()
+
+        instructions[0].pop("definition")
+
+        assert instructions == [
+            {"gate": "MCX", "control_indices": [0, 1], "target_indices": [2, 3]}
+        ]
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_get_instructions_with_measurements(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the instructions of the circuit with measurements.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(4)
+
+        # Apply the MCX gate
+        circuit.MCX([0, 1], [2, 3])
+
+        # Apply the measurements
+        circuit.measure([0, 1])
+
+        # Get the instructions of the circuit, and ensure they are correct
+        instructions = circuit.get_instructions()
+
+        instructions[0].pop("definition")
+        instructions[1].pop("definition")
+
+        assert instructions == [
+            {"gate": "MCX", "control_indices": [0, 1], "target_indices": [2, 3]},
+            {"gate": "measure", "qubit_indices": [0, 1]}
+        ]
+
+        instructions = circuit.get_instructions(include_measurements=False)
+
+        assert instructions == [
+            {"gate": "MCX", "control_indices": [0, 1], "target_indices": [2, 3]}
+        ]
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_compress(
             self,
             circuit_framework: Type[Circuit]
@@ -557,6 +673,9 @@ class TestCircuitBase:
 
         # Apply the RX gate
         circuit.RX(np.pi/2, 0)
+
+        # Apply the U3 gate
+        circuit.U3([np.pi/2, np.pi/2, np.pi/2], 0)
 
         # Compress the circuit
         circuit.compress(1.0)
@@ -619,6 +738,44 @@ class TestCircuitBase:
 
         assert circuit == mapped_circuit
         assert_almost_equal(circuit.get_unitary(), mapped_circuit.get_unitary(), 8)
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_change_mapping_indices_type_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the mapping change of the circuit failure.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(4)
+
+        # Ensure the error is raised when the mapping indices are not integers
+        with pytest.raises(TypeError):
+            circuit.change_mapping([0, 1, "index", 2]) # type: ignore
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_change_mapping_indices_value_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the mapping change of the circuit failure.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(4)
+
+        # Ensure the error is raised when the mapping indices are out of range
+        with pytest.raises(ValueError):
+            circuit.change_mapping([0, 1, 2])
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_from_circuit(
@@ -764,6 +921,24 @@ class TestCircuitBase:
             assert circuit == converted_circuit
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_convert_type_error(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `circuit.convert()` method failure.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        circuit = circuit_framework(num_qubits=5)
+
+        # Ensure the error is raised when the type of the circuit is not correct
+        with pytest.raises(TypeError):
+            circuit.convert("circuit") # type: ignore
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_reset(
             self,
             circuit_framework: Type[Circuit]
@@ -813,7 +988,16 @@ class TestCircuitBase:
         assert circuit.measured_qubits == {0, 1}
 
         # Remove the measurement gate
-        circuit = circuit._remove_measurements()
+        updated_circuit = circuit.remove_measurements(inplace=False)
+
+        # Ensure no qubits are measured
+        assert len(updated_circuit.measured_qubits) == 0
+
+        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        assert updated_circuit == no_measurement_circuit
+
+        circuit.remove_measurements(inplace=True)
 
         # Ensure no qubits are measured
         assert len(circuit.measured_qubits) == 0
@@ -828,6 +1012,11 @@ class TestCircuitBase:
             circuit_frameworks: list[Type[Circuit]]
         ) -> None:
         """ Test the `__eq__` dunder method.
+
+        Parameters
+        ----------
+        `circuit_frameworks`: list[type[qickit.circuit.Circuit]]
+            The circuit frameworks to test.
         """
         circuits = [circuit_framework(2) for circuit_framework in circuit_frameworks]
 
@@ -846,6 +1035,11 @@ class TestCircuitBase:
             circuit_framework: Type[Circuit]
         ) -> None:
         """ Test the `__len__` dunder method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
         """
         # Define the circuits
         circuit = circuit_framework(2)
@@ -863,6 +1057,11 @@ class TestCircuitBase:
             circuit_framework: Type[Circuit]
         ) -> None:
         """ Test the `__str__` dunder method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
         """
         # Define the circuits
         circuit = circuit_framework(2)
@@ -875,11 +1074,38 @@ class TestCircuitBase:
         assert str(circuit) == f"{circuit_framework.__name__}(num_qubits=2)"
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_generate_calls(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `generate_calls` method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the circuits
+        circuit = circuit_framework(2)
+
+        # Define the Bell state
+        circuit.H(0)
+        circuit.CX(0, 1)
+
+        # Test the generated calls
+        assert circuit.generate_calls() == 'circuit.H(qubit_indices=0)\ncircuit.CX(control_index=0, target_index=1)\n'
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_repr(
             self,
             circuit_framework: Type[Circuit]
         ) -> None:
         """ Test the `__repr__` dunder method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
         """
         # Define the circuits
         circuit = circuit_framework(2)
