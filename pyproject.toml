@@ -43,11 +43,11 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
   "ruff == 0.8.4",
-  "mypy == 1.14.0",
+  "mypy == 1.14.1",
   "pytest == 8.3.4",
   "pytest-mock == 3.14.0",
   "pytest-cov == 6.0.0",
-  "coverage == 7.6.9",
+  "coverage == 7.6.10",
 ]
 
 [project.urls]
