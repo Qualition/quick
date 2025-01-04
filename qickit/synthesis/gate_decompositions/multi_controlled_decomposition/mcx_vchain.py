@@ -150,15 +150,19 @@ def mcx_vchain_decomposition(
 
     Notes
     -----
+    This decomposition is to be used for decomposing multi-controlled gates with
+    only U3 and CX gates. This decomposition is only usable for 4 or more control
+    qubits. If the number of control qubits is less than 4, the decomposition will
+    default to the standard MCX decomposition for CX, CCX and C3X gates.
+
+    It can synthesize a multi-controlled X gate with k controls using k - 2 dirty
+    ancillary qubits producing a circuit with 2 * k - 1 qubits and at most
+    8 * k - 6 CX gates, by Iten et. al.
+
     This implementation is based on the following paper:
     - Iten, Colbeck, Kukuljan, Home, Christandl.
     Quantum circuits for isometries (2016).
     https://journals.aps.org/pra/abstract/10.1103/PhysRevA.93.032318
-
-    This decomposition is to be used for decomposing multi-controlled gates with
-    only U3 and CX gates. This decomposition is only usable for 4 or more control qubits.
-    If the number of control qubits is less than 4, the decomposition will default to the
-    standard MCX decomposition for CX, CCX and C3X gates.
 
     Parameters
     ----------

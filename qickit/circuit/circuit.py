@@ -2991,12 +2991,12 @@ class Circuit(ABC):
         with self.decompose_last(gate):
             self.UCPauliRot(angles, "Z", control_indices, target_index)
 
-    def Diagonal(
+    def _Diagonal(
             self,
             diagnoal: NDArray[np.complex128],
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a diagonal gate to the circuit.
+        """ Define the diagonal gate.
 
         Notes
         -----
@@ -3032,7 +3032,7 @@ class Circuit(ABC):
         Parameters
         ----------
         `diagnoal` : NDArray[np.complex128]
-            The diagonal matrix to apply to the circuit.
+            The diagonal entries of the matrix.
 
         Raises
         ------
@@ -3040,11 +3040,6 @@ class Circuit(ABC):
             - The number of diagonal entries is not a positive power of 2.
             - The number of qubits passed must be the same as the number of qubits needed to prepare the diagonal.
             - A diagonal element does not have absolute value one.
-
-        Usage
-        -----
-        >>> circuit.Diagnoal([[1, 0],
-        ...                   [0, 1]])
         """
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
@@ -3095,6 +3090,34 @@ class Circuit(ABC):
             n //= 2
 
         self.GlobalPhase(diagonal_phases[0])
+
+    def Diagonal(
+            self,
+            diagnoal: NDArray[np.complex128],
+            qubit_indices: int | Sequence[int]
+        ) -> None:
+        """ Apply a diagonal gate to the circuit.
+
+        Parameters
+        ----------
+        `diagnoal` : NDArray[np.complex128]
+            The diagonal entries of the matrix.
+
+        Raises
+        ------
+        ValueError
+            - The number of diagonal entries is not a positive power of 2.
+            - The number of qubits passed must be the same as the number of qubits needed to prepare the diagonal.
+            - A diagonal element does not have absolute value one.
+
+        Usage
+        -----
+        >>> circuit.Diagnoal([1, 1, 1, -1, 1, -1, 1, -1])
+        """
+        gate = self.process_gate_params(gate=self.Diagonal.__name__, params=locals())
+
+        with self.decompose_last(gate):
+            self._Diagonal(diagnoal, qubit_indices)
 
     def UC(
             self,
@@ -3252,6 +3275,18 @@ class Circuit(ABC):
         -----
         >>> circuit.GlobalPhase(angle=np.pi/2)
         """
+
+    def merge_global_phases(self) -> None:
+        """ Merge all the global phases in the circuit into a single call.
+
+        Usage
+        -----
+        >>> circuit.merge_global_phases()
+        """
+        self.circuit_log = [instr for instr in self.circuit_log if instr["gate"] != "GlobalPhase"]
+        global_phase = self.global_phase
+        self.update()
+        self.GlobalPhase(global_phase)
 
     def QFT(
             self,
@@ -3456,6 +3491,10 @@ class Circuit(ABC):
                     operation["angles"] = [-operation["angles"][0], -operation["angles"][2], -operation["angles"][1]]
                 elif "power" in operation:
                     operation["power"] = -operation["power"]
+                elif "diagonal" in operation:
+                    operation["diagonal"] = [np.conj(entry) for entry in operation["diagonal"]]
+                elif "gates" in operation:
+                    operation["gates"] = [np.array(gate).conj().T for gate in operation["gates"]]
                 elif operation["gate"] in ["Sdg", "Tdg", "CSdg", "CTdg", "MCSdg", "MCTdg"]:
                     operation["gate"] = operation["gate"].replace("dg", "")
                 elif operation["gate"] in ["S", "T", "CS", "CT", "MCS", "MCT"]:

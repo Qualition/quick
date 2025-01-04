@@ -326,6 +326,32 @@ class TestCircuitBase:
         assert circuit.get_global_phase() == np.exp(3.2j)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_merge_global_phases(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the global phase merging.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[qickit.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `qickit.circuit.Circuit` instance
+        circuit = circuit_framework(1)
+
+        # Apply the global phase gate
+        circuit.GlobalPhase(1.8)
+        circuit.GlobalPhase(1.4)
+
+        # Merge the global phases
+        circuit.merge_global_phases()
+
+        # Get the global phase of the circuit, and ensure it is correct
+        assert circuit.get_global_phase() == np.exp(3.2j)
+        assert repr(circuit) == circuit_framework.__name__ + "(num_qubits=1, circuit_log=[{'gate': 'GlobalPhase', 'angle': 3.2}])"
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_vertical_reverse(
             self,
             circuit_framework: Type[Circuit]
