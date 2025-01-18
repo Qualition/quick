@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,8 +23,8 @@ import pytest
 
 from qiskit import QuantumCircuit
 
-from qickit.circuit import QiskitCircuit
-from qickit.circuit.gate_matrix import RX, RY, RZ, Phase, U3
+from quick.circuit import QiskitCircuit
+from quick.circuit.gate_matrix import RX, RY, RZ, Phase, U3
 
 from tests.circuit import Template
 from tests.circuit.utils import cosine_similarity
@@ -367,7 +367,7 @@ from tests.circuit.gate_utils import (
 
 
 class TestQiskitCircuit(Template):
-    """ `tests.circuit.TestQiskitCircuit` is the tester class for `qickit.circuit.QiskitCircuit` class.
+    """ `tests.circuit.TestQiskitCircuit` is the tester class for `quick.circuit.QiskitCircuit` class.
     """
     @pytest.mark.parametrize("num_qubits, qubit_indices, expected", [
         [1, 0, np.eye(2**1)],
@@ -385,7 +385,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Identity gate
@@ -409,7 +409,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Pauli X gate
@@ -433,7 +433,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Pauli Y gate
@@ -457,7 +457,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Pauli Z gate
@@ -481,7 +481,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Hadamard gate
@@ -505,7 +505,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Clifford S gate
@@ -529,7 +529,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Clifford S dagger gate
@@ -553,7 +553,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Clifford T gate
@@ -577,7 +577,7 @@ class TestQiskitCircuit(Template):
             qubit_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Clifford T dagger gate
@@ -600,7 +600,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the RX gate
@@ -623,7 +623,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the RY gate
@@ -646,7 +646,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the RZ gate
@@ -669,7 +669,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the Phase gate
@@ -695,7 +695,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the XPow gate
@@ -721,7 +721,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the YPow gate
@@ -747,7 +747,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the ZPow gate
@@ -770,7 +770,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the RXX gate
@@ -793,7 +793,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the RYY gate
@@ -816,7 +816,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the RZZ gate
@@ -852,7 +852,7 @@ class TestQiskitCircuit(Template):
             angles: tuple[float, float, float],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the U3 gate
@@ -875,7 +875,7 @@ class TestQiskitCircuit(Template):
             second_qubit_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the SWAP gate
@@ -898,7 +898,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CX gate
@@ -921,7 +921,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CY gate
@@ -944,7 +944,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CZ gate
@@ -967,7 +967,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CH gate
@@ -990,7 +990,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CS gate
@@ -1013,7 +1013,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CSdg gate
@@ -1036,7 +1036,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CT gate
@@ -1059,7 +1059,7 @@ class TestQiskitCircuit(Template):
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CTdg gate
@@ -1082,7 +1082,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CRX gate
@@ -1105,7 +1105,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CRY gate
@@ -1128,7 +1128,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CRZ gate
@@ -1151,7 +1151,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CPhase gate
@@ -1175,7 +1175,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CXPow gate
@@ -1199,7 +1199,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CYPow gate
@@ -1223,7 +1223,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CZPow gate
@@ -1247,7 +1247,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CRXX gate
@@ -1271,7 +1271,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CRYY gate
@@ -1295,7 +1295,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CRZZ gate
@@ -1318,7 +1318,7 @@ class TestQiskitCircuit(Template):
             angles: tuple[float, float, float],
             expected
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CU3 gate
@@ -1341,7 +1341,7 @@ class TestQiskitCircuit(Template):
             second_target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the CSWAP gate
@@ -1369,7 +1369,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCX gate
@@ -1397,7 +1397,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCY gate
@@ -1425,7 +1425,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCZ gate
@@ -1453,7 +1453,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCH gate
@@ -1481,7 +1481,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCS gate
@@ -1509,7 +1509,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCSdg gate
@@ -1537,7 +1537,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCT gate
@@ -1565,7 +1565,7 @@ class TestQiskitCircuit(Template):
             target_indices: int | list[int],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCTdg gate
@@ -1597,7 +1597,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCRX gate
@@ -1629,7 +1629,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCRY gate
@@ -1661,7 +1661,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCRZ gate
@@ -1690,7 +1690,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCPhase gate
@@ -1717,7 +1717,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCXPow gate
@@ -1744,7 +1744,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCYPow gate
@@ -1771,7 +1771,7 @@ class TestQiskitCircuit(Template):
             global_shift: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCZPow gate
@@ -1798,7 +1798,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCRXX gate
@@ -1825,7 +1825,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCRYY gate
@@ -1852,7 +1852,7 @@ class TestQiskitCircuit(Template):
             angle: float,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCRZZ gate
@@ -1877,7 +1877,7 @@ class TestQiskitCircuit(Template):
             angles: tuple[float, float, float],
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCU3 gate
@@ -1901,7 +1901,7 @@ class TestQiskitCircuit(Template):
             second_target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(num_qubits)
 
         # Apply the MCSWAP gate
@@ -1910,7 +1910,7 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     def test_GlobalPhase(self) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(1)
 
         # Generate a random phase angle
@@ -1923,7 +1923,7 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), np.exp(phase * 1j) * np.eye(2), 8)
 
     def test_single_measurement(self) -> None:
-        # Define `qickit.circuit.QiskitCircuit` instance
+        # Define `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(1)
 
         # Ensure no qubits are measured initially
@@ -1943,7 +1943,7 @@ class TestQiskitCircuit(Template):
         assert [data.operation for data in circuit.circuit] == [data.operation for data in qiskit_circuit]
 
     def test_multiple_measurement(self) -> None:
-        # Define `qickit.circuit.QiskitCircuit` instance
+        # Define `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(2)
 
         # Ensure no qubits are measured initially
@@ -1964,7 +1964,7 @@ class TestQiskitCircuit(Template):
         assert [data.operation for data in circuit.circuit] == [data.operation for data in qiskit_circuit]
 
     def test_get_statevector(self) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(1)
 
         # Create a state with non-zero real and imaginary components
@@ -1977,7 +1977,7 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(statevector, [np.sqrt(1/2), 0.5 + 0.5j], 8)
 
     def test_get_unitary(self) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(4)
 
         # Apply the gate
@@ -1986,7 +1986,7 @@ class TestQiskitCircuit(Template):
         # Define the unitary
         unitary = circuit.get_unitary()
 
-        # Define the equivalent `qickit.circuit.QiskitCircuit` instance, and
+        # Define the equivalent `quick.circuit.QiskitCircuit` instance, and
         # ensure they are equivalent
         unitary_circuit = QiskitCircuit(4)
         unitary_circuit.unitary(unitary, [0, 1, 2, 3])
@@ -1994,7 +1994,7 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(unitary_circuit.get_unitary(), unitary, 8)
 
     def test_partial_get_counts(self) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(3)
 
         # Prepare the Bell state
@@ -2035,7 +2035,7 @@ class TestQiskitCircuit(Template):
         assert cosine_similarity(counts, {'00': 512, '01': 512, '10': 0, '11': 0}) > 0.95
 
     def test_get_counts(self) -> None:
-        # Define the `qickit.circuit.QiskitCircuit` instance
+        # Define the `quick.circuit.QiskitCircuit` instance
         circuit = QiskitCircuit(2)
 
         # Apply the Bell state

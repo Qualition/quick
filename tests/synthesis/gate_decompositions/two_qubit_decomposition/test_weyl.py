@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +24,7 @@ from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 from scipy.stats import unitary_group
 
-from qickit.synthesis.gate_decompositions.two_qubit_decomposition.weyl import weyl_coordinates
+from quick.synthesis.gate_decompositions.two_qubit_decomposition.weyl import weyl_coordinates
 
 # Tolerance for floating point comparisons
 INVARIANT_TOL = 1e-12

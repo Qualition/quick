@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,8 +20,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial import distance # type: ignore
 
-from qickit.backend import Backend, FakeBackend
-from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
+from quick.backend import Backend, FakeBackend
+from quick.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 from tests.backend import Template
 
 
@@ -52,7 +52,7 @@ def cosine_similarity(
 
 
 class MockIBMBackend(FakeBackend):
-    """ `MockIBMBackend` is the mock class for the `qickit.backend.FakeIBMBackend` class.
+    """ `MockIBMBackend` is the mock class for the `quick.backend.FakeIBMBackend` class.
     """
     def __init__(self) -> None:
         self._qc_framework = QiskitCircuit
@@ -138,14 +138,14 @@ class TestFakeIBMBackend(Template):
     """ `TestFakeIBMBackend` is the tester for the `FakeIBMBackend` class.
     """
     def test_init(self) -> None:
-        # Define the `qickit.backend.MockIBMBackend` instance
+        # Define the `quick.backend.MockIBMBackend` instance
         MockIBMBackend()
 
     def test_get_partial_counts(self) -> None:
-        # Define the `qickit.backend.MockIBMBackend` instance
+        # Define the `quick.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(3)
         pennylane_circuit = PennylaneCircuit(3)
         qiskit_circuit = QiskitCircuit(3)
@@ -169,7 +169,7 @@ class TestFakeIBMBackend(Template):
 
             Parameters
             ----------
-            `circuit` : qickit.circuit.Circuit
+            `circuit` : quick.circuit.Circuit
                 The circuit to perform partial measurement on.
             """
             # Perform partial measurement on the first qubit and ensure the counts are correct
@@ -211,10 +211,10 @@ class TestFakeIBMBackend(Template):
         test_partial_measurement(tket_circuit)
 
     def test_get_counts(self) -> None:
-        # Define the `qickit.backend.MockIBMBackend` instance
+        # Define the `quick.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(2)
         pennylane_circuit = PennylaneCircuit(2)
         qiskit_circuit = QiskitCircuit(2)
@@ -258,10 +258,10 @@ class TestFakeIBMBackend(Template):
         assert cosine_similarity(tket_counts, output_counts) > 0.95
 
     def test_get_statevector(self) -> None:
-        # Define the `qickit.backend.MockIBMBackend` instance
+        # Define the `quick.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(2)
         pennylane_circuit = PennylaneCircuit(2)
         qiskit_circuit = QiskitCircuit(2)
@@ -307,10 +307,10 @@ class TestFakeIBMBackend(Template):
         pass
 
     def test_get_unitary(self) -> None:
-        # Define the `qickit.backend.MockIBMBackend` instance
+        # Define the `quick.backend.MockIBMBackend` instance
         backend = MockIBMBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(2)
         pennylane_circuit = PennylaneCircuit(2)
         qiskit_circuit = QiskitCircuit(2)

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@ import pytest
 from scipy.stats import unitary_group
 from typing import Type
 
-from qickit.circuit import Circuit
+from quick.circuit import Circuit
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
 from tests.circuit.utils import generate_random_state
@@ -30,7 +30,7 @@ from tests.circuit.utils import generate_random_state
 
 class TestCircuitBase:
     """ `tests.circuit.TestCircuitBase` class is a tester for the base functionality
-    of the `qickit.circuit.Circuit` class.
+    of the `quick.circuit.Circuit` class.
     """
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_init(
@@ -41,7 +41,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         circuit_framework(2)
@@ -80,7 +80,7 @@ class TestCircuitBase:
         ) -> None:
         """ Test the single qubit gate when indices are passed as a range instance.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(3)
 
         # Define the qubit indices as a range of ints
@@ -102,7 +102,7 @@ class TestCircuitBase:
         ) -> None:
         """ Test the single qubit gate when indices are passed as a tuple instance.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(3)
 
         # Define the qubit indices as a tuple of ints
@@ -124,7 +124,7 @@ class TestCircuitBase:
         ) -> None:
         """ Test the single qubit gate when indices are passed as a numpy.ndarray instance.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(3)
 
         # Define the qubit indices as a ndarray of ints
@@ -148,10 +148,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Apply the Pauli-X gate
@@ -170,10 +170,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Apply the Pauli-X gate
@@ -192,10 +192,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(2)
 
         # Apply the CX gate
@@ -211,10 +211,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(2)
 
         # Apply the CX gate
@@ -230,10 +230,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Apply the RX gate
@@ -256,12 +256,12 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         `num_qubits`: int
             The number of qubits in the circuit.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(num_qubits)
 
         # Define the statevector
@@ -286,12 +286,12 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         `num_qubits`: int
             The number of qubits in the circuit.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(num_qubits)
 
         # Apply the gate
@@ -312,10 +312,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Apply the global phase gate
@@ -334,10 +334,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Apply the global phase gate
@@ -360,10 +360,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(2)
 
         # Apply GHZ state
@@ -373,7 +373,7 @@ class TestCircuitBase:
         # Apply the vertical reverse operation
         circuit.vertical_reverse()
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         updated_circuit = circuit_framework(2)
         updated_circuit.H(1)
@@ -391,10 +391,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Apply gates
@@ -440,7 +440,7 @@ class TestCircuitBase:
         # Apply the horizontal reverse operation
         circuit.horizontal_reverse()
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         updated_circuit = circuit_framework(4)
         updated_circuit.MCRZZ(-0.1, [0, 1], 2, 3)
@@ -494,10 +494,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         circuit1 = circuit_framework(2)
         circuit2 = circuit_framework(2)
 
@@ -509,7 +509,7 @@ class TestCircuitBase:
         # Add the two circuits
         circuit1.add(circuit2, [1, 0])
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         added_circuit = circuit_framework(2)
         added_circuit.CX(0, 1)
@@ -528,10 +528,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         circuit1 = circuit_framework(2)
         circuit2 = circuit_framework(3)
         circuit3 = "circuit"
@@ -557,16 +557,16 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         transpiled_circuit = circuit_framework(4)
         transpiled_circuit.MCX([0, 1], [2, 3])
@@ -583,10 +583,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Apply the MCX gate
@@ -606,10 +606,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Get the width of the circuit, and ensure it is correct
@@ -626,10 +626,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Apply the MCX gate
@@ -653,10 +653,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Apply the MCX gate
@@ -691,10 +691,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Apply the RX gate
@@ -706,7 +706,7 @@ class TestCircuitBase:
         # Compress the circuit
         circuit.compress(1.0)
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         compressed_circuit = circuit_framework(1)
 
@@ -722,10 +722,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(1)
 
         # Ensure the error is raised when the compression factor is less than 0
@@ -745,10 +745,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Apply the MCX gate
@@ -757,7 +757,7 @@ class TestCircuitBase:
         # Change the mapping of the circuit
         circuit.change_mapping([3, 2, 1, 0])
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         mapped_circuit = circuit_framework(4)
         mapped_circuit.MCX([3, 2], [1, 0])
@@ -774,10 +774,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Ensure the error is raised when the mapping indices are not integers
@@ -793,10 +793,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
         # Ensure the error is raised when the mapping indices are out of range
@@ -812,7 +812,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -955,7 +955,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -973,10 +973,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(2)
 
         # Apply the Hadamard gate
@@ -985,7 +985,7 @@ class TestCircuitBase:
         # Reset the circuit
         circuit.reset()
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         reset_circuit = circuit_framework(2)
 
@@ -1000,10 +1000,10 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
-        # Define the `qickit.circuit.Circuit` instance
+        # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(2)
         no_measurement_circuit = circuit_framework(2)
 
@@ -1019,7 +1019,7 @@ class TestCircuitBase:
         # Ensure no qubits are measured
         assert len(updated_circuit.measured_qubits) == 0
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         assert updated_circuit == no_measurement_circuit
 
@@ -1028,9 +1028,117 @@ class TestCircuitBase:
         # Ensure no qubits are measured
         assert len(circuit.measured_qubits) == 0
 
-        # Define the equivalent `qickit.circuit.Circuit` instance, and
+        # Define the equivalent `quick.circuit.Circuit` instance, and
         # ensure they are equivalent
         assert circuit == no_measurement_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_getitem(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `__getitem__` dunder method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit.H(0)
+        circuit.CX(0, 1)
+        circuit.RX(np.pi/2, 0)
+        circuit.RY(np.pi/2, 1)
+
+        # Test the `__getitem__` dunder method
+        new_circuit = circuit_framework(2)
+        new_circuit = circuit[1:]
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.CX(0, 1)
+        checker_circuit.RX(np.pi/2, 0)
+        checker_circuit.RY(np.pi/2, 1)
+
+        assert checker_circuit == new_circuit
+
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit.H(0)
+        circuit.CX(0, 1)
+        circuit.RX(np.pi/2, 0)
+
+        # Test the `__getitem__` dunder method
+        new_circuit = circuit_framework(2)
+        new_circuit = circuit[1]
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.CX(0, 1)
+
+        assert checker_circuit == new_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_setitem(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `__setitem__` dunder method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit.H(0)
+        circuit.CX(0, 1)
+        circuit.RX(np.pi/2, 0)
+
+        # Test the `__setitem__` dunder method
+        new_circuit = circuit_framework(2)
+        new_circuit.H(0)
+        new_circuit.CX(0, 1)
+
+        new_circuit[1] = circuit[1]
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+
+        assert checker_circuit == new_circuit
+
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit.H(0)
+        circuit.CX(0, 1)
+        circuit.RX(np.pi/2, 0)
+        circuit.RY(np.pi/2, 1)
+
+        # Test the `__setitem__` dunder method
+        new_circuit = circuit_framework(2)
+        new_circuit[:] = circuit[-1]
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.RY(np.pi/2, 1)
+
+        assert checker_circuit == new_circuit
 
     @pytest.mark.parametrize("circuit_frameworks", [CIRCUIT_FRAMEWORKS])
     def test_eq(
@@ -1041,7 +1149,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_frameworks`: list[type[qickit.circuit.Circuit]]
+        `circuit_frameworks`: list[type[quick.circuit.Circuit]]
             The circuit frameworks to test.
         """
         circuits = [circuit_framework(2) for circuit_framework in circuit_frameworks]
@@ -1064,7 +1172,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Define the circuits
@@ -1086,7 +1194,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Define the circuits
@@ -1108,7 +1216,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Define the circuits
@@ -1130,7 +1238,7 @@ class TestCircuitBase:
 
         Parameters
         ----------
-        `circuit_framework`: type[qickit.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Define the circuits

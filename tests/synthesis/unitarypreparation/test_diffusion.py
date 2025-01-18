@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +21,9 @@ import pytest
 import random
 from typing import Type
 
-from qickit.circuit import Circuit, QiskitCircuit
-from qickit.primitives import Operator
-from qickit.synthesis.unitarypreparation import Diffusion
+from quick.circuit import Circuit, QiskitCircuit
+from quick.primitives import Operator
+from quick.synthesis.unitarypreparation import Diffusion
 from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
@@ -38,12 +38,12 @@ def generate_random_circuit(
     ----------
     `max_depth` : int
         Maximum depth of the circuit.
-    `qc_framework` : type[qickit.circuit.Circuit]
+    `qc_framework` : type[quick.circuit.Circuit]
         Quantum circuit framework to be used.
 
     Returns
     -------
-    `circuit` : qickit.circuit.Circuit
+    `circuit` : quick.circuit.Circuit
         Random circuit.
     """
     n_qubits = 3
@@ -92,7 +92,7 @@ test_unitary = test_circuit.get_unitary()
 @pytest.mark.slow
 class TestDiffusion(UnitaryPreparationTemplate):
     """ `tests.synthesis.test_diffusion.TestDiffusion` is the tester class
-    for `qickit.synthesis.unitarypreparation.Diffusion` class.
+    for `quick.synthesis.unitarypreparation.Diffusion` class.
     """
     def test_init(self) -> None:
         Diffusion(QiskitCircuit)
@@ -143,7 +143,7 @@ class TestDiffusion(UnitaryPreparationTemplate):
             test_circuit = generate_random_circuit(7, QiskitCircuit)
             test_unitary = test_circuit.get_unitary()
 
-            # Initialize the qickit circuit
+            # Initialize the quick circuit
             circuit = QiskitCircuit(3)
 
             # Apply the unitary matrix to the circuit
@@ -163,7 +163,7 @@ class TestDiffusion(UnitaryPreparationTemplate):
             test_circuit = generate_random_circuit(7, QiskitCircuit)
             test_unitary = test_circuit.get_unitary()
 
-            # Initialize the qickit circuit
+            # Initialize the quick circuit
             circuit = QiskitCircuit(3)
 
             # Apply the unitary matrix to the circuit
@@ -179,7 +179,7 @@ class TestDiffusion(UnitaryPreparationTemplate):
         # Initialize the Diffusion
         diffusion_model = Diffusion(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(TypeError):
@@ -189,7 +189,7 @@ class TestDiffusion(UnitaryPreparationTemplate):
         # Initialize the Diffusion
         diffusion_model = Diffusion(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(TypeError):
@@ -205,7 +205,7 @@ class TestDiffusion(UnitaryPreparationTemplate):
         # Initialize the Diffusion
         diffusion_model = Diffusion(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(IndexError):

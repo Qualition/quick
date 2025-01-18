@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,9 +20,9 @@ from numpy.testing import assert_almost_equal
 import pytest
 from scipy.stats import unitary_group
 
-from qickit.circuit import QiskitCircuit
-from qickit.primitives import Operator
-from qickit.synthesis.unitarypreparation import QiskitUnitaryTranspiler
+from quick.circuit import QiskitCircuit
+from quick.primitives import Operator
+from quick.synthesis.unitarypreparation import QiskitUnitaryTranspiler
 from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
@@ -31,7 +31,7 @@ unitary_matrix = unitary_group.rvs(8).astype(complex)
 
 class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
     """ `tests.synthesis.test_qiskitunitarytranspiler.TestQiskitUnitaryTranspiler` is the tester class
-    for `qickit.synthesis.unitarypreparation.QiskitUnitaryTranspiler` class.
+    for `quick.synthesis.unitarypreparation.QiskitUnitaryTranspiler` class.
     """
     def test_init(self) -> None:
         QiskitUnitaryTranspiler(QiskitCircuit)
@@ -70,7 +70,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         # Initialize the Qiskit transpiler
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         # Apply the unitary matrix to the circuit
@@ -86,7 +86,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         # Initialize the Qiskit transpiler
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         # Apply the unitary matrix to the circuit
@@ -102,7 +102,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         # Initialize the Qiskit transpiler
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(TypeError):
@@ -112,7 +112,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         # Initialize the Qiskit transpiler
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(TypeError):
@@ -128,7 +128,7 @@ class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):
         # Initialize the Qiskit transpiler
         qiskit_transpiler = QiskitUnitaryTranspiler(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(IndexError):

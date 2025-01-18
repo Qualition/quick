@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,9 +20,9 @@ from numpy.testing import assert_almost_equal
 import pytest
 from scipy.stats import unitary_group
 
-from qickit.circuit import QiskitCircuit
-from qickit.primitives import Operator
-from qickit.synthesis.unitarypreparation import ShannonDecomposition
+from quick.circuit import QiskitCircuit
+from quick.primitives import Operator
+from quick.synthesis.unitarypreparation import ShannonDecomposition
 from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
@@ -31,7 +31,7 @@ unitary_matrix = unitary_group.rvs(8).astype(complex)
 
 class TestShannonDecomposition(UnitaryPreparationTemplate):
     """ `tests.synthesis.test_shannon_decomposition.TestShannonDecomposition` is the tester class
-    for `qickit.synthesis.unitarypreparation.ShannonDecomposition` class.
+    for `quick.synthesis.unitarypreparation.ShannonDecomposition` class.
     """
     def test_init(self) -> None:
         ShannonDecomposition(QiskitCircuit)
@@ -86,7 +86,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         circuit_4_counts = circuit_4.count_ops()
 
         # MCX here is the same as CX gate
-        # This is due to the `qickit.circuit.from_framework.FromQiskit` module
+        # This is due to the `quick.circuit.from_framework.FromQiskit` module
         # interpreting all controlled X gates as MCX
         assert circuit_3_counts["CX"] <= 20
         assert circuit_4_counts["CX"] <= 100
@@ -95,7 +95,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         # Initialize the Shannon decomposition
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         # Apply the unitary matrix to the circuit
@@ -111,7 +111,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         # Initialize the Shannon decomposition
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         # Apply the unitary matrix to the circuit
@@ -127,7 +127,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         # Initialize the Shannon decomposition
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(TypeError):
@@ -137,7 +137,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         # Initialize the Shannon decomposition
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(TypeError):
@@ -153,7 +153,7 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         # Initialize the Shannon decomposition
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
-        # Initialize the qickit circuit
+        # Initialize the quick circuit
         circuit = QiskitCircuit(3)
 
         with pytest.raises(IndexError):

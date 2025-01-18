@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,8 +20,8 @@ import numpy as np # type: ignore
 from numpy.typing import NDArray
 from scipy.spatial import distance # type: ignore
 
-from qickit.backend import AerBackend
-from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
+from quick.backend import AerBackend
+from quick.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 from tests.backend import Template
 
 
@@ -58,10 +58,10 @@ class TestAerBackend(Template):
         AerBackend()
 
     def test_get_partial_counts(self) -> None:
-        # Define the `qickit.backend.AerBackend` instance
+        # Define the `quick.backend.AerBackend` instance
         backend = AerBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(3)
         pennylane_circuit = PennylaneCircuit(3)
         qiskit_circuit = QiskitCircuit(3)
@@ -85,7 +85,7 @@ class TestAerBackend(Template):
 
             Parameters
             ----------
-            `circuit` : qickit.circuit.Circuit
+            `circuit` : quick.circuit.Circuit
                 The circuit to perform partial measurement on.
             """
             # Perform partial measurement on the first qubit and ensure the counts are correct
@@ -127,10 +127,10 @@ class TestAerBackend(Template):
         test_partial_measurement(tket_circuit)
 
     def test_get_counts(self) -> None:
-        # Define the `qickit.backend.AerBackend` instance
+        # Define the `quick.backend.AerBackend` instance
         backend = AerBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(2)
         pennylane_circuit = PennylaneCircuit(2)
         qiskit_circuit = QiskitCircuit(2)
@@ -174,10 +174,10 @@ class TestAerBackend(Template):
         assert cosine_similarity(tket_counts, output_counts) > 0.95
 
     def test_get_statevector(self) -> None:
-        # Define the `qickit.backend.AerBackend` instance
+        # Define the `quick.backend.AerBackend` instance
         backend = AerBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(2)
         pennylane_circuit = PennylaneCircuit(2)
         qiskit_circuit = QiskitCircuit(2)
@@ -218,10 +218,10 @@ class TestAerBackend(Template):
         assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
 
     def test_get_large_statevector(self) -> None:
-        # Define the `qickit.backend.AerBackend` instance
+        # Define the `quick.backend.AerBackend` instance
         backend = AerBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(10)
         pennylane_circuit = PennylaneCircuit(10)
         qiskit_circuit = QiskitCircuit(10)
@@ -290,10 +290,10 @@ class TestAerBackend(Template):
         assert 1 - distance.cosine(tket_statevector, output_statevector) > 0.99
 
     def test_get_unitary(self) -> None:
-        # Define the `qickit.backend.AerBackend` instance
+        # Define the `quick.backend.AerBackend` instance
         backend = AerBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(2)
         pennylane_circuit = PennylaneCircuit(2)
         qiskit_circuit = QiskitCircuit(2)
@@ -339,10 +339,10 @@ class TestAerBackend(Template):
         assert 1 - distance.cosine(tket_operator.flatten(), output_operator.flatten()) > 0.99
 
     def test_get_large_unitary(self) -> None:
-        # Define the `qickit.backend.AerBackend` instance
+        # Define the `quick.backend.AerBackend` instance
         backend = AerBackend()
 
-        # Define the `qickit.circuit.Circuit` instances
+        # Define the `quick.circuit.Circuit` instances
         cirq_circuit = CirqCircuit(10)
         pennylane_circuit = PennylaneCircuit(10)
         qiskit_circuit = QiskitCircuit(10)

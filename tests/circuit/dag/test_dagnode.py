@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,11 +18,11 @@ __all__ = ["TestDAGNode"]
 
 import pytest
 
-from qickit.circuit.dag import DAGNode
+from quick.circuit.dag import DAGNode
 
 
 class TestDAGNode:
-    """ `tests.circuit.dag.TestDAGNode` is the tester class for `qickit.circuit.dag.DAGNode`.
+    """ `tests.circuit.dag.TestDAGNode` is the tester class for `quick.circuit.dag.DAGNode`.
     """
     def test_init(self) -> None:
         """ Test the initialization of a `DAGNode` object.

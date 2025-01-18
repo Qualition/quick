@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ __all__ = ["TestControlled"]
 import pytest
 from typing import Type
 
-from qickit.circuit import Circuit
+from quick.circuit import Circuit
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
 
@@ -36,7 +36,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -71,7 +71,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -106,7 +106,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -141,7 +141,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -176,7 +176,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -211,7 +211,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -246,7 +246,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -281,7 +281,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -316,7 +316,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -351,7 +351,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -386,7 +386,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -426,7 +426,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -461,7 +461,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -493,7 +493,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -525,7 +525,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -557,7 +557,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -589,7 +589,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -621,7 +621,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -653,7 +653,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -685,7 +685,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -717,7 +717,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -749,7 +749,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=2)
@@ -781,7 +781,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=3)
@@ -813,7 +813,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=3)
@@ -845,7 +845,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=3)
@@ -877,7 +877,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=3)
@@ -909,7 +909,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=3)
@@ -941,7 +941,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=3)
@@ -973,7 +973,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1005,7 +1005,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1037,7 +1037,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1069,7 +1069,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1101,7 +1101,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1133,7 +1133,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1165,7 +1165,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1197,7 +1197,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1229,7 +1229,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -1261,7 +1261,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -1293,7 +1293,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -1325,7 +1325,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -1357,7 +1357,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=5)
@@ -1389,7 +1389,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=4)
@@ -1421,7 +1421,7 @@ class TestControlled:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The framework to convert the circuit to.
         """
         circuit = circuit_framework(num_qubits=1)

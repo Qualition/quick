@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,9 +23,9 @@ import pytest
 import random
 from scipy.stats import unitary_group
 
-from qickit.circuit import TKETCircuit
-from qickit.compiler import Compiler
-from qickit.primitives import Bra, Ket, Operator
+from quick.circuit import TKETCircuit
+from quick.compiler import Compiler
+from quick.primitives import Bra, Ket, Operator
 
 from tests.compiler import Template
 
@@ -40,7 +40,7 @@ unitary_matrix = unitary_group.rvs(8).astype(complex)
 
 
 class TestShendeCompiler(Template):
-    """ `tests.compiler.TestShendeCompiler` is the tester for the `qickit.compiler.Compiler` class.
+    """ `tests.compiler.TestShendeCompiler` is the tester for the `quick.compiler.Compiler` class.
     """
     def test_init(self) -> None:
         Compiler(circuit_framework=TKETCircuit)

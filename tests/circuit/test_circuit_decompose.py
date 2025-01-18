@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 from typing import Type
 
-from qickit.circuit import Circuit
+from quick.circuit import Circuit
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
 
@@ -34,7 +34,7 @@ GATE_TYPES = [
 
 
 class TestDecompose:
-    """ `tests.circuit.TestDecompose` is the tester class for `qickit.circuit.Circuit`'s
+    """ `tests.circuit.TestDecompose` is the tester class for `quick.circuit.Circuit`'s
     logging and decomposition to lower-level gates.
     """
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
@@ -51,7 +51,7 @@ class TestDecompose:
 
         Parameters
         ----------
-        framework : type[qickit.circuit.Circuit]
+        framework : type[quick.circuit.Circuit]
             The framework to be tested.
         """
         # Define the circuit and apply the X gate
@@ -82,7 +82,7 @@ class TestDecompose:
 
         Parameters
         ----------
-        framework : type[qickit.circuit.Circuit]
+        framework : type[quick.circuit.Circuit]
             The framework to be tested.
         """
         # Define the circuit and apply the Z gate
@@ -130,7 +130,7 @@ class TestDecompose:
 
         Parameters
         ----------
-        framework : type[qickit.circuit.Circuit]
+        framework : type[quick.circuit.Circuit]
             The framework to be tested.
         """
         # Define the circuit and apply the CZ gate
@@ -184,7 +184,7 @@ class TestDecompose:
 
         Parameters
         ----------
-        framework : type[qickit.circuit.Circuit]
+        framework : type[quick.circuit.Circuit]
             The framework to be tested.
         """
         # Define the circuit and apply the MCX gate

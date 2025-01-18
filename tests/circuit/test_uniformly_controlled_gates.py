@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,8 +22,8 @@ from numpy.typing import NDArray
 import pytest
 from typing import Type
 
-from qickit.circuit import Circuit
-from qickit.circuit.gate_matrix import PauliX, PauliY, Hadamard, RX, RY
+from quick.circuit import Circuit
+from quick.circuit.gate_matrix import PauliX, PauliY, Hadamard, RX, RY
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
 from tests.circuit.gate_utils import (
@@ -108,7 +108,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `angles` : list[float]
             The angles of the rotation.
@@ -167,7 +167,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `angles` : list[float]
             The angles of the rotation.
@@ -226,7 +226,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `angles` : list[float]
             The angles of the rotation.
@@ -267,7 +267,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `diagonal` : list[int]
             The diagonal of the matrix.
@@ -328,7 +328,7 @@ class TestUniformlyControlledGates:
             UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY
         ]
     ])
-    def test_UC_no_diagonal_no_simplification(
+    def test_Multiplexor_no_diagonal_no_simplification(
             self,
             circuit_framework: Type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
@@ -336,11 +336,11 @@ class TestUniformlyControlledGates:
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        """ Test the `UC` gate without diagonal and without simplification.
+        """ Test the `Multiplexor` gate without diagonal and without simplification.
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `single_qubit_gates` : list[NDArray[np.complex128]]
             The single-qubit gates.
@@ -354,8 +354,8 @@ class TestUniformlyControlledGates:
         # Define the quantum circuit
         circuit = circuit_framework(len(control_indices) + 1)
 
-        # Apply the UC gate
-        circuit.UC(
+        # Apply the Multiplexor gate
+        circuit.Multiplexor(
             single_qubit_gates,
             control_indices,
             target_index,
@@ -411,7 +411,7 @@ class TestUniformlyControlledGates:
             UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY
         ]
     ])
-    def test_UC_diagonal_no_simplification(
+    def test_Multiplexor_diagonal_no_simplification(
             self,
             circuit_framework: Type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
@@ -419,11 +419,11 @@ class TestUniformlyControlledGates:
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        """ Test the `UC` gate with diagonal and without simplification.
+        """ Test the `Multiplexor` gate with diagonal and without simplification.
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `single_qubit_gates` : list[NDArray[np.complex128]]
             The single-qubit gates.
@@ -437,8 +437,8 @@ class TestUniformlyControlledGates:
         # Define the quantum circuit
         circuit = circuit_framework(len(control_indices) + 1)
 
-        # Apply the UC gate
-        circuit.UC(
+        # Apply the Multiplexor gate
+        circuit.Multiplexor(
             single_qubit_gates,
             control_indices,
             target_index,
@@ -494,7 +494,7 @@ class TestUniformlyControlledGates:
             UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY
         ]
     ])
-    def test_UC_no_diagonal_simplification(
+    def test_Multiplexor_no_diagonal_simplification(
             self,
             circuit_framework: Type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
@@ -502,11 +502,11 @@ class TestUniformlyControlledGates:
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        """ Test the `UC` gate without diagonal and with simplification.
+        """ Test the `Multiplexor` gate without diagonal and with simplification.
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `single_qubit_gates` : list[NDArray[np.complex128]]
             The single-qubit gates.
@@ -520,8 +520,8 @@ class TestUniformlyControlledGates:
         # Define the quantum circuit
         circuit = circuit_framework(len(control_indices) + 1)
 
-        # Apply the UC gate
-        circuit.UC(
+        # Apply the Multiplexor gate
+        circuit.Multiplexor(
             single_qubit_gates,
             control_indices,
             target_index,
@@ -577,7 +577,7 @@ class TestUniformlyControlledGates:
             UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY
         ]
     ])
-    def test_UC_diagonal_simplification(
+    def test_Multiplexor_diagonal_simplification(
             self,
             circuit_framework: Type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
@@ -585,11 +585,11 @@ class TestUniformlyControlledGates:
             target_index: int,
             expected: NDArray[np.complex128]
         ) -> None:
-        """ Test the `UC` gate with diagonal and simplification.
+        """ Test the `Multiplexor` gate with diagonal and simplification.
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         `single_qubit_gates` : list[NDArray[np.complex128]]
             The single-qubit gates.
@@ -603,8 +603,8 @@ class TestUniformlyControlledGates:
         # Define the quantum circuit
         circuit = circuit_framework(len(control_indices) + 1)
 
-        # Apply the UC gate
-        circuit.UC(
+        # Apply the Multiplexor gate
+        circuit.Multiplexor(
             single_qubit_gates,
             control_indices,
             target_index,
@@ -616,7 +616,7 @@ class TestUniformlyControlledGates:
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_UCPauliRot_invalid_num_angles(
+    def test_PauliMultiplexor_invalid_num_angles(
             self,
             circuit_framework: type[Circuit]
         ) -> None:
@@ -624,7 +624,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         with pytest.raises(ValueError):
@@ -632,7 +632,7 @@ class TestUniformlyControlledGates:
             circuit.UCRX([np.pi/2], [1, 0], 2)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_UCPauliRot_invalid_num_controls(
+    def test_PauliMultiplexor_invalid_num_controls(
             self,
             circuit_framework: type[Circuit]
         ) -> None:
@@ -640,7 +640,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         with pytest.raises(ValueError):
@@ -648,7 +648,7 @@ class TestUniformlyControlledGates:
             circuit.UCRX([np.pi/2, np.pi/3, np.pi/4, np.pi/5], [0], 2)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_UCPauliRot_invalid_rot_axis(
+    def test_PauliMultiplexor_invalid_rot_axis(
             self,
             circuit_framework: type[Circuit]
         ) -> None:
@@ -656,12 +656,12 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         with pytest.raises(ValueError):
             circuit = circuit_framework(3)
-            circuit.UCPauliRot([np.pi/2, np.pi/3, np.pi/4, np.pi/5], "invalid", [1, 0], 2) # type: ignore
+            circuit.PauliMultiplexor([np.pi/2, np.pi/3, np.pi/4, np.pi/5], "invalid", [1, 0], 2) # type: ignore
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_Diagonal_invalid_diagonal(
@@ -672,7 +672,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         with pytest.raises(ValueError):
@@ -692,7 +692,7 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         with pytest.raises(ValueError):
@@ -700,7 +700,7 @@ class TestUniformlyControlledGates:
             circuit.Diagonal(np.array([1, 1, 1, -1, 1, -1, 1, -1]), [0, 1])
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_UC_invalid_single_qubit_gate(
+    def test_Multiplexor_invalid_single_qubit_gate(
             self,
             circuit_framework: type[Circuit]
         ) -> None:
@@ -708,26 +708,26 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         # Invalid dimension
         with pytest.raises(ValueError):
             circuit = circuit_framework(3)
-            circuit.UC([np.array([[1, 0, 0], [0, 0, 1]])], [0, 1], 2)
+            circuit.Multiplexor([np.array([[1, 0, 0], [0, 0, 1]])], [0, 1], 2)
 
         # Invalid number of single-qubit gates
         with pytest.raises(ValueError):
             circuit = circuit_framework(3)
-            circuit.UC([np.eye(2), np.eye(2), np.eye(2)], [0, 1], 2) # type: ignore
+            circuit.Multiplexor([np.eye(2), np.eye(2), np.eye(2)], [0, 1], 2) # type: ignore
 
         # Non-unitary matrix
         with pytest.raises(ValueError):
             circuit = circuit_framework(2)
-            circuit.UC([np.array([[1, 0], [0, 1]]), np.array([[1, 0], [1, 1]])], [0], 1)
+            circuit.Multiplexor([np.array([[1, 0], [0, 1]]), np.array([[1, 0], [1, 1]])], [0], 1)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_UC_invalid_number_of_qubits(
+    def test_Multiplexor_invalid_number_of_qubits(
             self,
             circuit_framework: type[Circuit]
         ) -> None:
@@ -735,9 +735,9 @@ class TestUniformlyControlledGates:
 
         Parameters
         ----------
-        `circuit_framework` : type[qickit.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The quantum circuit framework.
         """
         with pytest.raises(ValueError):
             circuit = circuit_framework(3)
-            circuit.UC([np.eye(2), np.eye(2)], [0, 1], 2) # type: ignore
+            circuit.Multiplexor([np.eye(2), np.eye(2)], [0, 1], 2) # type: ignore

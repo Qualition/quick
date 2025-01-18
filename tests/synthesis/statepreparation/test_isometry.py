@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,9 +22,9 @@ from numpy.testing import assert_almost_equal
 import pytest
 import random
 
-from qickit.circuit import QiskitCircuit
-from qickit.primitives import Bra, Ket
-from qickit.synthesis.statepreparation import Isometry
+from quick.circuit import QiskitCircuit
+from quick.primitives import Bra, Ket
+from quick.synthesis.statepreparation import Isometry
 from tests.synthesis.statepreparation import StatePreparationTemplate
 
 # Define the test data
@@ -37,7 +37,7 @@ checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
 class TestStatePreparationIsometry(StatePreparationTemplate):
     """ `tests.synthesis.test_shende.TestStatePreparationIsometry` is the tester class
-    for `qickit.synthesis.statepreparation.Isometry` class.
+    for `quick.synthesis.statepreparation.Isometry` class.
     """
     def test_init(self) -> None:
         Isometry(QiskitCircuit)

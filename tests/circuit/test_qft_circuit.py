@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@ from numpy.typing import NDArray
 import pytest
 from typing import Type
 
-from qickit.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
+from quick.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 
 from tests.circuit.gate_utils import (
     qft_no_swap_no_inverse_approx0_5qubits,
@@ -96,7 +96,7 @@ CIRCUIT_FRAMEWORKS = [CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit]
 
 
 class TestQFTCircuit:
-    """ `tests.circuit.TestQFTCircuit` is the tester class for the `.qft` method of `qickit.circuit.Circuit`.
+    """ `tests.circuit.TestQFTCircuit` is the tester class for the `.qft` method of `quick.circuit.Circuit`.
     """
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     @pytest.mark.parametrize("num_qubits, approximation_degree, expected_unitary", [
@@ -128,7 +128,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[qickit.circuit.Circuit]
+        `circuit_framework`: Type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -176,7 +176,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[qickit.circuit.Circuit]
+        `circuit_framework`: Type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -224,7 +224,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[qickit.circuit.Circuit]
+        `circuit_framework`: Type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -272,7 +272,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[qickit.circuit.Circuit]
+        `circuit_framework`: Type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -299,7 +299,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[qickit.circuit.Circuit]
+        `circuit_framework`: Type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         """
         qft_circuit = circuit_framework(5)
@@ -316,7 +316,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[qickit.circuit.Circuit]
+        `circuit_framework`: Type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         """
         qft_circuit = circuit_framework(5)

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,7 +40,7 @@ class UnitaryPreparationTemplate(ABC):
 
     @abstractmethod
     def test_prepare_unitary_operator(self) -> None:
-        """ Test the preparation of the unitary matrix from a `qickit.primitives.Operator`.
+        """ Test the preparation of the unitary matrix from a `quick.primitives.Operator`.
         """
 
     @abstractmethod
@@ -50,7 +50,7 @@ class UnitaryPreparationTemplate(ABC):
 
     @abstractmethod
     def test_apply_unitary_operator(self) -> None:
-        """ Test the application of the unitary matrix from a `qickit.primitives.Operator`.
+        """ Test the application of the unitary matrix from a `quick.primitives.Operator`.
         """
 
     @abstractmethod

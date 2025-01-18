@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,12 +35,12 @@ class StatePreparationTemplate(ABC):
 
     @abstractmethod
     def test_prepare_state_ket(self) -> None:
-        """ Test the preparation of the state from a `qickit.primitives.Ket` instance.
+        """ Test the preparation of the state from a `quick.primitives.Ket` instance.
         """
 
     @abstractmethod
     def test_prepare_state_bra(self) -> None:
-        """ Test the preparation of the state from a `qickit.primitives.Bra` instance.
+        """ Test the preparation of the state from a `quick.primitives.Bra` instance.
         """
 
     @abstractmethod
@@ -50,12 +50,12 @@ class StatePreparationTemplate(ABC):
 
     @abstractmethod
     def test_apply_state_ket(self) -> None:
-        """ Test the application of the state from a `qickit.primitives.Ket` instance.
+        """ Test the application of the state from a `quick.primitives.Ket` instance.
         """
 
     @abstractmethod
     def test_apply_state_bra(self) -> None:
-        """ Test the application of the state from a `qickit.primitives.Bra` instance.
+        """ Test the application of the state from a `quick.primitives.Bra` instance.
         """
 
     @abstractmethod

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://github.com/Qualition/QICKIT/blob/main/LICENSE
+#     https://github.com/Qualition/quick/blob/main/LICENSE
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -89,17 +89,17 @@ class Template(ABC):
 
     @abstractmethod
     def test_compile_primitive_bra(self) -> None:
-        """ Test the compilation of a `qickit.primitives.Bra` instance.
+        """ Test the compilation of a `quick.primitives.Bra` instance.
         """
 
     @abstractmethod
     def test_compile_primitive_ket(self) -> None:
-        """ Test the compilation of a `qickit.primitives.Ket` instance.
+        """ Test the compilation of a `quick.primitives.Ket` instance.
         """
 
     @abstractmethod
     def test_compile_primitive_operator(self) -> None:
-        """ Test the compilation of a `qickit.primitives.Operator` instance.
+        """ Test the compilation of a `quick.primitives.Operator` instance.
         """
 
     @abstractmethod
@@ -114,17 +114,17 @@ class Template(ABC):
 
     @abstractmethod
     def test_compile_bra(self) -> None:
-        """ Test the compilation of a `qickit.primitives.Bra` instance using `compiler.compile()`.
+        """ Test the compilation of a `quick.primitives.Bra` instance using `compiler.compile()`.
         """
 
     @abstractmethod
     def test_compile_ket(self) -> None:
-        """ Test the compilation of a `qickit.primitives.Ket` instance using `compiler.compile()`.
+        """ Test the compilation of a `quick.primitives.Ket` instance using `compiler.compile()`.
         """
 
     @abstractmethod
     def test_compile_operator(self) -> None:
-        """ Test the compilation of a `qickit.primitives.Operator` instance using `compiler.compile()`.
+        """ Test the compilation of a `quick.primitives.Operator` instance using `compiler.compile()`.
         """
 
     @abstractmethod
