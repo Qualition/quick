@@ -262,5 +262,5 @@ $RECYCLE.BIN/
 quick/circuit/circuit_log_ignore.py
 quick/circuit/cudaqcircuit_ignore.py
 quick/circuit/from_framework/from_qasm_ignore.py
-tests/circuit/test_cudaq_circuit_temp.py
+tests/circuit/test_cudaq_circuit_ignore.py
 tests/circuit/gate_matrix_checkers/gate_util_maker.ipynb
