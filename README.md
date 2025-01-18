@@ -58,7 +58,7 @@ py -m pytest tests --runslow
 
 ## Contribution Guidelines
 
-If you'd like to contribute to `quick`, please take a look at our [`contribution guidelines`](). By participating, you are expected to uphold our code of conduct.
+If you'd like to contribute to `quick`, please take a look at our [`contribution guidelines`](CONTRIBUTING). By participating, you are expected to uphold our code of conduct.
 
 We use [`GitHub issues`](https://github.com/Qualition/quick/issues) for tracking requests and bugs.
 
