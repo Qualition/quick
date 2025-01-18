@@ -27,13 +27,13 @@ jobs:
             pip install .[dev]
 
         - name: Run tests with pytest
-          run: pytest tests/ --cov=qickit --cov-report=xml
+          run: pytest tests/ --cov=quick --cov-report=xml
 
         - name: Run mypy
-          run: mypy qickit
+          run: mypy quick
 
         - name: Run ruff
-          run: ruff check qickit
+          run: ruff check quick
 
         - name: Report to codecov
           uses: codecov/codecov-action@v5 # v5.1.2
