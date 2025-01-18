@@ -112,7 +112,7 @@ class MCXVChain:
             circuit: Circuit,
             control_indices: int | list[int],
             target_index: int,
-            ancilla_indices: int | list[int] = []
+            ancilla_indices: int | list[int] | None = None
         ) -> None:
         """ Apply the V-chain decomposition of the MCX gate.
 
@@ -138,6 +138,9 @@ class MCXVChain:
         -----
         >>> mcx_vchain.apply_decomposition(circuit, [0, 1, 2, 3], 4, [5, 6])
         """
+        if ancilla_indices is None:
+            ancilla_indices = []
+
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         ancilla_indices = [ancilla_indices] if isinstance(ancilla_indices, int) else ancilla_indices
 

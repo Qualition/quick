@@ -64,10 +64,10 @@ We use [`GitHub issues`](https://github.com/Qualition/quick/issues) for tracking
 ## Acknowledgement
 
 This work would not be possible without enlightening conversations and guidance from the following individuals who greatly influenced the package:
-- https://github.com/timotheyca
-- https://github.com/eivl
-- https://github.com/MrHemlock
-- https://github.com/KRRT7
+- <https://github.com/timotheyca>
+- <https://github.com/eivl>
+- <https://github.com/MrHemlock>
+- <https://github.com/KRRT7>
 
 ## License
 
