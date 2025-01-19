@@ -2,12 +2,14 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/quick-core)](//pypi.org/project/quick-core)
 [![License](https://img.shields.io/github/license/Qualition/quick.svg?)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
-[![Tests](https://github.com/Qualition/QICKIT/actions/workflows/tests.yml/badge.svg)](https://github.com/qualition/quick/actions/workflows/tests.yml)
+[![Tests](https://github.com/Qualition/quick/actions/workflows/tests.yml/badge.svg)](https://github.com/qualition/quick/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/github/Qualition/quick/branch/main/graph/badge.svg?token=IHWJZG8VJT)](https://codecov.io/github/Qualition/quick)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e287a2eed9e24d5e9d4a3ffe911ce6a5)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-![image](https://github.com/Qualition/QICKIT/assets/73689800/6878b3cd-0bd7-4b11-86db-189cb241a3f8)
+![Quick Logo (Light Mode)](https://github.com/user-attachments/assets/f49e2684-7cff-4ced-807c-add616bb6527#gh-light-mode-only)
+
+![Quick Logo (Dark Mode)](https://github.com/user-attachments/assets/8ac68d33-3be2-4620-8160-e0d8a5888813#gh-dark-mode-only)
 
 `quick` is an agnostic gate-based circuit SDK, providing an integrated interface for using any supported quantum circuit framework seamlessly, and provides a complete pipeline from construction of circuits to mapping on actual hardware.
 
@@ -71,10 +73,6 @@ This work would not be possible without enlightening conversations and guidance 
 - <https://github.com/MrHemlock>
 - <https://github.com/KRRT7>
 
-## License
-
-Distributed under Apache v2.0 License. See [`LICENSE`](LICENSE) for details.
-
 ## Citation
 
 If you wish to attribute/distribute our work, please cite the accompanying paper:
@@ -86,3 +84,7 @@ If you wish to attribute/distribute our work, please cite the accompanying paper
    journal={arXiv preprint arXiv:TBD},
 }
 ```
+
+## License
+
+Distributed under Apache v2.0 License. See [`LICENSE`](LICENSE) for details.
