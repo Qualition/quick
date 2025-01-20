@@ -43,3 +43,4 @@ from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit
 from tests.circuit.test_qiskit_circuit import TestQiskitCircuit
 from tests.circuit.test_tket_circuit import TestTKETCircuit
 from tests.circuit.test_qft_circuit import TestQFTCircuit
+from tests.circuit.test_uniformly_controlled_gates import TestUniformlyControlledGates

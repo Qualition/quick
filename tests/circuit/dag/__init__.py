@@ -18,3 +18,6 @@ __all__ = [
     "TestDAGNode",
     "TestDAGCircuit"
 ]
+
+from tests.circuit.dag.test_dagnode import TestDAGNode
+from tests.circuit.dag.test_dagcircuit import TestDAGCircuit

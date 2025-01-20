@@ -51,11 +51,11 @@ class TestShendeCompiler(Template):
 
     def test_init_invalid_state_preparation(self) -> None:
         with pytest.raises(TypeError):
-            Compiler(circuit_framework=TKETCircuit, state_preparation=int) # type: ignore
+            Compiler(circuit_framework=TKETCircuit, state_prep=int) # type: ignore
 
     def test_init_invalid_unitary_preparation(self) -> None:
         with pytest.raises(TypeError):
-            Compiler(circuit_framework=TKETCircuit, unitary_preparation=int) # type: ignore
+            Compiler(circuit_framework=TKETCircuit, unitary_prep=int) # type: ignore
 
     def test_init_invalid_optimizer(self) -> None:
         with pytest.raises(TypeError):
