@@ -16,6 +16,10 @@
 """
 
 from __future__ import annotations
+import pennylane as qml
+from collections.abc import Sequence
+from quick.circuit import Circuit
+from quick.circuit.circuit import GATES
 
 __all__ = ["PennylaneCircuit"]
 
@@ -131,29 +135,30 @@ class PennylaneCircuit(Circuit):
             angles: Sequence[float] = [0, 0, 0]
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        if isinstance(target_indices, int):
+            target_indices = [target_indices]
+        if isinstance(control_indices, int):
+            control_indices = [control_indices]
 
-        # Lazily extract the value of the gate from the mapping to avoid
-        # creating all the gates at once, and to maintain the abstraction
-        # Apply the gate operation to the specified qubits
+        # Lazily extract the value of the gate from the mapping to avoid creating all
+        # the gates at once and maintaining the abstraction for efficiency
         gate_operation = self.gate_mapping[gate](angles)
+
+        append_to_circuit = self.circuit.append
 
         if control_indices:
             for target_index in target_indices:
-                self.circuit.append(
-                qml.ControlledQubitUnitary(
-                    gate_operation,
-                    control_wires=control_indices,
-                    wires=target_index
+                append_to_circuit(
+                    qml.ControlledQubitUnitary(
+                        gate_operation,
+                        control_wires=control_indices,
+                        wires=target_index,
+                    )
                 )
-            )
             return
 
         for target_index in target_indices:
-            self.circuit.append(
-                qml.QubitUnitary(gate_operation, wires=target_index)
-            )
+            append_to_circuit(qml.QubitUnitary(gate_operation, wires=target_index))
 
     def GlobalPhase(
             self,
