@@ -60,10 +60,19 @@ def generate_gray_code(num_bits: int) -> list[str]:
     """
     if num_bits <= 0:
         raise ValueError("Cannot generate the gray code for less than 1 bit.")
-    result = [0]
-    for i in range(num_bits):
-        result += [x + 2**i for x in reversed(result)]
-    return [format(x, f"0{num_bits}b") for x in result]
+    
+    # Initial gray code for a single bit
+    result = ['0', '1']
+    
+    # Iteratively build the gray code for more than one bit
+    for i in range(1, num_bits):
+        # Reflect the current code
+        reflected = result[::-1]
+        # Prefix original codes with '0' and reflected codes with '1'
+        result = ['0' + x for x in result] + ['1' + x for x in reflected]
+    
+    # Return only the required number of bits representation
+    return result[:2**num_bits]
 
 def apply_cu(
         circuit: Circuit,
