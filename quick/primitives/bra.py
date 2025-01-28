@@ -16,6 +16,8 @@
 """
 
 from __future__ import annotations
+import numpy as np
+from numpy.typing import NDArray
 
 __all__ = ["Bra"]
 
@@ -162,8 +164,8 @@ class Bra:
 
     @staticmethod
     def check_padding(data: NDArray[np.complex128]) -> bool:
-        """ Check if a data is normalized to 2-norm.
-
+        """Check if data is padded to the nearest power of 2.
+        
         Parameters
         ----------
         `data` : NDArray[np.complex128]
@@ -172,14 +174,17 @@ class Bra:
         Returns
         -------
         bool
-            Whether the vector is normalized to 2-norm or not.
+            Whether the vector length is padded to the nearest power of 2.
 
         Usage
         -----
-        >>> data = np.array([[1, 2], [3, 4]])
-        >>> check_padding(data)
+        >>> data = np.array([1, 2, 3, 4])
+        >>> Bra.check_padding(data)
+        True
         """
-        return (data.shape[0] & (data.shape[0]-1) == 0) and data.shape[0] != 0
+        # Utilize bitwise operation to check if the number is a power of 2.
+        # Optimization: Remove redundant parentheses and zero check.
+        return (data.size & (data.size - 1)) == 0
 
     def is_padded(self) -> None:
         """ Check if a `quick.data.Data` instance is padded to a power of 2.
