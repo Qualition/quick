@@ -326,7 +326,8 @@ def a(k: int, s: int) -> int:
     int
         The value of $a^k_s$.
     """
-    return k // 2**s
+    shift = 1 << s  # Optimized by replacing 2**s with shift operation
+    return k // shift
 
 def b(k: int, s: int) -> int:
     """ Return the value of $b^k_s$.
@@ -353,7 +354,8 @@ def b(k: int, s: int) -> int:
     int
         The value of $b^k_s$.
     """
-    return k - a(k, s) * 2**s
+    shift = 1 << s  # Optimized by replacing 2**s with shift operation
+    return k - (k // shift) * shift
 
 def reverse_qubit_state(
         state: NDArray[np.complex128],
