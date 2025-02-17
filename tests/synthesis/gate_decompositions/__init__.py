@@ -13,30 +13,15 @@
 # limitations under the License.
 
 __all__ = [
-    "test_one_qubit_zyz_decomposition",
-    "test_one_qubit_u3_decomposition",
-    "test_invalid_basis_fail",
-    "test_two_qubit_decomposition",
-    "test_two_qubit_decomposition_up_to_diagonal",
-    "test_invalid_indices_fail",
-    "test_invalid_unitary_fail",
-    "test_weyl_coordinates_simple",
-    "test_weyl_coordinates_random"
+    "TestOneQubitDecomposition",
+    "TestTwoQubitDecomposition",
+    "TestWeyl",
+    "TestMCXUtils",
+    "TestMCXVChain"
 ]
 
-from tests.synthesis.gate_decompositions.test_one_qubit_decomposition import (
-    test_one_qubit_zyz_decomposition,
-    test_one_qubit_u3_decomposition,
-    test_invalid_basis_fail
-)
-from tests.synthesis.gate_decompositions.two_qubit_decomposition.test_two_qubit_decomposition import (
-    test_two_qubit_decomposition,
-    test_two_qubit_decomposition_up_to_diagonal,
-    test_invalid_indices_fail,
-    test_invalid_unitary_fail
-)
-
-from tests.synthesis.gate_decompositions.two_qubit_decomposition.test_weyl import (
-    test_weyl_coordinates_simple,
-    test_weyl_coordinates_random
-)
+from tests.synthesis.gate_decompositions.test_one_qubit_decomposition import TestOneQubitDecomposition
+from tests.synthesis.gate_decompositions.two_qubit_decomposition.test_two_qubit_decomposition import TestTwoQubitDecomposition
+from tests.synthesis.gate_decompositions.two_qubit_decomposition.test_weyl import TestWeyl
+from tests.synthesis.gate_decompositions.multi_controlled_decomposition.test_mcx_utils import TestMCXUtils
+from tests.synthesis.gate_decompositions.multi_controlled_decomposition.test_mcx_vchain import TestMCXVChain

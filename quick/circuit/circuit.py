@@ -86,6 +86,11 @@ CONTROL_MAPPING = {
 
 # List of 1Q gates wrapped by individual frameworks
 GATES = Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase", "U3"]
+SELF_ADJ_GATES = [
+    "I", "X", "Y", "Z", "H", "SWAP",
+    "CX", "CY", "CZ", "CH", "CSWAP",
+    "MCX", "MCY", "MCZ", "MCH", "MCSWAP"
+]
 
 # Constants
 PI = np.pi
@@ -183,6 +188,42 @@ class Circuit(ABC):
             value = float(value)
         return value
 
+    def _process_single_qubit_index(
+            self,
+            qubit_index: Any
+        ) -> int:
+        """ Process a single qubit index.
+
+        Parameters
+        ----------
+        `qubit_index` : Any
+            The value of the qubit index.
+
+        Returns
+        -------
+        `qubit_index` : int
+            The value of the qubit index.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+        IndexError
+            - Qubit index out of range.
+        """
+        if not isinstance(qubit_index, int):
+            raise TypeError(
+                "Qubit index must be an integer. "
+                f"Unexpected type {type(qubit_index)} received."
+            )
+
+        if qubit_index >= self.num_qubits or qubit_index < -self.num_qubits:
+            raise IndexError(f"Qubit index {qubit_index} out of range {self.num_qubits-1}.")
+
+        qubit_index = qubit_index if qubit_index >= 0 else self.num_qubits + qubit_index
+
+        return qubit_index
+
     def _validate_qubit_index(
             self,
             name: str,
@@ -211,34 +252,45 @@ class Circuit(ABC):
         """
         if name in ALL_QUBIT_KEYS:
             if isinstance(value, list):
+                # For simplicity, we consider the [i] index to be just 1 (int instead of list)
                 if len(value) == 1:
-                    value = value[0]
-
-                    if not isinstance(value, int):
-                        raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
-
-                    if value >= self.num_qubits or value < -self.num_qubits:
-                        raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
-
-                    value = value if value >= 0 else self.num_qubits + value
-
+                    value = self._process_single_qubit_index(value[0])
                 else:
-                    for i, index in enumerate(value):
-                        if not isinstance(index, int):
-                            raise TypeError(f"Qubit index must be an integer. Unexpected type {type(value)} received.")
+                    value = [self._process_single_qubit_index(qubit) for qubit in value]
 
-                        if index >= self.num_qubits or index < -self.num_qubits:
-                            raise IndexError(f"Qubit index {index} out of range {self.num_qubits-1}.")
-
-                        value[i] = index if index >= 0 else self.num_qubits + index
-
-            elif isinstance(value, int):
-                if value >= self.num_qubits or value < -self.num_qubits:
-                    raise IndexError(f"Qubit index {value} out of range {self.num_qubits-1}.")
-
-                value = value if value >= 0 else self.num_qubits + value
+            else:
+                value = self._process_single_qubit_index(value)
 
         return value
+
+    def _validate_single_angle(
+            self,
+            angle: Any
+        ) -> float:
+        """ Ensure angles are valid.
+
+        Parameters
+        ----------
+        `value` : Any
+            The value of the parameter.
+
+        Returns
+        -------
+        `value` : float
+            The value of the parameter.
+
+        Raises
+        ------
+        TypeError
+            - Angle must be a number.
+        """
+        if not isinstance(angle, (int, float)):
+            raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
+
+        if abs(angle) <= EPSILON or abs(angle % PI_DOUBLE) <= EPSILON:
+            angle = 0.0
+
+        return angle
 
     def _validate_angle(
             self,
@@ -267,19 +319,16 @@ class Circuit(ABC):
         """
         if name in ANGLE_KEYS:
             if isinstance(value, list):
-                for angle in value:
-                    if not isinstance(angle, (int, float)):
-                        raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
-                    if abs(angle) <= EPSILON or abs(angle % PI_DOUBLE) <= EPSILON:
-                        angle = 0
+                value = [self._validate_single_angle(angle) for angle in value]
 
                 if all(angle == 0 for angle in value):
                     # Indicate no operation needed
                     return None
+
             else:
-                if not isinstance(value, (int, float)):
-                    raise TypeError(f"Angle must be a number. Unexpected type {type(value)} received.")
-                if abs(value) <= EPSILON or abs(value % PI_DOUBLE) <= EPSILON:
+                value = self._validate_single_angle(value)
+
+                if value == 0:
                     # Indicate no operation needed
                     return None
 
@@ -312,6 +361,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         IndexError
             - Qubit index out of range.
+        ValueError
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -324,12 +375,17 @@ class Circuit(ABC):
         # in the circuit log
         params.pop("self", None)
 
+        qubit_indices = []
+
         for name, value in params.items():
             value = self._convert_param_type(value)
             value = self._validate_qubit_index(name, value)
 
             if value is None:
                 continue
+
+            if name in ALL_QUBIT_KEYS:
+                qubit_indices.append(value) if isinstance(value, int) else qubit_indices.extend(value)
 
             value = self._validate_angle(name, value)
 
@@ -338,6 +394,17 @@ class Circuit(ABC):
                 return None
 
             params[name] = value
+
+        if sorted(list(set(qubit_indices))) != sorted(qubit_indices):
+            raise ValueError(
+                "Qubit indices must be unique. "
+                f"Received {qubit_indices} instead."
+            )
+
+        # Given the control state affects the circuit by adding X gates to
+        # 0 valued control qubits, we don't need to include the control state
+        # in the gate definition
+        params.pop("control_state", None)
 
         # Add the gate to the circuit log
         gate_dict = {"gate": gate, **params, "definition": []}
@@ -358,6 +425,11 @@ class Circuit(ABC):
         of operations as a new gate. This is useful for defining new gates in the
         circuit without introducing breaking changes.
 
+        Parameters
+        ----------
+        `gate` : dict | None
+            The gate to decompose.
+
         Usage
         -----
         >>> def NewGate(qubit_indices: int | Sequence[int]):
@@ -377,6 +449,61 @@ class Circuit(ABC):
             yield
         finally:
             self.stack.pop()
+
+    @contextmanager
+    def controlled_state(
+            self,
+            control_state: str | None,
+            control_indices: Sequence[int]
+        ):
+        """ Apply a controlled state to the circuit.
+
+        Notes
+        -----
+        This context manager is used to apply a controlled state to the circuit.
+        This is useful for defining controlled gates in the circuit.
+
+        Parameters
+        ----------
+        `control_state` : str | None
+            The control state of the qubits.
+        `control_indices` : Sequence[int]
+            The index of the control qubit(s).
+
+        Raises
+        ------
+        ValueError
+            - Control state and control indices must have the same length.
+
+        Usage
+        -----
+        >>> with circuit.controlled_state(control_state, control_indices):
+        >>>     circuit.CX(0, 1)
+        """
+        # Find the indices of the open control qubits (we follow the MSB convention for control state
+        # for simplicity)
+        if control_state is None:
+            control_state_bits = []
+        else:
+            if len(control_state) != len(control_indices):
+                raise ValueError("Control state and control indices must have the same length.")
+
+            control_state_bits = [i for i, bit in enumerate(control_state) if bit == "0"]
+
+        # Sandwich the control qubit with X gates to reverse the activation
+        # condition and maintain reversibility
+        # The implementation separates the control state reversal from the
+        # actual gate implementation to provide a simpler definition of the
+        # gate
+        # We put the first X call above the gate implementation so that the
+        # X gate shows up in the circuit log before the CX gate
+        if control_state_bits:
+            self.X(control_state_bits)
+        try:
+            yield
+        finally:
+            if control_state_bits:
+                self.X(control_state_bits)
 
     @staticmethod
     @abstractmethod
@@ -474,6 +601,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -528,6 +656,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -581,6 +710,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -634,6 +764,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -676,6 +807,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -717,6 +849,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -758,6 +891,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -799,6 +933,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -840,6 +975,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -886,6 +1022,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -932,6 +1069,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -979,6 +1117,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1028,6 +1167,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1078,6 +1218,7 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1133,6 +1274,7 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1188,6 +1330,7 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1241,6 +1384,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1293,6 +1437,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1347,6 +1492,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1393,6 +1539,7 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1446,6 +1593,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -1461,7 +1609,8 @@ class Circuit(ABC):
     def CX(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Pauli-X gate to the circuit.
 
@@ -1489,6 +1638,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1496,23 +1650,29 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CX(control_index=0, target_index=1)
+        >>> circuit.CX(control_index=0, target_index=1, control_state="0")
         """
-        _ = self.process_gate_params(gate=self.CX.__name__, params=locals())
+        local_params = locals()
 
-        self._gate_mapping(
-            gate="X",
-            control_indices=control_index,
-            target_indices=target_index
-        )
+        with self.controlled_state(control_state, [control_index]):
+            _ = self.process_gate_params(gate=self.CX.__name__, params=local_params)
+
+            self._gate_mapping(
+                gate="X",
+                control_indices=control_index,
+                target_indices=target_index
+            )
 
     def CY(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Pauli-Y gate to the circuit.
 
@@ -1536,6 +1696,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1543,22 +1708,28 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CY(control_index=0, target_index=1)
+        >>> circuit.CY(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CY.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.Sdg(target_index)
-            self.CX(control_index, target_index)
-            self.S(target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CY.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.Sdg(target_index)
+                self.CX(control_index, target_index)
+                self.S(target_index)
 
     def CZ(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Pauli-Z gate to the circuit.
 
@@ -1582,6 +1753,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1589,22 +1765,28 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CZ(control_index=0, target_index=1)
+        >>> circuit.CZ(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CZ.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.H(target_index)
-            self.CX(control_index, target_index)
-            self.H(target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CZ.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.H(target_index)
+                self.CX(control_index, target_index)
+                self.H(target_index)
 
     def CH(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Hadamard gate to the circuit.
 
@@ -1628,6 +1810,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1635,26 +1822,32 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CH(control_index=0, target_index=1)
+        >>> circuit.CH(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CH.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.S(target_index)
-            self.H(target_index)
-            self.T(target_index)
-            self.CX(control_index, target_index)
-            self.Tdg(target_index)
-            self.H(target_index)
-            self.Sdg(target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CH.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.S(target_index)
+                self.H(target_index)
+                self.T(target_index)
+                self.CX(control_index, target_index)
+                self.Tdg(target_index)
+                self.H(target_index)
+                self.Sdg(target_index)
 
     def CS(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Clifford-S gate to the circuit.
 
@@ -1678,6 +1871,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1685,24 +1883,30 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CS(control_index=0, target_index=1)
+        >>> circuit.CS(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CS.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.T(control_index)
-            self.CX(control_index, target_index)
-            self.Tdg(target_index)
-            self.CX(control_index, target_index)
-            self.T(target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CS.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.T(control_index)
+                self.CX(control_index, target_index)
+                self.Tdg(target_index)
+                self.CX(control_index, target_index)
+                self.T(target_index)
 
     def CSdg(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Clifford-S^{dagger} gate to the circuit.
 
@@ -1726,6 +1930,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1733,24 +1942,30 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CSdg(control_index=0, target_index=1)
+        >>> circuit.CSdg(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CSdg.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.Tdg(control_index)
-            self.CX(control_index, target_index)
-            self.T(target_index)
-            self.CX(control_index, target_index)
-            self.Tdg(target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CSdg.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.Tdg(control_index)
+                self.CX(control_index, target_index)
+                self.T(target_index)
+                self.CX(control_index, target_index)
+                self.Tdg(target_index)
 
     def CT(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Clifford-T gate to the circuit.
 
@@ -1774,6 +1989,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1781,24 +2001,30 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CT(control_index=0, target_index=1)
+        >>> circuit.CT(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CT.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.Phase(PI8, target_index)
-            self.CX(control_index, target_index)
-            self.Phase(-PI8, target_index)
-            self.CX(control_index, target_index)
-            self.Phase(PI8, control_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CT.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.Phase(PI8, target_index)
+                self.CX(control_index, target_index)
+                self.Phase(-PI8, target_index)
+                self.CX(control_index, target_index)
+                self.Phase(PI8, control_index)
 
     def CTdg(
             self,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Clifford-T^{dagger} gate to the circuit.
 
@@ -1822,6 +2048,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1829,25 +2060,31 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CTdg(control_index=0, target_index=1)
+        >>> circuit.CTdg(control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CTdg.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.Phase(-PI8, control_index)
-            self.CX(control_index, target_index)
-            self.Phase(PI8, target_index)
-            self.CX(control_index, target_index)
-            self.Phase(-PI8, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CTdg.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.Phase(-PI8, control_index)
+                self.CX(control_index, target_index)
+                self.Phase(PI8, target_index)
+                self.CX(control_index, target_index)
+                self.Phase(-PI8, target_index)
 
     def CRX(
             self,
             angle: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled RX gate to the circuit.
 
@@ -1873,6 +2110,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1881,22 +2123,28 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CRX(angle=PI2, control_index=0, target_index=1)
+        >>> circuit.CRX(angle=PI2, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CRX.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            # Explicit optimal implementation covered in MCRX
-            self.MCRX(angle, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CRX.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                # Explicit optimal implementation covered in MCRX
+                self.MCRX(angle, control_index, target_index)
 
     def CRY(
             self,
             angle: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled RY gate to the circuit.
 
@@ -1922,6 +2170,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1930,22 +2183,28 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CRY(angle=PI2, control_index=0, target_index=1)
+        >>> circuit.CRY(angle=PI2, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CRY.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            # Explicit optimal implementation covered in MCRY
-            self.MCRY(angle, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CRY.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                # Explicit optimal implementation covered in MCRY
+                self.MCRY(angle, control_index, target_index)
 
     def CRZ(
             self,
             angle: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled RZ gate to the circuit.
 
@@ -1971,6 +2230,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -1979,22 +2243,28 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CRZ(angle=PI2, control_index=0, target_index=1)
+        >>> circuit.CRZ(angle=PI2, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CRZ.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            # Explicit optimal implementation covered in MCRZ
-            self.MCRZ(angle, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CRZ.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                # Explicit optimal implementation covered in MCRZ
+                self.MCRZ(angle, control_index, target_index)
 
     def CPhase(
             self,
             angle: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Phase gate to the circuit.
 
@@ -2020,6 +2290,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2028,26 +2303,32 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CPhase(angle=PI2, control_index=0, target_index=1)
+        >>> circuit.CPhase(angle=PI2, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CPhase.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.Phase(angle/2, control_index)
-            self.CX(control_index, target_index)
-            self.Phase(-angle/2, target_index)
-            self.CX(control_index, target_index)
-            self.Phase(angle/2, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CPhase.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.Phase(angle/2, control_index)
+                self.CX(control_index, target_index)
+                self.Phase(-angle/2, target_index)
+                self.CX(control_index, target_index)
+                self.Phase(angle/2, target_index)
 
     def CXPow(
             self,
             power: float,
             global_shift: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled X^power gate to the circuit.
 
@@ -2076,6 +2357,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2085,28 +2371,34 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CXPow(power=0.5, control_index=0, target_index=1)
         >>> circuit.CXPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
+        >>> circuit.CXPow(power=0.5, global_shift=0.5, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CXPow.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.CRX(power * PI, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CXPow.__name__, params=local_params)
 
-            # Apply the relative phase correction to the control index
-            # to account for the global phase shift created by the target
-            # gate
-            self.Phase(power * PI * (global_shift + 0.5), control_index)
+            with self.decompose_last(gate):
+                self.CRX(power * PI, control_index, target_index)
+
+                # Apply the relative phase correction to the control index
+                # to account for the global phase shift created by the target
+                # gate
+                self.Phase(power * PI * (global_shift + 0.5), control_index)
 
     def CYPow(
             self,
             power: float,
             global_shift: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Y^power gate to the circuit.
 
@@ -2135,6 +2427,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2144,28 +2441,34 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CYPow(power=0.5, control_index=0, target_index=1)
         >>> circuit.CYPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
+        >>> circuit.CYPow(power=0.5, global_shift=0.5, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CYPow.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.CRY(power * PI, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CYPow.__name__, params=local_params)
 
-            # Apply the relative phase correction to the control index
-            # to account for the global phase shift created by the target
-            # gate
-            self.Phase(power * PI * (global_shift + 0.5), control_index)
+            with self.decompose_last(gate):
+                self.CRY(power * PI, control_index, target_index)
+
+                # Apply the relative phase correction to the control index
+                # to account for the global phase shift created by the target
+                # gate
+                self.Phase(power * PI * (global_shift + 0.5), control_index)
 
     def CZPow(
             self,
             power: float,
             global_shift: float,
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled Z^power gate to the circuit.
 
@@ -2194,6 +2497,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2203,28 +2511,34 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CZPow(power=0.5, control_index=0, target_index=1)
         >>> circuit.CZPow(power=0.5, global_shift=0.5, control_index=0, target_index=1)
+        >>> circuit.CZPow(power=0.5, global_shift=0.5, control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CZPow.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.CRZ(power * PI, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CZPow.__name__, params=local_params)
 
-            # Apply the relative phase correction to the control index
-            # to account for the global phase shift created by the target
-            # gate
-            self.Phase(power * PI * (global_shift + 0.5), control_index)
+            with self.decompose_last(gate):
+                self.CRZ(power * PI, control_index, target_index)
+
+                # Apply the relative phase correction to the control index
+                # to account for the global phase shift created by the target
+                # gate
+                self.Phase(power * PI * (global_shift + 0.5), control_index)
 
     def CRXX(
             self,
             angle: float,
             control_index: int,
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled RXX gate to the circuit.
 
@@ -2248,6 +2562,11 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2256,17 +2575,21 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CRXX(angle=PI2, control_index=0,
         ...              first_target_index=1, second_target_index=2)
+        >>> circuit.CRXX(angle=PI2, control_index=0,
+        ...              first_target_index=1, second_target_index=2, control_state="0")
         """
         self.MCRXX(
-            angle=angle,
-            control_indices=control_index,
-            first_target_index=first_target_index,
-            second_target_index=second_target_index
+            angle,
+            control_index,
+            first_target_index,
+            second_target_index,
+            control_state
         )
 
     def CRYY(
@@ -2274,7 +2597,8 @@ class Circuit(ABC):
             angle: float,
             control_index: int,
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled RYY gate to the circuit.
 
@@ -2298,6 +2622,11 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2306,17 +2635,21 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CRYY(angle=PI2, control_index=0,
         ...              first_target_index=1, second_target_index=2)
+        >>> circuit.CRYY(angle=PI2, control_index=0,
+        ...              first_target_index=1, second_target_index=2, control_state="0")
         """
         self.MCRYY(
-            angle=angle,
-            control_indices=control_index,
-            first_target_index=first_target_index,
-            second_target_index=second_target_index
+            angle,
+            control_index,
+            first_target_index,
+            second_target_index,
+            control_state
         )
 
     def CRZZ(
@@ -2324,7 +2657,8 @@ class Circuit(ABC):
             angle: float,
             control_index: int,
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled RZZ gate to the circuit.
 
@@ -2348,6 +2682,11 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2356,24 +2695,29 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CRZZ(angle=PI2, control_index=0,
         ...              first_target_index=1, second_target_index=2)
+        >>> circuit.CRZZ(angle=PI2, control_index=0,
+        ...              first_target_index=1, second_target_index=2, control_state="0")
         """
         self.MCRZZ(
-            angle=angle,
-            control_indices=control_index,
-            first_target_index=first_target_index,
-            second_target_index=second_target_index
+            angle,
+            control_index,
+            first_target_index,
+            second_target_index,
+            control_state
         )
 
     def CU3(
             self,
             angles: Sequence[float],
             control_index: int,
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled U3 gate to the circuit.
 
@@ -2399,6 +2743,11 @@ class Circuit(ABC):
             The index of the control qubit.
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2407,22 +2756,28 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CU3(angles=[PI2, PI2, PI2], control_index=0, target_index=1)
+        >>> circuit.CU3(angles=[PI2, PI2, PI2], control_index=0, target_index=1, control_state="0")
         """
-        gate = self.process_gate_params(gate=self.CU3.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            # Explicit optimal implementation covered in MCU3
-            self.MCU3(angles, control_index, target_index)
+        with self.controlled_state(control_state, [control_index]):
+            gate = self.process_gate_params(gate=self.CU3.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                # Explicit optimal implementation covered in MCU3
+                self.MCU3(angles, control_index, target_index)
 
     def CSWAP(
             self,
             control_index: int,
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled SWAP gate to the circuit.
 
@@ -2444,6 +2799,11 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit. The default is None ("1"), which means
+            the control qubit needs to be in the state $|1\rangle$ for the target
+            qubit to be affected. To reverse this activation, set the control state
+            to "0".
 
         Raises
         ------
@@ -2451,21 +2811,25 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2)
+        >>> circuit.CSWAP(control_index=0, first_target_index=1, second_target_index=2, control_state="0")
         """
         self.MCSWAP(
-            control_indices=control_index,
-            first_target_index=first_target_index,
-            second_target_index=second_target_index
+            control_index,
+            first_target_index,
+            second_target_index,
+            control_state
         )
 
     def MCX(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Pauli-X gate to the circuit.
 
@@ -2487,6 +2851,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2494,6 +2865,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2501,21 +2873,27 @@ class Circuit(ABC):
         >>> circuit.MCX(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCX(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCX(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCX(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCX(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCX.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.H(target_indices)
-            self.MCPhase(PI, control_indices, target_indices)
-            self.H(target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCX.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.H(target_indices)
+                self.MCPhase(PI, control_indices, target_indices)
+                self.H(target_indices)
 
     def MCY(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
@@ -2537,6 +2915,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2544,6 +2929,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2551,21 +2938,27 @@ class Circuit(ABC):
         >>> circuit.MCY(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCY(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCY(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCY(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCY(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCY.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.Sdg(target_indices)
-            self.MCX(control_indices, target_indices)
-            self.S(target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCY.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.Sdg(target_indices)
+                self.MCX(control_indices, target_indices)
+                self.S(target_indices)
 
     def MCZ(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
@@ -2587,6 +2980,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2594,6 +2994,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2601,21 +3003,27 @@ class Circuit(ABC):
         >>> circuit.MCZ(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCZ(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCZ(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCZ(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCZ.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.H(target_indices)
-            self.MCX(control_indices, target_indices)
-            self.H(target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCZ.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.H(target_indices)
+                self.MCX(control_indices, target_indices)
+                self.H(target_indices)
 
     def MCH(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Hadamard gate to the circuit.
 
@@ -2637,6 +3045,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2644,6 +3059,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2651,25 +3068,31 @@ class Circuit(ABC):
         >>> circuit.MCH(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCH(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCH(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCH(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCH(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCH.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.S(target_indices)
-            self.H(target_indices)
-            self.T(target_indices)
-            self.MCX(control_indices, target_indices)
-            self.Tdg(target_indices)
-            self.H(target_indices)
-            self.Sdg(target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCH.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.S(target_indices)
+                self.H(target_indices)
+                self.T(target_indices)
+                self.MCX(control_indices, target_indices)
+                self.Tdg(target_indices)
+                self.H(target_indices)
+                self.Sdg(target_indices)
 
     def MCS(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Clifford-S gate to the circuit.
 
@@ -2691,6 +3114,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2698,6 +3128,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2705,19 +3137,25 @@ class Circuit(ABC):
         >>> circuit.MCS(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCS(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCS(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCS(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCS(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCS.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.MCPhase(PI2, control_indices, target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCS.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCPhase(PI2, control_indices, target_indices)
 
     def MCSdg(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Clifford-S^{dagger} gate to the circuit.
 
@@ -2740,6 +3178,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2747,6 +3192,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2754,19 +3201,25 @@ class Circuit(ABC):
         >>> circuit.MCSdg(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCSdg(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCSdg(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCSdg(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCSdg.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.MCPhase(-PI2, control_indices, target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCSdg.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCPhase(-PI2, control_indices, target_indices)
 
     def MCT(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Clifford-T gate to the circuit.
 
@@ -2789,6 +3242,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2796,6 +3256,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2803,19 +3265,25 @@ class Circuit(ABC):
         >>> circuit.MCT(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCT(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCT(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCT(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCT(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCT.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.MCPhase(PI4, control_indices, target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCT.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCPhase(PI4, control_indices, target_indices)
 
     def MCTdg(
             self,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Clifford-T^{dagger} gate to the circuit.
 
@@ -2838,6 +3306,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2845,6 +3320,8 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2852,20 +3329,26 @@ class Circuit(ABC):
         >>> circuit.MCTdg(control_indices=0, target_indices=[1, 2])
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=2)
         >>> circuit.MCTdg(control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCTdg(control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCTdg(control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCTdg.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.MCPhase(-PI4, control_indices, target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCTdg.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCPhase(-PI4, control_indices, target_indices)
 
     def MCRX(
             self,
             angle: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled RX gate to the circuit.
 
@@ -2889,6 +3372,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2897,6 +3387,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2904,21 +3396,27 @@ class Circuit(ABC):
         >>> circuit.MCRX(angle=PI2, control_indices=0, target_indices=[1, 2])
         >>> circuit.MCRX(angle=PI2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRX(angle=PI2, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCRX(angle=PI2, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCRX(angle=PI2, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCRX.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            for target_index in target_indices:
-                MCRX(self, angle, list(control_indices), target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCRX.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    MCRX(self, angle, list(control_indices), target_index)
 
     def MCRY(
             self,
             angle: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled RY gate to the circuit.
 
@@ -2942,6 +3440,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -2950,6 +3455,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -2957,21 +3464,27 @@ class Circuit(ABC):
         >>> circuit.MCRY(angle=PI2, control_indices=0, target_indices=[1, 2])
         >>> circuit.MCRY(angle=PI2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRY(angle=PI2, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCRY(angle=PI2, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCRY(angle=PI2, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCRY.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            for target_index in target_indices:
-                MCRY(self, angle, list(control_indices), target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCRY.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    MCRY(self, angle, list(control_indices), target_index)
 
     def MCRZ(
             self,
             angle: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled RZ gate to the circuit.
 
@@ -2995,6 +3508,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3003,6 +3523,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3010,21 +3532,27 @@ class Circuit(ABC):
         >>> circuit.MCRZ(angle=PI2, control_indices=0, target_indices=[1, 2])
         >>> circuit.MCRZ(angle=PI2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCRZ(angle=PI2, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCRZ(angle=PI2, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCRZ(angle=PI2, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCRZ.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            for target_index in target_indices:
-                MCRZ(self, angle, list(control_indices), target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCRZ.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    MCRZ(self, angle, list(control_indices), target_index)
 
     def MCPhase(
             self,
             angle: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Phase gate to the circuit.
 
@@ -3048,6 +3576,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3056,6 +3591,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3063,31 +3600,36 @@ class Circuit(ABC):
         >>> circuit.MCPhase(angle=PI2, control_indices=0, target_indices=[1, 2])
         >>> circuit.MCPhase(angle=PI2, control_indices=[0, 1], target_indices=2)
         >>> circuit.MCPhase(angle=PI2, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCPhase(angle=PI2, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCPhase(angle=PI2, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCPhase.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-
         num_controls = len(control_indices)
 
-        with self.decompose_last(gate):
-            for target_index in target_indices:
-                new_target_index = target_index
-                new_control_indices = list(control_indices).copy()
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCPhase.__name__, params=local_params)
 
-                for k in range(num_controls):
-                    self.MCRZ(angle / (2**k), new_control_indices, new_target_index)
-                    new_target_index = new_control_indices.pop()
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    new_target_index = target_index
+                    new_control_indices = list(control_indices).copy()
 
-                self.Phase(angle / 2**num_controls, new_target_index)
+                    for k in range(num_controls):
+                        self.MCRZ(angle / (2**k), new_control_indices, new_target_index)
+                        new_target_index = new_control_indices.pop()
+
+                    self.Phase(angle / 2**num_controls, new_target_index)
 
     def MCXPow(
             self,
             power: float,
             global_shift: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled X^power gate to the circuit.
 
@@ -3116,6 +3658,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3125,39 +3674,54 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.MCXPow(power=0.5, control_indices=0, target_indices=1)
         >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
+        >>> circuit.MCXPow(power=0.5, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCXPow(power=0.5, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCXPow(power=0.5, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCXPow(power=0.5, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCXPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCXPow(power=0.5, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCXPow.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-            target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-            for target_index in target_indices:
-                self.MCRX(power * PI, control_indices=control_indices, target_indices=target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCXPow.__name__, params=local_params)
 
-                # Apply the relative phase correction to the control indices
-                # to account for the global phase shift created by the target
-                # gate
-                if len(control_indices) > 1:
-                    self.MCPhase(
-                        power * PI * (global_shift + 0.5),
-                        control_indices=control_indices[:-1],
-                        target_indices=control_indices[-1]
-                    )
-                else:
-                    self.Phase(power * PI * (global_shift + 0.5), control_indices[0])
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    self.MCRX(power * PI, control_indices=control_indices, target_indices=target_index)
+
+                    # Apply the relative phase correction to the control indices
+                    # to account for the global phase shift created by the target
+                    # gate
+                    if len(control_indices) > 1:
+                        self.MCPhase(
+                            power * PI * (global_shift + 0.5),
+                            control_indices=control_indices[:-1],
+                            target_indices=control_indices[-1]
+                        )
+                    else:
+                        self.Phase(power * PI * (global_shift + 0.5), control_indices[0])
 
     def MCYPow(
             self,
             power: float,
             global_shift: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Y^power gate to the circuit.
 
@@ -3186,6 +3750,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3195,39 +3766,54 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.MCYPow(power=0.5, control_indices=0, target_indices=1)
         >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
+        >>> circuit.MCYPow(power=0.5, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCYPow(power=0.5, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCYPow(power=0.5, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCYPow(power=0.5, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCYPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCYPow(power=0.5, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCYPow.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-            target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-            for target_index in target_indices:
-                self.MCRY(power * PI, control_indices=control_indices, target_indices=target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCYPow.__name__, params=local_params)
 
-                # Apply the relative phase correction to the control indices
-                # to account for the global phase shift created by the target
-                # gate
-                if len(control_indices) > 1:
-                    self.MCPhase(
-                        power * PI * (global_shift + 0.5),
-                        control_indices=control_indices[:-1],
-                        target_indices=control_indices[-1]
-                    )
-                else:
-                    self.Phase(power * PI * (global_shift + 0.5), control_indices[0])
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    self.MCRY(power * PI, control_indices=control_indices, target_indices=target_index)
+
+                    # Apply the relative phase correction to the control indices
+                    # to account for the global phase shift created by the target
+                    # gate
+                    if len(control_indices) > 1:
+                        self.MCPhase(
+                            power * PI * (global_shift + 0.5),
+                            control_indices=control_indices[:-1],
+                            target_indices=control_indices[-1]
+                        )
+                    else:
+                        self.Phase(power * PI * (global_shift + 0.5), control_indices[0])
 
     def MCZPow(
             self,
             power: float,
             global_shift: float,
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled Z^power gate to the circuit.
 
@@ -3256,6 +3842,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3265,39 +3858,54 @@ class Circuit(ABC):
             - Global shift must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.MCZPow(power=0.5, control_indices=0, target_indices=1)
         >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1)
+        >>> circuit.MCZPow(power=0.5, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=[1, 2])
+        >>> circuit.MCZPow(power=0.5, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=[0, 1], target_indices=2)
+        >>> circuit.MCZPow(power=0.5, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCZPow(power=0.5, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCZPow(power=0.5, global_shift=0.5, control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCZPow(power=0.5, control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCZPow.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
-            target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-            for target_index in target_indices:
-                self.MCRZ(power * PI, control_indices=control_indices, target_indices=target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCZPow.__name__, params=local_params)
 
-                # Apply the relative phase correction to the control indices
-                # to account for the global phase shift created by the target
-                # gate
-                if len(control_indices) > 1:
-                    self.MCPhase(
-                        power * PI * (global_shift + 0.5),
-                        control_indices=control_indices[:-1],
-                        target_indices=control_indices[-1]
-                    )
-                else:
-                    self.Phase(power * PI * (global_shift + 0.5), control_indices[0])
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    self.MCRZ(power * PI, control_indices=control_indices, target_indices=target_index)
+
+                    # Apply the relative phase correction to the control indices
+                    # to account for the global phase shift created by the target
+                    # gate
+                    if len(control_indices) > 1:
+                        self.MCPhase(
+                            power * PI * (global_shift + 0.5),
+                            control_indices=control_indices[:-1],
+                            target_indices=control_indices[-1]
+                        )
+                    else:
+                        self.Phase(power * PI * (global_shift + 0.5), control_indices[0])
 
     def MCRXX(
             self,
             angle: float,
             control_indices: int | Sequence[int],
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled RXX gate to the circuit.
 
@@ -3319,6 +3927,13 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3327,6 +3942,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3334,32 +3951,40 @@ class Circuit(ABC):
         ...               first_target_index=1, second_target_index=2)
         >>> circuit.MCRXX(angle=PI2, control_indices=[0, 1],
         ...               first_target_index=2, second_target_index=3)
+        >>> circuit.MCRXX(angle=PI2, control_indices=0,
+        ...               first_target_index=1, second_target_index=2, control_state="0")
+        >>> circuit.MCRXX(angle=PI2, control_indices=[0, 1],
+        ...               first_target_index=2, second_target_index=3, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCRXX.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
-            self.MCH(control_indices=control_indices, target_indices=first_target_index)
-            self.MCH(control_indices=control_indices, target_indices=second_target_index)
-            self.MCX(
-                control_indices=list(control_indices) + [first_target_index],
-                target_indices=second_target_index
-            )
-            self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
-            self.MCX(
-                control_indices=list(control_indices) + [first_target_index],
-                target_indices=second_target_index
-            )
-            self.MCH(control_indices=control_indices, target_indices=first_target_index)
-            self.MCH(control_indices=control_indices, target_indices=second_target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCRXX.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCH(control_indices=control_indices, target_indices=first_target_index)
+                self.MCH(control_indices=control_indices, target_indices=second_target_index)
+                self.MCX(
+                    control_indices=list(control_indices) + [first_target_index],
+                    target_indices=second_target_index
+                )
+                self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+                self.MCX(
+                    control_indices=list(control_indices) + [first_target_index],
+                    target_indices=second_target_index
+                )
+                self.MCH(control_indices=control_indices, target_indices=first_target_index)
+                self.MCH(control_indices=control_indices, target_indices=second_target_index)
 
     def MCRYY(
             self,
             angle: float,
             control_indices: int | Sequence[int],
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled RYY gate to the circuit.
 
@@ -3381,6 +4006,13 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3389,6 +4021,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3396,48 +4030,56 @@ class Circuit(ABC):
         ...               first_target_index=1, second_target_index=2)
         >>> circuit.MCRYY(angle=PI2, control_indices=[0, 1],
         ...               first_target_index=2, second_target_index=3)
+        >>> circuit.MCRYY(angle=PI2, control_indices=0,
+        ...               first_target_index=1, second_target_index=2, control_state="0")
+        >>> circuit.MCRYY(angle=PI2, control_indices=[0, 1],
+        ...               first_target_index=2, second_target_index=3, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCRYY.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
-            self.MCRX(
-                angle=PI2,
-                control_indices=control_indices,
-                target_indices=first_target_index
-            )
-            self.MCRX(
-                angle=PI2,
-                control_indices=control_indices,
-                target_indices=second_target_index
-            )
-            self.MCX(
-                control_indices=list(control_indices) + [first_target_index],
-                target_indices=second_target_index
-            )
-            self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
-            self.MCX(
-                control_indices=list(control_indices) + [first_target_index],
-                target_indices=second_target_index
-            )
-            self.MCRX(
-                angle=-PI2,
-                control_indices=control_indices,
-                target_indices=first_target_index
-            )
-            self.MCRX(
-                angle=-PI2,
-                control_indices=control_indices,
-                target_indices=second_target_index
-            )
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCRYY.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCRX(
+                    angle=PI2,
+                    control_indices=control_indices,
+                    target_indices=first_target_index
+                )
+                self.MCRX(
+                    angle=PI2,
+                    control_indices=control_indices,
+                    target_indices=second_target_index
+                )
+                self.MCX(
+                    control_indices=list(control_indices) + [first_target_index],
+                    target_indices=second_target_index
+                )
+                self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+                self.MCX(
+                    control_indices=list(control_indices) + [first_target_index],
+                    target_indices=second_target_index
+                )
+                self.MCRX(
+                    angle=-PI2,
+                    control_indices=control_indices,
+                    target_indices=first_target_index
+                )
+                self.MCRX(
+                    angle=-PI2,
+                    control_indices=control_indices,
+                    target_indices=second_target_index
+                )
 
     def MCRZZ(
             self,
             angle: float,
             control_indices: int | Sequence[int],
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled RZZ gate to the circuit.
 
@@ -3459,6 +4101,13 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3467,6 +4116,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3474,27 +4125,35 @@ class Circuit(ABC):
         ...               first_target_index=1, second_target_index=2)
         >>> circuit.MCRZZ(angle=PI2, control_indices=[0, 1],
         ...               first_target_index=2, second_target_index=3)
+        >>> circuit.MCRZZ(angle=PI2, control_indices=0,
+        ...               first_target_index=1, second_target_index=2, control_state="0")
+        >>> circuit.MCRZZ(angle=PI2, control_indices=[0, 1],
+        ...               first_target_index=2, second_target_index=3, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCRZZ.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
 
-            self.MCX(
-                control_indices=list(control_indices) + [first_target_index],
-                target_indices=second_target_index
-            )
-            self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
-            self.MCX(
-                control_indices=list(control_indices) + [first_target_index],
-                target_indices=second_target_index
-            )
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCRZZ.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.MCX(
+                    control_indices=list(control_indices) + [first_target_index],
+                    target_indices=second_target_index
+                )
+                self.MCRZ(angle, control_indices=control_indices, target_indices=second_target_index)
+                self.MCX(
+                    control_indices=list(control_indices) + [first_target_index],
+                    target_indices=second_target_index
+                )
 
     def MCU3(
             self,
             angles: Sequence[float],
             control_indices: int | Sequence[int],
-            target_indices: int | Sequence[int]
+            target_indices: int | Sequence[int],
+            control_state: str | None = None
         ) -> None:
         """ Apply a Multi-Controlled U3 gate to the circuit.
 
@@ -3518,6 +4177,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3526,6 +4192,8 @@ class Circuit(ABC):
             - Angle must be a float or integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3533,22 +4201,30 @@ class Circuit(ABC):
         >>> circuit.MCU3(angles=[PI2, PI2, PI2], control_indices=0, target_indices=[1, 2])
         >>> circuit.MCU3(angles=[PI2, PI2, PI2], control_indices=[0, 1], target_indices=2)
         >>> circuit.MCU3(angles=[PI2, PI2, PI2], control_indices=[0, 1], target_indices=[2, 3])
+        >>> circuit.MCU3(angles=[PI2, PI2, PI2], control_indices=0, target_indices=1, control_state="0")
+        >>> circuit.MCU3(angles=[PI2, PI2, PI2], control_indices=[0, 1], target_indices=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCU3.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
 
-        with self.decompose_last(gate):
-            self.MCPhase(angles[2], control_indices, target_indices)
-            self.MCRY(angles[0], control_indices, target_indices)
-            self.MCPhase(angles[1], control_indices, target_indices)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCU3.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                for target_index in target_indices:
+                    self.MCRZ(angles[2], control_indices, target_index)
+                    self.MCRY(angles[0], control_indices, target_index)
+                    self.MCRZ(angles[1], control_indices, target_index)
+                    self.MCPhase((angles[1] + angles[2]) / 2, control_indices[1:], control_indices[0])
 
     def MCSWAP(
             self,
             control_indices: int | Sequence[int],
             first_target_index: int,
-            second_target_index: int
+            second_target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a Controlled SWAP gate to the circuit.
 
@@ -3568,6 +4244,13 @@ class Circuit(ABC):
             The index of the first target qubit.
         `second_target_index` : int
             The index of the second target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3575,20 +4258,27 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - Qubit index out of range.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2)
         >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3)
+        >>> circuit.MCSWAP(control_indices=0, first_target_index=1, second_target_index=2, control_state="0")
+        >>> circuit.MCSWAP(control_indices=[0, 1], first_target_index=2, second_target_index=3, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.MCSWAP.__name__, params=locals())
+        local_params = locals()
 
         control_indices = [control_indices] if isinstance(control_indices, int) else list(control_indices)
 
-        with self.decompose_last(gate):
-            self.CX(second_target_index, first_target_index)
-            self.MCX(control_indices + [first_target_index], second_target_index)
-            self.CX(second_target_index, first_target_index)
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.MCSWAP.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.CX(second_target_index, first_target_index)
+                self.MCX(control_indices + [first_target_index], second_target_index)
+                self.CX(second_target_index, first_target_index)
 
     def PauliMultiplexor(
             self,
@@ -3628,6 +4318,7 @@ class Circuit(ABC):
             - The number of angles must be a power of 2.
             - The number of control qubits must be equal to the number of angles.
             - Invalid rotation axis. Expected 'X', 'Y' or 'Z'.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3654,7 +4345,7 @@ class Circuit(ABC):
         # Check if the number of control qubits is equal to the number of angles
         if num_control_qubits != np.log2(len(angles_params)):
             raise ValueError(
-                f"The number of control qubits must be equal to the number of angles. "
+                f"The number of control qubits must be equal to the log2 number of angles. "
                 f"Received {num_control_qubits} control qubits and {len(angles_params)} angles."
             )
 
@@ -3715,7 +4406,8 @@ class Circuit(ABC):
             self,
             angles: Sequence[float],
             control_indices: int | Sequence[int],
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled RX gate to the circuit.
 
@@ -3727,6 +4419,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3736,22 +4435,33 @@ class Circuit(ABC):
         ValueError
             - Qubit index out of range.
             - The number of angles must be a power of 2.
-            - The number of control qubits must be equal to the number of angles.
+            - The number of control qubits must be equal to the log2 number of angles.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.UCRX(angles=[PI2, PI2], control_indices=0, target_index=1)
+        >>> circuit.UCRX(angles=[PI2, PI2, PI2, PI2], control_indices=[0, 1], target_index=2)
+        >>> circuit.UCRX(angles=[PI2, PI2], control_indices=0, target_index=1, control_state="0")
+        >>> circuit.UCRX(angles=[PI2, PI2, PI2, PI2], control_indices=[0, 1], target_index=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.UCRX.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.PauliMultiplexor(angles, "X", control_indices, target_index)
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.UCRX.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.PauliMultiplexor(angles, "X", control_indices, target_index)
 
     def UCRY(
             self,
             angles: Sequence[float],
             control_indices: int | Sequence[int],
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled RY gate to the circuit.
 
@@ -3763,6 +4473,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3773,21 +4490,32 @@ class Circuit(ABC):
             - Qubit index out of range.
             - The number of angles must be a power of 2.
             - The number of control qubits must be equal to the number of angles.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.UCRY(angles=[PI2, PI2], control_indices=0, target_index=1)
+        >>> circuit.UCRY(angles=[PI2, PI2, PI2, PI2], control_indices=[0, 1], target_index=2)
+        >>> circuit.UCRY(angles=[PI2, PI2], control_indices=0, target_index=1, control_state="0")
+        >>> circuit.UCRY(angles=[PI2, PI2, PI2, PI2], control_indices=[0, 1], target_index=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.UCRY.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.PauliMultiplexor(angles, "Y", control_indices, target_index)
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.UCRY.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.PauliMultiplexor(angles, "Y", control_indices, target_index)
 
     def UCRZ(
             self,
             angles: Sequence[float],
             control_indices: int | Sequence[int],
-            target_index: int
+            target_index: int,
+            control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled RZ gate to the circuit.
 
@@ -3799,6 +4527,13 @@ class Circuit(ABC):
             The index of the control qubit(s).
         `target_index` : int
             The index of the target qubit.
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -3809,15 +4544,25 @@ class Circuit(ABC):
             - Qubit index out of range.
             - The number of angles must be a power of 2.
             - The number of control qubits must be equal to the number of angles.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
         >>> circuit.UCRZ(angles=[PI2, PI2], control_indices=0, target_index=1)
+        >>> circuit.UCRZ(angles=[PI2, PI2, PI2, PI2], control_indices=[0, 1], target_index=2)
+        >>> circuit.UCRZ(angles=[PI2, PI2], control_indices=0, target_index=1, control_state="0")
+        >>> circuit.UCRZ(angles=[PI2, PI2, PI2, PI2], control_indices=[0, 1], target_index=2, control_state="01")
         """
-        gate = self.process_gate_params(gate=self.UCRZ.__name__, params=locals())
+        local_params = locals()
 
-        with self.decompose_last(gate):
-            self.PauliMultiplexor(angles, "Z", control_indices, target_index)
+        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+
+        with self.controlled_state(control_state, control_indices):
+            gate = self.process_gate_params(gate=self.UCRZ.__name__, params=local_params)
+
+            with self.decompose_last(gate):
+                self.PauliMultiplexor(angles, "Z", control_indices, target_index)
 
     def _Diagonal(
             self,
@@ -3873,6 +4618,7 @@ class Circuit(ABC):
             - The number of qubits passed must be the same as the number of
             qubits needed to prepare the diagonal.
             - A diagonal element does not have absolute value one.
+            - Qubit indices must be unique.
         """
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
@@ -3945,6 +4691,7 @@ class Circuit(ABC):
             - The number of diagonal entries is not a positive power of 2.
             - The number of qubits passed must be the same as the number of qubits needed to prepare the diagonal.
             - A diagonal element does not have absolute value one.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -3961,7 +4708,8 @@ class Circuit(ABC):
             control_indices: int | Sequence[int],
             target_index: int,
             up_to_diagonal: bool=False,
-            multiplexor_simplification: bool=True
+            multiplexor_simplification: bool=True,
+            control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled gate to the circuit.
 
@@ -3991,6 +4739,13 @@ class Circuit(ABC):
             or if it is decomposed completely.
         `multiplexor_simplification` : bool, optional, default=True
             Determines if the multiplexor is simplified using [2].
+        `control_state` : str, optional, default=None
+            The state of the control qubit(s). The default is None ("1"s for all
+            control indices), which means the control qubit(s) need to be in the
+            state $|1\rangle$ for the target qubit(s) to be affected. To reverse
+            this activation, set the control state at the specific index to "0".
+            For simplicity, the control state uses MSB ordering, i.e., the first
+            control index is the most significant bit.
 
         Raises
         ------
@@ -4001,6 +4756,8 @@ class Circuit(ABC):
             - The number of single-qubit gates must be a non-negative power of 2.
             - The number of control qubits passed must be equal to the number of gates.
             - A gate is not unitary.
+            - Control state and control indices must have the same length.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -4014,6 +4771,11 @@ class Circuit(ABC):
         ...              [0, 1]],
         ...             [[0, 1],
         ...              [1, 0]]], up_to_diagonal=True)
+        >>> circuit.Multiplexor(control_indices=[1, 2], target_index=0,
+        ...            [[[1, 0],
+        ...              [0, 1]],
+        ...             [[0, 1],
+        ...              [1, 0]]], multiplexor_simplification=False, control_state="01")
         """
         if isinstance(control_indices, int):
             control_indices = [control_indices]
@@ -4066,36 +4828,37 @@ class Circuit(ABC):
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # which are absorbed into the single-qubit unitaries to get back the full decomposition
         # of the multiplexor
-        for i, gate in enumerate(single_qubit_gates):
-            if i == 0:
-                self.unitary(gate, target_index)
-                self.H(target_index)
+        with self.controlled_state(control_state, control_indices):
+            for i, gate in enumerate(single_qubit_gates):
+                if i == 0:
+                    self.unitary(gate, target_index)
+                    self.H(target_index)
 
-            elif i == len(single_qubit_gates) - 1:
-                self.H(target_index)
-                self.RZ(-PI2, target_index)
-                self.unitary(gate, target_index)
+                elif i == len(single_qubit_gates) - 1:
+                    self.H(target_index)
+                    self.RZ(-PI2, target_index)
+                    self.unitary(gate, target_index)
 
-            else:
-                self.H(target_index)
-                self.RZ(-PI2, target_index)
-                self.unitary(gate, target_index)
-                self.H(target_index)
+                else:
+                    self.H(target_index)
+                    self.RZ(-PI2, target_index)
+                    self.unitary(gate, target_index)
+                    self.H(target_index)
 
-            # The number of the control qubit is given by the number of zeros at the end
-            # of the binary representation of (i+1)
-            binary_rep = np.binary_repr(i + 1)
-            num_trailing_zeros = len(binary_rep) - len(binary_rep.rstrip("0"))
-            control_index = num_trailing_zeros
+                # The number of the control qubit is given by the number of zeros at the end
+                # of the binary representation of (i+1)
+                binary_rep = np.binary_repr(i + 1)
+                num_trailing_zeros = len(binary_rep) - len(binary_rep.rstrip("0"))
+                control_index = num_trailing_zeros
 
-            # Apply the CX gate
-            if not i == len(single_qubit_gates) - 1:
-                self.CX(control_indices[control_index], target_index)
-                self.GlobalPhase(-PI4)
+                # Apply the CX gate
+                if not i == len(single_qubit_gates) - 1:
+                    self.CX(control_indices[control_index], target_index)
+                    self.GlobalPhase(-PI4)
 
-        # If `up_to_diagonal` is False, we apply the diagonal gate
-        if not up_to_diagonal:
-            self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
+            # If `up_to_diagonal` is False, we apply the diagonal gate
+            if not up_to_diagonal:
+                self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
 
     @abstractmethod
     def GlobalPhase(
@@ -4112,10 +4875,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            - Qubit index must be an integer.
             - Angle must be a float or integer.
-        ValueError
-            - Qubit index out of range.
 
         Usage
         -----
@@ -4181,6 +4941,7 @@ class Circuit(ABC):
         ValueError
             - Qubit index out of range.
             - Approximation degree must be non-negative.
+            - Qubit indices must be unique.
         """
         if not isinstance(approximation_degree, int):
             raise TypeError("Approximation degree must be an integer.")
@@ -4235,6 +4996,7 @@ class Circuit(ABC):
             - If the compression percentage is not in the range [0, 100].
             - If the index type is not "row" or "snake".
             - If the number of qubit indices is not equal to the number of qubits in the state.
+            - Qubit indices must be unique.
         IndexError
             - If the qubit indices are out of range.
 
@@ -4275,6 +5037,7 @@ class Circuit(ABC):
         ValueError
             - If the number of qubit indices is not equal to the number of qubits
             in the unitary operator.
+            - Qubit indices must be unique.
         IndexError
             - If the qubit indices are out of range.
 
@@ -4306,6 +5069,61 @@ class Circuit(ABC):
         """
         self.change_mapping(list(range(self.num_qubits))[::-1])
 
+    @staticmethod
+    def _horizontal_reverse(
+            circuit_log: list[dict[str, Any]],
+            adjoint: bool=True
+        ) -> list[dict[str, Any]]:
+        """ Perform a horizontal reverse operation.
+
+        Parameters
+        ----------
+        `circuit_log` : list[dict[str, Any]]
+            The circuit log to reverse.
+        `adjoint` : bool, optional, default=True
+            Whether or not to apply the adjoint of the circuit.
+
+        Returns
+        -------
+        list[dict[str, Any]]
+            The reversed circuit log.
+        """
+        # Reverse the order of the operations
+        circuit_log = circuit_log[::-1]
+
+        # If adjoint is True, then multiply the angles by -1
+        if adjoint:
+            # Iterate over every operation, and change the index accordingly
+            for i, operation in enumerate(circuit_log):
+                if "angle" in operation:
+                    operation["angle"] = -operation["angle"]
+                elif "angles" in operation:
+                    operation["angles"] = [-operation["angles"][0], -operation["angles"][2], -operation["angles"][1]]
+                elif "power" in operation:
+                    operation["power"] = -operation["power"]
+                elif "diagonal" in operation:
+                    operation["diagonal"] = [np.conj(entry) for entry in operation["diagonal"]]
+                elif "gates" in operation:
+                    operation["gates"] = [np.array(gate).conj().T for gate in operation["gates"]]
+                elif operation["gate"] in ["Sdg", "Tdg", "CSdg", "CTdg", "MCSdg", "MCTdg"]:
+                    operation["gate"] = operation["gate"].replace("dg", "")
+                elif operation["gate"] in ["S", "T", "CS", "CT", "MCS", "MCT"]:
+                    operation["gate"] = operation["gate"] + "dg"
+
+                # If the operation does not have a clear definition for reversal,
+                # or is not a self-adjoint gate, then perform the reverse operation
+                # on the definition
+                # This will be the case for custom gates
+                elif operation.get("definition") and operation["gate"] not in SELF_ADJ_GATES:
+                    reverse_operation = Circuit._horizontal_reverse(operation["definition"], adjoint)
+
+                    if isinstance(reverse_operation, dict):
+                        reverse_operation = [reverse_operation]
+
+                    circuit_log = circuit_log[:i] + reverse_operation + circuit_log[i + 1:]
+
+        return circuit_log
+
     def horizontal_reverse(
             self,
             adjoint: bool=True
@@ -4324,28 +5142,7 @@ class Circuit(ABC):
         >>> circuit.horizontal_reverse()
         >>> circuit.horizontal_reverse(adjoint=False)
         """
-        # Reverse the order of the operations
-        self.circuit_log = self.circuit_log[::-1]
-
-        # If adjoint is True, then multiply the angles by -1
-        if adjoint:
-            # Iterate over every operation, and change the index accordingly
-            for operation in self.circuit_log:
-                if "angle" in operation:
-                    operation["angle"] = -operation["angle"]
-                elif "angles" in operation:
-                    operation["angles"] = [-operation["angles"][0], -operation["angles"][2], -operation["angles"][1]]
-                elif "power" in operation:
-                    operation["power"] = -operation["power"]
-                elif "diagonal" in operation:
-                    operation["diagonal"] = [np.conj(entry) for entry in operation["diagonal"]]
-                elif "gates" in operation:
-                    operation["gates"] = [np.array(gate).conj().T for gate in operation["gates"]]
-                elif operation["gate"] in ["Sdg", "Tdg", "CSdg", "CTdg", "MCSdg", "MCTdg"]:
-                    operation["gate"] = operation["gate"].replace("dg", "")
-                elif operation["gate"] in ["S", "T", "CS", "CT", "MCS", "MCT"]:
-                    operation["gate"] = operation["gate"] + "dg"
-
+        self.circuit_log = self._horizontal_reverse(self.circuit_log, adjoint)
         self.update()
 
     def add(
@@ -4369,6 +5166,7 @@ class Circuit(ABC):
             - Qubit index must be an integer.
         ValueError
             - The number of qubits must match the number of qubits in the `circuit`.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -4423,6 +5221,14 @@ class Circuit(ABC):
         ----------
         `qubit_indices` : int | Sequence[int]
             The indices of the qubits to measure.
+
+        Raises
+        ------
+        TypeError
+            - Qubit index must be an integer.
+        ValueError
+            - Qubit index out of range.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -4707,6 +5513,7 @@ class Circuit(ABC):
             - Qubit index must be a sequence of integers.
         ValueError
             - Qubit index out of range.
+            - Qubit indices must be unique.
         """
 
     def _remove_measurements_inplace(self) -> None:
@@ -4957,6 +5764,7 @@ class Circuit(ABC):
             - Qubit indices must be a collection of integers.
         ValueError
             - The number of qubits must match the number of qubits in the circuit.
+            - Qubit indices must be unique.
 
         Usage
         -----
@@ -4964,6 +5772,9 @@ class Circuit(ABC):
         """
         if not all(isinstance(index, int) for index in qubit_indices):
             raise TypeError("Qubit indices must be a collection of integers.")
+
+        if sorted(list(set(qubit_indices))) != list(range(self.num_qubits)):
+            raise ValueError("Qubit indices must be unique.")
 
         if isinstance(qubit_indices, Sequence):
             qubit_indices = list(qubit_indices)

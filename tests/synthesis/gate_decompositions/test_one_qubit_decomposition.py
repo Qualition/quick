@@ -14,12 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = [
-    "test_one_qubit_zyz_decomposition",
-    "test_one_qubit_u3_decomposition",
-    "test_invalid_basis_fail",
-    "test_invalid_indices_fail"
-]
+__all__ = ["TestOneQubitDecomposition"]
 
 from numpy.testing import assert_almost_equal
 import pytest
@@ -29,58 +24,62 @@ from quick.circuit import QiskitCircuit
 from quick.synthesis.gate_decompositions.one_qubit_decomposition import OneQubitDecomposition
 
 
-def test_one_qubit_zyz_decomposition() -> None:
-    """ Test the one qubit ZYZ decomposition.
+class TestOneQubitDecomposition:
+    """ `tests.synthesis.gate_decompositions.TestOneQubitDecomposition` is the tester
+    class for `quick.synthesis.gate_decompositions.OneQubitDecomposition` class.
     """
-    # Generate a random unitary matrix
-    unitary_matrix = unitary_group.rvs(2).astype(complex)
+    def test_one_qubit_zyz_decomposition(self) -> None:
+        """ Test the one qubit ZYZ decomposition.
+        """
+        # Generate a random unitary matrix
+        unitary_matrix = unitary_group.rvs(2).astype(complex)
 
-    # Define a circuit
-    circuit = QiskitCircuit(1)
+        # Define a circuit
+        circuit = QiskitCircuit(1)
 
-    # Create a one qubit decomposition object
-    one_qubit_decomposition = OneQubitDecomposition(output_framework=QiskitCircuit, basis="zyz")
+        # Create a one qubit decomposition object
+        one_qubit_decomposition = OneQubitDecomposition(output_framework=QiskitCircuit, basis="zyz")
 
-    # Apply the one qubit ZYZ decomposition
-    one_qubit_decomposition.apply_unitary(circuit, unitary_matrix, 0)
+        # Apply the one qubit ZYZ decomposition
+        one_qubit_decomposition.apply_unitary(circuit, unitary_matrix, 0)
 
-    # Check that the circuit is equivalent to the original unitary matrix
-    assert_almost_equal(circuit.get_unitary(), unitary_matrix, decimal=8)
+        # Check that the circuit is equivalent to the original unitary matrix
+        assert_almost_equal(circuit.get_unitary(), unitary_matrix, decimal=8)
 
-def test_one_qubit_u3_decomposition() -> None:
-    """ Test the one qubit U3 decomposition.
-    """
-    # Generate a random unitary matrix
-    unitary_matrix = unitary_group.rvs(2).astype(complex)
+    def test_one_qubit_u3_decomposition(self) -> None:
+        """ Test the one qubit U3 decomposition.
+        """
+        # Generate a random unitary matrix
+        unitary_matrix = unitary_group.rvs(2).astype(complex)
 
-    # Define a circuit
-    circuit = QiskitCircuit(1)
+        # Define a circuit
+        circuit = QiskitCircuit(1)
 
-    # Create a one qubit decomposition object
-    one_qubit_decomposition = OneQubitDecomposition(output_framework=QiskitCircuit, basis="u3")
+        # Create a one qubit decomposition object
+        one_qubit_decomposition = OneQubitDecomposition(output_framework=QiskitCircuit, basis="u3")
 
-    # Apply the one qubit U3 decomposition
-    one_qubit_decomposition.apply_unitary(circuit, unitary_matrix, 0)
+        # Apply the one qubit U3 decomposition
+        one_qubit_decomposition.apply_unitary(circuit, unitary_matrix, 0)
 
-    # Check that the circuit is equivalent to the original unitary matrix
-    assert_almost_equal(circuit.get_unitary(), unitary_matrix, decimal=8)
+        # Check that the circuit is equivalent to the original unitary matrix
+        assert_almost_equal(circuit.get_unitary(), unitary_matrix, decimal=8)
 
-def test_invalid_basis_fail() -> None:
-    """ Test that an invalid basis raises an error.
-    """
-    # Check that an invalid basis raises an error
-    with pytest.raises(ValueError):
-        OneQubitDecomposition(QiskitCircuit, "invalid_basis") # type: ignore
+    def test_invalid_basis_fail(self) -> None:
+        """ Test that an invalid basis raises an error.
+        """
+        # Check that an invalid basis raises an error
+        with pytest.raises(ValueError):
+            OneQubitDecomposition(QiskitCircuit, "invalid_basis") # type: ignore
 
-def test_invalid_indices_fail() -> None:
-    """ Test that an invalid number of indices raises an error.
-    """
-    # Define a circuit
-    circuit = QiskitCircuit(1)
+    def test_invalid_indices_fail(self) -> None:
+        """ Test that an invalid number of indices raises an error.
+        """
+        # Define a circuit
+        circuit = QiskitCircuit(1)
 
-    # Create a one qubit decomposition object
-    one_qubit_decomposition = OneQubitDecomposition(output_framework=QiskitCircuit, basis="zyz")
+        # Create a one qubit decomposition object
+        one_qubit_decomposition = OneQubitDecomposition(output_framework=QiskitCircuit, basis="zyz")
 
-    # Check that an invalid number of indices raises an error
-    with pytest.raises(ValueError):
-        one_qubit_decomposition.apply_unitary(circuit, unitary_group.rvs(2), [0, 1]) # type: ignore
+        # Check that an invalid number of indices raises an error
+        with pytest.raises(ValueError):
+            one_qubit_decomposition.apply_unitary(circuit, unitary_group.rvs(2), [0, 1]) # type: ignore

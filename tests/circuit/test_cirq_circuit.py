@@ -890,7 +890,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CX_unitary_matrix_02qubits],
         [3, 2, 0, CX_unitary_matrix_20qubits],
         [3, 1, 2, CX_unitary_matrix_12qubits]
-
     ])
     def test_CX(
             self,
@@ -913,7 +912,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CY_unitary_matrix_02qubits],
         [3, 2, 0, CY_unitary_matrix_20qubits],
         [3, 1, 2, CY_unitary_matrix_12qubits]
-
     ])
     def test_CY(
             self,
@@ -936,7 +934,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CZ_unitary_matrix_02qubits],
         [3, 2, 0, CZ_unitary_matrix_20qubits],
         [3, 1, 2, CZ_unitary_matrix_12qubits]
-
     ])
     def test_CZ(
             self,
@@ -959,7 +956,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CH_unitary_matrix_02qubits],
         [3, 2, 0, CH_unitary_matrix_20qubits],
         [3, 1, 2, CH_unitary_matrix_12qubits]
-
     ])
     def test_CH(
             self,
@@ -982,7 +978,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CS_unitary_matrix_02qubits],
         [3, 2, 0, CS_unitary_matrix_20qubits],
         [3, 1, 2, CS_unitary_matrix_12qubits]
-
     ])
     def test_CS(
             self,
@@ -1005,7 +1000,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CSdg_unitary_matrix_02qubits],
         [3, 2, 0, CSdg_unitary_matrix_20qubits],
         [3, 1, 2, CSdg_unitary_matrix_12qubits]
-
     ])
     def test_CSdg(
             self,
@@ -1028,7 +1022,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CT_unitary_matrix_02qubits],
         [3, 2, 0, CT_unitary_matrix_20qubits],
         [3, 1, 2, CT_unitary_matrix_12qubits]
-
     ])
     def test_CT(
             self,
@@ -1051,7 +1044,6 @@ class TestCirqCircuit(Template):
         [3, 0, 2, CTdg_unitary_matrix_02qubits],
         [3, 2, 0, CTdg_unitary_matrix_20qubits],
         [3, 1, 2, CTdg_unitary_matrix_12qubits]
-
     ])
     def test_CTdg(
             self,

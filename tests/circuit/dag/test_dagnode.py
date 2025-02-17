@@ -29,7 +29,9 @@ class TestDAGNode:
         """
         dagnode = DAGNode("test_node")
         assert dagnode.name == "test_node"
-        assert dagnode.children == {}
+        assert dagnode.children == set()
+        assert dagnode.parents == set()
+        assert dagnode.depth_cached == False
 
     def test_to(self) -> None:
         """ Test the `to` method of a `DAGNode` object.
@@ -39,11 +41,11 @@ class TestDAGNode:
         dagnode3 = DAGNode("node3")
 
         dagnode1.to(dagnode2)
-        dagnode1.to(dagnode3)
+        dagnode2.to(dagnode3)
 
-        assert dagnode1.children["node1"] == dagnode2
-        assert dagnode2.children["node1"] == dagnode3
-        assert dagnode3.children == {}
+        assert dagnode1.children == {dagnode2}
+        assert dagnode2.children == {dagnode3}
+        assert dagnode3.children == set()
 
     def test_generate_paths(self) -> None:
         """ Test the `generate_paths` method of a `DAGNode` object.
@@ -56,16 +58,16 @@ class TestDAGNode:
         Y = DAGNode("Y")
 
         q0.to(H)
-        q0.to(CX)
+        H.to(CX)
         q1.to(CX)
-        q1.to(X)
-        q0.to(Y)
+        CX.to(X)
+        CX.to(Y)
 
         q0_paths = q0.generate_paths()
         q1_paths = q1.generate_paths()
 
-        assert q0_paths == [["Q0", "H", "CX", "X"], ["Q0", "H", "CX", "Y"]]
-        assert q1_paths == [["Q1", "CX", "X"], ["Q1", "CX", "Y"]]
+        assert q0_paths == {("Q0", "H", "CX", "X"), ("Q0", "H", "CX", "Y")}
+        assert q1_paths == {("Q1", "CX", "X"), ("Q1", "CX", "Y")}
 
     def test_get_depth(self) -> None:
         """ Test the `get_depth` method of a `DAGNode` object.
@@ -78,13 +80,13 @@ class TestDAGNode:
         Y = DAGNode("Y")
 
         q0.to(H)
-        q0.to(CX)
+        H.to(CX)
         q1.to(CX)
-        q1.to(X)
-        q0.to(Y)
+        CX.to(X)
+        CX.to(Y)
 
-        assert q0.get_depth() == 3
-        assert q1.get_depth() == 2
+        assert q0.depth == 3
+        assert q1.depth == 2
 
     def test_to_invalid(self) -> None:
         """ Test the `to` method of a `DAGNode` object with an invalid argument.
@@ -99,4 +101,9 @@ class TestDAGNode:
         """ Test the string representation of a `DAGNode` object.
         """
         dagnode = DAGNode("test_node")
-        assert str(dagnode) == "Name: test_node, Children: [{}]"
+        assert str(dagnode) == "test_node"
+
+        new_dagnode = DAGNode("new_node")
+        dagnode.to(new_dagnode)
+
+        assert str(dagnode) == "test_node -> {new_node}"

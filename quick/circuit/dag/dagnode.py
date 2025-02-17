@@ -16,7 +16,11 @@ from __future__ import annotations
 
 __all__ = ["DAGNode"]
 
+from dataclasses import dataclass, field
+from typing import Hashable
 
+
+@dataclass
 class DAGNode:
     """ A node in a directed acyclic graph (DAG).
 
@@ -40,38 +44,71 @@ class DAGNode:
     ----------
     `name` : str
         The name of the node.
-    `children` : dict[str, quick.circuit.dag.DAGNode]
-        A dictionary of children nodes, where the keysare the names
-        of the children.
+    `parents` : set[quick.circuit.dag.DAGNode], optional, default=set()
+        A set of parent nodes.
+    `children` : set[quick.circuit.dag.DAGNode], optional, default=set()
+        A set of children nodes.
+    `depth_cached` : bool, optional, default=False
+        A flag indicating whether the depth of the node is cached.
 
     Usage
     -----
     >>> node1 = DAGNode("Node 1")
     """
-    def __init__(
-            self,
-            name: str
-        ) -> None:
-        """ Initialize a DAGNode.
+    name: Hashable = None
+    parents: set[DAGNode] = field(default_factory=set)
+    children: set[DAGNode] = field(default_factory=set)
+    depth_cached: bool = False
+
+    def _invalidate_depth(self) -> None:
+        """ Invalidate the cached depth of the node.
+
+        Notes
+        -----
+        This method is used to invalidate the cached depth of the node
+        and all its parents. This is useful when the depth of the node
+        needs to be recalculated.
+
+        We delete the `_depth` attribute and set `depth_cached` to False
+        to indicate that the depth is no longer cached. We then call this
+        method recursively on all parent nodes to invalidate their depths.
+
+        Usage
+        -----
+        >>> node1 = DAGNode("Node 1")
+        >>> node1._invalidate_depth()
         """
-        self.name = name
-        self.children: dict[str, 'DAGNode'] = {}
+        del self._depth
+        self.depth_cached = False
+
+        for parent in self.parents:
+            parent._invalidate_depth()
 
     def to(
             self,
-            next: 'DAGNode'
+            child: DAGNode
         ) -> None:
         """ Add a child node to this node.
 
+        Notes
+        -----
+        This method is used to add a child node to this node. This is
+        done by adding the child to the `children` attribute of this
+        node and adding this node to the `parents` attribute of the
+        child node.
+
+        Additionally, if the depth of this node is cached, we invalidate
+        the cached depth.
+
         Parameters
         ----------
-        `next` : quick.circuit.dag.DAGNode
+        `child` : quick.circuit.dag.DAGNode
             The next node to add.
 
         Raises
         ------
         TypeError
-            If `next` is not an instance of `DAGNode`.
+            - If `next` is not an instance of `quick.circuit.dag.DAGNode`.
 
         Usage
         -----
@@ -79,69 +116,27 @@ class DAGNode:
         >>> node2 = DAGNode("Node 2")
         >>> node1.to(node2)
         """
-        if not isinstance(next, DAGNode):
-            raise TypeError("The next node must be an instance of DAGNode.")
+        if not isinstance(child, DAGNode):
+            raise TypeError(
+                "The `next` node must be an instance of DAGNode. "
+                f"Received {type(child)} instead."
+            )
 
-        if not self.children:
-            self.children = {self.name: next}
+        self.children.add(child)
+        child.parents.add(self)
 
-        else:
-            children = self.children[self.name].children
+        if self.depth_cached:
+            self._invalidate_depth()
 
-            while children:
-                if self.name not in children:
-                    break
-
-                children = children[self.name].children
-
-            children[self.name] = next
-
-    def _generate_paths(
-            self,
-            node: 'DAGNode',
-            path: list[str],
-            paths: list[list[str]]
-        ) -> None:
-        """ Helper method to recursively generate paths from the current node.
-
-        Parameters
-        ----------
-        `node` : DAGNode
-            The current node being visited.
-        `path` : list[str]
-            The current path being constructed.
-        `paths` : list[list[str]]
-            A list to store all the paths.
-        """
-        if not node.children:
-            paths.append(path)
-            return
-
-        for child in node.children.values():
-            self._generate_paths(child, path + [child.name], paths)
-
-    def generate_paths(self) -> list[list[str]]:
-        """Generate all paths from this node to the children nodes.
-
-        Returns
-        -------
-        `paths` : list[list[str]]
-            A list of strings representing the paths from this node
-            to the children nodes.
-
-        Usage
-        -----
-        >>> node1 = DAGNode("Node 1")
-        >>> node2 = DAGNode("Node 2")
-        >>> node1.to(node2)
-        >>> node1.generate_paths()
-        """
-        paths: list[list[str]] = []
-        self._generate_paths(self, [self.name], paths)
-        return paths
-
-    def get_depth(self) -> int:
+    @property
+    def depth(self) -> int:
         """ Get the depth of the node.
+
+        Notes
+        -----
+        The depth of a node is the maximum depth of its children plus one.
+        If the node has no children, the depth is zero. The depth is cached
+        to avoid recalculating it multiple times.
 
         Returns
         -------
@@ -153,16 +148,86 @@ class DAGNode:
         >>> node1 = DAGNode("Node 1")
         >>> node2 = DAGNode("Node 2")
         >>> node1.to(node2)
-        >>> node1.get_depth()
+        >>> node1.depth
         """
-        return max(len(path) for path in self.generate_paths()) - 1
+        self.depth_cached = True
 
-    def __eq__(self, value: object) -> bool:
-        """ Check if this node is equal to another node.
+        if not self.children:
+            self._depth = 0
+
+        if not hasattr(self, "_depth"):
+            self._depth = max(child.depth for child in self.children) + 1
+
+        return self._depth
+
+    def _generate_paths(
+            self,
+            node: 'DAGNode',
+            path: tuple[Hashable, ...],
+            paths: set[tuple[Hashable, ...]]
+        ) -> None:
+        """ Helper method to recursively generate paths from the current node.
 
         Parameters
         ----------
-        `value` : object
+        `node` : DAGNode
+            The current node being visited.
+        `path` : tuple[Hashable, ...]
+            The current path being constructed.
+        `paths` : set[tuple[Hashable, ...]]
+            A set to store all the paths.
+        """
+        if not node.children:
+            paths.add(path)
+            return
+
+        for child in node.children:
+            self._generate_paths(child, path + (child.name,), paths)
+
+    def generate_paths(self) -> set[tuple[Hashable, ...]]:
+        """Generate all paths from this node to the children nodes.
+
+        Returns
+        -------
+        `paths` : set[tuple[Hashable, ...]]
+            A set of tuples representing the paths from this node
+            to the children nodes.
+
+        Usage
+        -----
+        >>> node1 = DAGNode("Node 1")
+        >>> node2 = DAGNode("Node 2")
+        >>> node1.to(node2)
+        >>> node1.generate_paths()
+        """
+        paths: set[tuple[Hashable, ...]] = set()
+        self._generate_paths(self, (self.name,), paths)
+        return paths
+
+    def __hash__(self) -> int:
+        """ Get the hash of the node.
+
+        Returns
+        -------
+        int
+            The hash of the node.
+
+        Usage
+        -----
+        >>> node1 = DAGNode("Node 1")
+        >>> hash(node1)
+        """
+        return hash(self.name)
+
+    def __eq__(
+            self,
+            other: object
+        ) -> bool:
+        """ Check if two nodes are equal.
+
+        Parameters
+        ----------
+        `other` : object
             The object to compare to.
 
         Returns
@@ -176,22 +241,22 @@ class DAGNode:
         >>> node2 = DAGNode("Node 2")
         >>> node1 == node2
         """
-        if not isinstance(value, DAGNode):
+        if not isinstance(other, DAGNode):
             return False
 
-        return self.name == value.name and self.children == value.children
+        return self.name == other.name and self.children == other.children
 
     def __repr__(self) -> str:
-        """ Get a string representation of the node.
+        """ Get the string representation of the node.
 
         Returns
         -------
         str
-            A string representation of the node.
+            The string representation of the node.
 
         Usage
         -----
         >>> node1 = DAGNode("Node 1")
-        >>> repr(node1)
+        >>> node1
         """
-        return f"Name: {self.name}, Children: [{self.children}]"
+        return f"{self.name} -> {self.children}" if self.children else f"{self.name}"

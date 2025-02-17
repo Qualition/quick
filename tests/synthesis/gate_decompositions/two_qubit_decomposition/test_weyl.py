@@ -14,10 +14,7 @@
 
 from __future__ import annotations
 
-__all__ = [
-    "test_weyl_coordinates_simple",
-    "test_weyl_coordinates_random"
-]
+__all__ = ["TestWeyl"]
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -30,11 +27,12 @@ from quick.synthesis.gate_decompositions.two_qubit_decomposition.weyl import wey
 INVARIANT_TOL = 1e-12
 
 # Bell "Magic" basis
-MAGIC = (
-    1.0
-    / np.sqrt(2)
-    * np.array([[1, 0, 0, 1j], [0, 1j, 1, 0], [0, 1j, -1, 0], [1, 0, 0, -1j]], dtype=complex)
-)
+MAGIC = 1/np.sqrt(2) * np.array([
+    [1, 0, 0, 1j],
+    [0, 1j, 1, 0],
+    [0, 1j, -1, 0],
+    [1, 0, 0, -1j]
+], dtype=complex)
 
 
 def two_qubit_local_invariants(U: NDArray[np.complex128]) -> NDArray[np.float64]:
@@ -109,45 +107,51 @@ def local_equivalence(weyl: NDArray[np.complex128]) -> NDArray[np.float64]:
     )
     return np.round([g0_equiv, g1_equiv, g2_equiv], 12) + 0.0
 
-def test_weyl_coordinates_simple() -> None:
-    """ Check Weyl coordinates against known cases.
+
+class TestWeyl:
+    """ `tests.synthesis.gate_decompositions.TestWeyl` is the tester class
+    for `quick.synthesis.gate_decompositions.two_qubit_decomposition.WeylDecomposition`
+    class.
     """
-    # Identity [0,0,0]
-    U = np.identity(4).astype(complex)
-    weyl = weyl_coordinates(U)
-    assert_almost_equal(weyl, [0, 0, 0], decimal=8)
-
-    # CNOT [pi/4, 0, 0]
-    U = np.array([[1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0]], dtype=complex)
-    weyl = weyl_coordinates(U)
-    assert_almost_equal(weyl, [np.pi / 4, 0, 0], decimal=8)
-
-    # SWAP [pi/4, pi/4 ,pi/4]
-    U = np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=complex)
-
-    weyl = weyl_coordinates(U)
-    assert_almost_equal(weyl, [np.pi / 4, np.pi / 4, np.pi / 4], decimal=8)
-
-    # SQRT ISWAP [pi/8, pi/8, 0]
-    U = np.array(
-        [
-            [1, 0, 0, 0],
-            [0, 1 / np.sqrt(2), 1j / np.sqrt(2), 0],
-            [0, 1j / np.sqrt(2), 1 / np.sqrt(2), 0],
-            [0, 0, 0, 1],
-        ],
-        dtype=complex,
-    )
-
-    weyl = weyl_coordinates(U)
-    assert_almost_equal(weyl, [np.pi / 8, np.pi / 8, 0], decimal=8)
-
-def test_weyl_coordinates_random() -> None:
-    """ Randomly check Weyl coordinates with local invariants.
-    """
-    for _ in range(10):
-        U = unitary_group.rvs(4).astype(complex)
+    def test_weyl_coordinates_simple(self) -> None:
+        """ Check Weyl coordinates against known cases.
+        """
+        # Identity [0,0,0]
+        U = np.identity(4).astype(complex)
         weyl = weyl_coordinates(U)
-        local_equiv = local_equivalence(weyl.astype(float))
-        local = two_qubit_local_invariants(U)
-        assert_almost_equal(local, local_equiv)
+        assert_almost_equal(weyl, [0, 0, 0], decimal=8)
+
+        # CNOT [pi/4, 0, 0]
+        U = np.array([[1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0]], dtype=complex)
+        weyl = weyl_coordinates(U)
+        assert_almost_equal(weyl, [np.pi / 4, 0, 0], decimal=8)
+
+        # SWAP [pi/4, pi/4 ,pi/4]
+        U = np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=complex)
+
+        weyl = weyl_coordinates(U)
+        assert_almost_equal(weyl, [np.pi / 4, np.pi / 4, np.pi / 4], decimal=8)
+
+        # SQRT ISWAP [pi/8, pi/8, 0]
+        U = np.array(
+            [
+                [1, 0, 0, 0],
+                [0, 1 / np.sqrt(2), 1j / np.sqrt(2), 0],
+                [0, 1j / np.sqrt(2), 1 / np.sqrt(2), 0],
+                [0, 0, 0, 1],
+            ],
+            dtype=complex,
+        )
+
+        weyl = weyl_coordinates(U)
+        assert_almost_equal(weyl, [np.pi / 8, np.pi / 8, 0], decimal=8)
+
+    def test_weyl_coordinates_random(self) -> None:
+        """ Randomly check Weyl coordinates with local invariants.
+        """
+        for _ in range(10):
+            U = unitary_group.rvs(4).astype(complex)
+            weyl = weyl_coordinates(U)
+            local_equiv = local_equivalence(weyl.astype(float))
+            local = two_qubit_local_invariants(U)
+            assert_almost_equal(local, local_equiv)

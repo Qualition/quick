@@ -162,6 +162,29 @@ class TestCircuitBase:
             circuit.X(["qubit1", "qubit2"]) # type: ignore
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_duplicate_qubits(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the duplicate qubit error.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(3)
+
+        # Apply the Pauli-X gate
+        with pytest.raises(ValueError):
+            circuit.X([0, 0])
+
+        # Apply the MCX gate
+        with pytest.raises(ValueError):
+            circuit.MCX([0, 1], 1)
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_qubit_out_of_range(
             self,
             circuit_framework: Type[Circuit]
@@ -484,6 +507,46 @@ class TestCircuitBase:
 
         assert circuit == updated_circuit
         assert_almost_equal(circuit.get_unitary(), updated_circuit.get_unitary(), 8)
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_horizontal_reverse_definition(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the horizontal reversal of the circuit definition.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define a custom gate without parameters such as angle, power, or diagonal
+        # The implementation must be defined within the `with self.decompose_last(gate):` block
+        # to provide `definition` key for the gate in the circuit log
+        def custom_gate(self, qubit_indices: int | list[int]) -> None:
+            gate = self.process_gate_params(gate="custom_gate", params=locals())
+
+            with self.decompose_last(gate):
+                self.RX(0.1, qubit_indices)
+
+        # Apply the custom gate
+        Circuit.custom_gate = custom_gate # type: ignore
+
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply the custom gate
+        circuit.custom_gate([0, 1]) # type: ignore
+
+        # Apply the horizontal reverse operation
+        circuit.horizontal_reverse()
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.RX(-0.1, [0, 1])
+
+        assert_almost_equal(circuit.get_unitary(), checker_circuit.get_unitary(), 8)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_add(
@@ -1255,3 +1318,49 @@ class TestCircuitBase:
             "{'gate': 'CX', 'control_index': 0, 'target_index': 1}])"
         )
         assert repr(circuit) == circuit_checker
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_custom_gate(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the custom gate functionality.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the custom gate
+        def custom_gate(self, qubit_indices: int | list[int]) -> None:
+            gate = self.process_gate_params(gate="custom_gate", params=locals())
+
+            with self.decompose_last(gate):
+                self.RX(0.1, qubit_indices)
+
+        # Add the custom gate
+        Circuit.custom_gate = custom_gate # type: ignore
+
+        # Define the circuits
+        circuit = circuit_framework(2)
+
+        # Apply the custom gate
+        circuit.custom_gate([0, 1]) # type: ignore
+
+        # Define checker circuit
+        checker_circuit = circuit_framework(2)
+        checker_circuit.RX(0.1, [0, 1])
+
+        # Test the generated calls
+        assert circuit.generate_calls() == 'circuit.custom_gate(qubit_indices=[0, 1])\n'
+        assert_almost_equal(circuit.get_unitary(), checker_circuit.get_unitary())
+
+        reverse_circuit = circuit_framework(2)
+        reverse_circuit.RX(-0.1, [0, 1])
+
+        # Test the horizontal reverse operation
+        circuit = circuit_framework(2)
+        circuit.custom_gate([0, 1]) # type: ignore
+        circuit.horizontal_reverse()
+
+        assert_almost_equal(circuit.get_unitary(), reverse_circuit.get_unitary())

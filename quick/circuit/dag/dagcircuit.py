@@ -37,21 +37,24 @@ class DAGCircuit:
     ----------
     `num_qubits` : int
         The number of qubits in the circuit.
-    `qubits` : dict[int, quick.circuit.dag.DAGNode]
+    `qubits` : dict[str, quick.circuit.dag.DAGNode]
         A dictionary mapping qubit indices to nodes in the DAG.
+    `stack` : dict[str, list[quick.circuit.dag.DAGNode]]
+        A dictionary mapping qubit indices to a stack of nodes in the DAG.
 
     Usage
     -----
-    >>> circuit = DAGCircuit(2)
+    >>> dag = DAGCircuit(2)
     """
     def __init__(
             self,
             num_qubits: int
         ) -> None:
-        """ Initialize a DAGCircuit.
+        """ Initialize a `quick.circuit.dag.DAGCircuit` instance.
         """
         self.num_qubits = num_qubits
         self.qubits = {f"Q{i}": DAGNode(f"Q{i}") for i in range(num_qubits)}
+        self.stack = {f"Q{i}": [self.qubits[f"Q{i}"]] for i in range(num_qubits)}
 
     def add_operation(
             self,
@@ -68,7 +71,7 @@ class DAGCircuit:
 
         Usage
         -----
-        >>> circuit.add_operation({
+        >>> dag.add_operation({
         ...     "name": "H",
         ...     "qubit_indices": 0
         ... })
@@ -87,10 +90,9 @@ class DAGCircuit:
                 elif isinstance(operation[key], list):
                     qubit_indices.extend(operation[key])
 
-        used_qubits = [self.qubits[f"Q{i}"] for i in qubit_indices]
-
-        for qubit in used_qubits:
-            qubit.to(gate_node)
+        for qubit in qubit_indices:
+            self.stack[f"Q{qubit}"].append(gate_node)
+            self.stack[f"Q{qubit}"][-2].to(gate_node)
 
     def get_depth(self) -> int:
         """ Get the depth of the circuit.
@@ -102,15 +104,21 @@ class DAGCircuit:
 
         Usage
         -----
-        >>> circuit.get_depth()
+        >>> dag.get_depth()
         """
-        return max([self.qubits[f"Q{i}"].get_depth() for i in range(self.num_qubits)])
+        return max(qubit.depth for qubit in self.qubits.values())
 
-    def draw(self) -> None:
-        """ Draw the circuit.
+    def __repr__(self) -> str:
+        """ Get the string representation of the circuit.
+
+        Returns
+        -------
+        str
+            The string representation of the circuit.
 
         Usage
         -----
-        >>> circuit.draw()
+        >>> dag = DAGCircuit(2)
+        >>> dag
         """
-        # TODO: Implement this method
+        return "\n".join([f"{qubit}: {stack[0]}" for qubit, stack in self.stack.items()])
