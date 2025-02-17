@@ -48,8 +48,6 @@ class DAGNode:
         A set of parent nodes.
     `children` : set[quick.circuit.dag.DAGNode], optional, default=set()
         A set of children nodes.
-    `depth_cached` : bool, optional, default=False
-        A flag indicating whether the depth of the node is cached.
 
     Usage
     -----
@@ -58,7 +56,6 @@ class DAGNode:
     name: Hashable = None
     parents: set[DAGNode] = field(default_factory=set)
     children: set[DAGNode] = field(default_factory=set)
-    depth_cached: bool = False
 
     def _invalidate_depth(self) -> None:
         """ Invalidate the cached depth of the node.
@@ -69,9 +66,9 @@ class DAGNode:
         and all its parents. This is useful when the depth of the node
         needs to be recalculated.
 
-        We delete the `_depth` attribute and set `depth_cached` to False
-        to indicate that the depth is no longer cached. We then call this
-        method recursively on all parent nodes to invalidate their depths.
+        We delete the `_depth` attribute to indicate that the depth is no
+        longer cached. We then call this method recursively on all parent
+        nodes to invalidate their depths.
 
         Usage
         -----
@@ -79,7 +76,6 @@ class DAGNode:
         >>> node1._invalidate_depth()
         """
         del self._depth
-        self.depth_cached = False
 
         for parent in self.parents:
             parent._invalidate_depth()
@@ -125,7 +121,7 @@ class DAGNode:
         self.children.add(child)
         child.parents.add(self)
 
-        if self.depth_cached:
+        if hasattr(self, "_depth"):
             self._invalidate_depth()
 
     @property
@@ -150,8 +146,6 @@ class DAGNode:
         >>> node1.to(node2)
         >>> node1.depth
         """
-        self.depth_cached = True
-
         if not self.children:
             self._depth = 0
 

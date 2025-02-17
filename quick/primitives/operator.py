@@ -110,7 +110,7 @@ class Operator:
             raise ValueError("Operator must be a square matrix.")
 
         # Check if the matrix dimension is a power of 2
-        if not ((data.shape[0] & (data.shape[0]-1) == 0) and data.shape[0] != 0):
+        if not ((data.shape[0] & (data.shape[0] - 1) == 0) and data.shape[0] != 0):
             raise ValueError("Operator dimension must be a power of 2.")
 
         # Check if the data type is complex

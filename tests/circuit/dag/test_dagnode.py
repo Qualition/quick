@@ -31,7 +31,6 @@ class TestDAGNode:
         assert dagnode.name == "test_node"
         assert dagnode.children == set()
         assert dagnode.parents == set()
-        assert dagnode.depth_cached == False
 
     def test_to(self) -> None:
         """ Test the `to` method of a `DAGNode` object.
