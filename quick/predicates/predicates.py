@@ -85,13 +85,6 @@ def is_diagonal_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
-
-    if matrix.ndim != 2:
-        return False
     return np.allclose(matrix, np.diag(np.diagonal(matrix)), rtol=rtol, atol=atol)
 
 def is_symmetric_matrix(
@@ -122,13 +115,6 @@ def is_symmetric_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
-
-    if matrix.ndim != 2:
-        return False
     return np.allclose(matrix, matrix.T, rtol=rtol, atol=atol)
 
 def is_identity_matrix(
@@ -162,12 +148,6 @@ def is_identity_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
-    if matrix.ndim != 2:
-        return False
     if ignore_phase:
         # If the matrix is equal to an identity up to a phase, we can
         # remove the phase by multiplying each entry by the complex
@@ -238,12 +218,6 @@ def is_hermitian_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
-    if matrix.ndim != 2:
-        return False
     return np.allclose(matrix, np.conj(matrix.T), rtol=rtol, atol=atol)
 
 def is_positive_semidefinite_matrix(
@@ -271,10 +245,6 @@ def is_positive_semidefinite_matrix(
     -----
     >>> is_positive_semidefinite_matrix(np.eye(2))
     """
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
     if not is_hermitian_matrix(matrix, rtol=rtol, atol=atol):
         return False
 
