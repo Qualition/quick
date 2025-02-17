@@ -41,6 +41,7 @@ from quick.predicates import (
     is_isometry
 )
 
+
 @pytest.mark.parametrize("array, expected", [
     (np.random.rand(2, 2), True),
     (np.random.rand(3, 3), True),
@@ -48,13 +49,21 @@ from quick.predicates import (
     (np.random.rand(5, 5), True),
     (np.random.rand(2, 1), False),
     (np.random.rand(1, 3), False),
-    (np.random.rand(4, 12), False)
+    (np.random.rand(4, 12), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_square_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_square_matrix()` method.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a square matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_square_matrix(array) == expected
 
@@ -75,13 +84,21 @@ def test_is_square_matrix(
     (np.array([
         [1, 0],
         [1, 1]
-    ]), False)
+    ]), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_diagonal_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_diagonal_matrix()` method with diagonal matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a diagonal matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_diagonal_matrix(array) == expected
 
@@ -115,13 +132,21 @@ def test_is_diagonal_matrix(
     (np.array([
         [1, 2],
         [3, 4]
-    ]), False)
+    ]), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_symmetric_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_symmetric_matrix()` method with symmetric matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a symmetric matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_symmetric_matrix(array) == expected
 
@@ -133,13 +158,21 @@ def test_is_symmetric_matrix(
     (np.random.rand(2, 2), False),
     (np.random.rand(3, 3), False),
     (np.random.rand(4, 4), False),
-    (np.random.rand(3, 4), False)
+    (np.random.rand(3, 4), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_identity_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_identity_matrix()` method with identity matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is an identity matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_identity_matrix(array) == expected
 
@@ -151,13 +184,21 @@ def test_is_identity_matrix(
     (np.random.rand(2, 2), False),
     (np.random.rand(3, 3), False),
     (np.random.rand(3, 4), False),
-    (np.random.rand(5, 2), False)
+    (np.random.rand(5, 2), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_unitary_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_unitary_matrix()` method.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a unitary matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_unitary_matrix(array) == expected
 
@@ -187,13 +228,21 @@ def test_is_unitary_matrix(
     (np.array([
         [1, 2],
         [3, 4]
-    ]), False)
+    ]), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_hermitian_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_hermitian_matrix()` method with Hermitian matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a Hermitian matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_hermitian_matrix(array) == expected
 
@@ -221,13 +270,21 @@ def test_is_hermitian_matrix(
     (np.array([
         [1, 2],
         [2, 1]
-    ]), False)
+    ]), False),
+    (np.random.rand(2, 3, 3), False)
 ])
 def test_is_positive_semidefinite_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
     """ Test the `.is_positive_semidefinite_matrix()` method with positive semidefinite matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a positive semidefinite matrix.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_positive_semidefinite_matrix(array) == expected
 
@@ -257,5 +314,12 @@ def test_is_isometry(
         expected: bool
     ) -> None:
     """ Test the `is_isometry` function with various matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is an isometry.
+    `expected` : bool
+        The expected output of the function.
     """
     assert is_isometry(array) == expected
