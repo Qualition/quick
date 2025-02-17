@@ -86,7 +86,7 @@ class DAGNode:
 
     def to(
             self,
-            next: DAGNode
+            child: DAGNode
         ) -> None:
         """ Add a child node to this node.
 
@@ -102,7 +102,7 @@ class DAGNode:
 
         Parameters
         ----------
-        `next` : quick.circuit.dag.DAGNode
+        `child` : quick.circuit.dag.DAGNode
             The next node to add.
 
         Raises
@@ -116,14 +116,14 @@ class DAGNode:
         >>> node2 = DAGNode("Node 2")
         >>> node1.to(node2)
         """
-        if not isinstance(next, DAGNode):
+        if not isinstance(child, DAGNode):
             raise TypeError(
                 "The `next` node must be an instance of DAGNode. "
-                f"Received {type(next)} instead."
+                f"Received {type(child)} instead."
             )
 
-        self.children.add(next)
-        next.parents.add(self)
+        self.children.add(child)
+        child.parents.add(self)
 
         if self.depth_cached:
             self._invalidate_depth()
