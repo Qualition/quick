@@ -16,6 +16,7 @@ __all__ = [
     "CIRCUIT_FRAMEWORKS",
     "TestCircuitBase",
     "TestControlled",
+    "TestControlState",
     "Template",
     "TestCirqCircuit",
     "TestPennylaneCircuit",
@@ -37,6 +38,7 @@ CIRCUIT_FRAMEWORKS = [
 
 from tests.circuit.test_circuit_base import TestCircuitBase
 from tests.circuit.test_circuit_to_controlled import TestControlled
+from tests.circuit.test_control_state import TestControlState
 from tests.circuit.test_circuit import Template
 from tests.circuit.test_cirq_circuit import TestCirqCircuit
 from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit

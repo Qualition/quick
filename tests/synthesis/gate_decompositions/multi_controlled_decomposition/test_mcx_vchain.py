@@ -24,7 +24,6 @@ import pytest
 from quick.circuit import QiskitCircuit
 from quick.synthesis.gate_decompositions.multi_controlled_decomposition.mcx_vchain import MCXVChain
 
-
 # Folder prefix
 folder_prefix = "tests/synthesis/gate_decompositions/multi_controlled_decomposition/"
 
@@ -35,8 +34,14 @@ mcx_vchain_6 = np.load(folder_prefix + "mcx_vchain_6.npy")
 
 
 class TestMCXVChain:
+    """ `tests.synthesis.gate_decompositions.TestMCXVChain` is the tester class for
+    `quick.synthesis.gate_decompositions.multi_controlled_decomposition.MCXVChain`.
+    """
     @pytest.mark.parametrize("num_controls", [2, 3, 4, 5, 6])
-    def test_get_num_ancillas(self, num_controls: int) -> None:
+    def test_get_num_ancillas(
+            self,
+            num_controls: int
+        ) -> None:
         """ Test the `MCXVChain.get_num_ancillas()`.
 
         Parameters

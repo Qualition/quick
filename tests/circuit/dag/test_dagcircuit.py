@@ -36,11 +36,7 @@ class TestDAGCircuit:
         circuit.add_operation({"gate": "H", "qubit_indices": 0})
         circuit.add_operation({"gate": "CX", "control_index": 0, "target_index": 1})
 
-        assert circuit.qubits["Q0"].children["Q0"].name == "H"
-        assert circuit.qubits["Q0"].children["Q0"].children["Q0"].name == "CX"
-        assert circuit.qubits["Q1"].children["Q1"].name == "CX"
-        assert circuit.qubits["Q1"].children["Q1"].children == {}
-        assert circuit.qubits["Q0"].children["Q0"].children["Q0"].children == {}
+        assert repr(circuit) == "\n".join(["Q0: Q0 -> {H -> {CX}}", "Q1: Q1 -> {CX}"])
 
     def test_get_depth(self) -> None:
         """ Test the `get_depth` method of a `DAGCircuit` object.

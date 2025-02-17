@@ -307,7 +307,7 @@ def diagonalize_unitary_complex_symmetric(
         else:
             # We have to solve `(b.imag, b.real) @ (re, im).T = a.imag` for `re`
             # and `im`, which is overspecified
-            multiplier, *_ = scipy.linalg.lstsq(np.transpose([b.imag, b.real]), a.imag)
+            multiplier, *_ = scipy.linalg.lstsq(np.transpose([b.imag, b.real]), a.imag) # type: ignore
             a = a - complex(*multiplier) * b
         a = a.real / scipy.linalg.norm(a.real)
         b = remove_global_phase(b - (a @ b) * a)

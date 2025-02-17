@@ -39,121 +39,11 @@ from quick.synthesis.gate_decompositions.multi_controlled_decomposition.mcx_vcha
 from quick.synthesis.gate_decompositions import OneQubitDecomposition
 
 # Global MCXVChain object
-mcx_vchain_decomposition = MCXVChain()
+MCX_VCHAIN_DECOMPOSER = MCXVChain()
 
 # Constants
 PI2 = np.pi / 2
 
-
-def generate_gray_code(num_bits: int) -> list[str]:
-    """ Generate the gray code for ``num_bits`` bits.
-
-    Parameters
-    ----------
-    `num_bits` : int
-        The number of bits.
-
-    Returns
-    -------
-    list[str]
-        The gray code for the given number of bits.
-    """
-    if num_bits <= 0:
-        raise ValueError("Cannot generate the gray code for less than 1 bit.")
-    result = [0]
-    for i in range(num_bits):
-        result += [x + 2**i for x in reversed(result)]
-    return [format(x, f"0{num_bits}b") for x in result]
-
-def apply_cu(
-        circuit: Circuit,
-        angles: list[float],
-        control_index: int,
-        target_index: int
-    ) -> None:
-    """ Decomposition of the CU gate into a circuit with only 1 and 2 qubit gates.
-
-    Notes
-    -----
-    This implementation is based on Nielson & Chuang 4.2 decomposition.
-
-    Parameters
-    ----------
-    `circuit` : quick.circuit.Circuit
-        The circuit to apply the CU gate.
-    `angles` : list[float]
-        List of angles [theta, phi, lam].
-    `control_index` : int
-        Control qubit index.
-    """
-    theta, phi, lam = angles
-    circuit.Phase((lam + phi) / 2, control_index)
-    circuit.Phase((lam - phi) / 2, target_index)
-    circuit.CX(control_index, target_index)
-    circuit.Phase(-(phi + lam) / 2, target_index)
-    circuit.RY(-theta / 2, target_index)
-    circuit.CX(control_index, target_index)
-    circuit.RY(theta / 2, target_index)
-    circuit.Phase(phi, target_index)
-
-def apply_mcu_graycode(
-        circuit: Circuit,
-        angles: list[float],
-        control_indices: list[int],
-        target_index: int
-    ) -> None:
-    """Apply multi-controlled u gate from controls to target using graycode
-    pattern with single-step angles theta, phi, lam.
-
-    Parameters
-    ----------
-    `circuit` : quick.circuit.Circuit
-        The circuit to apply the multi-controlled U gate.
-    `angles` : list[float]
-        List of angles [theta, phi, lam].
-    `control_indices` : list[int]
-        List of control qubit indices.
-    `target_index` : int
-        Target qubit index.
-    """
-    theta, phi, lam = angles
-    n = len(control_indices)
-
-    gray_code = generate_gray_code(n)
-    last_pattern = None
-
-    for pattern in gray_code:
-        if "1" not in pattern:
-            continue
-        if last_pattern is None:
-            last_pattern = pattern
-        # Find left most set bit
-        lm_pos = list(pattern).index("1")
-
-        # Find changed bit
-        comp = [i != j for i, j in zip(pattern, last_pattern)]
-
-        if True in comp:
-            pos = comp.index(True)
-        else:
-            pos = None
-
-        if pos is not None:
-            if pos != lm_pos:
-                circuit.CX(control_indices[pos], control_indices[lm_pos])
-            else:
-                indices = [i for i, x in enumerate(pattern) if x == "1"]
-                for idx in indices[1:]:
-                    circuit.CX(control_indices[idx], control_indices[lm_pos])
-
-        # Check parity and undo rotation
-        if pattern.count("1") % 2 == 0:
-            # Inverse CU: u(theta, phi, lamb)^dagger = u(-theta, -lam, -phi)
-            apply_cu(circuit, [-theta, -lam, -phi], control_indices[lm_pos], target_index)
-        else:
-            apply_cu(circuit, [theta, phi, lam], control_indices[lm_pos], target_index)
-
-        last_pattern = pattern
 
 def mcsu2_real_diagonal_decomposition(
         circuit: Circuit,
@@ -167,7 +57,16 @@ def mcsu2_real_diagonal_decomposition(
     Notes
     -----
     This decomposition is used to decompose MCRX, MCRY, and MCRZ gates
-    using CX and one qubit gates.
+    using CX and one qubit gates. The decomposition breaks the control
+    indices into two sets and utilizes the V-chain decomposition to
+    define the multi-controlled gate. By dividing the control qubits
+    we can use the other half as ancilla qubits for each V-chain
+    decomposition.
+
+    The implementation is based on the following paper section 3.1:
+    [1] Vale , Azevedo , Araujo, Araujo , da Silva.
+    Decomposition of Multi-controlled Special Unitary Single-Qubit Gates (2023).
+    https://arxiv.org/pdf/2302.06377
 
     Parameters
     ----------
@@ -213,7 +112,7 @@ def mcsu2_real_diagonal_decomposition(
         z = unitary[1, 1] - unitary[0, 1].imag * 1.0j
 
     if np.isclose(z, -1):
-        s_op = [[1.0, 0.0], [0.0, 1.0j]]
+        a_op = [[1.0, 0.0], [0.0, 1.0j]]
     else:
         alpha_r = math.sqrt((math.sqrt((z.real + 1.0) / 2.0) + 1.0) / 2.0)
         alpha_i = z.imag / (
@@ -221,52 +120,58 @@ def mcsu2_real_diagonal_decomposition(
         )
         alpha = alpha_r + 1.0j * alpha_i
         beta = x / (2.0 * math.sqrt((z.real + 1.0) * (math.sqrt((z.real + 1.0) / 2.0) + 1.0)))
-        s_op = np.array([[alpha, -np.conj(beta)], [beta, np.conj(alpha)]]) # type: ignore
+        a_op = np.array([[alpha, -np.conj(beta)], [beta, np.conj(alpha)]]) # type: ignore
 
     one_qubit_decomposition = OneQubitDecomposition(output_framework=type(circuit))
-    s_gate = one_qubit_decomposition.prepare_unitary(np.array(s_op))
-    s_gate_adjoint = s_gate.copy()
-    s_gate_adjoint.horizontal_reverse()
+
+    # Define the A gate which is an SU2 gate (Eq 7)
+    a_gate = one_qubit_decomposition.prepare_unitary(np.array(a_op))
+    a_gate_adjoint = a_gate.copy()
+    a_gate_adjoint.horizontal_reverse()
 
     control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
     num_controls = len(control_indices)
+
+    # Cut the control qubits into two sets
+    # Each set will use the other half as ancilla qubits for the V-chain decomposition
     k_1 = math.ceil(num_controls / 2.0)
     k_2 = math.floor(num_controls / 2.0)
 
     if not is_secondary_diag_real:
         circuit.H(target_index)
 
-    mcx_vchain_decomposition.apply_decomposition(
+    # Implement circuit from Fig. 7
+    MCX_VCHAIN_DECOMPOSER.apply_decomposition(
         circuit,
         control_indices[:k_1],
         target_index,
         control_indices[k_1 : 2 * k_1 - 2]
     )
-    circuit.add(s_gate, [target_index])
+    circuit.add(a_gate, [target_index])
 
-    mcx_vchain_decomposition.apply_decomposition(
+    MCX_VCHAIN_DECOMPOSER.apply_decomposition(
         circuit,
         control_indices[k_1:],
         target_index,
         control_indices[k_1 - k_2 + 2 : k_1]
     )
-    circuit.add(s_gate_adjoint, [target_index])
+    circuit.add(a_gate_adjoint, [target_index])
 
-    mcx_vchain_decomposition.apply_decomposition(
+    MCX_VCHAIN_DECOMPOSER.apply_decomposition(
         circuit,
         control_indices[:k_1],
         target_index,
         control_indices[k_1 : 2 * k_1 - 2]
     )
-    circuit.add(s_gate, [target_index])
+    circuit.add(a_gate, [target_index])
 
-    mcx_vchain_decomposition.apply_decomposition(
+    MCX_VCHAIN_DECOMPOSER.apply_decomposition(
         circuit,
         control_indices[k_1:],
         target_index,
         control_indices[k_1 - k_2 + 2 : k_1]
     )
-    circuit.add(s_gate_adjoint, [target_index])
+    circuit.add(a_gate_adjoint, [target_index])
 
     if not is_secondary_diag_real:
         circuit.H(target_index)
@@ -279,6 +184,17 @@ def MCRX(
     ) -> None:
     """ Decomposition of the multi-controlled RX gate into a circuit with
     only CX and one qubit gates.
+
+    Notes
+    -----
+    Uses MCSU2 real diagonal decomposition to decompose the multi-controlled
+    RX gate into a circuit with only CX and one qubit gates. Here, we pass RX
+    gate as the SU2.
+
+    The implementation is based on the following paper section 3.1:
+    [1] Vale , Azevedo , Araujo, Araujo , da Silva.
+    Decomposition of Multi-controlled Special Unitary Single-Qubit Gates (2023).
+    https://arxiv.org/pdf/2302.06377
 
     Parameters
     ----------
@@ -302,15 +218,6 @@ def MCRX(
         circuit.RY(theta/2, target_index)
         circuit.Sdg(target_index)
 
-    elif num_controls < 4:
-        theta_step = theta * (1 / (2 ** (num_controls - 1)))
-        apply_mcu_graycode(
-            circuit,
-            [theta_step, -PI2, PI2],
-            control_indices,
-            target_index
-        )
-
     else:
         mcsu2_real_diagonal_decomposition(
             circuit,
@@ -327,6 +234,17 @@ def MCRY(
     ) -> None:
     """ Decomposition of the multi-controlled RY gate into a circuit with
     only CX and one qubit gates.
+
+    Notes
+    -----
+    Uses MCSU2 real diagonal decomposition to decompose the multi-controlled
+    RY gate into a circuit with only CX and one qubit gates. Here, we pass RY
+    gate as the SU2.
+
+    The implementation is based on the following paper section 3.1:
+    [1] Vale , Azevedo , Araujo, Araujo , da Silva.
+    Decomposition of Multi-controlled Special Unitary Single-Qubit Gates (2023).
+    https://arxiv.org/pdf/2302.06377
 
     Parameters
     ----------
@@ -348,15 +266,6 @@ def MCRY(
         circuit.RY(-theta/2, target_index)
         circuit.CX(control_indices[0], target_index)
 
-    elif num_controls < 4:
-        theta_step = theta * (1 / (2 ** (num_controls - 1)))
-        apply_mcu_graycode(
-            circuit,
-            [theta_step, 0, 0],
-            control_indices,
-            target_index,
-        )
-
     else:
         mcsu2_real_diagonal_decomposition(
             circuit,
@@ -373,6 +282,17 @@ def MCRZ(
     ) -> None:
     """ Decomposition of the multi-controlled RZ gate into a circuit with
     only CX and one qubit gates.
+
+    Notes
+    -----
+    Uses MCSU2 real diagonal decomposition to decompose the multi-controlled
+    RZ gate into a circuit with only CX and one qubit gates. Here, we pass RZ
+    gate as the SU2.
+
+    The implementation is based on the following paper section 3.1:
+    [1] Vale , Azevedo , Araujo, Araujo , da Silva.
+    Decomposition of Multi-controlled Special Unitary Single-Qubit Gates (2023).
+    https://arxiv.org/pdf/2302.06377
 
     Parameters
     ----------

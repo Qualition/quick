@@ -30,7 +30,8 @@ from quick.synthesis.gate_decompositions.multi_controlled_decomposition.mcx_util
 
 
 class MCXVChain:
-    """ `quick.synthesis.gate_decompositions.MCXVChain` class is used to perform V-chain decomposition of MCX gates.
+    """ `quick.synthesis.gate_decompositions.MCXVChain` class is used to perform V-chain
+    decomposition of MCX gates.
 
     Notes
     -----
@@ -41,11 +42,15 @@ class MCXVChain:
 
     It can synthesize a multi-controlled X gate with k controls using k - 2 dirty
     ancillary qubits producing a circuit with 2 * k - 1 qubits and at most
-    8 * k - 6 CX gates, by Iten et. al.
+    8 * k - 6 CX gates, by [1].
 
-    This implementation is based on the following paper:
-    - Iten, Colbeck, Kukuljan, Home, Christandl.
-    Quantum circuits for isometries (2016).
+    Note that this implementation assumes all ancilla qubits are dirty for sake of
+    generality. This slightly increases the number of CX gates required, but it
+    simplifies the decomposition.
+
+    This implementation is based on the following paper Lemma 7.2:
+    [1] Barenco, Bennett, Cleve, DiVincenzo, Margolus, Shor, Sleator, Smolin, Weinfurter.
+    Elementary gates for quantum computation (1995).
     https://journals.aps.org/pra/abstract/10.1103/PhysRevA.93.032318
 
     Usage
@@ -162,13 +167,7 @@ class MCXVChain:
             )
 
         # The V-chain decomposition for the MCX gate only works for 4+ control qubits
-        if num_control_qubits == 1:
-            circuit.CX(control_indices[0], target_index)
-            return
-        elif num_control_qubits == 2:
-            CCX(circuit, control_indices, target_index)
-            return
-        elif num_control_qubits == 3:
+        if num_control_qubits < 4:
             C3X(circuit, control_indices, target_index)
             return
 
