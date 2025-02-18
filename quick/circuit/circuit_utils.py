@@ -262,13 +262,12 @@ def extract_single_qubits_and_diagonal(
         # For each decomposition step, there are 2^decomposition_step multiplexors
         # where each multiplexor has 2^(num_controls - decomposition_step) gates
         num_multiplexors = 2**decomposition_step
+        len_multiplexor = 2**(num_controls - decomposition_step)
 
         for multiplexor_index in range(num_multiplexors):
-            len_multiplexor = 2**(num_controls - decomposition_step)
+            shift = multiplexor_index * len_multiplexor
 
             for i in range(len_multiplexor // 2):
-                shift = multiplexor_index * len_multiplexor
-
                 # Define a, b for F^1_2(U(2)) construction
                 a = single_qubit_gates[shift + i]
                 b = single_qubit_gates[shift + len_multiplexor // 2 + i]
