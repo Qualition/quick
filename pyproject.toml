@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools >= 69.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -58,7 +58,7 @@ Repository = "https://github.com/qualition/quick.git"
 include = ["quick*"]
 
 [tool.setuptools.package-data]
-"pkgname" = ["py.typed"]
+"quick" = ["py.typed"]
 
 [tool.codeflash]
 # All paths are relative to this pyproject.toml's directory.
