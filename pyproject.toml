@@ -57,6 +57,9 @@ Repository = "https://github.com/qualition/quick.git"
 [tool.setuptools.packages.find]
 include = ["quick*"]
 
+[tool.setuptools.package-data]
+"pkgname" = ["py.typed"]
+
 [tool.codeflash]
 # All paths are relative to this pyproject.toml's directory.
 module-root = "quick"
