@@ -16,6 +16,7 @@ from __future__ import annotations
 
 __all__ = ["DAGNode"]
 
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Hashable
 
@@ -150,9 +151,63 @@ class DAGNode:
             self._depth = 0
 
         if not hasattr(self, "_depth"):
-            self._depth = max(child.depth for child in self.children) + 1
+            self._calculate_depth()
 
         return self._depth
+
+    def _calculate_depth(self) -> None:
+        """ Calculate the depth of the node.
+
+        Notes
+        -----
+        We perform the following steps to calculate the depth of the node:
+        1. Define the subgraph rooted at the current node.
+        2. Calculate the in-degree of each node in the subgraph.
+        3. Perform Kahn's algorithm to topologically sort the nodes.
+        4. Calculate the depth of each node by working from the leaves.
+        """
+        in_degrees: dict[DAGNode, int] = {}
+        stack: list[DAGNode] = [self]
+        queue: deque[DAGNode] = deque([self])
+
+        # Add all nodes in the subgraph rooted at self to the in-degrees dictionary
+        # except nodes that already have their depth calculated
+        while stack:
+            node = stack.pop()
+            if node in in_degrees or hasattr(node, "_depth"):
+                continue
+
+            # Set the in-degree of the node to zero
+            # (this value is arbitrary, we just need a placeholder)
+            in_degrees[node] = 0
+            for child in node.children:
+                stack.append(child)
+
+        # Calculate the in-degree of each node by counting the number of parents
+        # in the subgraph rooted at self
+        for node in in_degrees:
+            in_degrees[node] = sum(parent in in_degrees for parent in node.parents)
+
+        # Perform Kahn's algorithm to topologically sort the nodes
+        while queue:
+            node = queue.popleft()
+            stack.append(node)
+
+            for child in node.children:
+                if child not in in_degrees:
+                    continue
+
+                in_degrees[child] -= 1
+                if in_degrees[child] == 0:
+                    queue.append(child)
+
+        # Calculate the depth of each node by working from the leaves and
+        # moving up the graph until we reach root
+        for node in reversed(stack):
+            if not node.children:
+                node._depth = 0
+            else:
+                node._depth = max(child._depth for child in node.children) + 1
 
     def _generate_paths(
             self,
@@ -211,7 +266,7 @@ class DAGNode:
         >>> node1 = DAGNode("Node 1")
         >>> hash(node1)
         """
-        return hash(self.name)
+        return hash(id(self))
 
     def __eq__(
             self,
