@@ -1,4 +1,4 @@
-# Getting Started with Developing quick
+# Developing
 
 This document contains guidelines for contributing to the code in this
 repository. This document is relevant primarily for contributions to the `quick`
@@ -34,3 +34,8 @@ use an internal style in certain situations, and you should use them to maintain
 `quick` tests are categorized as unit tests and integration tests on the library code.
 All code added should have an accompanying test added to the appropriate spot in the
 `tests` folder.
+
+## Linting
+
+`quick` uses mypy and ruff for linting purposes. All code added must pass mypy and ruff checks,
+and have accompanying stubs with them.
