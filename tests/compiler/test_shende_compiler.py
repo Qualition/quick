@@ -20,23 +20,22 @@ import copy
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
-import random
-from scipy.stats import unitary_group
 
 from quick.circuit import TKETCircuit
 from quick.compiler import Compiler
 from quick.primitives import Bra, Ket, Operator
+from quick.random import generate_random_state, generate_random_unitary
 
 from tests.compiler import Template
 
 # Define the test data
-generated_statevector = np.array([random.random() + 1j * random.random() for _ in range(128)])
+generated_statevector = generate_random_state(7)
 test_data_bra = Bra(generated_statevector)
 test_data_ket = Ket(generated_statevector)
 checker_data_ket = copy.deepcopy(test_data_ket)
 checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
-unitary_matrix = unitary_group.rvs(8).astype(complex)
+unitary_matrix = generate_random_unitary(3)
 
 
 class TestShendeCompiler(Template):
@@ -296,15 +295,15 @@ class TestShendeCompiler(Template):
         shende_compiler = Compiler(circuit_framework=TKETCircuit)
 
         # Generate a random bra and ket over three qubits
-        generated_statevector = np.array([random.random() + 1j * random.random() for _ in range(8)])
+        generated_statevector = generate_random_state(3)
         test_data_ket = Ket(generated_statevector)
         test_data_bra = Bra(generated_statevector)
         checker_data_ket = copy.deepcopy(test_data_ket)
         checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
         # Generate two random unitary matrix over three qubits
-        unitary_matrix_1 = unitary_group.rvs(8).astype(complex)
-        unitary_matrix_2 = unitary_group.rvs(8).astype(complex)
+        unitary_matrix_1 = generate_random_unitary(3)
+        unitary_matrix_2 = generate_random_unitary(3)
 
         # Encode the data to a circuit
         circuit = shende_compiler.compile([

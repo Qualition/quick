@@ -17,11 +17,15 @@
 
 from __future__ import annotations
 
-__all__ = ["get_entanglements"]
+__all__ = [
+    "calculate_entanglement_range",
+    "calculate_shannon_entropy",
+    "calculate_entanglement_entropy"
+]
 
+import numpy as np
+from numpy.typing import NDArray
 import quimb.tensor as qtn # type: ignore
-
-from quick.circuit import Circuit
 
 
 def _get_submps_indices(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
@@ -92,13 +96,13 @@ def _get_submps_indices(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
 
     return sub_mps_indices
 
-def get_entanglements(circuit: Circuit) -> list[tuple[int, int]]:
+def calculate_entanglement_range(statevector: NDArray[np.complex128]) -> list[tuple[int, int]]:
     """ Get the entanglements of the circuit.
 
     Parameters
     ----------
-    `circuit` : quick.circuit.Circuit
-        The circuit to extract the entanglements from.
+    `statevector` : NDArray[np.complex128]
+        The statevector of the circuit.
 
     Returns
     -------
@@ -107,17 +111,58 @@ def get_entanglements(circuit: Circuit) -> list[tuple[int, int]]:
 
     Usage
     -----
-    >>> circuit.get_entanglements()
+    >>> entanglements = get_entanglements(statevector)
     """
-    # Copy the circuit to avoid modifying the original circuit
-    qc = circuit.copy()
-    qc.vertical_reverse()
+    statevector = statevector.flatten()
+    num_qubits = int(np.log2(statevector.size))
 
-    # Extract the statevector of the circuit
-    # to determine the entanglements
-    statevector = qc.get_statevector()
+    # We need to have the statevector in MSB order for
+    # correct extraction
+    statevector = (
+        statevector.reshape([2] * num_qubits)
+        .transpose(list(range(num_qubits))[::-1])
+        .flatten()
+    )
 
-    # To find the entanglements, we need to convert the statevector
-    # to a matrix product state (MPS) representation and then find
-    # the sub-MPS indices
     return _get_submps_indices(qtn.MatrixProductState.from_dense(statevector))
+
+def calculate_shannon_entropy(statevector: NDArray[np.complex128]) -> float:
+    """ Calculate the Shannon entropy.
+
+    Parameters
+    ----------
+    `statevector` : NDArray[np.complex128]
+        The statevector of the circuit.
+
+    Returns
+    -------
+    float
+        The Shannon entropy of the circuit.
+
+    Usage
+    -----
+    >>> shannon_entropy = calculate_shannon_entropy(statevector)
+    """
+    statevector = statevector[(0 < statevector) & (statevector < 1)]
+    return -np.sum(statevector * np.log2(statevector)).astype(float)
+
+def calculate_entanglement_entropy(statevector: NDArray[np.complex128]) -> float:
+    """ Calculate the entanglement entropy of the circuit.
+
+    Parameters
+    ----------
+    `statevector` : NDArray[np.complex128]
+        The statevector of the circuit.
+
+    Returns
+    -------
+    float
+        The entanglement entropy of the circuit.
+
+    Usage
+    -----
+    >>> entanglement_entropy = calculate_entanglement_entropy(statevector)
+    """
+    density_matrix = np.outer(statevector, statevector.conj())
+    eigenvalues = np.maximum(np.real(np.linalg.eigvals(density_matrix)), 0.0)
+    return calculate_shannon_entropy(eigenvalues)

@@ -12,6 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from quick import backend as backend, circuit as circuit, compiler as compiler, optimizer as optimizer, primitives as primitives, synthesis as synthesis
+from quick import (
+    backend as backend,
+    circuit as circuit,
+    compiler as compiler,
+    optimizer as optimizer,
+    primitives as primitives,
+    random as random,
+    synthesis as synthesis,
+)
 
-__all__ = ["backend", "circuit", "compiler", "optimizer", "primitives", "synthesis"]
+__all__ = [
+    "backend",
+    "circuit",
+    "compiler",
+    "optimizer",
+    "primitives",
+    "random",
+    "synthesis"
+]

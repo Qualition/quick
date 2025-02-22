@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from quick.circuit import Circuit
+import numpy as np
+from numpy.typing import NDArray
 
-__all__ = ["get_entanglements"]
+__all__ = ["generate_random_state", "generate_random_unitary"]
 
-def get_entanglements(circuit: Circuit) -> list[tuple[int, int]]: ...
+def generate_random_state(num_qubits: int) -> NDArray[np.complex128]: ...
+def generate_random_unitary(num_qubits: int) -> NDArray[np.complex128]: ...

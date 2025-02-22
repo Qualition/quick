@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from quick.circuit.metrics.metrics import get_entanglements as get_entanglements
+__all__ = [
+    "calculate_entanglement_range",
+    "calculate_shannon_entropy",
+    "calculate_entanglement_entropy"
+]
 
-__all__ = ["get_entanglements"]
+from quick.metrics.metrics import (
+    calculate_entanglement_range,
+    calculate_shannon_entropy,
+    calculate_entanglement_entropy
+)

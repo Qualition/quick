@@ -18,7 +18,8 @@ __all__ = [
     "compiler",
     "predicates",
     "primitives",
+    "random",
     "synthesis"
 ]
 
-from tests import backend, circuit, compiler, predicates, primitives, synthesis
+from tests import backend, circuit, compiler, predicates, primitives, random, synthesis

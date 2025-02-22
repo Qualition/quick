@@ -14,10 +14,12 @@
 
 __all__ = [
     "StatePreparationTemplate",
-    "TestStatePreparationMottonen",
-    "TestStatePreparationShende"
+    "TestMottonen",
+    "TestShende",
+    "TestIsometry"
 ]
 
 from tests.synthesis.statepreparation.test_statepreparation import StatePreparationTemplate
-from tests.synthesis.statepreparation.test_mottonen import TestStatePreparationMottonen
-from tests.synthesis.statepreparation.test_shende import TestStatePreparationShende
+from tests.synthesis.statepreparation.test_mottonen import TestMottonen
+from tests.synthesis.statepreparation.test_shende import TestShende
+from tests.synthesis.statepreparation.test_isometry import TestIsometry

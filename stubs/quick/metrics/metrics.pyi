@@ -11,3 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import numpy as np
+from numpy.typing import NDArray
+
+__all__ = [
+    "get_entanglements",
+    "calculate_shannon_entropy",
+    "calculate_entanglement_entropy"
+]
+
+def calculate_entanglement_range(statevector: NDArray[np.complex128]) -> list[tuple[int, int]]: ...
+def calculate_shannon_entropy(statevector: NDArray[np.complex128]) -> float: ...
+def calculate_entanglement_entropy(statevector: NDArray[np.complex128]) -> float: ...
