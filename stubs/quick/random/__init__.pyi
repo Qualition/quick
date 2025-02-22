@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["get_entanglements"]
+from quick.random.random import generate_random_state as generate_random_state, generate_random_unitary as generate_random_unitary
 
-from quick.circuit.metrics.metrics import get_entanglements
+__all__ = ["generate_random_state", "generate_random_unitary"]

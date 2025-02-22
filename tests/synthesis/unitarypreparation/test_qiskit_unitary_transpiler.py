@@ -18,15 +18,15 @@ __all__ = ["TestQiskitUnitaryTranspiler"]
 
 from numpy.testing import assert_almost_equal
 import pytest
-from scipy.stats import unitary_group
 
 from quick.circuit import QiskitCircuit
 from quick.primitives import Operator
+from quick.random import generate_random_unitary
 from quick.synthesis.unitarypreparation import QiskitUnitaryTranspiler
 from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
-unitary_matrix = unitary_group.rvs(8).astype(complex)
+unitary_matrix = generate_random_unitary(3)
 
 
 class TestQiskitUnitaryTranspiler(UnitaryPreparationTemplate):

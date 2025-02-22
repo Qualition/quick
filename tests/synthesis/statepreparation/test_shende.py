@@ -14,29 +14,29 @@
 
 from __future__ import annotations
 
-__all__ = ["TestStatePreparationShende"]
+__all__ = ["TestShende"]
 
 import copy
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
-import random
 
 from quick.circuit import QiskitCircuit
 from quick.primitives import Bra, Ket
+from quick.random import generate_random_state
 from quick.synthesis.statepreparation import Shende
 from tests.synthesis.statepreparation import StatePreparationTemplate
 
 # Define the test data
-generated_data = np.array([random.random() + 1j * random.random() for _ in range(128)])
+generated_data = generate_random_state(7)
 test_data_bra = Bra(generated_data)
 test_data_ket = Ket(generated_data)
 checker_data_ket = copy.deepcopy(test_data_ket)
 checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
 
-class TestStatePreparationShende(StatePreparationTemplate):
-    """ `tests.synthesis.test_shende.TestStatePreparationShende` is the tester class
+class TestShende(StatePreparationTemplate):
+    """ `tests.synthesis.test_shende.TestShende` is the tester class
     for `quick.synthesis.statepreparation.Shende` class.
     """
     def test_init(self) -> None:

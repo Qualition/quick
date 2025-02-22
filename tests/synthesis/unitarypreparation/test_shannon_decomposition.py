@@ -18,15 +18,15 @@ __all__ = ["TestShannonDecomposition"]
 
 from numpy.testing import assert_almost_equal
 import pytest
-from scipy.stats import unitary_group
 
 from quick.circuit import QiskitCircuit
 from quick.primitives import Operator
+from quick.random import generate_random_unitary
 from quick.synthesis.unitarypreparation import ShannonDecomposition
 from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 
 # Define the test data
-unitary_matrix = unitary_group.rvs(8).astype(complex)
+unitary_matrix = generate_random_unitary(3)
 
 
 class TestShannonDecomposition(UnitaryPreparationTemplate):
@@ -71,8 +71,8 @@ class TestShannonDecomposition(UnitaryPreparationTemplate):
         shannon_decomposition = ShannonDecomposition(QiskitCircuit)
 
         # Generate a 3 and 4 qubit unitary matrix
-        unitary_matrix_3 = unitary_group.rvs(8).astype(complex)
-        unitary_matrix_4 = unitary_group.rvs(16).astype(complex)
+        unitary_matrix_3 = generate_random_unitary(3)
+        unitary_matrix_4 = generate_random_unitary(4)
 
         # Prepare the unitary matrix
         circuit_3 = shannon_decomposition.prepare_unitary(unitary_matrix_3)

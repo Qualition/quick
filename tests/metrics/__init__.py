@@ -12,28 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
 __all__ = ["TestMetrics"]
 
-from quick.circuit import QiskitCircuit
-from quick.circuit.metrics import get_entanglements
-
-
-class TestMetrics:
-    """ `tests.circuit.metrics.TestMetrics` class to test the `quick.circuit.metrics`
-    module.
-    """
-    def test_get_entanglements(self) -> None:
-        """ Test the `get_entanglements` method.
-        """
-        qc = QiskitCircuit(6)
-        qc.H(0)
-        qc.CX(0, 1)
-
-        qc.H(3)
-        qc.CX(3, 4)
-        qc.CX(4, 5)
-
-        entanglements = get_entanglements(qc)
-        assert entanglements == [(0, 1), (2, 2), (3, 5)]
+from tests.metrics.test_metrics import TestMetrics

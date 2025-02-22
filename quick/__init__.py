@@ -16,10 +16,12 @@ __all__ = [
     "backend",
     "circuit",
     "compiler",
+    "metrics",
     "optimizer",
     "predicates",
     "primitives",
+    "random",
     "synthesis"
 ]
 
-from quick import backend, circuit, compiler, optimizer, predicates, primitives, synthesis
+from quick import backend, circuit, compiler, metrics, optimizer, predicates, primitives, random, synthesis

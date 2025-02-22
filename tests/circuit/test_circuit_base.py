@@ -19,13 +19,12 @@ __all__ = ["TestCircuitBase"]
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
-from scipy.stats import unitary_group
 from typing import Type
 
 from quick.circuit import Circuit
+from quick.random import generate_random_state, generate_random_unitary
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
-from tests.circuit.utils import generate_random_state
 
 
 class TestCircuitBase:
@@ -318,7 +317,7 @@ class TestCircuitBase:
         circuit = circuit_framework(num_qubits)
 
         # Apply the gate
-        unitary = unitary_group.rvs(2 ** num_qubits).astype(complex)
+        unitary = generate_random_unitary(num_qubits)
         circuit.unitary(unitary, range(num_qubits))
 
         # Define the unitary

@@ -14,13 +14,8 @@
 
 from __future__ import annotations
 
-__all__ = [
-    "cosine_similarity",
-    "generate_random_state"
-]
+__all__ = ["cosine_similarity"]
 
-import numpy as np
-from numpy.typing import NDArray
 from scipy.spatial import distance # type: ignore
 
 
@@ -48,20 +43,3 @@ def cosine_similarity(
     dist_2 = [h2.get(key, 0) for key in keys]
 
     return float(1 - distance.cosine(dist_1, dist_2))
-
-def generate_random_state(num_qubits: int) -> NDArray[np.complex128]:
-    """ Generate a random state vector.
-
-    Parameters
-    ----------
-    num_qubits : int
-        The number of qubits.
-
-    Returns
-    -------
-    `statevector` : NDArray[np.complex128]
-        The random state vector.
-    """
-    statevector = np.random.rand(2**num_qubits) + 1j * np.random.rand(2**num_qubits)
-    statevector /= np.linalg.norm(statevector)
-    return statevector
