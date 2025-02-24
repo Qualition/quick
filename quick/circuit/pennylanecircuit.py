@@ -181,7 +181,6 @@ class PennylaneCircuit(Circuit):
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
-        # Set the measurement as applied
         for qubit_index in qubit_indices:
             self.measured_qubits.add(qubit_index)
             self.circuit.append((qml.measure(qubit_index), False)) # type: ignore
@@ -191,7 +190,7 @@ class PennylaneCircuit(Circuit):
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
 
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: PennylaneCircuit = self.copy() # type: ignore
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -210,7 +209,6 @@ class PennylaneCircuit(Circuit):
             qml.StateMP
                 The state vector of the circuit.
             """
-            # Apply the operations in the circuit
             for op in circuit.circuit:
                 if isinstance(op, tuple):
                     qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
@@ -238,7 +236,7 @@ class PennylaneCircuit(Circuit):
         if len(self.measured_qubits) == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: PennylaneCircuit = self.copy() # type: ignore
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -257,7 +255,6 @@ class PennylaneCircuit(Circuit):
             Collection[qml.ProbabilityMP]
                 The list of probability measurements.
             """
-            # Apply the operations in the circuit
             for op in circuit.circuit:
                 if isinstance(op, tuple):
                     qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
@@ -277,7 +274,7 @@ class PennylaneCircuit(Circuit):
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: PennylaneCircuit = self.copy() # type: ignore
 
         # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -297,7 +294,6 @@ class PennylaneCircuit(Circuit):
                 for i in range(circuit.num_qubits):
                     circuit.circuit.append(qml.Identity(wires=i))
 
-            # Apply the operations in the circuit
             for op in circuit.circuit:
                 if isinstance(op, tuple):
                     qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
@@ -305,8 +301,9 @@ class PennylaneCircuit(Circuit):
 
                 qml.apply(op)
 
-        # Run the circuit and define the unitary matrix
-        unitary = np.array(qml.matrix(compile_circuit, wire_order=range(self.num_qubits))(), dtype=complex) # type: ignore
+        unitary = np.array(
+            qml.matrix(compile_circuit, wire_order=range(self.num_qubits))(), dtype=complex # type: ignore
+        )
 
         return unitary
 

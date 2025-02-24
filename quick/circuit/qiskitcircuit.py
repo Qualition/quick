@@ -179,7 +179,6 @@ class QiskitCircuit(Circuit):
 
         self.circuit.measure(qubit_indices, qubit_indices)
 
-        # Set the measurement as applied
         for qubit_index in qubit_indices:
             self.measured_qubits.add(qubit_index)
 
@@ -237,6 +236,7 @@ class QiskitCircuit(Circuit):
             }
 
             # Sort the counts by their keys (basis states)
+            # This is simply for readability
             counts = dict(sorted(counts.items()))
 
         else:
@@ -245,11 +245,7 @@ class QiskitCircuit(Circuit):
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the transpilation operation is inplace
-        circuit: QiskitCircuit = self.copy() # type: ignore
-
-        # Get the unitary matrix of the circuit
-        unitary = Operator(circuit.circuit).data
+        unitary = Operator(self.circuit).data
 
         return np.array(unitary)
 
