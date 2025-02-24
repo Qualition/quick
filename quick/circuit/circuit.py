@@ -106,7 +106,6 @@ class Circuit(ABC):
     Current supported packages are :
     - IBM Qiskit
     - Google's Cirq
-    - NVIDIA's CUDA-Quantum
     - Quantinuum's PyTKET
     - Xanadu's PennyLane
 
