@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -106,7 +106,6 @@ class Circuit(ABC):
     Current supported packages are :
     - IBM Qiskit
     - Google's Cirq
-    - NVIDIA's CUDA-Quantum
     - Quantinuum's PyTKET
     - Xanadu's PennyLane
 

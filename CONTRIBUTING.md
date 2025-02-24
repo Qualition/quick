@@ -24,6 +24,6 @@ contribution, it will fall into three categories:
     your interest in contributing to its implementation. Someone from the Qualition
     team will respond on the issue to discuss how to best proceed with the
     suggestion. For more information regarding contributing to the code base,
-    see also [Developing.md](./Developing.md).
+    see also [DEVELOPING.md](./DEVELOPING.md).
 
 [quick_issues]: https://github.com/Qualition/quick/issues
