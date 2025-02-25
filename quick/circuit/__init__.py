@@ -20,6 +20,7 @@ __all__ = [
     "CirqCircuit",
     "PennylaneCircuit",
     "QiskitCircuit",
+    "QuimbCircuit",
     "TKETCircuit"
 ]
 
@@ -29,6 +30,7 @@ from quick.circuit.circuit import Circuit
 from quick.circuit.qiskitcircuit import QiskitCircuit
 from quick.circuit.cirqcircuit import CirqCircuit
 from quick.circuit.pennylanecircuit import PennylaneCircuit
+from quick.circuit.quimbcircuit import QuimbCircuit
 from quick.circuit.tketcircuit import TKETCircuit
 import quick.circuit.from_framework as from_framework
 import quick.circuit.dag as dag

@@ -17,6 +17,15 @@ from quick.circuit.circuit import Circuit as Circuit
 from quick.circuit.cirqcircuit import CirqCircuit as CirqCircuit
 from quick.circuit.pennylanecircuit import PennylaneCircuit as PennylaneCircuit
 from quick.circuit.qiskitcircuit import QiskitCircuit as QiskitCircuit
+from quick.circuit.quimbcircuit import QuimbCircuit as QuimbCircuit
 from quick.circuit.tketcircuit import TKETCircuit as TKETCircuit
 
-__all__ = ["gate_matrix", "Circuit", "QiskitCircuit", "CirqCircuit", "TKETCircuit", "PennylaneCircuit"]
+__all__ = [
+    "gate_matrix",
+    "Circuit",
+    "CirqCircuit",
+    "PennylaneCircuit",
+    "QiskitCircuit",
+    "QuimbCircuit",
+    "TKETCircuit"
+]
