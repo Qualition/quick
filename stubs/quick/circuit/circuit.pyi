@@ -27,7 +27,6 @@ from quick.backend import Backend
 from quick.circuit.dag import DAGCircuit
 from quick.primitives import Bra, Ket, Operator
 from quick.synthesis.unitarypreparation import UnitaryPreparation
-import quimb.tensor as qtn # type: ignore
 from types import NotImplementedType
 from typing import Any, Callable, Literal, Type
 
@@ -64,7 +63,7 @@ class Circuit(ABC, metaclass=abc.ABCMeta):
             gate: GATES,
             target_indices: int | Sequence[int],
             control_indices: int | Sequence[int] = [],
-            angles: Sequence[float] = [0, 0, 0]
+            angles: Sequence[float] = (0, 0, 0)
         ) -> None: ...
     def Identity(self, qubit_indices: int | Sequence[int]) -> None: ...
     def X(self, qubit_indices: int | Sequence[int]) -> None: ...
@@ -317,7 +316,6 @@ class Circuit(ABC, metaclass=abc.ABCMeta):
     def update(self) -> None: ...
     @abstractmethod
     def to_qasm(self) -> str: ...
-    def to_quimb(self) -> qtn.Circuit: ...
     @staticmethod
     def from_cirq(cirq_circuit: cirq.Circuit, output_framework: Type[Circuit]) -> Circuit: ...
     @staticmethod

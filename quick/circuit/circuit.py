@@ -108,6 +108,7 @@ class Circuit(ABC):
     - Google's Cirq
     - Quantinuum's PyTKET
     - Xanadu's PennyLane
+    - Quimb
 
     Parameters
     ----------
@@ -525,7 +526,7 @@ class Circuit(ABC):
             gate: GATES,
             target_indices: int | Sequence[int],
             control_indices: int | Sequence[int] = [],
-            angles: Sequence[float] = [0, 0, 0]
+            angles: Sequence[float] = (0, 0, 0)
         ) -> None:
         """ Apply a gate to the circuit.
 
@@ -541,7 +542,7 @@ class Circuit(ABC):
             The index of the target qubit(s).
         `control_indices` : int | Sequence[int], optional, default=[]
             The index of the control qubit(s).
-        `angles` : Sequence[float], optional, default=[0, 0, 0]
+        `angles` : Sequence[float], optional, default=(0, 0, 0)
             The rotation angles in radians.
 
         Raises
@@ -5967,56 +5968,6 @@ class Circuit(ABC):
         -----
         >>> circuit.to_qasm()
         """
-
-    def to_quimb(
-            self
-        ) -> qtn.Circuit:
-        """ Convert the circuit to Quimb Circuit. This method
-        is used for performing tensor network simulations and
-        optimizations using Quimb.
-
-        Notes
-        -----
-        Quimb is a library for working with tensor networks in Python.
-        It is built on top of NumPy and provides a high-level interface
-        for working with tensor networks.
-
-        The method will first transpile the circuit to U3 and CX gates
-        before converting it to a Quimb Circuit.
-
-        For more information, see the documentation:
-        https://quimb.readthedocs.io/en/latest/
-
-        Returns
-        -------
-        `quimb_circuit` : quimb.Circuit
-            The Quimb representation of the circuit.
-
-        Usage
-        -----
-        >>> quimb_circuit = circuit.to_quimb()
-        """
-        # Create a copy of the circuit as the `transpile` method is applied in-place
-        circuit = self.copy()
-
-        quimb_circuit = qtn.Circuit(N=self.num_qubits)
-
-        circuit.transpile()
-
-        for operation in circuit.circuit_log:
-            if operation["gate"] == "U3":
-                quimb_circuit.apply_gate(
-                    gate_id="U3",
-                    params=operation["angles"],
-                    qubits=operation["target_indices"]
-                )
-            else:
-                quimb_circuit.apply_gate(
-                    gate_id=operation["CX"],
-                    qubits=operation["target_indices"]
-                )
-
-        return quimb_circuit
 
     @staticmethod
     def from_cirq(
