@@ -130,7 +130,7 @@ class QuimbCircuit(Circuit):
             gate: GATES,
             target_indices: int | Sequence[int],
             control_indices: int | Sequence[int] = [],
-            angles: Sequence[float] = [0, 0, 0]
+            angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
