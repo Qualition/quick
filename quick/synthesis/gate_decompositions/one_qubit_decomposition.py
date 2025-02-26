@@ -95,7 +95,7 @@ class OneQubitDecomposition(UnitaryPreparation):
 
     @staticmethod
     def params_zyz(U: NDArray[np.complex128]) -> tuple[float, tuple[float, float, float]]:
-        """ Calculate the ZYZ decomposition of a 2x2 unitary matrix.
+        r""" Calculate the ZYZ decomposition of a 2x2 unitary matrix.
 
         Notes
         -----
@@ -140,7 +140,7 @@ class OneQubitDecomposition(UnitaryPreparation):
 
     @staticmethod
     def params_u3(U: NDArray[np.complex128]) -> tuple[float, tuple[float, float, float]]:
-        """ Calculate the U3 parameters to implement a 2x2 unitary matrix.
+        r""" Calculate the U3 parameters to implement a 2x2 unitary matrix.
 
         Notes
         -----

@@ -334,22 +334,18 @@ class Compiler:
         else:
             return self._compile_primitive(primitives)
 
-        # Find the maximum number of qubits needed
         max_qubits = 0
 
         for _, qubits in primitives:
             if max(qubits) > max_qubits:
                 max_qubits = max(qubits)
 
-        # Initialize the circuit
         circuit = self.circuit_framework(max_qubits + 1)
 
-        # Compile the primitives into the circuit
         for primitive, qubits in primitives:
             compiled_circuit = self._compile_primitive(primitive)
             circuit.add(compiled_circuit, qubits)
 
-        # Optimize the circuit if an optimizer is defined
         if self.optimizer is not None:
             circuit = self.optimize(circuit)
 

@@ -87,7 +87,6 @@ class QiskitTranspiler(Optimizer):
         if not isinstance(circuit, QiskitCircuit):
             circuit = circuit.convert(QiskitCircuit)
 
-        # Apply the transpilation pass to optimize the circuit
         transpiled_circuit = self.pass_manager.run(circuit.circuit)
 
         optimized_circuit = Circuit.from_qiskit(transpiled_circuit, circuit_type)

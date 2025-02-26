@@ -95,18 +95,14 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
         super().__init__(device=device)
         self._qc_framework = QiskitCircuit
 
-        # Get the names of all available IBM backends for the qiskit runtime
         all_backend_names = [backend.name for backend in qiskit_runtime.backends()]
 
-        # Check if the specified backend is available
         if hardware_name not in all_backend_names:
             raise ValueError(f"IBM backend '{hardware_name}' is not available.")
 
-        # Get the specified backend from the runtime service
         self._backend_name = hardware_name
         backend = qiskit_runtime.backend(self._backend_name)
 
-        # Set the maximum number of qubits the backend can handle
         self._max_num_qubits = backend.num_qubits
 
         # Generate a simulator that mimics the real quantum system with
@@ -127,17 +123,13 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             circuit: Circuit
         ) -> NDArray[np.complex128]:
 
-        # Get the counts of the circuit
         counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
 
-        # Create the state vector from the counts
-        state_vector = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
-
         # Set the state vector elements for the states in the counts
+        state_vector = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
         for state, count in counts.items():
             state_vector[int(state, 2)] = np.sqrt(count)
 
-        # Normalize the state vector
         state_vector /= np.linalg.norm(state_vector)
 
         return state_vector
@@ -148,10 +140,9 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             circuit: Circuit
         ) -> NDArray[np.complex128]:
 
-        # Run the circuit to get the operator
-        # NOTE: Currently, the operator cannot be obtained with noise considered,
+        # Currently, the operator cannot be obtained with noise considered,
         # so the operator without noise is returned
-        # NOTE: For circuits with more than 10 qubits or so, it's more efficient to use
+        # For circuits with more than 10 qubits or so, it's more efficient to use
         # AerSimulator to generate the operator
         if circuit.num_qubits < 10:
             operator = Operator(circuit.circuit).data
@@ -160,10 +151,8 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             # Create a copy of the circuit as `.save_unitary()` is applied inplace
             circuit = circuit.copy()
 
-            # Save the unitary of the circuit
             circuit.circuit.save_unitary() # type: ignore
 
-            # Run the circuit on the backend to generate the operator
             operator = self._op_backend.run(circuit.circuit).result().get_unitary()
 
         return np.array(operator, dtype=np.complex128)
@@ -175,10 +164,8 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             num_shots: int=1024
         ) -> dict[str, int]:
 
-        # Run the circuit on the backend to generate the result
         result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()
 
-        # Extract the counts from the result
         counts = result[0].join_data().get_counts() # type: ignore
 
         partial_counts = {}
@@ -199,6 +186,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
         }
 
         # Sort the counts by their keys (basis states)
+        # This is simply for readbility
         counts = dict(sorted(counts.items()))
 
         return counts

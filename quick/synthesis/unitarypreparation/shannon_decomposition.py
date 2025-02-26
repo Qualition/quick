@@ -470,7 +470,6 @@ class ShannonDecomposition(UnitaryPreparation):
             # Update the circuit to reconstruct the circuit from the modified circuit log
             circuit.update()
 
-        # Apply the Shannon decomposition to the circuit
         quantum_shannon_decomposition(circuit, qubit_indices, unitary.data, recursion_depth=0) # type: ignore
 
         return circuit

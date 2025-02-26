@@ -489,14 +489,14 @@ class TwoQubitWeylDecomposition:
         U_magic_basis = transform_to_magic_basis(U.astype(complex), reverse=True)
         M2 = U_magic_basis.T.dot(U_magic_basis)
 
-        # NOTE: There is a floating point error in this implementation
+        # There is a floating point error in this implementation
         # for certain U, which depends on OS and Python version
         # This causes the numpy.linalg.eig() to produce different results
         # for the same input matrix, leading to a decomposition failure
         # To contribute to this issue, please refer to:
         # https://github.com/Qualition/quick/issues/11
 
-        # NOTE: Alternatively, you may propose an entirely new implementation
+        # Alternatively, you may propose an entirely new implementation
         # so that we can replace this two qubit decomposition implementation
         # with a more robust one that doesn't have floating point errors
         # To contribute to this feature request, please refer to:

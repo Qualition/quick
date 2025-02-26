@@ -222,7 +222,6 @@ class TKETCircuit(Circuit):
             compiled_circuit = base_backend.get_compiled_circuits([circuit.circuit]) # type: ignore
             result = base_backend.run_circuit(compiled_circuit[0], n_shots=num_shots, seed=0) # type: ignore
 
-            # Extract the counts from the result
             counts = {
                 "".join(map(str, basis_state)): num_counts
                 for basis_state, num_counts in result.get_counts().items()

@@ -217,7 +217,6 @@ class QiskitCircuit(Circuit):
             base_backend: BackendSampler = BackendSampler(backend=AerSimulator())
             result = base_backend.run([circuit.circuit], shots=num_shots).result()
 
-            # Extract the counts from the result
             counts = result[0].join_data().get_counts() # type: ignore
 
             partial_counts = {}

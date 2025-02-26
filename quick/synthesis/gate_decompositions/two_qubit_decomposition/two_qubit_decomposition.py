@@ -573,10 +573,8 @@ class TwoQubitDecomposition(UnitaryPreparation):
         traces = self.traces(target_decomposed)
         expected_fidelities = [TwoQubitDecomposition.trace_to_fidelity(traces[i]) for i in range(4)]
 
-        # Find the best number of basis gates
         best_num_basis = int(np.argmax(expected_fidelities))
 
-        # Find the best decomposition
         decomposition = decomposition_functions[best_num_basis](target_decomposed)
 
         overall_global_phase = target_decomposed.global_phase - best_num_basis * cx_basis_global_phase
