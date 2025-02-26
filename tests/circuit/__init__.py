@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,18 +21,22 @@ __all__ = [
     "TestCirqCircuit",
     "TestPennylaneCircuit",
     "TestQiskitCircuit",
+    "TestQuimbCircuit",
     "TestTKETCircuit",
     "TestUniformlyControlledGates",
     "TestQFTCircuit"
 ]
 
-from quick.circuit import CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
+from quick.circuit import (
+    CirqCircuit, PennylaneCircuit, QiskitCircuit, QuimbCircuit, TKETCircuit
+)
 
 # The quantum circuit frameworks
 CIRCUIT_FRAMEWORKS = [
     CirqCircuit,
     PennylaneCircuit,
     QiskitCircuit,
+    QuimbCircuit,
     TKETCircuit
 ]
 
@@ -43,6 +47,7 @@ from tests.circuit.test_circuit import Template
 from tests.circuit.test_cirq_circuit import TestCirqCircuit
 from tests.circuit.test_pennylane_circuit import TestPennylaneCircuit
 from tests.circuit.test_qiskit_circuit import TestQiskitCircuit
+from tests.circuit.test_quimb_circuit import TestQuimbCircuit
 from tests.circuit.test_tket_circuit import TestTKETCircuit
 from tests.circuit.test_qft_circuit import TestQFTCircuit
 from tests.circuit.test_uniformly_controlled_gates import TestUniformlyControlledGates

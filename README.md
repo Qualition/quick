@@ -32,7 +32,11 @@ pip install quick-core
 
 Pip will handle all dependencies automatically and you will always install the latest (and well-tested) version.
 
-To install from source, follow the instructions in the [`documentation`]().
+To install from source:
+
+```
+pip install git+https://github.com/Qualition/quick
+```
 
 ## Usage
 
@@ -52,13 +56,22 @@ The `/notebooks` directory contains pedagogical material for utilizing `quick`:
 Run tests with the command:
 
 ```
-py -m pytest tests
+pytest tests
 ```
 
 To run all tests including slow ones, use:
 
 ```
-py -m pytest tests --runslow
+pytest tests --runslow
+```
+
+## Linting
+
+Run lint checks with the commands:
+
+```
+mypy quick
+ruff check quick
 ```
 
 ## Contribution Guidelines

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -150,7 +150,6 @@ class AerBackend(NoisyBackend):
             return Statevector(circuit.circuit).data
 
         else:
-            # Measure all qubits to get the statevector
             circuit.measure_all()
             counts = self.get_counts(circuit, num_shots=2**(2*circuit.num_qubits))
             state_vector: NDArray[np.complex128] = np.zeros(2**circuit.num_qubits, dtype=np.complex128)
@@ -203,12 +202,8 @@ class AerBackend(NoisyBackend):
         # This is to counter https://github.com/Qiskit/qiskit/issues/13162
         circuit.transpile()
 
-        # Run the circuit on the backend to generate the result
-        # Transpile the circuit to the backend
-        # This is to counter https://github.com/Qiskit/qiskit/issues/13162
         result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()
 
-        # Extract the counts from the result
         counts = result[0].join_data().get_counts() # type: ignore
 
         partial_counts = {}
@@ -229,6 +224,7 @@ class AerBackend(NoisyBackend):
         }
 
         # Sort the counts by their keys (basis states)
+        # This is simply for readbility
         counts = dict(sorted(counts.items()))
 
         return counts

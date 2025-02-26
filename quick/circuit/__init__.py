@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ __all__ = [
     "CirqCircuit",
     "PennylaneCircuit",
     "QiskitCircuit",
+    "QuimbCircuit",
     "TKETCircuit"
 ]
 
@@ -29,6 +30,7 @@ from quick.circuit.circuit import Circuit
 from quick.circuit.qiskitcircuit import QiskitCircuit
 from quick.circuit.cirqcircuit import CirqCircuit
 from quick.circuit.pennylanecircuit import PennylaneCircuit
+from quick.circuit.quimbcircuit import QuimbCircuit
 from quick.circuit.tketcircuit import TKETCircuit
 import quick.circuit.from_framework as from_framework
 import quick.circuit.dag as dag

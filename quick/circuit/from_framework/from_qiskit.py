@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -185,7 +185,6 @@ class FromQiskit(FromFramework):
             circuit: QuantumCircuit
         ) -> Circuit:
 
-        # Define a circuit
         num_qubits = circuit.num_qubits
         quick_circuit = self.output_framework(num_qubits=num_qubits)
 
@@ -197,11 +196,7 @@ class FromQiskit(FromFramework):
             basis_gates=["u3", "cx"]
         )
 
-        # Extract the parameters of the gates in the Qiskit circuit
-        params = self.extract_params(circuit)
-
-        # Add the gates to the quick circuit
-        for param in params:
+        for param in self.extract_params(circuit):
             gate_name = param.pop("gate")
             getattr(quick_circuit, gate_name)(**param)
 

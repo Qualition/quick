@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class Mottonen(StatePreparation):
 
     For more information on Möttönen method:
     - Möttönen, Vartiainen, Bergholm, Salomaa.
-    Transformation of quantum states using uniformly controlled rotations (2004)
+    Transformation of quantum states using uniformly controlled rotations (2004).
     https://arxiv.org/abs/quant-ph/0407010
 
     Parameters
@@ -96,19 +96,15 @@ class Mottonen(StatePreparation):
         if not len(qubit_indices) == state.num_qubits:
             raise ValueError("The number of qubit indices must match the number of qubits in the state.")
 
-        # Order indexing (if required)
         if index_type != "row":
             state.change_indexing(index_type)
 
-        # Compress the statevector values
         state.compress(compression_percentage)
 
-        # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
 
         state = state.data.flatten() # type: ignore
 
-        # Construct Mottonen circuit
         mottonen_circuit: Circuit = self.output_framework(num_qubits)
 
         def k_controlled_uniform_rotation(
@@ -147,7 +143,6 @@ class Mottonen(StatePreparation):
                 if k > 0:
                     circuit.CX(control_qubits[k - 1 - ctl[i]], target_qubit)
 
-        # Define the magnitude and phase of the state
         magnitude = np.abs(state) # type: ignore
         phase = np.angle(state) # type: ignore
 
@@ -173,7 +168,6 @@ class Mottonen(StatePreparation):
         if isinstance(state, Bra):
             mottonen_circuit.horizontal_reverse()
 
-        # Add the isometry circuit to the initial circuit
         circuit.add(mottonen_circuit, qubit_indices)
 
         return circuit

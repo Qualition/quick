@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,7 +87,6 @@ class QiskitTranspiler(Optimizer):
         if not isinstance(circuit, QiskitCircuit):
             circuit = circuit.convert(QiskitCircuit)
 
-        # Apply the transpilation pass to optimize the circuit
         transpiled_circuit = self.pass_manager.run(circuit.circuit)
 
         optimized_circuit = Circuit.from_qiskit(transpiled_circuit, circuit_type)

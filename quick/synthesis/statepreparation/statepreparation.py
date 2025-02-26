@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ to prepare quantum states.
 """
 
 from __future__ import annotations
-
-import quick.circuit.circuit
 
 __all__ = ["StatePreparation"]
 
@@ -62,7 +60,7 @@ class StatePreparation(ABC):
         ) -> None:
         """ Initalize a State Preparation instance.
         """
-        if not issubclass(output_framework, quick.circuit.circuit.Circuit):
+        if not issubclass(output_framework, quick.circuit.Circuit):
             raise TypeError("The output framework must be a subclass of quick.circuit.Circuit.")
 
         self.output_framework = output_framework
@@ -103,10 +101,7 @@ class StatePreparation(ABC):
         if isinstance(state, np.ndarray):
             state = Ket(state)
 
-        # Get the number of qubits needed to implement the state
         num_qubits = state.num_qubits
-
-        # Initialize the quick circuit
         circuit = self.output_framework(num_qubits)
 
         return self.apply_state(circuit, state, range(num_qubits), compression_percentage, index_type)
@@ -130,6 +125,10 @@ class StatePreparation(ABC):
             The quantum state to apply.
         `qubit_indices` : int | Sequence[int]
             The qubit indices to which the state is applied.
+        `compression_percentage` : float, optional, default=0.0
+            Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
+        `index_type` : Literal["row", "snake"], optional, default="row"
+            The indexing type for the data.
 
         Returns
         -------

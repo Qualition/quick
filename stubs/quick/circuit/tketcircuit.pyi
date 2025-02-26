@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class TKETCircuit(Circuit):
             gate: GATES,
             target_indices: int | Sequence[int],
             control_indices: int | Sequence[int] = [],
-            angles: Sequence[float] = [0, 0, 0]
+            angles: Sequence[float] = (0, 0, 0)
         ) -> None: ...
     def GlobalPhase(self, angle: float) -> None: ...
     measured: bool

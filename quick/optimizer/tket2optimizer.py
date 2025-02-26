@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -67,7 +67,6 @@ class TKET2Optimizer(Optimizer):
         if not isinstance(circuit, TKETCircuit):
             circuit = circuit.convert(TKETCircuit)
 
-        # Apply the Badger compiler pass to optimize the circuit
         badger_pass().apply(circuit.circuit)
 
         optimized_circuit = Circuit.from_tket(circuit.circuit, circuit_type)

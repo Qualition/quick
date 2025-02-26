@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -573,10 +573,8 @@ class TwoQubitDecomposition(UnitaryPreparation):
         traces = self.traces(target_decomposed)
         expected_fidelities = [TwoQubitDecomposition.trace_to_fidelity(traces[i]) for i in range(4)]
 
-        # Find the best number of basis gates
         best_num_basis = int(np.argmax(expected_fidelities))
 
-        # Find the best decomposition
         decomposition = decomposition_functions[best_num_basis](target_decomposed)
 
         overall_global_phase = target_decomposed.global_phase - best_num_basis * cx_basis_global_phase

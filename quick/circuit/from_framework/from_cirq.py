@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -181,10 +181,8 @@ class FromCirq(FromFramework):
         """
         params: list[dict] = []
 
-        # Define the list of all circuit operations
         ops = list(circuit.all_operations())
 
-        # Iterate over the operations in the Cirq circuit
         for operation in ops:
             op_name = type(operation.gate).__name__
 
@@ -197,18 +195,15 @@ class FromCirq(FromFramework):
             circuit: cirq.Circuit,
         ) -> Circuit:
 
-        # Define a circuit
         num_qubits = len(circuit.all_qubits())
         quick_circuit = self.output_framework(num_qubits=num_qubits)
 
-        # Transpile the circuit to PhasedXZ and CZ gates
+        # We first transpile the circuit to the minimal gateset of [PhasedXZ, CZ]
+        # This allows for support of future Cirq gates, as well as custom ones
+        # that are not native to Cirq
         circuit = cirq.optimize_for_target_gateset(circuit, gateset=cirq.CZTargetGateset())
 
-        # Extract the parameters of the gates in the Qiskit circuit
-        params = self.extract_params(circuit)
-
-        # Add the gates to the quick circuit
-        for param in params:
+        for param in self.extract_params(circuit):
             gate_name = param.pop("gate")
             getattr(quick_circuit, gate_name)(**param)
 

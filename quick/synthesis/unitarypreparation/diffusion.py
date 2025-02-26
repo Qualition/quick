@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ torch.manual_seed(0)
 class Diffusion(UnitaryPreparation):
     """ `quick.synthesis.unitarypreparation.Diffusion` is the class for performing unitary
     compilation using diffusion models (DMs).
-    ref: https://arxiv.org/abs/2311.02041
 
     Notes
     -----

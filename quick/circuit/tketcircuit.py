@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ class TKETCircuit(Circuit):
             gate: GATES,
             target_indices: int | Sequence[int],
             control_indices: int | Sequence[int] = [],
-            angles: Sequence[float] = [0, 0, 0]
+            angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -175,7 +175,6 @@ class TKETCircuit(Circuit):
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
-        # Measure the qubits
         for index in qubit_indices:
             self.circuit.Measure(index, index)
             self.measured_qubits.add(index)
@@ -185,7 +184,7 @@ class TKETCircuit(Circuit):
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
 
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: TKETCircuit = self.copy() # type: ignore
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -211,7 +210,7 @@ class TKETCircuit(Circuit):
         if num_qubits_to_measure == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: TKETCircuit = self.copy() # type: ignore
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -223,9 +222,10 @@ class TKETCircuit(Circuit):
             compiled_circuit = base_backend.get_compiled_circuits([circuit.circuit]) # type: ignore
             result = base_backend.run_circuit(compiled_circuit[0], n_shots=num_shots, seed=0) # type: ignore
 
-            # Extract the counts from the result
-            counts = {"".join(map(str, basis_state)): num_counts
-                      for basis_state, num_counts in result.get_counts().items()}
+            counts = {
+                "".join(map(str, basis_state)): num_counts
+                for basis_state, num_counts in result.get_counts().items()
+            }
 
             partial_counts = {}
 
@@ -248,13 +248,12 @@ class TKETCircuit(Circuit):
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: TKETCircuit = self.copy() # type: ignore
 
         # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        # Run the circuit and define the unitary matrix
         unitary = circuit.circuit.get_unitary()
 
         return np.array(unitary)

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,14 +90,10 @@ class UnitaryPreparation(ABC):
         if isinstance(unitary, np.ndarray):
             unitary = Operator(unitary)
 
-        # Get the number of qubits needed to implement the operator
         num_qubits = unitary.num_qubits
 
-        # Initialize the quick circuit
         circuit = self.output_framework(num_qubits)
 
-        # Apply the unitary matrix to the circuit
-        # and return the circuit
         return self.apply_unitary(circuit, unitary, range(num_qubits))
 
     @abstractmethod

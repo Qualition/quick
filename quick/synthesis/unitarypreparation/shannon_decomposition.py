@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ class ShannonDecomposition(UnitaryPreparation):
 
     For more information on Shannon decomposition:
     [1] Shende, Bullock, Markov.
-    Synthesis of Quantum Logic Circuits (2004)
+    Synthesis of Quantum Logic Circuits (2004).
     https://arxiv.org/abs/quant-ph/0406176
 
     Parameters
@@ -470,7 +470,6 @@ class ShannonDecomposition(UnitaryPreparation):
             # Update the circuit to reconstruct the circuit from the modified circuit log
             circuit.update()
 
-        # Apply the Shannon decomposition to the circuit
         quantum_shannon_decomposition(circuit, qubit_indices, unitary.data, recursion_depth=0) # type: ignore
 
         return circuit

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -162,7 +162,6 @@ class FromTKET(FromFramework):
         """
         params: list[dict] = []
 
-        # Iterate over the gates in the TKET circuit
         for gate in circuit:
             gate_name = str(gate.op.type)
 
@@ -175,19 +174,16 @@ class FromTKET(FromFramework):
             circuit: TKCircuit,
         ) -> Circuit:
 
-        # Define a circuit
         num_qubits = circuit.n_qubits
         quick_circuit = self.output_framework(num_qubits=num_qubits)
 
-        # Transpile the TKET circuit to u3 and cx gates
+        # We first transpile the circuit to the minimal gateset of [u3, cx, global phase]
+        # This allows for support of future TKET gates, as well as custom ones
+        # that are not native to TKET
         tket_pass = AutoRebase({OpType.U3, OpType.CX})
         tket_pass.apply(circuit)
 
-        # Extract the parameters of the gates in the TKET circuit
-        params = self.extract_params(circuit)
-
-        # Add the gates to the quick circuit
-        for param in params:
+        for param in self.extract_params(circuit):
             gate_name = param.pop("gate")
             getattr(quick_circuit, gate_name)(**param)
 

@@ -1,4 +1,4 @@
-# Copyright 2023-2024 Qualition Computing LLC.
+# Copyright 2023-2025 Qualition Computing LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ class CirqCircuit(Circuit):
             gate: GATES,
             target_indices: int | Sequence[int],
             control_indices: int | Sequence[int] = [],
-            angles: Sequence[float] = [0, 0, 0]
+            angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
         target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
@@ -221,7 +221,6 @@ class CirqCircuit(Circuit):
 
         self.measurement_keys = sorted(self.measurement_keys)
 
-        # Set the measurement as applied
         for qubit_index in qubit_indices:
             self.measured_qubits.add(qubit_index)
 
@@ -254,7 +253,7 @@ class CirqCircuit(Circuit):
         if num_qubits_to_measure == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: CirqCircuit = self.copy() # type: ignore
 
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
@@ -263,8 +262,9 @@ class CirqCircuit(Circuit):
         if backend is None:
             # If no backend is provided, use the `cirq.Simulator`
             base_backend = cirq.Simulator()
-            # Run the circuit to get the result
+
             result = base_backend.run(circuit.circuit, repetitions=num_shots)
+
             # Using the `multi_measurement_histogram` method to get the counts we can
             # get the counts given the measurement keys, allowing for partial measurement
             # without post-processing
@@ -276,6 +276,9 @@ class CirqCircuit(Circuit):
                     counts[basis] = 0
                 else:
                     counts[basis] = int(counts[basis])
+
+            # Sort the counts
+            # This is simply for readability
             counts = dict(sorted(counts.items()))
 
         else:
@@ -284,13 +287,12 @@ class CirqCircuit(Circuit):
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the operations are applied inplace
+        # Copy the circuit as the vertical reverse is applied inplace
         circuit: CirqCircuit = self.copy() # type: ignore
 
         # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
         circuit.vertical_reverse()
 
-        # Define the unitary matrix
         unitary = cirq.unitary(circuit.circuit)
 
         return np.array(unitary)

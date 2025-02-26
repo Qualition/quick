@@ -1,4 +1,4 @@
-# Getting Started with Developing quick
+# Developing
 
 This document contains guidelines for contributing to the code in this
 repository. This document is relevant primarily for contributions to the `quick`
@@ -24,7 +24,14 @@ with the [`main`](https://github.com/Qualition/quick/tree/main) branch.
 
 With regards to code format and style, the python code should follow [this guide](python_style)
 and the docstring style should follow the [numpy documentation](numpy_style) style. `quick` may
-use an internal style in certain situations, and you should use them to maintain consistensy.
+use an internal style in certain situations, and you should use them to maintain consistensy. For
+example, for citation of papers you must follow the following style:
+
+```
+[index] author 1's last name, author 2's last name.
+paper title (year).
+link
+```
 
 [python_style]: https://google.github.io/styleguide/pyguide.html
 [numpy_style]: https://numpydoc.readthedocs.io/en/latest/format.html
@@ -34,3 +41,8 @@ use an internal style in certain situations, and you should use them to maintain
 `quick` tests are categorized as unit tests and integration tests on the library code.
 All code added should have an accompanying test added to the appropriate spot in the
 `tests` folder.
+
+## Linting
+
+`quick` uses mypy and ruff for linting purposes. All code added must pass mypy and ruff checks,
+and have accompanying stubs with them.
