@@ -42,7 +42,6 @@ torch.manual_seed(0)
 class Diffusion(UnitaryPreparation):
     """ `quick.synthesis.unitarypreparation.Diffusion` is the class for performing unitary
     compilation using diffusion models (DMs).
-    ref: https://arxiv.org/abs/2311.02041
 
     Notes
     -----

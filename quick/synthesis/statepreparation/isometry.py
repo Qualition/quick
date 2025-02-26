@@ -112,21 +112,17 @@ class Isometry(StatePreparation):
         if not len(qubit_indices) == state.num_qubits:
             raise ValueError("The number of qubit indices must match the number of qubits in the state.")
 
-        # Order indexing (if required)
         if index_type != "row":
             state.change_indexing(index_type)
 
-        # Compress the statevector values
         state.compress(compression_percentage)
 
-        # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
         qubits = list(range(num_qubits))
 
         state = state.data.flatten() # type: ignore
         state = state.reshape(state.shape[0], 1) # type: ignore
 
-        # Construct Isometry circuit
         isometry_circuit: Circuit = self.output_framework(num_qubits)
 
         def apply_multiplexor_up_to_diagonal(
@@ -165,7 +161,6 @@ class Isometry(StatePreparation):
                 up_to_diagonal=True
             )
 
-            # Extract the diagonal gate from the decomposition of the multiplexed gate
             (_, diagonal) = extract_single_qubits_and_diagonal(single_qubit_gates, len(control_labels) + 1)
 
             return diagonal
@@ -290,7 +285,6 @@ class Isometry(StatePreparation):
         if not isinstance(state, Bra):
             isometry_circuit.horizontal_reverse()
 
-        # Add the isometry circuit to the initial circuit
         circuit.add(isometry_circuit, qubit_indices)
 
         return circuit

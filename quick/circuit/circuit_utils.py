@@ -111,7 +111,7 @@ def multiplexed_rz_angles(
         phi_1: float,
         phi_2: float
     ) -> tuple[float, float]:
-    """ Extract a RZ rotation (angle given by first output) such that
+    r""" Extract a RZ rotation (angle given by first output) such that
 
     .. math::
 
@@ -149,7 +149,7 @@ def extract_uvr_matrices(
         a: NDArray[np.complex128],
         b: NDArray[np.complex128]
     ) -> tuple[NDArray[np.complex128], NDArray[np.complex128], NDArray[np.complex128]]:
-    """ Extract the matrices u, v, and r from unitary gates a, b for constructing
+    r""" Extract the matrices u, v, and r from unitary gates a, b for constructing
     a two qubit gate $F^1_2(U(2))$. This is used to construct the multiplexed gate
     $F^k_t(U(2))$.
 

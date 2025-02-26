@@ -574,7 +574,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply an Identity gate to the circuit.
+        r""" Apply an Identity gate to the circuit.
 
         Notes
         -----
@@ -617,7 +617,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Pauli-X gate to the circuit.
+        r""" Apply a Pauli-X gate to the circuit.
 
         Notes
         -----
@@ -672,7 +672,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Pauli-Y gate to the circuit.
+        r""" Apply a Pauli-Y gate to the circuit.
 
         Notes
         -----
@@ -726,7 +726,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Pauli-Z gate to the circuit.
+        r""" Apply a Pauli-Z gate to the circuit.
 
         Notes
         -----
@@ -780,7 +780,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Hadamard gate to the circuit.
+        r""" Apply a Hadamard gate to the circuit.
 
         Notes
         -----
@@ -823,7 +823,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Clifford-S gate to the circuit.
+        r""" Apply a Clifford-S gate to the circuit.
 
         Notes
         -----
@@ -865,7 +865,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Clifford-S^{dagger} gate to the circuit.
+        r""" Apply a Clifford-S^{dagger} gate to the circuit.
 
         Notes
         -----
@@ -907,7 +907,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Clifford-T gate to the circuit.
+        r""" Apply a Clifford-T gate to the circuit.
 
         Notes
         -----
@@ -949,7 +949,7 @@ class Circuit(ABC):
             self,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Clifford-T^{dagger} gate to the circuit.
+        r""" Apply a Clifford-T^{dagger} gate to the circuit.
 
         Notes
         -----
@@ -992,7 +992,7 @@ class Circuit(ABC):
             angle: float,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a RX gate to the circuit.
+        r""" Apply a RX gate to the circuit.
 
         Notes
         -----
@@ -1039,7 +1039,7 @@ class Circuit(ABC):
             angle: float,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a RY gate to the circuit.
+        r""" Apply a RY gate to the circuit.
 
         Notes
         -----
@@ -1086,7 +1086,7 @@ class Circuit(ABC):
             angle: float,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a RZ gate to the circuit.
+        r""" Apply a RZ gate to the circuit.
 
         Notes
         -----
@@ -1138,7 +1138,7 @@ class Circuit(ABC):
             angle: float,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Phase gate to the circuit.
+        r""" Apply a Phase gate to the circuit.
 
         Notes
         -----
@@ -1184,7 +1184,7 @@ class Circuit(ABC):
             global_shift: float,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a X^t with global shift s gate to the circuit.
+        r""" Apply a X^t with global shift s gate to the circuit.
 
         Notes
         -----
@@ -1240,7 +1240,7 @@ class Circuit(ABC):
             global_shift: float,
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a Y^power gate to the circuit.
+        r""" Apply a Y^power gate to the circuit.
 
         Notes
         -----
@@ -1296,7 +1296,7 @@ class Circuit(ABC):
             global_shift: float,
             qubit_indices: int | Sequence[int],
         ) -> None:
-        """ Apply a Z^power gate to the circuit.
+        r""" Apply a Z^power gate to the circuit.
 
         Notes
         -----
@@ -1352,7 +1352,7 @@ class Circuit(ABC):
             first_qubit_index: int,
             second_qubit_index: int
         ) -> None:
-        """ Apply a RXX gate to the circuit.
+        r""" Apply a RXX gate to the circuit.
 
         Notes
         -----
@@ -1405,7 +1405,7 @@ class Circuit(ABC):
             first_qubit_index: int,
             second_qubit_index: int
         ) -> None:
-        """ Apply a RYY gate to the circuit.
+        r""" Apply a RYY gate to the circuit.
 
         Notes
         -----
@@ -1460,7 +1460,7 @@ class Circuit(ABC):
             first_qubit_index: int,
             second_qubit_index: int
         ) -> None:
-        """ Apply a RZZ gate to the circuit.
+        r""" Apply a RZZ gate to the circuit.
 
         Notes
         -----
@@ -1510,7 +1510,7 @@ class Circuit(ABC):
             angles: Sequence[float],
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Apply a U3 gate to the circuit.
+        r""" Apply a U3 gate to the circuit.
 
         Notes
         -----
@@ -1558,7 +1558,7 @@ class Circuit(ABC):
             first_qubit_index: int,
             second_qubit_index: int
         ) -> None:
-        """ Apply a SWAP gate to the circuit.
+        r""" Apply a SWAP gate to the circuit.
 
         Notes
         -----
@@ -1612,7 +1612,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Pauli-X gate to the circuit.
+        r""" Apply a Controlled Pauli-X gate to the circuit.
 
         Notes
         -----
@@ -1674,7 +1674,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Pauli-Y gate to the circuit.
+        r""" Apply a Controlled Pauli-Y gate to the circuit.
 
         Notes
         -----
@@ -1731,7 +1731,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Pauli-Z gate to the circuit.
+        r""" Apply a Controlled Pauli-Z gate to the circuit.
 
         Notes
         -----
@@ -1788,7 +1788,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Hadamard gate to the circuit.
+        r""" Apply a Controlled Hadamard gate to the circuit.
 
         Notes
         -----
@@ -1849,7 +1849,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Clifford-S gate to the circuit.
+        r""" Apply a Controlled Clifford-S gate to the circuit.
 
         Notes
         -----
@@ -1908,7 +1908,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Clifford-S^{dagger} gate to the circuit.
+        r""" Apply a Controlled Clifford-S^{dagger} gate to the circuit.
 
         Notes
         -----
@@ -1967,7 +1967,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Clifford-T gate to the circuit.
+        r""" Apply a Controlled Clifford-T gate to the circuit.
 
         Notes
         -----
@@ -2026,7 +2026,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Clifford-T^{dagger} gate to the circuit.
+        r""" Apply a Controlled Clifford-T^{dagger} gate to the circuit.
 
         Notes
         -----
@@ -2086,7 +2086,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled RX gate to the circuit.
+        r""" Apply a Controlled RX gate to the circuit.
 
         Notes
         -----
@@ -2146,7 +2146,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled RY gate to the circuit.
+        r""" Apply a Controlled RY gate to the circuit.
 
         Notes
         -----
@@ -2206,7 +2206,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled RZ gate to the circuit.
+        r""" Apply a Controlled RZ gate to the circuit.
 
         Notes
         -----
@@ -2266,7 +2266,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Phase gate to the circuit.
+        r""" Apply a Controlled Phase gate to the circuit.
 
         Notes
         -----
@@ -2330,7 +2330,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled X^power gate to the circuit.
+        r""" Apply a Controlled X^power gate to the circuit.
 
         Notes
         -----
@@ -2400,7 +2400,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Y^power gate to the circuit.
+        r""" Apply a Controlled Y^power gate to the circuit.
 
         Notes
         -----
@@ -2470,7 +2470,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled Z^power gate to the circuit.
+        r""" Apply a Controlled Z^power gate to the circuit.
 
         Notes
         -----
@@ -2540,7 +2540,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled RXX gate to the circuit.
+        r""" Apply a Controlled RXX gate to the circuit.
 
         Notes
         -----
@@ -2600,7 +2600,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled RYY gate to the circuit.
+        r""" Apply a Controlled RYY gate to the circuit.
 
         Notes
         -----
@@ -2660,7 +2660,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled RZZ gate to the circuit.
+        r""" Apply a Controlled RZZ gate to the circuit.
 
         Notes
         -----
@@ -2719,7 +2719,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled U3 gate to the circuit.
+        r""" Apply a Controlled U3 gate to the circuit.
 
         Notes
         -----
@@ -2779,7 +2779,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled SWAP gate to the circuit.
+        r""" Apply a Controlled SWAP gate to the circuit.
 
         Notes
         -----
@@ -2831,7 +2831,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Pauli-X gate to the circuit.
+        r""" Apply a Multi-Controlled Pauli-X gate to the circuit.
 
         Notes
         -----
@@ -2895,7 +2895,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Pauli-Y gate to the circuit.
+        r""" Apply a Multi-Controlled Pauli-Y gate to the circuit.
 
         Notes
         -----
@@ -2960,7 +2960,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Pauli-Z gate to the circuit.
+        r""" Apply a Multi-Controlled Pauli-Z gate to the circuit.
 
         Notes
         -----
@@ -3025,7 +3025,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Hadamard gate to the circuit.
+        r""" Apply a Multi-Controlled Hadamard gate to the circuit.
 
         Notes
         -----
@@ -3094,7 +3094,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Clifford-S gate to the circuit.
+        r""" Apply a Multi-Controlled Clifford-S gate to the circuit.
 
         Notes
         -----
@@ -3157,7 +3157,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Clifford-S^{dagger} gate to the circuit.
+        r""" Apply a Multi-Controlled Clifford-S^{dagger} gate to the circuit.
 
         Notes
         -----
@@ -3221,7 +3221,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Clifford-T gate to the circuit.
+        r""" Apply a Multi-Controlled Clifford-T gate to the circuit.
 
         Notes
         -----
@@ -3285,7 +3285,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Clifford-T^{dagger} gate to the circuit.
+        r""" Apply a Multi-Controlled Clifford-T^{dagger} gate to the circuit.
 
         Notes
         -----
@@ -3350,7 +3350,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled RX gate to the circuit.
+        r""" Apply a Multi-Controlled RX gate to the circuit.
 
         Notes
         -----
@@ -3418,7 +3418,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled RY gate to the circuit.
+        r""" Apply a Multi-Controlled RY gate to the circuit.
 
         Notes
         -----
@@ -3486,7 +3486,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled RZ gate to the circuit.
+        r""" Apply a Multi-Controlled RZ gate to the circuit.
 
         Notes
         -----
@@ -3554,7 +3554,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Phase gate to the circuit.
+        r""" Apply a Multi-Controlled Phase gate to the circuit.
 
         Notes
         -----
@@ -3631,7 +3631,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled X^power gate to the circuit.
+        r""" Apply a Multi-Controlled X^power gate to the circuit.
 
         Notes
         -----
@@ -3723,7 +3723,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Y^power gate to the circuit.
+        r""" Apply a Multi-Controlled Y^power gate to the circuit.
 
         Notes
         -----
@@ -3815,7 +3815,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled Z^power gate to the circuit.
+        r""" Apply a Multi-Controlled Z^power gate to the circuit.
 
         Notes
         -----
@@ -3907,7 +3907,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled RXX gate to the circuit.
+        r""" Apply a Multi-Controlled RXX gate to the circuit.
 
         Notes
         -----
@@ -3986,7 +3986,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled RYY gate to the circuit.
+        r""" Apply a Multi-Controlled RYY gate to the circuit.
 
         Notes
         -----
@@ -4081,7 +4081,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled RZZ gate to the circuit.
+        r""" Apply a Multi-Controlled RZZ gate to the circuit.
 
         Notes
         -----
@@ -4155,7 +4155,7 @@ class Circuit(ABC):
             target_indices: int | Sequence[int],
             control_state: str | None = None
         ) -> None:
-        """ Apply a Multi-Controlled U3 gate to the circuit.
+        r""" Apply a Multi-Controlled U3 gate to the circuit.
 
         Notes
         -----
@@ -4226,7 +4226,7 @@ class Circuit(ABC):
             second_target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a Controlled SWAP gate to the circuit.
+        r""" Apply a Controlled SWAP gate to the circuit.
 
         Notes
         -----
@@ -4409,7 +4409,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a multiplexed/uniformly controlled RX gate to the circuit.
+        r""" Apply a multiplexed/uniformly controlled RX gate to the circuit.
 
         Parameters
         ----------
@@ -4463,7 +4463,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a multiplexed/uniformly controlled RY gate to the circuit.
+        r""" Apply a multiplexed/uniformly controlled RY gate to the circuit.
 
         Parameters
         ----------
@@ -4517,7 +4517,7 @@ class Circuit(ABC):
             target_index: int,
             control_state: str | None = None
         ) -> None:
-        """ Apply a multiplexed/uniformly controlled RZ gate to the circuit.
+        r""" Apply a multiplexed/uniformly controlled RZ gate to the circuit.
 
         Parameters
         ----------
@@ -4569,7 +4569,7 @@ class Circuit(ABC):
             diagnoal: NDArray[np.complex128],
             qubit_indices: int | Sequence[int]
         ) -> None:
-        """ Define the diagonal gate.
+        r""" Define the diagonal gate.
 
         Notes
         -----
@@ -4901,7 +4901,7 @@ class Circuit(ABC):
             approximation_degree: int=0,
             inverse: bool=False
         ) -> None:
-        """ Apply the Quantum Fourier Transform to the circuit.
+        r""" Apply the Quantum Fourier Transform to the circuit.
 
         Notes
         -----
@@ -4914,6 +4914,7 @@ class Circuit(ABC):
         The QFT is defined as:
 
         .. math::
+
             |x\\rangle \\rightarrow \\frac{1}{\\sqrt{N}} \\sum_{y=0}^{N-1} e^{2\\pi ixy/N} |y\\rangle
 
         The QFT can be implemented using a series of Hadamard gates and controlled

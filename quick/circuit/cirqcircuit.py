@@ -263,7 +263,6 @@ class CirqCircuit(Circuit):
             # If no backend is provided, use the `cirq.Simulator`
             base_backend = cirq.Simulator()
 
-            # Run the circuit to get the result
             result = base_backend.run(circuit.circuit, repetitions=num_shots)
 
             # Using the `multi_measurement_histogram` method to get the counts we can
@@ -277,6 +276,9 @@ class CirqCircuit(Circuit):
                     counts[basis] = 0
                 else:
                     counts[basis] = int(counts[basis])
+
+            # Sort the counts
+            # This is simply for readability
             counts = dict(sorted(counts.items()))
 
         else:

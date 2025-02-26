@@ -155,7 +155,6 @@ def is_identity_matrix(
         theta = np.angle(matrix[0, 0])
         matrix = np.exp(-1j * theta) * matrix
 
-    # Check if square identity
     identity = np.eye(len(matrix))
     return np.allclose(matrix, identity, rtol=rtol, atol=atol)
 

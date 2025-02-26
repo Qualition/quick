@@ -267,7 +267,14 @@ class PennylaneCircuit(Circuit):
         if backend is None:
             device = qml.device(circuit.device.name, wires=circuit.num_qubits, shots=num_shots)
             result = qml.QNode(compile_circuit, device)()
-            counts = {list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))}
+            counts = {
+                list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))
+            }
+
+            # Sort the counts by their keys (basis states)
+            # This is simply for readability
+            counts = dict(sorted(counts.items()))
+
         else:
             result = backend.get_counts(self, num_shots=num_shots)
 

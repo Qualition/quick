@@ -43,7 +43,7 @@ class Shende(StatePreparation):
 
     For more information on Shende method:
     - Shende, Bullock, Markov.
-    Synthesis of Quantum Logic Circuits (2004)
+    Synthesis of Quantum Logic Circuits (2004).
     [https://arxiv.org/abs/quant-ph/0406176v5]
 
     Parameters
@@ -94,14 +94,11 @@ class Shende(StatePreparation):
         if not len(qubit_indices) == state.num_qubits:
             raise ValueError("The number of qubit indices must match the number of qubits in the state.")
 
-        # Order indexing (if required)
         if index_type != "row":
             state.change_indexing(index_type)
 
-        # Compress the statevector values
         state.compress(compression_percentage)
 
-        # Define the number of qubits needed to represent the state
         num_qubits = state.num_qubits
 
         statevector = state.data.flatten() # type: ignore
@@ -131,16 +128,13 @@ class Shende(StatePreparation):
             `circuit` : quick.circuit.Circuit
                 The multiplexor circuit.
             """
-            # Calculate the number of angles
             num_angles = len(list_of_angles)
 
             # Define the number of qubits for the local state
             local_num_qubits = int(np.log2(num_angles)) + 1
 
-            # Define the multiplexor circuit
             circuit: Circuit = self.output_framework(local_num_qubits)
 
-            # Define the gate mapping
             gate_mapping = {
                 "RY": lambda: circuit.RY,
                 "RZ": lambda: circuit.RZ
@@ -154,14 +148,11 @@ class Shende(StatePreparation):
                 gate_mapping[rotation_gate]()(list_of_angles[0], 0)
                 return circuit
 
-            # Calculate angle weights
             angle_weight = np.kron([
                 [0.5, 0.5],
                 [0.5, -0.5]
             ], np.identity(2 ** (local_num_qubits - 2)))
 
-            # Calculate the dot product of the angle weights and the list of angles
-            # to get the combo angles
             list_of_angles = angle_weight.dot(np.array(list_of_angles)).tolist()
 
             # Define the first half multiplexed circuit
@@ -213,7 +204,6 @@ class Shende(StatePreparation):
             `circuit` : quick.circuit.Circuit
                 The circuit that applies the corresponding gates to uncompute the state.
             """
-            # Define the circuit
             circuit: Circuit = self.output_framework(num_qubits)
 
             # Begin the peeling loop, and disentangle one-by-one from LSB to MSB
@@ -245,7 +235,6 @@ class Shende(StatePreparation):
 
             return circuit
 
-        # Define the disentangling circuit
         disentangling_circuit = disentangle(statevector, num_qubits) # type: ignore
 
         # We must reverse the circuit to prepare the state,
@@ -257,7 +246,6 @@ class Shende(StatePreparation):
         if not isinstance(state, Bra):
             disentangling_circuit.horizontal_reverse()
 
-        # Add the disentangling circuit to the initial circuit
         circuit.add(disentangling_circuit, qubit_indices)
 
         return circuit

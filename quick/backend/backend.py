@@ -106,7 +106,7 @@ class Backend(ABC):
                     raise ValueError("The number of shots must be a positive integer.")
 
             # Check if the instance has attribute `_max_num_qubits`, and if so, ensure the circuit is compatible
-            # NOTE: This is used by `FakeBackend` instances as they emulate real-world hardware
+            # This is used by `FakeBackend` instances as they emulate real-world hardware
             if hasattr(instance, "_max_num_qubits") and circuit.num_qubits > instance._max_num_qubits:
                 raise ValueError(f"The maximum number of qubits supported by the backend is {instance._max_num_qubits}.")
 
