@@ -80,7 +80,7 @@ class ShannonDecomposition(UnitaryPreparation):
 
     For more information on Shannon decomposition:
     [1] Shende, Bullock, Markov.
-    Synthesis of Quantum Logic Circuits (2004)
+    Synthesis of Quantum Logic Circuits (2004).
     https://arxiv.org/abs/quant-ph/0406176
 
     Parameters

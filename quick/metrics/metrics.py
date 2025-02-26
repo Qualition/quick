@@ -45,7 +45,7 @@ def _get_submps_indices(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
     The implementation is based on the analytical decomposition [1].
 
     For more information, refer to the publication below:
-    [1] Ran, Shi-Ju.
+    [1] Shi-Ju.
     Encoding of Matrix Product States into Quantum Circuits of One- and Two-Qubit Gates (2020).
     https://arxiv.org/abs/1908.07958
 

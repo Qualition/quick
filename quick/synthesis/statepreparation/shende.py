@@ -43,7 +43,7 @@ class Shende(StatePreparation):
 
     For more information on Shende method:
     - Shende, Bullock, Markov.
-    Synthesis of Quantum Logic Circuits (2004)
+    Synthesis of Quantum Logic Circuits (2004).
     [https://arxiv.org/abs/quant-ph/0406176v5]
 
     Parameters

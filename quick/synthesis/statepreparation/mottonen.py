@@ -45,7 +45,7 @@ class Mottonen(StatePreparation):
 
     For more information on Möttönen method:
     - Möttönen, Vartiainen, Bergholm, Salomaa.
-    Transformation of quantum states using uniformly controlled rotations (2004)
+    Transformation of quantum states using uniformly controlled rotations (2004).
     https://arxiv.org/abs/quant-ph/0407010
 
     Parameters
