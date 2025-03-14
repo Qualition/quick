@@ -23,8 +23,13 @@ __all__ = [
     "multiplexor_diagonal_matrix",
     "simplify",
     "repetition_search",
-    "repetition_verify"
+    "repetition_verify",
+    "flatten",
+    "reshape"
 ]
+
+Params = list[list[float] | float] | list[float]
+
 
 def decompose_multiplexor_rotations(
         angles: NDArray[np.float64],
@@ -55,3 +60,5 @@ def repetition_search(
         level: int
     ) -> tuple[set[int], list[NDArray[np.complex128]]]: ...
 def repetition_verify(base, d, mux, mux_copy) -> tuple[bool, list[NDArray[np.complex128]]]: ...
+def flatten(array: Params) -> tuple[list[float], Params]: ...
+def reshape(flattened: list[float], shape: Params) -> Params: ...

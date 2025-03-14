@@ -25,7 +25,9 @@ __all__ = [
     "multiplexor_diagonal_matrix",
     "simplify",
     "repetition_search",
-    "repetition_verify"
+    "repetition_verify",
+    "flatten",
+    "reshape"
 ]
 
 import numpy as np
@@ -43,6 +45,9 @@ RZ_PI2_00 = complex(
 RZ_PI2_11 = complex(
     SQRT2, -SQRT2
 )
+
+# Type hint for nested lists of floats
+Params = list[list[float] | float] | list[float]
 
 
 def decompose_multiplexor_rotations(
@@ -518,3 +523,78 @@ def repetition_verify(
         base, next_base, i = base + 1, next_base + 1, i + 1
 
     return True, mux_copy
+
+def flatten(array: Params) -> tuple[list[float], Params]:
+    """ Flatten a Tree into a list of floats and
+    the original shape.
+
+    Parameters
+    ----------
+    `array` : Tree
+        The nested list of floats.
+
+    Returns
+    -------
+    `flattened` : list[float]
+        The flattened list of parameters.
+    `shape` : Tree
+        The shape of the original array.
+    """
+    flattened: list[float] = []
+    shape: Params = []
+    consecutive_ints = 0
+
+    for item in array:
+        if isinstance(item, float):
+            flattened.append(item)
+            consecutive_ints += 1
+
+        # Explicit type check for pylance
+        elif isinstance(item, list):
+            flattened.extend(item)
+            if consecutive_ints:
+                shape.append(consecutive_ints)
+                consecutive_ints = 0
+            shape.append([len(item)]) # type: ignore
+
+    if consecutive_ints:
+        shape.append(consecutive_ints)
+
+    return flattened, shape
+
+def reshape(
+        flattened: list[float],
+        shape: Params
+    ) -> Params:
+    """ Reshape a flattened list given a shape instruction.
+
+    Parameters
+    ----------
+    `flattened` : list[float]
+        The flat list of floats.
+    `shape` : Tree
+        The shape instruction.
+
+    Returns
+    -------
+    `reshaped` : Tree
+        The reshaped list of floats.
+    """
+    reshaped: Params = []
+    result_index = 0
+
+    for dim in shape:
+        if isinstance(dim, int):
+            subtree = reshaped
+
+        elif isinstance(dim, list):
+            subtree = []
+            reshaped.append(subtree) # type: ignore
+            dim = dim[0]
+
+        for i in range(result_index, result_index + dim): # type: ignore
+            subtree.append(flattened[i])
+
+        result_index += dim # type: ignore
+
+    return reshaped
