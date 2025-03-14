@@ -524,8 +524,7 @@ def repetition_verify(
 
     return True, mux_copy
 
-# pragma: no cover
-def flatten(array: Params) -> tuple[list[float], Params]:
+def flatten(array: Params) -> tuple[list[float], Params]: # pragma: no cover
     """ Flatten a Tree into a list of floats and
     the original shape.
 
@@ -563,11 +562,11 @@ def flatten(array: Params) -> tuple[list[float], Params]:
 
     return flattened, shape
 
-# pragma: no cover
+
 def reshape(
         flattened: list[float],
         shape: Params
-    ) -> Params:
+    ) -> Params: # pragma: no cover
     """ Reshape a flattened list given a shape instruction.
 
     Parameters
