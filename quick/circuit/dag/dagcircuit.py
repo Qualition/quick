@@ -78,7 +78,33 @@ class DAGCircuit:
         """
         from quick.circuit.circuit import ALL_QUBIT_KEYS
 
-        gate_node = DAGNode(operation["gate"])
+        # Extract the gate parameters
+        params = dict()
+        meta_params = dict()
+
+        # Log all parameters except 'definition' and 'gate'
+        # in the meta params to ensure uniqueness of the node
+        # when the gate is repeated on multiple qubits in
+        # parallel, i.e., a CX followed by two H on control
+        # and target
+        # This avoids `__eq__` issues with DAGNode
+        for key in operation:
+            if key not in ALL_QUBIT_KEYS.union(['definition', 'gate']):
+                params[key] = operation[key]
+            if key not in ['definition', 'gate']:
+                meta_params[key] = operation[key]
+
+        # Define the name of the node
+        # For simplicity, we omit the empty params for gates
+        # that only have qubit indices as parameter
+        if params == {}:
+            node_name = f"{operation['gate']}"
+        else:
+            node_name = f"{operation['gate']}({str(params).strip('{}')})"
+
+        meta_name = f"{operation['gate']}({str(meta_params).strip('{}')})"
+
+        gate_node = DAGNode(node_name, meta_name=meta_name)
         qubit_indices = []
 
         # Add qubits from any valid qubit key to the
@@ -107,6 +133,48 @@ class DAGCircuit:
         >>> dag.get_depth()
         """
         return max(qubit.depth for qubit in self.qubits.values())
+
+    def __eq__(
+            self,
+            other_circuit: object
+        ) -> bool:
+        """ Check if two circuits are equal.
+
+        Parameters
+        ----------
+        `other_circuit` : object
+            The other circuit to compare with.
+
+        Returns
+        -------
+        bool
+            True if the two circuits are equal, False otherwise.
+
+        Raises
+        ------
+        TypeError
+            If the other circuit is not an instance of `quick.circuit.dag.DAGCircuit`.
+
+        Usage
+        -----
+        >>> dag1 = DAGCircuit(2)
+        >>> dag2 = DAGCircuit(2)
+        >>> dag1 == dag2
+        """
+        if not isinstance(other_circuit, DAGCircuit):
+            raise TypeError(
+                "DAGCircuits can only be compared with other DAGCircuits. "
+                f"Received {type(other_circuit)} instead."
+            )
+
+        if self.num_qubits != other_circuit.num_qubits:
+            return False
+
+        for qubit in self.qubits:
+            if self.qubits[qubit] != other_circuit.qubits[qubit]:
+                return False
+
+        return True
 
     def __repr__(self) -> str:
         """ Get the string representation of the circuit.

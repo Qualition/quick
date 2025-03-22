@@ -45,6 +45,9 @@ class DAGNode:
     ----------
     `name` : str
         The name of the node.
+    `meta_name` : str, optional, default=name
+        The meta name of the node. This is used to store additional information
+        and prevents identical nodes which can lead to issues with `__eq__`.
     `parents` : set[quick.circuit.dag.DAGNode], optional, default=set()
         A set of parent nodes.
     `children` : set[quick.circuit.dag.DAGNode], optional, default=set()
@@ -55,8 +58,19 @@ class DAGNode:
     >>> node1 = DAGNode("Node 1")
     """
     name: Hashable = None
+    meta_name: Hashable = None
     parents: set[DAGNode] = field(default_factory=set)
     children: set[DAGNode] = field(default_factory=set)
+
+    def __post_init__(self) -> None:
+        """ Initialize the node.
+
+        Notes
+        -----
+        This method is called after the node is initialized. We set the
+        `meta_name` attribute to the `name` attribute if it is not provided.
+        """
+        self.meta_name = self.name if self.meta_name is None else self.meta_name
 
     def _invalidate_depth(self) -> None:
         """ Invalidate the cached depth of the node.
@@ -124,6 +138,26 @@ class DAGNode:
 
         if hasattr(self, "_depth"):
             self._invalidate_depth()
+
+    def walk(self):
+        """ Walk through the children nodes of the current node.
+
+        Yields
+        ------
+        `child` : quick.circuit.dag.DAGNode
+            The next child node.
+
+        Usage
+        -----
+        >>> node1 = DAGNode("Node 1")
+        >>> node2 = DAGNode("Node 2")
+        >>> node1.to(node2)
+        >>> for child in node1.walk():
+        ...     print(child)
+        """
+        for child in sorted(self.children):
+            yield child
+            yield from child.walk()
 
     @property
     def depth(self) -> int:
@@ -268,15 +302,51 @@ class DAGNode:
         """
         return hash(id(self))
 
+    def __lt__(
+            self,
+            other_node: object
+        ) -> bool:
+        """ Check if this node is less than or equal to another node.
+
+        Parameters
+        ----------
+        `other_node` : object
+            The object to compare to.
+
+        Returns
+        -------
+        bool
+            True if this node is less than or equal to the other node,
+            False otherwise.
+
+        Raises
+        ------
+        TypeError
+            - If `other_node` is not an instance of `quick.circuit.dag.DAGNode`.
+
+        Usage
+        -----
+        >>> node1 = DAGNode("Node 1")
+        >>> node2 = DAGNode("Node 2")
+        >>> node1 < node2
+        """
+        if not isinstance(other_node, DAGNode):
+            raise TypeError(
+                "The `other_node` must be an instance of DAGNode. "
+                f"Received {type(other_node)} instead."
+            )
+
+        return str(self.meta_name) < str(other_node.meta_name)
+
     def __eq__(
             self,
-            other: object
+            other_node: object
         ) -> bool:
         """ Check if two nodes are equal.
 
         Parameters
         ----------
-        `other` : object
+        `other_node` : object
             The object to compare to.
 
         Returns
@@ -284,16 +354,55 @@ class DAGNode:
         bool
             True if the nodes are equal, False otherwise.
 
+        Raises
+        ------
+        TypeError
+            - If `other_node` is not an instance of `quick.circuit.dag.DAGNode`.
+
         Usage
         -----
         >>> node1 = DAGNode("Node 1")
         >>> node2 = DAGNode("Node 2")
         >>> node1 == node2
         """
-        if not isinstance(other, DAGNode):
+        if not isinstance(other_node, DAGNode):
+            raise TypeError(
+                "The `other_node` must be an instance of DAGNode. "
+                f"Received {type(other_node)} instead."
+            )
+
+        if self.meta_name != other_node.meta_name:
             return False
 
-        return self.name == other.name and self.children == other.children
+        inclusion_check: dict[DAGNode, int] = {}
+        self_stack: list[DAGNode] = [self]
+        other_stack: list[DAGNode] = [other_node]
+
+        while self_stack and other_stack:
+            self_node = self_stack.pop()
+            other_node = other_stack.pop()
+
+            if self_node in inclusion_check and other_node in inclusion_check:
+                continue
+
+            # Set the inclusion check of the nodes to zero
+            # (this value is arbitrary, we just need a placeholder)
+            inclusion_check[self_node] = 0
+            inclusion_check[other_node] = 0
+
+            for self_child, other_child in zip(sorted(self_node.children), sorted(other_node.children)):
+                self_stack.append(self_child)
+                other_stack.append(other_child)
+
+                if self_child.meta_name != other_child.meta_name:
+                    return False
+
+        # If two DAGs are equal up until the end, but one has additional
+        # nodes afterwards it will be caught here
+        if self_stack or other_stack:
+            return False
+
+        return True
 
     def __repr__(self) -> str:
         """ Get the string representation of the node.

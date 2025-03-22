@@ -252,7 +252,7 @@ class Circuit(ABC):
         """
         if name in ALL_QUBIT_KEYS:
             if isinstance(value, list):
-                # For simplicity, we consider the [i] index to be just 1 (int instead of list)
+                # For simplicity, we consider the [i] index to be just i (int instead of list)
                 if len(value) == 1:
                     value = self._process_single_qubit_index(value[0])
                 else:
@@ -285,7 +285,10 @@ class Circuit(ABC):
             - Angle must be a number.
         """
         if not isinstance(angle, (int, float)):
-            raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
+            raise TypeError(
+                "Angle must be a number. "
+                f"Received {type(angle)} instead."
+            )
 
         if abs(angle) <= EPSILON or abs(angle % PI_DOUBLE) <= EPSILON:
             angle = 0.0
@@ -395,7 +398,7 @@ class Circuit(ABC):
 
             params[name] = value
 
-        if sorted(list(set(qubit_indices))) != sorted(qubit_indices):
+        if len(set(qubit_indices)) != len(qubit_indices):
             raise ValueError(
                 "Qubit indices must be unique. "
                 f"Received {qubit_indices} instead."
@@ -5729,23 +5732,20 @@ class Circuit(ABC):
         # Define angle closeness threshold
         threshold = PI * compression_percentage
 
-        # Initialize a list for the indices that will be removed
-        indices_to_remove = []
+        new_circuit_log = []
 
         # Iterate over all angles, and set the angles within the
         # compression percentage to 0 (this means the gate does nothing, and can be removed)
-        for index, operation in enumerate(self.circuit_log):
+        for operation in self.circuit_log:
             if "angle" in operation:
                 if abs(operation["angle"]) < threshold:
-                    indices_to_remove.append(index)
+                    continue
             elif "angles" in operation:
                 if all([abs(angle) < threshold for angle in operation["angles"]]):
-                    indices_to_remove.append(index)
+                    continue
+            new_circuit_log.append(operation)
 
-        # Remove the operations with angles within the compression percentage
-        for index in sorted(indices_to_remove, reverse=True):
-            del self.circuit_log[index]
-
+        self.circuit_log = new_circuit_log
         self.update()
 
     def change_mapping(
@@ -5771,24 +5771,18 @@ class Circuit(ABC):
         -----
         >>> circuit.change_mapping(qubit_indices=[1, 0])
         """
-        if not all(isinstance(index, int) for index in qubit_indices):
-            raise TypeError("Qubit indices must be a collection of integers.")
-
-        if sorted(list(set(qubit_indices))) != list(range(self.num_qubits)):
+        if len(set(qubit_indices)) != self.num_qubits:
             raise ValueError("Qubit indices must be unique.")
 
-        if isinstance(qubit_indices, Sequence):
-            qubit_indices = list(qubit_indices)
-        elif isinstance(qubit_indices, np.ndarray):
-            qubit_indices = qubit_indices.tolist()
+        if any(not isinstance(qubit_index, int) for qubit_index in qubit_indices):
+            raise TypeError("Qubit indices must all be integers.")
 
         if self.num_qubits != len(qubit_indices):
             raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
-        # Update the qubit indices
         for operation in self.circuit_log:
             for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
-                if isinstance(operation[key], list):
+                if isinstance(operation[key], Sequence):
                     operation[key] = [qubit_indices[index] for index in operation[key]]
                 else:
                     operation[key] = qubit_indices[operation[key]]
@@ -5829,7 +5823,7 @@ class Circuit(ABC):
         # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in self.circuit_log:
             # Extract gate name and remove it from gate_info for kwargs
-            gate_name = gate_info.pop("gate", None)
+            gate_name = gate_info.pop("gate")
 
             # Extract gate definition and remove it from gate_info for kwargs
             gate_definition = gate_info.pop("definition", None)
@@ -6328,8 +6322,58 @@ class Circuit(ABC):
         >>> circuit1 == circuit2
         """
         if not isinstance(other_circuit, Circuit):
-            raise TypeError("Circuits must be compared with other circuits.")
-        return self.circuit_log == other_circuit.circuit_log
+            raise TypeError(
+                "Circuits can only be compared with other Circuits. "
+                f"Received {type(other_circuit)} instead."
+            )
+        return self.get_dag() == other_circuit.get_dag()
+
+    def is_equivalent(
+            self,
+            other_circuit: Circuit,
+            check_unitary: bool=True,
+            check_dag: bool=False
+        ) -> bool:
+        """ Check if the circuit is equivalent to another circuit.
+
+        Parameters
+        ----------
+        `other_circuit` : quick.circuit.Circuit
+            The other circuit to compare to.
+        `check_unitary` : bool, optional, default=True
+            Whether or not to check the unitary of the circuit.
+        `check_dag` : bool, optional, default=False
+            Whether or not to check the DAG of the circuit.
+
+        Returns
+        -------
+        bool
+            Whether the two circuits are equivalent.
+
+        Raises
+        ------
+        TypeError
+            - Circuits must be compared with other circuits.
+
+        Usage
+        -----
+        >>> circuit1.is_equivalent(circuit2)
+        """
+        if not isinstance(other_circuit, Circuit):
+            raise TypeError(
+                "Circuits can only be compared with other Circuits. "
+                f"Received {type(other_circuit)} instead."
+            )
+
+        if check_unitary:
+            if not np.allclose(self.get_unitary(), other_circuit.get_unitary()):
+                return False
+
+        if check_dag:
+            if self.get_dag() != other_circuit.get_dag():
+                return False
+
+        return True
 
     def __len__(self) -> int:
         """ Get the number of the circuit operations.
