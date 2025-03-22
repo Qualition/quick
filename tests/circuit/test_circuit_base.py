@@ -866,7 +866,7 @@ class TestCircuitBase:
             circuit.change_mapping([0, 1, 2])
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_from_circuit(
+    def test_convert(
             self,
             circuit_framework: Type[Circuit]
         ) -> None:
@@ -1224,6 +1224,115 @@ class TestCircuitBase:
         # Test the equality of the circuits
         for circuit_1, circuit_2 in zip(circuits[0:-1:], circuits[1::]):
             assert circuit_1 == circuit_2
+
+        # Test the equality of circuits when the order
+        # of the gates are different but the circuit is the same
+        circuit_1 = [circuit_framework(2) for circuit_framework in circuit_frameworks]
+        for circuit in circuit_1:
+            circuit.H(0)
+            circuit.X(1)
+
+        circuit_2 = [circuit_framework(2) for circuit_framework in circuit_frameworks]
+        for circuit in circuit_2:
+            circuit.X(1)
+            circuit.H(0)
+
+        # Test the equality of the circuits
+        for circuit_1, circuit_2 in zip(circuit_1, circuit_2):
+            assert circuit_1 == circuit_2
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_eq_fail(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `__eq__` dunder method failure.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(3)
+
+        assert not circuit_1 == circuit_2
+
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(2)
+
+        circuit_1.H(0)
+        circuit_2.X(0)
+
+        assert not circuit_1 == circuit_2
+
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(2)
+
+        circuit_1.H(0)
+        circuit_2.H(0)
+
+        circuit_1.CX(0, 1)
+        circuit_2.CX(0, 1)
+
+        circuit_1.H(0)
+        circuit_2.H(1)
+
+        assert not circuit_1 == circuit_2
+
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(2)
+
+        circuit_1.CX(0, 1)
+        circuit_2.CX(1, 0)
+
+        assert not circuit_1 == circuit_2
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_eq_invalid_type(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `__eq__` dunder method failure with invalid type.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        circuit = circuit_framework(2)
+
+        with pytest.raises(TypeError):
+            circuit == "circuit" # type: ignore
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_is_equivalent(
+            self,
+            circuit_framework: Type[Circuit]
+        ) -> None:
+        """ Test the `is_equivalent` method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the circuits
+        circuit_1 = circuit_framework(3)
+        circuit_2 = circuit_framework(3)
+
+        # Define the GHZ state
+        circuit_1.H(0)
+        circuit_1.CX(0, 1)
+        circuit_1.CX(0, 2)
+
+        circuit_2.H(0)
+        circuit_2.CX(0, 2)
+        circuit_2.CX(0, 1)
+
+        # Test the equivalence of the circuits
+        assert circuit_1.is_equivalent(circuit_2)
+        assert not circuit_1.is_equivalent(circuit_2, check_dag=True)
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_len(
