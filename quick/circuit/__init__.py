@@ -16,6 +16,7 @@ __all__ = [
     "dag",
     "gate_matrix",
     "from_framework",
+    "Ansatz",
     "Circuit",
     "CirqCircuit",
     "PennylaneCircuit",
@@ -32,5 +33,6 @@ from quick.circuit.cirqcircuit import CirqCircuit
 from quick.circuit.pennylanecircuit import PennylaneCircuit
 from quick.circuit.quimbcircuit import QuimbCircuit
 from quick.circuit.tketcircuit import TKETCircuit
+from quick.circuit.ansatz import Ansatz
 import quick.circuit.from_framework as from_framework
 import quick.circuit.dag as dag
