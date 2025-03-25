@@ -20,7 +20,7 @@ from quick.optimizer import Optimizer
 from quick.primitives import Bra, Ket, Operator
 from quick.synthesis.statepreparation import StatePreparation
 from quick.synthesis.unitarypreparation import UnitaryPreparation
-from typing import Type, TypeAlias
+from typing import TypeAlias
 
 __all__ = ["Compiler"]
 
@@ -29,9 +29,9 @@ PRIMITIVES: TypeAlias = list[tuple[PRIMITIVE, Sequence[int]]]
 
 
 class Compiler:
-    circuit_framework: Type[Circuit]
-    state_prep: Type[StatePreparation]
-    unitary_prep: Type[UnitaryPreparation]
+    circuit_framework: type[Circuit]
+    state_prep: type[StatePreparation]
+    unitary_prep: type[UnitaryPreparation]
     optimizer: Optimizer
     def __init__(self, circuit_framework: Circuit, state_prep: type[StatePreparation] = ..., unitary_prep: type[UnitaryPreparation] = ..., mlir: bool = True) -> None: ...
     def state_preparation(self, state: NDArray[np.complex128] | Bra | Ket) -> Circuit: ...

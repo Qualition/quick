@@ -19,12 +19,11 @@ from collections.abc import Sequence
 from numpy.typing import NDArray
 from quick.circuit import Circuit
 from quick.primitives import Operator
-from typing import Type
 
 __all__ = ["UnitaryPreparation"]
 
 class UnitaryPreparation(ABC, metaclass=abc.ABCMeta):
-    output_framework: Type[Circuit]
+    output_framework: type[Circuit]
     def __init__(self, output_framework: type[Circuit]) -> None: ...
     def prepare_unitary(self, unitary: NDArray[np.complex128] | Operator) -> Circuit: ...
     @abstractmethod

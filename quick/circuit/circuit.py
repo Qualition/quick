@@ -29,7 +29,7 @@ import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
 from typing import (
-    Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
+    Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, TYPE_CHECKING
 )
 
 import qiskit # type: ignore
@@ -5791,7 +5791,7 @@ class Circuit(ABC):
 
     def convert(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> Circuit:
         """ Convert the circuit to another circuit framework.
 
@@ -5967,7 +5967,7 @@ class Circuit(ABC):
     @staticmethod
     def from_cirq(
             cirq_circuit: cirq.Circuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.Circuit` from a `cirq.Circuit`.
 
@@ -5999,7 +5999,7 @@ class Circuit(ABC):
     @staticmethod
     def from_pennylane(
             pennylane_circuit: qml.QNode,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `qml.QNode`.
 
@@ -6037,7 +6037,7 @@ class Circuit(ABC):
     @staticmethod
     def from_qiskit(
             qiskit_circuit: qiskit.QuantumCircuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `qiskit.QuantumCircuit`.
 
@@ -6069,7 +6069,7 @@ class Circuit(ABC):
     @staticmethod
     def from_tket(
             tket_circuit: pytket.Circuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `tket.Circuit`.
 
@@ -6101,7 +6101,7 @@ class Circuit(ABC):
     @staticmethod
     def from_qasm(
             qasm: str,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a QASM string.
 
@@ -6140,7 +6140,7 @@ class Circuit(ABC):
     @staticmethod
     def from_quimb(
             quimb_circuit: qtn.Circuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `qtn.Circuit`.
 

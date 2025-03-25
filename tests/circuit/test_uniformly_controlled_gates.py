@@ -98,7 +98,7 @@ class TestUniformlyControlledGates:
     ])
     def test_UCRX(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             angles: list[float],
             control_indices: list[int],
             target_index: int,
@@ -157,7 +157,7 @@ class TestUniformlyControlledGates:
     ])
     def test_UCRY(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             angles: list[float],
             control_indices: list[int],
             target_index: int,
@@ -216,7 +216,7 @@ class TestUniformlyControlledGates:
     ])
     def test_UCRZ(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             angles: list[float],
             control_indices: list[int],
             target_index: int,
@@ -259,7 +259,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Diagonal(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             diagonal: list[int],
             qubit_indices: list[int]
         ) -> None:
@@ -330,7 +330,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Multiplexor_no_diagonal_no_simplification(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: list[int],
             target_index: int,
@@ -413,7 +413,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Multiplexor_diagonal_no_simplification(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: list[int],
             target_index: int,
@@ -496,7 +496,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Multiplexor_no_diagonal_simplification(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: list[int],
             target_index: int,
@@ -579,7 +579,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Multiplexor_diagonal_simplification(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: list[int],
             target_index: int,

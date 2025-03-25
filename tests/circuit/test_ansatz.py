@@ -33,14 +33,14 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_init_value_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test ValueError raised when the circuit used is not
         parameterized.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(2)
@@ -53,13 +53,13 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_thetas(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test thetas property of Ansatz.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(1)
@@ -81,13 +81,13 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_set_thetas(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test thetas setter of Ansatz.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(1)
@@ -130,13 +130,13 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_num_params(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test num_params property of Ansatz.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(1)
@@ -158,13 +158,13 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_num_parameterized_gates(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test num_parameterized_gates property of Ansatz.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(1)
@@ -186,13 +186,13 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_is_parameterized(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test is_parameterized property of Ansatz.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(1)
@@ -214,14 +214,14 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_is_parameterized_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test is_parameterized property of Ansatz when circuit is not
         parameterized.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(2)
@@ -234,14 +234,14 @@ class TestAnsatz:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_is_parameterized_with_ignore_global_phase(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test is_parameterized property of Ansatz with ignore_global_phase
         set to True.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The circuit framework to use for testing.
         """
         circuit = circuit_framework(1)

@@ -21,7 +21,7 @@ __all__ = ["FromCirq"]
 
 import cirq # type: ignore
 import numpy as np
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -76,7 +76,7 @@ class FromCirq(FromFramework):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
 
         super().__init__(output_framework=output_framework)

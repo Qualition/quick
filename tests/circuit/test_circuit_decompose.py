@@ -40,7 +40,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_X(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the X gate.
 
@@ -70,7 +70,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_Z(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the Z gate.
 
@@ -119,7 +119,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_CZ(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the CZ gate.
 
@@ -173,7 +173,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_MCX(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the MCX gate.
 
@@ -275,7 +275,7 @@ class TestDecompose:
     @pytest.mark.parametrize("gate_func, num_qubits", GATE_TYPES)
     def test_primitive_gates(
             self,
-            framework: Type[Circuit],
+            framework: type[Circuit],
             gate_func,
             num_qubits: int
         ) -> None:

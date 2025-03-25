@@ -22,7 +22,7 @@ from __future__ import annotations
 
 __all__ = ["MCXVChain"]
 
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -80,7 +80,7 @@ class MCXVChain:
     def define_decomposition(
             self,
             num_controls: int,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Define the V-chain decomposition of the MCX gate.
 
@@ -88,7 +88,7 @@ class MCXVChain:
         ----------
         `num_controls` : int
             Number of control qubits for the MCX gate.
-        `output_framework` : Type[quick.circuit.Circuit]
+        `output_framework` : type[quick.circuit.Circuit]
             The circuit framework to be used for the decomposition.
 
         Returns

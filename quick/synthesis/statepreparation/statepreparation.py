@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Literal, Type, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING
 
 import quick
 if TYPE_CHECKING:
@@ -56,7 +56,7 @@ class StatePreparation(ABC):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
         """ Initalize a State Preparation instance.
         """

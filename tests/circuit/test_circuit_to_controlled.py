@@ -30,7 +30,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_x_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with X gate.
 
@@ -65,7 +65,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_y_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with Y gate.
 
@@ -100,7 +100,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_z_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with Z gate.
 
@@ -135,7 +135,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_h_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with H gate.
 
@@ -170,7 +170,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_s_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with S gate.
 
@@ -205,7 +205,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_sdg_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with Sdg gate.
 
@@ -240,7 +240,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_t_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with T gate.
 
@@ -275,7 +275,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_tdg_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with Tdg gate.
 
@@ -310,7 +310,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_rx_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with RX gate.
 
@@ -345,7 +345,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_ry_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with RY gate.
 
@@ -380,7 +380,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_rz_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with RZ gate.
 
@@ -420,7 +420,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_phase_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with Phase gate.
 
@@ -455,7 +455,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_u3_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with U3 gate.
 
@@ -487,7 +487,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_swap_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with SWAP gate.
 
@@ -519,7 +519,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cx_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CX gate.
 
@@ -551,7 +551,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cy_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CY gate.
 
@@ -583,7 +583,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cz_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CZ gate.
 
@@ -615,7 +615,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_ch_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CH gate.
 
@@ -647,7 +647,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cs_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CS gate.
 
@@ -679,7 +679,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_csdg_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CSdg gate.
 
@@ -711,7 +711,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_ct_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CT gate.
 
@@ -743,7 +743,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_ctdg_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CTdg gate.
 
@@ -775,7 +775,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_crx_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CRX gate.
 
@@ -807,7 +807,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cry_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CRY gate.
 
@@ -839,7 +839,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_crz_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CRZ gate.
 
@@ -871,7 +871,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cphase_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CPhase gate.
 
@@ -903,7 +903,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cswap_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CSWAP gate.
 
@@ -935,7 +935,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_cu3_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with CU3 gate.
 
@@ -967,7 +967,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcx_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCX gate.
 
@@ -999,7 +999,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcy_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCY gate.
 
@@ -1031,7 +1031,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcz_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCZ gate.
 
@@ -1063,7 +1063,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mch_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCH gate.
 
@@ -1095,7 +1095,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcs_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCS gate.
 
@@ -1127,7 +1127,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcsdg_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCSdg gate.
 
@@ -1159,7 +1159,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mct_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCT gate.
 
@@ -1191,7 +1191,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mctdg_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCTdg gate.
 
@@ -1223,7 +1223,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcrx_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCRX gate.
 
@@ -1255,7 +1255,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcry_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCRY gate.
 
@@ -1287,7 +1287,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcrz_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCRZ gate.
 
@@ -1319,7 +1319,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcphase_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCPhase gate.
 
@@ -1351,7 +1351,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcu3_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCU3 gate.
 
@@ -1383,7 +1383,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_mcswap_control(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with MCSWAP gate.
 
@@ -1415,7 +1415,7 @@ class TestControlled:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_global_phase_in_target(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `.control()` method with global phase in target gate.
 
