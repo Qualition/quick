@@ -33,14 +33,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -59,14 +59,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -85,14 +85,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -111,14 +111,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CH_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CH` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -137,14 +137,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CS_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CS` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -163,14 +163,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CSdg_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CSdg` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -189,14 +189,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CT_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CT` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -215,14 +215,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CTdg_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CTdg` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -241,14 +241,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CRX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CRX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -269,14 +269,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CRY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CRY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -295,14 +295,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CRZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CRZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -321,14 +321,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CPhase_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CPhase` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -347,14 +347,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CXPow_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CXPow` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -373,14 +373,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CYPow_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CYPow` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -399,14 +399,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CZPow_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CZPow` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -425,14 +425,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CRXX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CRXX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -451,14 +451,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CRYY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CRYY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -477,14 +477,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CRZZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CRZZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -503,14 +503,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CU3_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CU3` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -533,14 +533,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_CSWAP_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `CSWAP` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -559,14 +559,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -597,14 +597,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -635,14 +635,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -673,14 +673,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCH_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCH` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -711,14 +711,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCS_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCS` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -749,14 +749,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCSdg_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCSdg` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -787,14 +787,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCT_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCT` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -825,14 +825,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCTdg_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCTdg` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -863,14 +863,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCRX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCRX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -903,14 +903,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCRY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCRY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -943,14 +943,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCRZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCRZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -983,14 +983,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCPhase_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCPhase` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1023,14 +1023,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCXPow_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCXPow` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1064,14 +1064,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCYPow_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCYPow` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1105,14 +1105,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCZPow_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCZPow` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1146,14 +1146,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCRXX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCRXX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1186,14 +1186,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCRYY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCRYY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1226,14 +1226,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCRZZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCRZZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1266,14 +1266,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCU3_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCU3` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = 0.1
@@ -1308,14 +1308,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_MCSWAP_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `MCSWAP` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         # Given control state "0"
@@ -1346,14 +1346,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_UCRX_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `UCRX` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = [0.1, 0.2, 0.3, 0.4]
@@ -1386,14 +1386,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_UCRY_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `UCRY` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = [0.1, 0.2, 0.3, 0.4]
@@ -1426,14 +1426,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_UCRZ_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `UCRZ` method of the circuit
         framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         theta = [0.1, 0.2, 0.3, 0.4]
@@ -1466,14 +1466,14 @@ class TestControlState:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_Multiplexor_control_state(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
         ) -> None:
         """ Test the `control_state` parameter of the `Multiplexor` method of the
         circuit framework.
 
         Parameters
         ----------
-        `circuit_framework` : Type[quick.circuit.Circuit]
+        `circuit_framework` : type[quick.circuit.Circuit]
             The circuit framework to test.
         """
         gates = [

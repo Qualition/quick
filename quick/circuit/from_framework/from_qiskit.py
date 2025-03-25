@@ -21,7 +21,7 @@ __all__ = ["FromQiskit"]
 
 from qiskit import QuantumCircuit, transpile # type: ignore
 from qiskit._accelerate.circuit import CircuitInstruction # type: ignore
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -74,7 +74,7 @@ class FromQiskit(FromFramework):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
 
         super().__init__(output_framework=output_framework)

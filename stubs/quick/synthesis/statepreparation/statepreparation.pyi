@@ -19,13 +19,13 @@ import numpy as np
 from numpy.typing import NDArray
 from quick.circuit import Circuit
 from quick.primitives import Bra, Ket
-from typing import Literal, Type
+from typing import Literal
 
 __all__ = ["StatePreparation"]
 
 class StatePreparation(ABC, metaclass=abc.ABCMeta):
-    output_framework: Type[Circuit]
-    def __init__(self, output_framework: Type[Circuit]) -> None: ...
+    output_framework: type[Circuit]
+    def __init__(self, output_framework: type[Circuit]) -> None: ...
     def prepare_state(self, state: NDArray[np.complex128] | Bra | Ket, compression_percentage: float=0.0, index_type: str="row") -> Circuit: ...
     @abstractmethod
     def apply_state(

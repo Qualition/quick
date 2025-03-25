@@ -22,7 +22,7 @@ __all__ = ["Compiler"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Type, TypeAlias
+from typing import TypeAlias
 
 from quick.circuit import Circuit
 from quick.optimizer import Optimizer
@@ -90,9 +90,9 @@ class Compiler:
     """
     def __init__(
             self,
-            circuit_framework: Type[Circuit],
-            state_prep: Type[StatePreparation]=Isometry,
-            unitary_prep: Type[UnitaryPreparation]=ShannonDecomposition,
+            circuit_framework: type[Circuit],
+            state_prep: type[StatePreparation]=Isometry,
+            unitary_prep: type[UnitaryPreparation]=ShannonDecomposition,
             optimizer: Optimizer | None=None
         ) -> None:
         """ Initialize a `quick.compiler.Compiler` object.

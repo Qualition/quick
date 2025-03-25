@@ -24,7 +24,7 @@ from pytket import Circuit as TKCircuit
 from pytket._tket.circuit import Command
 from pytket import OpType
 from pytket.passes import AutoRebase
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -74,7 +74,7 @@ class FromTKET(FromFramework):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
 
         super().__init__(output_framework=output_framework)

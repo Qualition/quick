@@ -23,7 +23,7 @@ __all__ = ["QiskitUnitaryTranspiler"]
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import SupportsIndex, Type, TYPE_CHECKING
+from typing import SupportsIndex, TYPE_CHECKING
 
 from qiskit import QuantumCircuit, transpile # type: ignore
 from qiskit.transpiler.passes import unitary_synthesis_plugin_names # type: ignore
@@ -96,7 +96,7 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit],
+            output_framework: type[Circuit],
             ai_transpilation: bool=False,
             unitary_synthesis_plugin: str="default",
             service: QiskitRuntimeService | None = None,
