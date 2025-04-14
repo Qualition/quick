@@ -1,7 +1,7 @@
 # Quick
 
 [![PyPI version](https://img.shields.io/pypi/v/quick-core)](//pypi.org/project/quick-core)
-[![License](https://img.shields.io/github/license/Qualition/quick.svg?)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
 [![Tests](https://github.com/Qualition/quick/actions/workflows/tests.yml/badge.svg)](https://github.com/qualition/quick/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/github/Qualition/quick/branch/main/graph/badge.svg?token=IHWJZG8VJT)](https://codecov.io/github/Qualition/quick)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e287a2eed9e24d5e9d4a3ffe911ce6a5)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
