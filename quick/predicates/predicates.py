@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 __all__ = [
+    "is_statevector",
     "is_square_matrix",
     "is_diagonal_matrix",
     "is_symmetric_matrix",
@@ -30,10 +31,69 @@ __all__ = [
 
 import numpy as np
 from numpy.typing import NDArray
+import math
 
 ATOL_DEFAULT = 1e-8
 RTOL_DEFAULT = 1e-5
 
+
+def _is_power(
+        base: int,
+        number: int
+    ) -> bool:
+    """ Test if a number is a power of another number.
+
+    Parameters
+    ----------
+    `base` : int
+        The base number.
+    `number` : int
+        The number to check.
+
+    Returns
+    -------
+    bool
+        True if the number is a power of the base, False otherwise.
+    """
+    result = math.log(number) / math.log(base)
+    return result == math.floor(result)
+
+def is_statevector(
+        statevector: NDArray[np.complex128],
+        system_size: int=2
+    ) -> bool:
+    """ Test if an array is a statevector.
+
+    Parameters
+    ----------
+    `statevector` : NDArray[np.complex128]
+        The input statevector.
+    `system_size` : int, optional, default=2
+        The size of the quantum memory. If the size is 2, then the
+        system uses qubits. If the size is 3, then the system uses qutrits,
+        and so on.
+
+    Returns
+    -------
+    bool
+        True if the array is a statevector, False otherwise.
+
+    Raises
+    ------
+    ValueError
+        - If the system size is less than 2.
+
+    Usage
+    -----
+    >>> is_statevector(np.array([1, 0]))
+    """
+    if system_size < 2:
+        raise ValueError("System size must be greater than or equal to 2.")
+
+    if not _is_power(system_size, len(statevector)):
+        return False
+
+    return np.linalg.norm(statevector) == 1 and statevector.ndim == 1 and len(statevector) > 1
 
 def is_square_matrix(matrix: NDArray[np.complex128]) -> bool:
     """ Test if an array is a square matrix.
@@ -279,6 +339,9 @@ def is_isometry(
     -----
     >>> is_isometry(np.eye(2))
     """
+    if matrix.ndim != 2:
+        return False
+
     identity = np.eye(matrix.shape[1])
     matrix = np.conj(matrix.T).dot(matrix)
     return np.allclose(matrix, identity, rtol=rtol, atol=atol)

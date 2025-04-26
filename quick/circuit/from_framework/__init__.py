@@ -15,11 +15,13 @@
 __all__ = [
     "FromFramework",
     "FromCirq",
+    "FromPennyLane",
     "FromQiskit",
     "FromTKET"
 ]
 
 from quick.circuit.from_framework.from_framework import FromFramework
 from quick.circuit.from_framework.from_cirq import FromCirq
+from quick.circuit.from_framework.from_pennylane import FromPennyLane
 from quick.circuit.from_framework.from_qiskit import FromQiskit
 from quick.circuit.from_framework.from_tket import FromTKET

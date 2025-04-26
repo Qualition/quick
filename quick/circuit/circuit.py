@@ -36,7 +36,6 @@ import qiskit # type: ignore
 import cirq # type: ignore
 import pennylane as qml # type: ignore
 import pytket
-import pytket.circuit
 import quimb.tensor as qtn # type: ignore
 
 if TYPE_CHECKING:
@@ -45,7 +44,7 @@ from quick.circuit.circuit_utils import (
     multiplexed_rz_angles, decompose_multiplexor_rotations, extract_single_qubits_and_diagonal, simplify
 )
 from quick.circuit.dag import DAGCircuit
-from quick.circuit.from_framework import FromCirq, FromQiskit, FromTKET
+from quick.circuit.from_framework import FromCirq, FromPennyLane, FromQiskit, FromTKET
 from quick.predicates import is_unitary_matrix
 from quick.primitives import Bra, Ket, Operator
 from quick.synthesis.gate_decompositions.multi_controlled_decomposition import MCRX, MCRY, MCRZ
@@ -86,11 +85,17 @@ CONTROL_MAPPING = {
 
 # List of 1Q gates wrapped by individual frameworks
 GATES = Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase", "U3"]
-SELF_ADJ_GATES = [
+
+# List of self-adjoint gates
+SELF_ADJ_GATES = frozenset([
     "I", "X", "Y", "Z", "H", "SWAP",
     "CX", "CY", "CZ", "CH", "CSWAP",
     "MCX", "MCY", "MCZ", "MCH", "MCSWAP"
-]
+])
+
+# List of gates that are considered as primitives
+# these gates cannot be decomposed further
+PRIMITIVE_GATES = frozenset(["U3", "CX", "GlobalPhase", "measure"])
 
 # Constants
 PI = np.pi
@@ -5071,7 +5076,7 @@ class Circuit(ABC):
         -----
         >>> circuit.vertical_reverse()
         """
-        self.change_mapping(list(range(self.num_qubits))[::-1])
+        self.change_mapping(range(self.num_qubits - 1, -1, -1))
 
     @staticmethod
     def _horizontal_reverse(
@@ -5637,7 +5642,7 @@ class Circuit(ABC):
             while True:
                 gates = set([operation["gate"] for operation in circuit_log_copy])
 
-                if gates.issubset(set(["U3", "CX", "GlobalPhase", "measure"])):
+                if gates.issubset(PRIMITIVE_GATES):
                     break
 
                 for operation in circuit_log_copy:
@@ -6024,14 +6029,8 @@ class Circuit(ABC):
         -----
         >>> circuit.from_pennylane(pennylane_circuit)
         """
-        if not issubclass(output_framework, Circuit):
-            raise TypeError("The circuit framework must be a subclass of `quick.circuit.Circuit`.")
-
-        # Define a circuit
-        num_qubits = len(pennylane_circuit.device.wires)
-        circuit = output_framework(num_qubits=num_qubits)
-
-        # TODO: Implement the conversion from PennyLane to quick
+        pennylane_converter = FromPennyLane(output_framework=output_framework)
+        circuit = pennylane_converter.convert(pennylane_circuit)
         return circuit
 
     @staticmethod

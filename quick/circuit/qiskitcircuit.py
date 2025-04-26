@@ -174,8 +174,7 @@ class QiskitCircuit(Circuit):
 
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         self.circuit.measure(qubit_indices, qubit_indices)
 
@@ -245,7 +244,6 @@ class QiskitCircuit(Circuit):
 
     def get_unitary(self) -> NDArray[np.complex128]:
         unitary = Operator(self.circuit).data
-
         return np.array(unitary)
 
     def reset_qubit(
@@ -255,8 +253,7 @@ class QiskitCircuit(Circuit):
 
         self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         for qubit_index in qubit_indices:
             self.circuit.reset(qubit_index)

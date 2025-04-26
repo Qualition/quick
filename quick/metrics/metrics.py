@@ -20,12 +20,15 @@ from __future__ import annotations
 __all__ = [
     "calculate_entanglement_range",
     "calculate_shannon_entropy",
-    "calculate_entanglement_entropy"
+    "calculate_entanglement_entropy",
+    "calculate_hilbert_schmidt_test"
 ]
 
 import numpy as np
 from numpy.typing import NDArray
 import quimb.tensor as qtn # type: ignore
+
+from quick.predicates import is_unitary_matrix
 
 
 def _get_submps_indices(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
@@ -166,3 +169,48 @@ def calculate_entanglement_entropy(statevector: NDArray[np.complex128]) -> float
     density_matrix = np.outer(statevector, statevector.conj())
     eigenvalues = np.maximum(np.real(np.linalg.eigvals(density_matrix)), 0.0)
     return calculate_shannon_entropy(eigenvalues)
+
+def calculate_hilbert_schmidt_test(
+        unitary_1: NDArray[np.complex128],
+        unitary_2: NDArray[np.complex128]
+    ) -> float:
+    """ Calculate the Hilbert-Schmidt test. This is a measure of the
+    similarity of two unitary matrices.
+
+    Parameters
+    ----------
+    `unitary_1` : NDArray[np.complex128]
+        The first unitary matrix.
+
+    `unitary_2` : NDArray[np.complex128]
+        The second unitary matrix.
+
+    Returns
+    -------
+    `chst` : float
+        The Hilbert-Schmidt test of the two unitary matrices.
+
+    Raises
+    ------
+    ValueError
+        - If either of the matrices is not unitary.
+        - If the matrices are not square.
+
+    Usage
+    -----
+    >>> hilbert_schmidt_test = calculate_hilbert_schmidt_test(unitary_1, unitary_2)
+    """
+    if not is_unitary_matrix(unitary_1):
+        raise ValueError("The first matrix is not unitary.")
+    if not is_unitary_matrix(unitary_2):
+        raise ValueError("The second matrix is not unitary.")
+
+    num_qubits = int(np.log2(unitary_1.shape[0]))
+
+    chst = 1/2**(2 * num_qubits) * np.abs(
+        np.trace(
+            np.dot(unitary_1.conj().T, unitary_2)
+        )
+    )**2
+
+    return chst

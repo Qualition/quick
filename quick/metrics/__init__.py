@@ -15,11 +15,13 @@
 __all__ = [
     "calculate_entanglement_range",
     "calculate_shannon_entropy",
-    "calculate_entanglement_entropy"
+    "calculate_entanglement_entropy",
+    "calculate_hilbert_schmidt_test"
 ]
 
 from quick.metrics.metrics import (
     calculate_entanglement_range,
     calculate_shannon_entropy,
-    calculate_entanglement_entropy
+    calculate_entanglement_entropy,
+    calculate_hilbert_schmidt_test
 )

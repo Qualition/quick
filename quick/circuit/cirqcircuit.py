@@ -163,29 +163,38 @@ class CirqCircuit(Circuit):
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
+        controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
+
+        # Given Cirq uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(targets):
+            targets[i] = self.num_qubits - 1 - index
+
+        for i, index in enumerate(controls):
+            controls[i] = self.num_qubits - 1 - index
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the polymorphism
         gate_operation = self.gate_mapping[gate](angles)
 
-        if control_indices:
+        if controls:
             gate_operation = cirq.ControlledGate(
                 sub_gate=gate_operation,
-                num_controls=len(control_indices)
+                num_controls=len(controls)
             )
 
-            for target_index in target_indices:
+            for target_index in targets:
                 self.circuit.append(
                     gate_operation(
-                        *map(self.qr.__getitem__, control_indices),
+                        *map(self.qr.__getitem__, controls),
                         self.qr[target_index]
                     )
                 )
             return
 
-        for target_index in target_indices:
+        for target_index in targets:
             self.circuit.append(gate_operation(self.qr[target_index]))
 
     def GlobalPhase(
@@ -208,37 +217,34 @@ class CirqCircuit(Circuit):
 
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
+
+        # Given Cirq uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
 
         # We must sort the indices as Cirq interprets that the order of measurements
         # is relevant
         # This is done to ensure that the measurements are consistent across different
         # framework
-        for qubit_index in sorted(qubit_indices):
+        for qubit_index in sorted(qubits):
             self.circuit.append(cirq.measure(self.qr[qubit_index], key=f"q{qubit_index}"))
             self.measurement_keys.append(f"q{qubit_index}")
+            self.measured_qubits.add(qubit_index)
 
         self.measurement_keys = sorted(self.measurement_keys)
-
-        for qubit_index in qubit_indices:
-            self.measured_qubits.add(qubit_index)
 
     def get_statevector(
             self,
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
 
-        # Copy the circuit as the operations are applied inplace
-        circuit: CirqCircuit = self.copy() # type: ignore
-
-        # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
         if backend is None:
-            state_vector = circuit.circuit.final_state_vector(qubit_order=self.qr)
+            state_vector = self.circuit.final_state_vector(qubit_order=self.qr)
         else:
-            state_vector = backend.get_statevector(circuit)
+            state_vector = backend.get_statevector(self)
 
         return np.array(state_vector)
 
@@ -253,22 +259,16 @@ class CirqCircuit(Circuit):
         if num_qubits_to_measure == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: CirqCircuit = self.copy() # type: ignore
-
-        # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
         if backend is None:
             # If no backend is provided, use the `cirq.Simulator`
             base_backend = cirq.Simulator()
 
-            result = base_backend.run(circuit.circuit, repetitions=num_shots)
+            result = base_backend.run(self.circuit, repetitions=num_shots)
 
             # Using the `multi_measurement_histogram` method to get the counts we can
             # get the counts given the measurement keys, allowing for partial measurement
             # without post-processing
-            counts = dict(result.multi_measurement_histogram(keys=circuit.measurement_keys))
+            counts = dict(result.multi_measurement_histogram(keys=self.measurement_keys))
             counts = {''.join(map(str, key)): value for key, value in counts.items()}
             for i in range(2**num_qubits_to_measure):
                 basis = format(int(i),"0{}b".format(num_qubits_to_measure))
@@ -282,19 +282,12 @@ class CirqCircuit(Circuit):
             counts = dict(sorted(counts.items()))
 
         else:
-            counts = backend.get_counts(circuit, num_shots)
+            counts = backend.get_counts(self, num_shots)
 
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: CirqCircuit = self.copy() # type: ignore
-
-        # Cirq uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
-        unitary = cirq.unitary(circuit.circuit)
-
+        unitary = cirq.unitary(self.circuit)
         return np.array(unitary)
 
     def reset_qubit(
@@ -304,10 +297,15 @@ class CirqCircuit(Circuit):
 
         self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
 
-        for qubit_index in qubit_indices:
+        # Given Cirq uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
+
+        for qubit_index in qubits:
             self.circuit.append(cirq.ResetChannel()(self.qr[qubit_index]))
 
     def to_qasm(

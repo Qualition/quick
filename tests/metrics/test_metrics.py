@@ -20,12 +20,14 @@ import numpy as np
 from numpy.typing import NDArray
 from numpy.testing import assert_almost_equal
 import pytest
+from scipy.stats import unitary_group
 
 from quick.circuit import QiskitCircuit
 from quick.metrics import (
     calculate_entanglement_range,
     calculate_shannon_entropy,
-    calculate_entanglement_entropy
+    calculate_entanglement_entropy,
+    calculate_hilbert_schmidt_test
 )
 
 
@@ -74,3 +76,21 @@ class TestMetrics:
             The statevector of the circuit.
         """
         assert_almost_equal(0.0, calculate_entanglement_entropy(data))
+
+    def test_calculate_hilbert_schmidt_test(self) -> None:
+        """ Test the `calculate_hilbert_schmidt_test` method.
+        """
+        unitary = unitary_group.rvs(4).astype(np.complex128)
+        assert_almost_equal(1.0, calculate_hilbert_schmidt_test(unitary, unitary))
+
+    def test_calculate_hilbert_schmidt_fail(self) -> None:
+        """ Test the `calculate_hilbert_schmidt_test` method with invalid inputs.
+        """
+        unitary = unitary_group.rvs(4).astype(np.complex128)
+
+        with pytest.raises(ValueError):
+            calculate_hilbert_schmidt_test(unitary, np.zeros((4, 4))) # type: ignore
+        with pytest.raises(ValueError):
+            calculate_hilbert_schmidt_test(unitary, np.zeros((4, 3))) # type: ignore
+        with pytest.raises(ValueError):
+            calculate_hilbert_schmidt_test(np.zeros((4, 4)), unitary) # type: ignore

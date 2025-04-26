@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 __all__ = [
+    "test_is_statevector",
     "test_is_square_matrix",
     "test_is_diagonal_matrix",
     "test_is_symmetric_matrix",
@@ -31,6 +32,7 @@ import pytest
 from scipy.stats import unitary_group
 
 from quick.predicates import (
+    is_statevector,
     is_square_matrix,
     is_diagonal_matrix,
     is_symmetric_matrix,
@@ -41,6 +43,43 @@ from quick.predicates import (
     is_isometry
 )
 
+
+@pytest.mark.parametrize("array, system_size, expected", [
+    (np.array([1, 0]), 2, True),
+    (np.array([0, 1]), 2, True),
+    (np.array([1, 0, 0]), 3, True),
+    (np.array([1, 2]), 2, False),
+    (np.array([1, 2, 3]), 3, False),
+    (np.array([1, 0, 0, 0]), 2, True)
+])
+def test_is_statevector(
+        array: NDArray[np.complex128],
+        system_size: int,
+        expected: bool
+    ) -> None:
+    """ Test the `.is_statevector()` method.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a statevector.
+    `system_size` : int
+        The size of the system. If it's 2, then it's a qubit system.
+    `expected` : bool
+        The expected output of the function.
+    """
+    assert is_statevector(array, system_size) == expected
+
+def test_is_statevector_invalid_system_size() -> None:
+    """ Test the `.is_statevector()` method with invalid system size.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is a statevector.
+    """
+    with pytest.raises(ValueError):
+        is_statevector(np.array([1, 0]), system_size=0)
 
 @pytest.mark.parametrize("array, expected", [
     (np.random.rand(2, 2), True),
@@ -307,7 +346,8 @@ def test_is_positive_semidefinite_matrix(
         [1, 1]
     ], dtype=np.complex128), False),
     (np.random.rand(3, 3), False),
-    (np.random.rand(1, 2), False)
+    (np.random.rand(1, 2), False),
+    (np.array([1, 0]), False),
 ])
 def test_is_isometry(
         array: NDArray[np.complex128],
