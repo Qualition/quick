@@ -60,6 +60,10 @@ include = ["quick*"]
 [tool.setuptools.package-data]
 "quick" = ["py.typed"]
 
+[tools.pyright]
+include = ["quick", "tests"]
+typeCheckingMode = "strict"
+
 [tool.codeflash]
 # All paths are relative to this pyproject.toml's directory.
 module-root = "quick"
