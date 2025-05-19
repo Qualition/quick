@@ -207,6 +207,7 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
+    rxr = np.round(rxr, 14)
     eigenvalues, u = np.linalg.eig(rxr)
 
     # Put the eigenvalues into a diagonal form
