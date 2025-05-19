@@ -207,7 +207,6 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
-    rxr = np.round(rxr, 14)
     eigenvalues, u = np.linalg.eig(rxr)
 
     # Put the eigenvalues into a diagonal form
@@ -220,6 +219,11 @@ def extract_uvr_matrices(
 
     # Calculate v based on the decomposition (Eq 7)
     v = diagonal @ np.conj(u).T @ np.conj(r).T @ b
+
+    # Round the values to avoid floating point errors
+    v = np.round(v, 15).astype(np.complex128)
+    u = np.round(u, 15).astype(np.complex128)
+    r = np.round(r, 15).astype(np.complex128)
 
     return v, u, r
 
