@@ -4838,6 +4838,8 @@ class Circuit(ABC):
         # of the multiplexor
         with self.controlled_state(control_state, control_indices):
             for i, gate in enumerate(single_qubit_gates):
+                gate = np.round(gate, 15)
+
                 if i == 0:
                     self.unitary(gate, target_index)
                     self.H(target_index)

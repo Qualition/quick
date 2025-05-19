@@ -220,11 +220,6 @@ def extract_uvr_matrices(
     # Calculate v based on the decomposition (Eq 7)
     v = diagonal @ np.conj(u).T @ np.conj(r).T @ b
 
-    # Round the values to avoid floating point errors
-    v = np.round(v, 15).astype(np.complex128)
-    u = np.round(u, 15).astype(np.complex128)
-    r = np.round(r, 15).astype(np.complex128)
-
     return v, u, r
 
 def extract_single_qubits_and_diagonal(
