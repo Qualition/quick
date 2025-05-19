@@ -487,7 +487,7 @@ class TwoQubitWeylDecomposition:
         global_phase = cmath.phase(U_det) / 4
 
         U_magic_basis = transform_to_magic_basis(U.astype(complex), reverse=True)
-        M2 = U_magic_basis.T.dot(U_magic_basis)
+        M2 = np.round(U_magic_basis.T.dot(U_magic_basis), 14)
 
         # There is a floating point error in this implementation
         # for certain U, which depends on OS and Python version
