@@ -481,13 +481,13 @@ class TwoQubitWeylDecomposition:
         >>> a, b, c, K1l, K1r, K2l, K2r, global_phase = TwoQubitWeylDecomposition.decompose_unitary(np.eye(4))
         """
         # Make U be in SU(4)
-        U = np.array(unitary_matrix, dtype=complex, copy=True)
+        U = np.array(unitary_matrix, dtype=np.complex128, copy=True)
         U_det = scipy.linalg.det(U)
         U *= U_det ** (-0.25)
         global_phase = cmath.phase(U_det) / 4
 
-        U_magic_basis = transform_to_magic_basis(U.astype(complex), reverse=True)
-        M2 = np.round(U_magic_basis.T.dot(U_magic_basis), 14)
+        U_magic_basis = transform_to_magic_basis(U.astype(np.complex128), reverse=True)
+        M2 = U_magic_basis.T.dot(U_magic_basis)
 
         # There is a floating point error in this implementation
         # for certain U, which depends on OS and Python version

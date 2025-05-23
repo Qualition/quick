@@ -20,7 +20,7 @@ from __future__ import annotations
 __all__ = ["Circuit"]
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 import copy
 import cmath
@@ -29,7 +29,7 @@ import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
 from typing import (
-    Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, TYPE_CHECKING
+    Any, Literal, overload, SupportsFloat, SupportsIndex, TYPE_CHECKING
 )
 
 import qiskit # type: ignore
@@ -41,7 +41,10 @@ import quimb.tensor as qtn # type: ignore
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit.circuit_utils import (
-    multiplexed_rz_angles, decompose_multiplexor_rotations, extract_single_qubits_and_diagonal, simplify
+    multiplexed_rz_angles,
+    decompose_multiplexor_rotations,
+    extract_single_qubits_and_diagonal,
+    simplify
 )
 from quick.circuit.dag import DAGCircuit
 from quick.circuit.from_framework import FromCirq, FromPennyLane, FromQiskit, FromTKET
@@ -53,7 +56,7 @@ from quick.synthesis.unitarypreparation import (
     UnitaryPreparation, ShannonDecomposition, QiskitUnitaryTranspiler
 )
 
-EPSILON = 1e-10
+EPSILON = 1e-15
 
 """ Set the frozensets for the keys to be used:
 - Decorator `Circuit.gatemethod()`
@@ -4793,17 +4796,22 @@ class Circuit(ABC):
                 raise ValueError(f"The dimension of a gate is not equal to 2x2. Received {gate.shape}.")
 
         # Check if number of gates in gate_list is a positive power of two
-        num_control = np.log2(len(single_qubit_gates))
-        if num_control < 0 or not int(num_control) == num_control:
+        num_controls = int(
+            np.log2(
+                len(single_qubit_gates)
+            )
+        )
+
+        if num_controls < 0 or not int(num_controls) == num_controls:
             raise ValueError(
                 "The number of single-qubit gates is not a non-negative power of 2."
             )
 
-        if not num_control == len(control_indices):
+        if not num_controls == len(control_indices):
             raise ValueError(
                 "The number of control qubits passed must be equal to the number of gates. "
                 f"Received {len(control_indices)}. "
-                f"Expected {int(num_control)}."
+                f"Expected {int(num_controls)}."
             )
 
         # Check if the single-qubit gates are unitaries
@@ -4816,7 +4824,7 @@ class Circuit(ABC):
         # If the multiplexor simplification is enabled, we simplify the multiplexor
         # based on [2]
         if multiplexor_simplification:
-            new_controls, single_qubit_gates = simplify(single_qubit_gates, int(num_control))
+            new_controls, single_qubit_gates = simplify(single_qubit_gates, num_controls)
             control_indices = [qubits[len(control_indices) + 1 - i] for i in new_controls]
             control_indices.reverse()
 
@@ -4833,18 +4841,18 @@ class Circuit(ABC):
             len(control_indices) + 1
         )
 
+        num_single_qubit_gates = len(single_qubit_gates)
+
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # which are absorbed into the single-qubit unitaries to get back the full decomposition
         # of the multiplexor
         with self.controlled_state(control_state, control_indices):
             for i, gate in enumerate(single_qubit_gates):
-                gate = np.round(gate, 15)
-
                 if i == 0:
                     self.unitary(gate, target_index)
                     self.H(target_index)
 
-                elif i == len(single_qubit_gates) - 1:
+                elif i == num_single_qubit_gates - 1:
                     self.H(target_index)
                     self.RZ(-PI2, target_index)
                     self.unitary(gate, target_index)
@@ -4862,7 +4870,7 @@ class Circuit(ABC):
                 control_index = num_trailing_zeros
 
                 # Apply the CX gate
-                if not i == len(single_qubit_gates) - 1:
+                if not i == num_single_qubit_gates - 1:
                     self.CX(control_indices[control_index], target_index)
                     self.GlobalPhase(-PI4)
 
