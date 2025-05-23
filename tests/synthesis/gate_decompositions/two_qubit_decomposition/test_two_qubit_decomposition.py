@@ -144,6 +144,11 @@ class TestTwoQubitDecomposition:
         # Apply the decomposition
         two_qubit_decomposition.apply_unitary(new_circuit, unitary_matrix, [0, 1])
 
+        print("Unitary matrix:")
+        print(unitary_matrix)
+        print("New circuit unitary:")
+        print(new_circuit.get_unitary())
+
         # Check that the circuit is equivalent to the original unitary matrix
         assert_almost_equal(new_circuit.get_unitary(), unitary_matrix, decimal=8)
 
