@@ -120,7 +120,7 @@ class TestTwoQubitDecomposition:
         circuit = QiskitCircuit(2)
 
         # Create a GHZ state (one CX gate)
-        circuit.H(0)
+        circuit.U3([0.1, 0.2, 0.3], 0)
         circuit.CX(0, 1)
 
         # Extract the unitary matrix
