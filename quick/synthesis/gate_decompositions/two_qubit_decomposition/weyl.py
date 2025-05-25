@@ -497,13 +497,15 @@ class TwoQubitWeylDecomposition:
 
         D, P = diagonalize_unitary_complex_symmetric(M2)
 
-        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2, rtol=0, atol=1e-13):
+        print(f"Dtype {P.dtype}")
+
+        if not np.allclose(P.dot(np.diag(D)).dot(P.conj().T), M2, rtol=0, atol=1e-13):
             raise ValueError(
                 "The diagonalization of the unitary complex-symmetric matrix failed. "
                 "The result is not close enough to the original matrix."
             )
 
-        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2_windows_fail, rtol=0, atol=1e-13):
+        if not np.allclose(P.dot(np.diag(D)).dot(P.conj().T), M2_windows_fail, rtol=0, atol=1e-13):
             raise ValueError(
                 "Non-rounded failed."
             )
