@@ -120,7 +120,7 @@ class TestTwoQubitDecomposition:
         circuit = QiskitCircuit(2)
 
         # Create a GHZ state (one CX gate)
-        circuit.U3([0.1, 0.2, 0.3], 0)
+        circuit.H(0)
         circuit.CX(0, 1)
 
         # Extract the unitary matrix
@@ -143,11 +143,6 @@ class TestTwoQubitDecomposition:
 
         # Apply the decomposition
         two_qubit_decomposition.apply_unitary(new_circuit, unitary_matrix, [0, 1])
-
-        print("Unitary matrix:")
-        print(unitary_matrix)
-        print("New circuit unitary:")
-        print(new_circuit.get_unitary())
 
         # Check that the circuit is equivalent to the original unitary matrix
         assert_almost_equal(new_circuit.get_unitary(), unitary_matrix, decimal=8)
