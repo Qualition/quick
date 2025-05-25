@@ -474,6 +474,13 @@ class TwoQubitWeylDecomposition:
         `global_phase` : float
             The global phase.
 
+        Raises
+        ------
+        ValueError
+            - If the diagonalization of the unitary complex-symmetric matrix fails.
+            - If the determinant of the right or left component is not in the expected range.
+            - If the decomposition fails due to a deviation from the expected unitary matrix.
+
         Usage
         -----
         >>> a, b, c, K1l, K1r, K2l, K2r, global_phase = TwoQubitWeylDecomposition.decompose_unitary(np.eye(4))
@@ -486,8 +493,21 @@ class TwoQubitWeylDecomposition:
 
         U_magic_basis = transform_to_magic_basis(U, reverse=True)
         M2 = np.round(U_magic_basis.T.dot(U_magic_basis), decimals=15)
+        M2_windows_fail = U_magic_basis.T.dot(U_magic_basis)
 
         D, P = diagonalize_unitary_complex_symmetric(M2)
+
+        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2, rtol=0, atol=1e-13):
+            raise ValueError(
+                "The diagonalization of the unitary complex-symmetric matrix failed. "
+                "The result is not close enough to the original matrix."
+            )
+
+        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2_windows_fail, rtol=0, atol=1e-13):
+            raise ValueError(
+                "Non-rounded failed."
+            )
+
         d = -np.angle(D) / 2
         d[3] = -d[0] - d[1] - d[2]
         weyl_coordinates = np.mod((d[:3] + d[3]) / 2, PI_DOUBLE)
