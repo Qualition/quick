@@ -477,7 +477,7 @@ class TwoQubitWeylDecomposition:
         Raises
         ------
         ValueError
-            - If the diagonalization of the unitary complex-symmetric matrix fails.
+            - If the diagonalization of M2 fails.
             - If the determinant of the right or left component is not in the expected range.
             - If the decomposition fails due to a deviation from the expected unitary matrix.
 
@@ -493,21 +493,15 @@ class TwoQubitWeylDecomposition:
 
         U_magic_basis = transform_to_magic_basis(U, reverse=True)
         M2 = np.round(U_magic_basis.T.dot(U_magic_basis), decimals=15)
-        M2_windows_fail = U_magic_basis.T.dot(U_magic_basis)
 
         D, P = diagonalize_unitary_complex_symmetric(M2)
 
-        print(f"Dtype {P.dtype}")
-
-        if not np.allclose(P.dot(np.diag(D)).dot(P.conj().T), M2, rtol=0, atol=1e-13):
+        # Given P is a real-symmetric unitary matrix we only use transpose
+        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2, rtol=0, atol=1e-13):
             raise ValueError(
-                "The diagonalization of the unitary complex-symmetric matrix failed. "
-                "The result is not close enough to the original matrix."
-            )
-
-        if not np.allclose(P.dot(np.diag(D)).dot(P.conj().T), M2_windows_fail, rtol=0, atol=1e-13):
-            raise ValueError(
-                "Non-rounded failed."
+                "Failed to diagonalize M2."
+                "Kindly report this at https://github.com/Qualition/quick/issues/11: "
+                f"U: {U}"
             )
 
         d = -np.angle(D) / 2
