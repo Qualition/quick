@@ -365,7 +365,7 @@ class TestUniformlyControlledGates:
         # Ensure the unitary matrix is correct
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
-    # @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     @pytest.mark.parametrize("single_qubit_gates, control_indices, target_index, expected", [
         [
             [Hadamard().matrix, PauliX().matrix, Hadamard().matrix, PauliX().matrix],
@@ -412,6 +412,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Multiplexor_diagonal_no_simplification(
             self,
+            circuit_framework: type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: list[int],
             target_index: int,
@@ -432,10 +433,8 @@ class TestUniformlyControlledGates:
         `expected` : NDArray[np.complex128]
             The expected unitary matrix.
         """
-        from quick.circuit import QiskitCircuit
-
         # Define the quantum circuit
-        circuit = QiskitCircuit(len(control_indices) + 1)
+        circuit = circuit_framework(len(control_indices) + 1)
 
         # Apply the Multiplexor gate
         circuit.Multiplexor(
@@ -532,7 +531,7 @@ class TestUniformlyControlledGates:
         # Ensure the unitary matrix is correct
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
-    # @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     @pytest.mark.parametrize("single_qubit_gates, control_indices, target_index, expected", [
         [
             [Hadamard().matrix, PauliX().matrix, Hadamard().matrix, PauliX().matrix],
@@ -579,6 +578,7 @@ class TestUniformlyControlledGates:
     ])
     def test_Multiplexor_diagonal_simplification(
             self,
+            circuit_framework: type[Circuit],
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: list[int],
             target_index: int,
@@ -599,10 +599,8 @@ class TestUniformlyControlledGates:
         `expected` : NDArray[np.complex128]
             The expected unitary matrix.
         """
-        from quick.circuit import QiskitCircuit
-
         # Define the quantum circuit
-        circuit = QiskitCircuit(len(control_indices) + 1)
+        circuit = circuit_framework(len(control_indices) + 1)
 
         # Apply the Multiplexor gate
         circuit.Multiplexor(
