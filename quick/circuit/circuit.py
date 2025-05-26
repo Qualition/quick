@@ -4836,7 +4836,7 @@ class Circuit(ABC):
 
         # If there is at least one control qubit, we decompose the multiplexor
         # into a sequence of single-qubit gates and CX gates
-        (single_qubit_gates, diagonal) = extract_single_qubits_and_diagonal(
+        single_qubit_gates, diagonal = extract_single_qubits_and_diagonal(
             single_qubit_gates,
             len(control_indices) + 1
         )

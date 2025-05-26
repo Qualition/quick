@@ -22,7 +22,6 @@ __all__ = [
     "multiplexed_rz_angles",
     "extract_uvr_matrices",
     "extract_single_qubits_and_diagonal",
-    "multiplexor_diagonal_matrix",
     "simplify",
     "repetition_search",
     "repetition_verify",
@@ -208,6 +207,9 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
+
+    print(f"rxr: {rxr}")
+
     eigenvalues, u = scipy.linalg.eig(rxr) # type: ignore
 
     # Put the eigenvalues into a diagonal form
@@ -220,6 +222,10 @@ def extract_uvr_matrices(
 
     # Calculate v based on the decomposition (Eq 7)
     v = diagonal @ np.conj(u).T @ np.conj(r).T @ b
+
+    print(f"v: {v}")
+    print(f"u: {u}")
+    print(f"r: {r}")
 
     return v, u, r # type: ignore
 
@@ -305,46 +311,6 @@ def extract_single_qubits_and_diagonal(
                         diagonal[k + 1] *= r[1, 1] * RZ_PI2_11
 
     return single_qubit_gates, diagonal
-
-def multiplexor_diagonal_matrix(
-        single_qubit_gates: list[NDArray[np.complex128]],
-        num_qubits: int,
-        simplified_controls: set[int]
-    ) -> NDArray[np.complex128]:
-    """ Get the diagonal matrix arising in the decomposition of multiplexor
-    gates given in the paper by Bergholm et al.
-
-    Notes
-    -----
-    This function to extract the diagonal matrix arising in the decomposition
-    of multiplexed gates based on the paper by Bergholm et al.
-
-    Parameters
-    ----------
-    `single_qubit_gates` : list[NDArray[np.complex128]]
-        The list of single qubit gates.
-    `num_qubits` : int
-        The number of qubits.
-
-    Returns
-    -------
-    NDArray[np.complex128]
-        The diagonal matrix.
-    """
-    _, diagonal = extract_single_qubits_and_diagonal(single_qubit_gates, num_qubits)
-
-    # Simplify the diagonal to minimize the number of controlled gates
-    # needed to implement the diagonal gate
-    if simplified_controls:
-        control_qubits = sorted([num_qubits - i for i in simplified_controls], reverse=True)
-        for i in range(num_qubits):
-            if i not in [0] + control_qubits:
-                step = 2**i
-                diagonal = np.repeat(diagonal, 2, axis=0)
-                for j in range(step, len(diagonal), 2 * step):
-                    diagonal[j:j + step] = diagonal[j - step:j]
-
-    return diagonal
 
 def simplify(
         single_qubit_gates: list[NDArray[np.complex128]],
