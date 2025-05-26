@@ -29,7 +29,6 @@ __all__ = [
     "reshape"
 ]
 
-import cmath
 import numpy as np
 from numpy.typing import NDArray
 import scipy.linalg # type: ignore
@@ -190,16 +189,16 @@ def extract_uvr_matrices(
 
     # Determinant and phase of x
     det_X = np.linalg.det(X)
-    X_11 = X[0, 0] / cmath.sqrt(det_X)
+    X_11 = X[0, 0] / np.sqrt(det_X)
     phi = np.angle(det_X)
 
     # Compute the diagonal matrix r
-    arg_X_11 = cmath.phase(X_11)
+    arg_X_11 = np.angle(X_11)
 
     # The implementation of the diagonal matrix r is
     # given below, but it can be chosen freely
-    r_1 = cmath.exp(1j / 2 * ((np.pi - phi)/2 - arg_X_11))
-    r_2 = cmath.exp(1j / 2 * ((np.pi - phi)/2 + arg_X_11 + np.pi))
+    r_1 = np.exp(1j / 2 * ((np.pi - phi)/2 - arg_X_11))
+    r_2 = np.exp(1j / 2 * ((np.pi - phi)/2 + arg_X_11 + np.pi))
     r = np.array([
         [r_1, 0],
         [0, r_2]
@@ -208,12 +207,11 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
-    eigenvalues, u = scipy.linalg.eig(rxr) # type: ignore
+    eigenvalues, u = scipy.linalg.eig(np.round(rxr, 16)) # type: ignore
 
     # Handle specific case where the first eigenvalue is near -i
     # This is done by interchanging the eigenvalues and eigenvectors (Eq 13)
     if abs(eigenvalues[0] + 1j) < 1e-10:
-        print("Flipping")
         eigenvalues = np.flipud(eigenvalues)
         u = np.fliplr(u)
 
