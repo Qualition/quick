@@ -32,7 +32,7 @@ __all__ = [
 
 import numpy as np
 from numpy.typing import NDArray
-import scipy.linalg
+import scipy.linalg # type: ignore
 
 """ Constants for decomposing multiplexed RZ gates from Bergholm et al.
 These are the (0, 0) and (1, 1) elements of the RZ gate matrix with angle -pi/2
