@@ -246,7 +246,7 @@ def is_unitary_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    matrix = np.conj(matrix.T).dot(matrix)
+    matrix = matrix.conj().T @ matrix
     return is_identity_matrix(matrix, ignore_phase=False, rtol=rtol, atol=atol)
 
 def is_hermitian_matrix(
@@ -277,7 +277,7 @@ def is_hermitian_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    return np.allclose(matrix, np.conj(matrix.T), rtol=rtol, atol=atol)
+    return np.allclose(matrix, matrix.conj().T, rtol=rtol, atol=atol)
 
 def is_positive_semidefinite_matrix(
         matrix: NDArray[np.complex128],
@@ -343,5 +343,5 @@ def is_isometry(
         return False
 
     identity = np.eye(matrix.shape[1])
-    matrix = np.conj(matrix.T).dot(matrix)
+    matrix = matrix.conj().T @ matrix
     return np.allclose(matrix, identity, rtol=rtol, atol=atol)

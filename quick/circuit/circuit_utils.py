@@ -29,6 +29,7 @@ __all__ = [
     "reshape"
 ]
 
+import cmath
 import numpy as np
 from numpy.typing import NDArray
 import scipy.linalg # type: ignore
@@ -185,20 +186,20 @@ def extract_uvr_matrices(
         The diagonal matrix r.
     """
     # Hermitian conjugate of b (Eq 6)
-    X = a @ np.conj(b).T
+    X = a @ b.conj().T
 
     # Determinant and phase of x
     det_X = np.linalg.det(X)
-    X_11 = X[0, 0] / np.sqrt(det_X)
+    X_11 = X[0, 0] / cmath.sqrt(det_X)
     phi = np.angle(det_X)
 
     # Compute the diagonal matrix r
-    arg_X_11 = np.angle(X_11)
+    arg_X_11 = cmath.phase(X_11)
 
     # The implementation of the diagonal matrix r is
     # given below, but it can be chosen freely
-    r_1 = np.exp(1j / 2 * ((np.pi - phi)/2 - arg_X_11))
-    r_2 = np.exp(1j / 2 * ((np.pi - phi)/2 + arg_X_11 + np.pi))
+    r_1 = cmath.exp(1j / 2 * ((np.pi - phi)/2 - arg_X_11))
+    r_2 = cmath.exp(1j / 2 * ((np.pi - phi)/2 + arg_X_11 + np.pi))
     r = np.array([
         [r_1, 0],
         [0, r_2]
@@ -207,25 +208,19 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
-
-    print(f"rxr: {rxr}")
-
     eigenvalues, u = scipy.linalg.eig(rxr) # type: ignore
 
-    # Put the eigenvalues into a diagonal form
-    diagonal = np.diag(np.sqrt(eigenvalues))
-
-    # Handle specific case where the eigenvalue is near -i
-    if np.abs(diagonal[0, 0] + 1j) < 1e-10:
-        diagonal = np.flipud(diagonal)
+    # Handle specific case where the first eigenvalue is near -i
+    # This is done by interchanging the eigenvalues and eigenvectors (Eq 13)
+    if abs(eigenvalues[0] + 1j) < 1e-10:
+        print("Flipping")
+        eigenvalues = np.flipud(eigenvalues)
         u = np.fliplr(u)
+
+    diagonal = np.diag(np.sqrt(eigenvalues))
 
     # Calculate v based on the decomposition (Eq 7)
     v = diagonal @ np.conj(u).T @ np.conj(r).T @ b
-
-    print(f"v: {v}")
-    print(f"u: {u}")
-    print(f"r: {r}")
 
     return v, u, r # type: ignore
 
@@ -291,7 +286,7 @@ def extract_single_qubits_and_diagonal(
                 single_qubit_gates[shift + len_multiplexor // 2 + i] = u
 
                 # Decompose D gates per figure 3
-                r_dagger = np.conj(r).T
+                r_dagger = r.conj().T
 
                 if multiplexor_index < num_multiplexors - 1:
                     k = shift + len_multiplexor + i

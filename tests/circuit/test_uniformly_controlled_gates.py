@@ -529,9 +529,6 @@ class TestUniformlyControlledGates:
             multiplexor_simplification=True
         )
 
-        print(f"Multiplexor unitary matrix:\n{circuit.get_unitary()}")
-        print(f"Expected unitary matrix:\n{expected}")
-
         # Ensure the unitary matrix is correct
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
