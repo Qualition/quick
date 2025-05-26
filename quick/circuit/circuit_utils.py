@@ -32,6 +32,7 @@ __all__ = [
 
 import numpy as np
 from numpy.typing import NDArray
+import scipy.linalg
 
 """ Constants for decomposing multiplexed RZ gates from Bergholm et al.
 These are the (0, 0) and (1, 1) elements of the RZ gate matrix with angle -pi/2
@@ -207,7 +208,7 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
-    eigenvalues, u = np.linalg.eig(rxr)
+    eigenvalues, u = scipy.linalg.eig(rxr) # type: ignore
 
     # Put the eigenvalues into a diagonal form
     diagonal = np.diag(np.sqrt(eigenvalues))
@@ -220,7 +221,7 @@ def extract_uvr_matrices(
     # Calculate v based on the decomposition (Eq 7)
     v = diagonal @ np.conj(u).T @ np.conj(r).T @ b
 
-    return v, u, r
+    return v, u, r # type: ignore
 
 def extract_single_qubits_and_diagonal(
         single_qubit_gates: list[NDArray[np.complex128]],

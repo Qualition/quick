@@ -4843,6 +4843,9 @@ class Circuit(ABC):
 
         num_single_qubit_gates = len(single_qubit_gates)
 
+        for gate in single_qubit_gates:
+            print(f"Single qubit gate: {gate}")
+
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # which are absorbed into the single-qubit unitaries to get back the full decomposition
         # of the multiplexor
