@@ -291,8 +291,8 @@ class ShannonDecomposition(UnitaryPreparation):
             # Take the square root of the eigenvalues to obtain the singular values
             # This is necessary because the singular values provide a more convenient form
             # for constructing the diagonal matrix D, which is used in the final decomposition
-            # We need to use `np.emath.sqrt` to handle negative eigenvalues
-            eigenvalues_sqrt = np.emath.sqrt(eigenvalues)
+            # We need to use `np.lib.scimath.sqrt` to handle negative eigenvalues
+            eigenvalues_sqrt = np.lib.scimath.sqrt(eigenvalues)
 
             # Create a diagonal matrix D from the singular values
             # The diagonal matrix D is used to scale the eigenvectors appropriately in the final step
