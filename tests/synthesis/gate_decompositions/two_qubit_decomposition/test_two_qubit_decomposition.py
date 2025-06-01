@@ -17,6 +17,7 @@ from __future__ import annotations
 __all__ = ["TestTwoQubitDecomposition"]
 
 import numpy as np
+from numpy.typing import NDArray
 from numpy.testing import assert_almost_equal
 import pytest
 from scipy.stats import unitary_group
@@ -251,6 +252,81 @@ class TestTwoQubitDecomposition:
 
         # Check that the number of CX gates is 3 or less
         assert num_cx_gates <= 3
+
+    @pytest.mark.parametrize("unitary", [
+        np.array([
+            [2./3, 1./3 + 1.j/3, 7 * np.sqrt(17)/51, (-1 - 1.j) * np.sqrt(17)/51],
+            [1./3 - 1.j/3, -1./3, (-1 + 1.j) * np.sqrt(17)/51, 10 * np.sqrt(17)/51],
+            [7*np.sqrt(17)/51, (-1 - 1.j) * np.sqrt(17)/51, -2./3, -1./3 - 1.j/3],
+            [(-1 + 1.j) * np.sqrt(17)/51, 10 * np.sqrt(17)/51, -1./3 + 1.j/3, 1./3]
+        ]),
+        np.array([
+            [
+                0.043602684126304955 + -0.4986216208233326j, -0.22461079447224863 + -0.09679517443671315j,
+                0.15592626697527698 + 0.13943283228059802j, -0.803224008021238 + 0.027067469117215155j
+            ],
+            [
+                -0.09679517443669944 + 0.22461079447226426j, 0.4986216208232763 + 0.043602684126298856j,
+                0.02706746911718458 + 0.8032240080213412j, -0.13943283228056091 + 0.15592626697531453j
+            ],
+            [
+                0.13943283228059844 + -0.15592626697527806j, 0.027067469117214762 + 0.8032240080212403j,
+                0.49862162082333095 + 0.0436026841263046j, 0.09679517443671384 + -0.22461079447224833j
+            ],
+            [
+                0.8032240080213434 + -0.027067469117184207j, 0.1559262669753156 + 0.13943283228056125j,
+                -0.2246107944722639 + -0.09679517443670013j, -0.043602684126298495 + 0.4986216208232746j
+            ]
+        ]),
+        np.array([
+            [-0.62695238, -0.1993407 , -0.63291226, -0.40818632],
+            [-0.62695237, -0.42741604,  0.61214869,  0.2225314 ],
+            [-0.32700263,  0.43412304, -0.31468734,  0.77818914],
+            [ 0.32700264, -0.76753892, -0.35449671,  0.42223851]
+        ]),
+        np.array([
+            [
+                -0.3812064266367201 + 0.38120642663672005j, -0.08953682318096808 + 0.08953682318096806j,
+                -0.5214184531408846 + 0.5214184531408846j, -0.27347323579354943 + 0.2734732357935494j,
+            ],
+            [
+                0.11105398348218393 - 0.11105398348218391j, 0.145430219977459 - 0.14543021997745897j,
+                0.23096365206101888 - 0.23096365206101882j, -0.6427852354467597 + 0.6427852354467596j,
+            ],
+            [
+                -0.544932087007239 + 0.5449320870072389j, -0.16786656959437854 + 0.16786656959437854j,
+                0.41778724529336947 - 0.4177872452933694j, 0.01799033088883041 - 0.017990330888830407j,
+            ],
+            [
+                -0.213067345160641 + 0.21306734516064096j, 0.6653224962721628 - 0.6653224962721627j,
+                -0.0152448403255109 + 0.015244840325510897j, 0.10823991063233353 - 0.10823991063233351j,
+            ],
+        ])
+    ])
+    def test_m2_correctness(
+            self,
+            unitary: NDArray[np.complex128]
+        ) -> None:
+        """ Test the correctness of the M2 decomposition. This tests
+        many recorded cases of failure of two qubit decomposition on
+        non-Ubuntu OS.
+
+        Parameters
+        ----------
+        `unitary` : NDArray[np.complex128]
+            The two qubit unitary to encode.
+        """
+        # Create a two qubit decomposition object
+        two_qubit_decomposition = TwoQubitDecomposition(output_framework=QiskitCircuit)
+
+        # Initialize a circuit
+        circuit = QiskitCircuit(2)
+
+        # Apply the decomposition
+        two_qubit_decomposition.apply_unitary(circuit, unitary, [0, 1])
+
+        # Check that the circuit is equivalent to the original unitary matrix
+        assert_almost_equal(circuit.get_unitary(), unitary, decimal=8)
 
     def test_invalid_indices_fail(self) -> None:
         """ Test that invalid indices fail.

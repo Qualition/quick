@@ -36,6 +36,7 @@ import itertools
 import numpy as np
 from numpy.typing import NDArray
 import scipy.linalg # type: ignore
+import warnings
 
 """ Define the M matrix from section III to
 tranform the unitary matrix into the magic basis:
@@ -448,7 +449,17 @@ class TwoQubitWeylDecomposition:
             NDArray[np.complex128],
             float
         ]:
-        """ Decompose a two-qubit unitary matrix into the Weyl coordinates and the product of two single-qubit unitaries.
+        """ Decompose a two-qubit unitary matrix into the Weyl coordinates and the
+        product of two single-qubit unitaries.
+
+        Notes
+        -----
+        M2 diagnolization may be wrong due to floating point errors, but it will work
+        correctly in Linux. Should you encounter a failure in the code, and the result
+        fails to encode the correct unitary matrix, please report it at
+        https://github.com/Qualition/quick/issues/11
+
+        with the unitary matrix that caused the failure.
 
         Parameters
         ----------
@@ -477,9 +488,10 @@ class TwoQubitWeylDecomposition:
         Raises
         ------
         ValueError
-            - If the diagonalization of M2 fails.
-            - If the determinant of the right or left component is not in the expected range.
-            - If the decomposition fails due to a deviation from the expected unitary matrix.
+            - If the determinant of the right or left component is
+            not in the expected range.
+            - If the decomposition fails due to a deviation from the
+            expected unitary matrix.
 
         Usage
         -----
@@ -498,7 +510,7 @@ class TwoQubitWeylDecomposition:
 
         # Given P is a real-symmetric unitary matrix we only use transpose
         if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2, rtol=0, atol=1e-13):
-            raise ValueError(
+            warnings.warn(
                 "Failed to diagonalize M2."
                 "Kindly report this at https://github.com/Qualition/quick/issues/11: "
                 f"U: {U}"
