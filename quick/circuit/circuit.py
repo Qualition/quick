@@ -4843,9 +4843,6 @@ class Circuit(ABC):
 
         num_single_qubit_gates = len(single_qubit_gates)
 
-        for gate in single_qubit_gates:
-            print(f"Single qubit gate: {gate}")
-
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # which are absorbed into the single-qubit unitaries to get back the full decomposition
         # of the multiplexor
@@ -4872,12 +4869,10 @@ class Circuit(ABC):
                 num_trailing_zeros = len(binary_rep) - len(binary_rep.rstrip("0"))
                 control_index = num_trailing_zeros
 
-                # Apply the CX gate
                 if not i == num_single_qubit_gates - 1:
                     self.CX(control_indices[control_index], target_index)
                     self.GlobalPhase(-PI4)
 
-            # If `up_to_diagonal` is False, we apply the diagonal gate
             if not up_to_diagonal:
                 self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
 

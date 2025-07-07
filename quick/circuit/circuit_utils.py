@@ -46,6 +46,8 @@ RZ_PI2_11 = complex(
     SQRT2, -SQRT2
 )
 
+EPSILON = 1e-16
+
 # Type hint for nested lists of floats
 Params = list[list[float] | float] | list[float]
 
@@ -187,13 +189,25 @@ def extract_uvr_matrices(
     # Hermitian conjugate of b (Eq 6)
     X = a @ b.conj().T
 
+    print("X:", X)
+
     # Determinant and phase of x
     det_X = np.linalg.det(X)
+
+    print("det_X:", det_X)
+
     X_11 = X[0, 0] / np.sqrt(det_X)
+
+    print("X_11:", X_11)
+
     phi = np.angle(det_X)
+
+    print("phi:", phi)
 
     # Compute the diagonal matrix r
     arg_X_11 = np.angle(X_11)
+
+    print("arg_X_11:", arg_X_11)
 
     # The implementation of the diagonal matrix r is
     # given below, but it can be chosen freely
@@ -204,14 +218,20 @@ def extract_uvr_matrices(
         [0, r_2]
     ])
 
+    print("r:", r)
+
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
-    eigenvalues, u = scipy.linalg.eig(np.round(rxr, 16)) # type: ignore
+
+    print("rxr:", rxr)
+
+    eigenvalues, u = np.linalg.eig(rxr) # type: ignore
 
     # Handle specific case where the first eigenvalue is near -i
     # This is done by interchanging the eigenvalues and eigenvectors (Eq 13)
-    if abs(eigenvalues[0] + 1j) < 1e-10:
+    print("eigenvalues:", eigenvalues[0] + 1j)
+    if abs(eigenvalues[0] + 1j) < EPSILON:
         eigenvalues = np.flipud(eigenvalues)
         u = np.fliplr(u)
 
@@ -521,7 +541,6 @@ def flatten(array: Params) -> tuple[list[float], Params]: # pragma: no cover
         shape.append(consecutive_ints)
 
     return flattened, shape
-
 
 def reshape(
         flattened: list[float],

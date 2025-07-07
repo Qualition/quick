@@ -42,18 +42,22 @@ from tests.circuit.gate_utils import (
     UC_unitary_matrix_no_diagonal_no_simplification_3qubits_10control_HYHY,
     UC_unitary_matrix_no_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY,
     UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY,
+    UC_unitary_matrix_no_diagonal_no_simplification_6qubits_31405control_RYRX_alternating,
     UC_unitary_matrix_diagonal_no_simplification_3qubits_01control_HXHX,
     UC_unitary_matrix_diagonal_no_simplification_3qubits_10control_HYHY,
     UC_unitary_matrix_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY,
     UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY,
+    UC_unitary_matrix_diagonal_no_simplification_6qubits_31405control_RYRX_alternating,
     UC_unitary_matrix_no_diagonal_simplification_3qubits_01control_HXHX,
     UC_unitary_matrix_no_diagonal_simplification_3qubits_10control_HYHY,
     UC_unitary_matrix_no_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY,
     UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY,
+    UC_unitary_matrix_no_diagonal_simplification_6qubits_31405control_RYRX_alternating,
     UC_unitary_matrix_diagonal_simplification_3qubits_01control_HXHX,
     UC_unitary_matrix_diagonal_simplification_3qubits_10control_HYHY,
     UC_unitary_matrix_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY,
-    UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY
+    UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY,
+    UC_unitary_matrix_diagonal_simplification_6qubits_31405control_RYRX_alternating
 )
 
 
@@ -325,6 +329,45 @@ class TestUniformlyControlledGates:
             [2, 1, 3],
             0,
             UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY
+        ],
+        [
+            [
+                RY(np.pi).matrix,
+                RX(np.pi/2).matrix,
+                RY(np.pi/3).matrix,
+                RX(np.pi/4).matrix,
+                RY(np.pi/5).matrix,
+                RX(np.pi/6).matrix,
+                RY(np.pi/7).matrix,
+                RX(np.pi/8).matrix,
+                RY(np.pi/9).matrix,
+                RX(np.pi/10).matrix,
+                RY(np.pi/11).matrix,
+                RX(np.pi/12).matrix,
+                RY(np.pi/13).matrix,
+                RX(np.pi/14).matrix,
+                RY(np.pi/15).matrix,
+                RX(np.pi/16).matrix,
+                RY(np.pi/17).matrix,
+                RX(np.pi/18).matrix,
+                RY(np.pi/19).matrix,
+                RX(np.pi/20).matrix,
+                RY(np.pi/21).matrix,
+                RX(np.pi/22).matrix,
+                RY(np.pi/23).matrix,
+                RX(np.pi/24).matrix,
+                RY(np.pi/25).matrix,
+                RX(np.pi/26).matrix,
+                RY(np.pi/27).matrix,
+                RX(np.pi/28).matrix,
+                RY(np.pi/29).matrix,
+                RX(np.pi/30).matrix,
+                RY(np.pi/31).matrix,
+                RX(np.pi/32).matrix
+            ],
+            [3, 1, 4, 0, 5],
+            2,
+            UC_unitary_matrix_no_diagonal_no_simplification_6qubits_31405control_RYRX_alternating
         ]
     ])
     def test_Multiplexor_no_diagonal_no_simplification(
@@ -408,6 +451,45 @@ class TestUniformlyControlledGates:
             [2, 1, 3],
             0,
             UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY
+        ],
+        [
+            [
+                RY(np.pi).matrix,
+                RX(np.pi/2).matrix,
+                RY(np.pi/3).matrix,
+                RX(np.pi/4).matrix,
+                RY(np.pi/5).matrix,
+                RX(np.pi/6).matrix,
+                RY(np.pi/7).matrix,
+                RX(np.pi/8).matrix,
+                RY(np.pi/9).matrix,
+                RX(np.pi/10).matrix,
+                RY(np.pi/11).matrix,
+                RX(np.pi/12).matrix,
+                RY(np.pi/13).matrix,
+                RX(np.pi/14).matrix,
+                RY(np.pi/15).matrix,
+                RX(np.pi/16).matrix,
+                RY(np.pi/17).matrix,
+                RX(np.pi/18).matrix,
+                RY(np.pi/19).matrix,
+                RX(np.pi/20).matrix,
+                RY(np.pi/21).matrix,
+                RX(np.pi/22).matrix,
+                RY(np.pi/23).matrix,
+                RX(np.pi/24).matrix,
+                RY(np.pi/25).matrix,
+                RX(np.pi/26).matrix,
+                RY(np.pi/27).matrix,
+                RX(np.pi/28).matrix,
+                RY(np.pi/29).matrix,
+                RX(np.pi/30).matrix,
+                RY(np.pi/31).matrix,
+                RX(np.pi/32).matrix
+            ],
+            [3, 1, 4, 0, 5],
+            2,
+            UC_unitary_matrix_diagonal_no_simplification_6qubits_31405control_RYRX_alternating
         ]
     ])
     def test_Multiplexor_diagonal_no_simplification(
@@ -491,6 +573,45 @@ class TestUniformlyControlledGates:
             [2, 1, 3],
             0,
             UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY
+        ],
+        [
+            [
+                RY(np.pi).matrix,
+                RX(np.pi/2).matrix,
+                RY(np.pi/3).matrix,
+                RX(np.pi/4).matrix,
+                RY(np.pi/5).matrix,
+                RX(np.pi/6).matrix,
+                RY(np.pi/7).matrix,
+                RX(np.pi/8).matrix,
+                RY(np.pi/9).matrix,
+                RX(np.pi/10).matrix,
+                RY(np.pi/11).matrix,
+                RX(np.pi/12).matrix,
+                RY(np.pi/13).matrix,
+                RX(np.pi/14).matrix,
+                RY(np.pi/15).matrix,
+                RX(np.pi/16).matrix,
+                RY(np.pi/17).matrix,
+                RX(np.pi/18).matrix,
+                RY(np.pi/19).matrix,
+                RX(np.pi/20).matrix,
+                RY(np.pi/21).matrix,
+                RX(np.pi/22).matrix,
+                RY(np.pi/23).matrix,
+                RX(np.pi/24).matrix,
+                RY(np.pi/25).matrix,
+                RX(np.pi/26).matrix,
+                RY(np.pi/27).matrix,
+                RX(np.pi/28).matrix,
+                RY(np.pi/29).matrix,
+                RX(np.pi/30).matrix,
+                RY(np.pi/31).matrix,
+                RX(np.pi/32).matrix
+            ],
+            [3, 1, 4, 0, 5],
+            2,
+            UC_unitary_matrix_no_diagonal_simplification_6qubits_31405control_RYRX_alternating
         ]
     ])
     def test_Multiplexor_no_diagonal_simplification(
@@ -574,6 +695,45 @@ class TestUniformlyControlledGates:
             [2, 1, 3],
             0,
             UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY
+        ],
+        [
+            [
+                RY(np.pi).matrix,
+                RX(np.pi/2).matrix,
+                RY(np.pi/3).matrix,
+                RX(np.pi/4).matrix,
+                RY(np.pi/5).matrix,
+                RX(np.pi/6).matrix,
+                RY(np.pi/7).matrix,
+                RX(np.pi/8).matrix,
+                RY(np.pi/9).matrix,
+                RX(np.pi/10).matrix,
+                RY(np.pi/11).matrix,
+                RX(np.pi/12).matrix,
+                RY(np.pi/13).matrix,
+                RX(np.pi/14).matrix,
+                RY(np.pi/15).matrix,
+                RX(np.pi/16).matrix,
+                RY(np.pi/17).matrix,
+                RX(np.pi/18).matrix,
+                RY(np.pi/19).matrix,
+                RX(np.pi/20).matrix,
+                RY(np.pi/21).matrix,
+                RX(np.pi/22).matrix,
+                RY(np.pi/23).matrix,
+                RX(np.pi/24).matrix,
+                RY(np.pi/25).matrix,
+                RX(np.pi/26).matrix,
+                RY(np.pi/27).matrix,
+                RX(np.pi/28).matrix,
+                RY(np.pi/29).matrix,
+                RX(np.pi/30).matrix,
+                RY(np.pi/31).matrix,
+                RX(np.pi/32).matrix
+            ],
+            [3, 1, 4, 0, 5],
+            2,
+            UC_unitary_matrix_diagonal_simplification_6qubits_31405control_RYRX_alternating
         ]
     ])
     def test_Multiplexor_diagonal_simplification(

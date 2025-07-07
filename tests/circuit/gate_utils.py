@@ -361,18 +361,22 @@ __all__ = [
     "UC_unitary_matrix_no_diagonal_no_simplification_3qubits_10control_HYHY",
     "UC_unitary_matrix_no_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY",
     "UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY",
+    "UC_unitary_matrix_no_diagonal_no_simplification_6qubits_31405control_RYRX_alternating"
     "UC_unitary_matrix_diagonal_no_simplification_3qubits_01control_HXHX",
     "UC_unitary_matrix_diagonal_no_simplification_3qubits_10control_HYHY",
     "UC_unitary_matrix_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY",
     "UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY",
+    "UC_unitary_matrix_diagonal_no_simplification_6qubits_31405control_RYRX_alternating"
     "UC_unitary_matrix_no_diagonal_simplification_3qubits_01control_HXHX",
     "UC_unitary_matrix_no_diagonal_simplification_3qubits_10control_HYHY",
     "UC_unitary_matrix_no_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY",
     "UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY",
+    "UC_unitary_matrix_no_diagonal_simplification_6qubits_31405control_RYRX_alternating"
     "UC_unitary_matrix_diagonal_simplification_3qubits_01control_HXHX",
     "UC_unitary_matrix_diagonal_simplification_3qubits_10control_HYHY",
     "UC_unitary_matrix_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY",
     "UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY",
+    "UC_unitary_matrix_diagonal_simplification_6qubits_31405control_RYRX_alternating"
     "qft_no_swap_no_inverse_approx0_5qubits",
     "qft_no_swap_no_inverse_approx0_6qubits",
     "qft_no_swap_no_inverse_approx0_7qubits",
@@ -436,7 +440,7 @@ __all__ = [
     "qft_swap_inverse_approx3_5qubits",
     "qft_swap_inverse_approx3_6qubits",
     "qft_swap_inverse_approx3_7qubits",
-    "qft_swap_inverse_approx3_8qubits"
+    "qft_swap_inverse_approx3_8qubits",
 ]
 
 import numpy as np
@@ -519,7 +523,9 @@ Parameters
 `global_shift` = 1/3
 `qubit_indices` = 0
 """
-XPow_global_shift_unitary_matrix = np.load(prefix + "XPow_global_shift_unitary_matrix.npy")
+XPow_global_shift_unitary_matrix = np.load(
+    prefix + "XPow_global_shift_unitary_matrix.npy"
+)
 
 """ circuit.YPow() tester
 
@@ -539,7 +545,9 @@ Parameters
 `global_shift` = 1/3
 `qubit_indices` = 0
 """
-YPow_global_shift_unitary_matrix = np.load(prefix + "YPow_global_shift_unitary_matrix.npy")
+YPow_global_shift_unitary_matrix = np.load(
+    prefix + "YPow_global_shift_unitary_matrix.npy"
+)
 
 """ circuit.ZPow() tester
 
@@ -559,7 +567,9 @@ Parameters
 `global_shift` = 1/3
 `qubit_indices` = 0
 """
-ZPow_global_shift_unitary_matrix = np.load(prefix + "ZPow_global_shift_unitary_matrix.npy")
+ZPow_global_shift_unitary_matrix = np.load(
+    prefix + "ZPow_global_shift_unitary_matrix.npy"
+)
 
 """ circuit.RXX() tester
 
@@ -569,7 +579,9 @@ Parameters
 `first_qubit_index` = 0
 `second_qubit_index` = 1
 """
-RXX_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "RXX_unitary_matrix_pi_over_4_01qubits.npy")
+RXX_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "RXX_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.RXX() tester
 
@@ -579,7 +591,9 @@ Parameters
 `first_qubit_index` = 1
 `second_qubit_index` = 0
 """
-RXX_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "RXX_unitary_matrix_pi_over_4_10qubits.npy")
+RXX_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "RXX_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.RXX() tester
 
@@ -589,7 +603,9 @@ Parameters
 `first_qubit_index` = 0
 `second_qubit_index` = 2
 """
-RXX_unitary_matrix_1_over_4_02qubits = np.load(prefix + "RXX_unitary_matrix_1_over_4_02qubits.npy")
+RXX_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "RXX_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.RXX() tester
 
@@ -599,7 +615,9 @@ Parameters
 `first_qubit_index` = 2
 `second_qubit_index` = 0
 """
-RXX_unitary_matrix_1_over_4_20qubits = np.load(prefix + "RXX_unitary_matrix_1_over_4_20qubits.npy")
+RXX_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "RXX_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.RXX() tester
 
@@ -609,7 +627,9 @@ Parameters
 `first_qubit_index` = 1
 `second_qubit_index` = 2
 """
-RXX_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "RXX_unitary_matrix_pi_over_4_12qubits.npy")
+RXX_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "RXX_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.RYY() tester
 
@@ -619,7 +639,9 @@ Parameters
 `first_qubit_index` = 0
 `second_qubit_index` = 1
 """
-RYY_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "RYY_unitary_matrix_pi_over_4_01qubits.npy")
+RYY_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "RYY_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.RYY() tester
 
@@ -629,7 +651,9 @@ Parameters
 `first_qubit_index` = 1
 `second_qubit_index` = 0
 """
-RYY_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "RYY_unitary_matrix_pi_over_4_10qubits.npy")
+RYY_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "RYY_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.RYY() tester
 
@@ -639,7 +663,9 @@ Parameters
 `first_qubit_index` = 0
 `second_qubit_index` = 2
 """
-RYY_unitary_matrix_1_over_4_02qubits = np.load(prefix + "RYY_unitary_matrix_1_over_4_02qubits.npy")
+RYY_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "RYY_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.RYY() tester
 
@@ -649,7 +675,9 @@ Parameters
 `first_qubit_index` = 2
 `second_qubit_index` = 0
 """
-RYY_unitary_matrix_1_over_4_20qubits = np.load(prefix + "RYY_unitary_matrix_1_over_4_20qubits.npy")
+RYY_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "RYY_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.RYY() tester
 
@@ -659,7 +687,9 @@ Parameters
 `first_qubit_index` = 1
 `second_qubit_index` = 2
 """
-RYY_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "RYY_unitary_matrix_pi_over_4_12qubits.npy")
+RYY_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "RYY_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.RZZ() tester
 
@@ -669,7 +699,9 @@ Parameters
 `first_qubit_index` = 0
 `second_qubit_index` = 1
 """
-RZZ_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "RZZ_unitary_matrix_pi_over_4_01qubits.npy")
+RZZ_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "RZZ_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.RZZ() tester
 
@@ -679,7 +711,9 @@ Parameters
 `first_qubit_index` = 1
 `second_qubit_index` = 0
 """
-RZZ_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "RZZ_unitary_matrix_pi_over_4_10qubits.npy")
+RZZ_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "RZZ_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.RZZ() tester
 
@@ -689,7 +723,9 @@ Parameters
 `first_qubit_index` = 0
 `second_qubit_index` = 2
 """
-RZZ_unitary_matrix_1_over_4_02qubits = np.load(prefix + "RZZ_unitary_matrix_1_over_4_02qubits.npy")
+RZZ_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "RZZ_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.RZZ() tester
 
@@ -699,7 +735,9 @@ Parameters
 `first_qubit_index` = 2
 `second_qubit_index` = 0
 """
-RZZ_unitary_matrix_1_over_4_20qubits = np.load(prefix + "RZZ_unitary_matrix_1_over_4_20qubits.npy")
+RZZ_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "RZZ_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.RZZ() tester
 
@@ -709,7 +747,9 @@ Parameters
 `first_qubit_index` = 1
 `second_qubit_index` = 2
 """
-RZZ_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "RZZ_unitary_matrix_pi_over_4_12qubits.npy")
+RZZ_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "RZZ_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.SWAP() tester
 
@@ -1124,7 +1164,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CRX_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "CRX_unitary_matrix_pi_over_4_01qubits.npy")
+CRX_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "CRX_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.CRX() tester
 
@@ -1134,7 +1176,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CRX_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "CRX_unitary_matrix_pi_over_4_10qubits.npy")
+CRX_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "CRX_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.CRX() tester
 
@@ -1144,7 +1188,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CRX_unitary_matrix_1_over_4_02qubits = np.load(prefix + "CRX_unitary_matrix_1_over_4_02qubits.npy")
+CRX_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "CRX_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.CRX() tester
 
@@ -1154,7 +1200,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CRX_unitary_matrix_1_over_4_20qubits = np.load(prefix + "CRX_unitary_matrix_1_over_4_20qubits.npy")
+CRX_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "CRX_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.CRX() tester
 
@@ -1164,7 +1212,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CRX_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "CRX_unitary_matrix_pi_over_4_12qubits.npy")
+CRX_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "CRX_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.CRY() tester
 
@@ -1174,7 +1224,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CRY_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "CRY_unitary_matrix_pi_over_4_01qubits.npy")
+CRY_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "CRY_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.CRY() tester
 
@@ -1184,7 +1236,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CRY_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "CRY_unitary_matrix_pi_over_4_10qubits.npy")
+CRY_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "CRY_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.CRY() tester
 
@@ -1194,7 +1248,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CRY_unitary_matrix_1_over_4_02qubits = np.load(prefix + "CRY_unitary_matrix_1_over_4_02qubits.npy")
+CRY_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "CRY_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.CRY() tester
 
@@ -1204,7 +1260,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CRY_unitary_matrix_1_over_4_20qubits = np.load(prefix + "CRY_unitary_matrix_1_over_4_20qubits.npy")
+CRY_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "CRY_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.CRY() tester
 
@@ -1214,7 +1272,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CRY_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "CRY_unitary_matrix_pi_over_4_12qubits.npy")
+CRY_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "CRY_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.CRZ() tester
 
@@ -1224,7 +1284,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CRZ_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "CRZ_unitary_matrix_pi_over_4_01qubits.npy")
+CRZ_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "CRZ_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.CRZ() tester
 
@@ -1234,7 +1296,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CRZ_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "CRZ_unitary_matrix_pi_over_4_10qubits.npy")
+CRZ_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "CRZ_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.CRZ() tester
 
@@ -1244,7 +1308,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CRZ_unitary_matrix_1_over_4_02qubits = np.load(prefix + "CRZ_unitary_matrix_1_over_4_02qubits.npy")
+CRZ_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "CRZ_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.CRZ() tester
 
@@ -1254,7 +1320,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CRZ_unitary_matrix_1_over_4_20qubits = np.load(prefix + "CRZ_unitary_matrix_1_over_4_20qubits.npy")
+CRZ_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "CRZ_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.CRZ() tester
 
@@ -1264,7 +1332,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CRZ_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "CRZ_unitary_matrix_pi_over_4_12qubits.npy")
+CRZ_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "CRZ_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.CPhase() tester
 
@@ -1274,7 +1344,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CPhase_unitary_matrix_pi_over_4_01qubits = np.load(prefix + "CPhase_unitary_matrix_pi_over_4_01qubits.npy")
+CPhase_unitary_matrix_pi_over_4_01qubits = np.load(
+    prefix + "CPhase_unitary_matrix_pi_over_4_01qubits.npy"
+)
 
 """ circuit.CPhase() tester
 
@@ -1284,7 +1356,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CPhase_unitary_matrix_pi_over_4_10qubits = np.load(prefix + "CPhase_unitary_matrix_pi_over_4_10qubits.npy")
+CPhase_unitary_matrix_pi_over_4_10qubits = np.load(
+    prefix + "CPhase_unitary_matrix_pi_over_4_10qubits.npy"
+)
 
 """ circuit.CPhase() tester
 
@@ -1294,7 +1368,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CPhase_unitary_matrix_1_over_4_02qubits = np.load(prefix + "CPhase_unitary_matrix_1_over_4_02qubits.npy")
+CPhase_unitary_matrix_1_over_4_02qubits = np.load(
+    prefix + "CPhase_unitary_matrix_1_over_4_02qubits.npy"
+)
 
 """ circuit.CPhase() tester
 
@@ -1304,7 +1380,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CPhase_unitary_matrix_1_over_4_20qubits = np.load(prefix + "CPhase_unitary_matrix_1_over_4_20qubits.npy")
+CPhase_unitary_matrix_1_over_4_20qubits = np.load(
+    prefix + "CPhase_unitary_matrix_1_over_4_20qubits.npy"
+)
 
 """ circuit.CPhase() tester
 
@@ -1314,7 +1392,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CPhase_unitary_matrix_pi_over_4_12qubits = np.load(prefix + "CPhase_unitary_matrix_pi_over_4_12qubits.npy")
+CPhase_unitary_matrix_pi_over_4_12qubits = np.load(
+    prefix + "CPhase_unitary_matrix_pi_over_4_12qubits.npy"
+)
 
 """ circuit.CXPow() tester
 
@@ -1325,7 +1405,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CXPow_unitary_matrix_1_over_4_0_shift_01qubits = np.load(prefix + "CXPow_unitary_matrix_1_over_4_0_shift_01qubits.npy")
+CXPow_unitary_matrix_1_over_4_0_shift_01qubits = np.load(
+    prefix + "CXPow_unitary_matrix_1_over_4_0_shift_01qubits.npy"
+)
 
 """ circuit.CXPow() tester
 
@@ -1336,7 +1418,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CXPow_unitary_matrix_1_over_4_0_shift_10qubits = np.load(prefix + "CXPow_unitary_matrix_1_over_4_0_shift_10qubits.npy")
+CXPow_unitary_matrix_1_over_4_0_shift_10qubits = np.load(
+    prefix + "CXPow_unitary_matrix_1_over_4_0_shift_10qubits.npy"
+)
 
 """ circuit.CXPow() tester
 
@@ -1347,7 +1431,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CXPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits = np.load(prefix + "CXPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits.npy")
+CXPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits = np.load(
+    prefix + "CXPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits.npy"
+)
 
 """ circuit.CXPow() tester
 
@@ -1358,7 +1444,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CXPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits = np.load(prefix + "CXPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits.npy")
+CXPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits = np.load(
+    prefix + "CXPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits.npy"
+)
 
 """ circuit.CXPow() tester
 
@@ -1369,7 +1457,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CXPow_unitary_matrix_negative1_over_4_0_shift_12qubits = np.load(prefix + "CXPow_unitary_matrix_negative1_over_4_0_shift_12qubits.npy")
+CXPow_unitary_matrix_negative1_over_4_0_shift_12qubits = np.load(
+    prefix + "CXPow_unitary_matrix_negative1_over_4_0_shift_12qubits.npy"
+)
 
 """ circuit.CYPow() tester
 
@@ -1380,7 +1470,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CYPow_unitary_matrix_1_over_4_0_shift_01qubits = np.load(prefix + "CYPow_unitary_matrix_1_over_4_0_shift_01qubits.npy")
+CYPow_unitary_matrix_1_over_4_0_shift_01qubits = np.load(
+    prefix + "CYPow_unitary_matrix_1_over_4_0_shift_01qubits.npy"
+)
 
 """ circuit.CYPow() tester
 
@@ -1391,7 +1483,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CYPow_unitary_matrix_1_over_4_0_shift_10qubits = np.load(prefix + "CYPow_unitary_matrix_1_over_4_0_shift_10qubits.npy")
+CYPow_unitary_matrix_1_over_4_0_shift_10qubits = np.load(
+    prefix + "CYPow_unitary_matrix_1_over_4_0_shift_10qubits.npy"
+)
 
 """ circuit.CYPow() tester
 
@@ -1402,7 +1496,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CYPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits = np.load(prefix + "CYPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits.npy")
+CYPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits = np.load(
+    prefix + "CYPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits.npy"
+)
 
 """ circuit.CYPow() tester
 
@@ -1413,7 +1509,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CYPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits = np.load(prefix + "CYPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits.npy")
+CYPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits = np.load(
+    prefix + "CYPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits.npy"
+)
 
 """ circuit.CYPow() tester
 
@@ -1424,7 +1522,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CYPow_unitary_matrix_negative1_over_4_0_shift_12qubits = np.load(prefix + "CYPow_unitary_matrix_negative1_over_4_0_shift_12qubits.npy")
+CYPow_unitary_matrix_negative1_over_4_0_shift_12qubits = np.load(
+    prefix + "CYPow_unitary_matrix_negative1_over_4_0_shift_12qubits.npy"
+)
 
 """ circuit.CZPow() tester
 
@@ -1435,7 +1535,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 1
 """
-CZPow_unitary_matrix_1_over_4_0_shift_01qubits = np.load(prefix + "CZPow_unitary_matrix_1_over_4_0_shift_01qubits.npy")
+CZPow_unitary_matrix_1_over_4_0_shift_01qubits = np.load(
+    prefix + "CZPow_unitary_matrix_1_over_4_0_shift_01qubits.npy"
+)
 
 """ circuit.CZPow() tester
 
@@ -1446,7 +1548,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 0
 """
-CZPow_unitary_matrix_1_over_4_0_shift_10qubits = np.load(prefix + "CZPow_unitary_matrix_1_over_4_0_shift_10qubits.npy")
+CZPow_unitary_matrix_1_over_4_0_shift_10qubits = np.load(
+    prefix + "CZPow_unitary_matrix_1_over_4_0_shift_10qubits.npy"
+)
 
 """ circuit.CZPow() tester
 
@@ -1457,7 +1561,9 @@ Parameters
 `control_qubit_index` = 0
 `target_qubit_index` = 2
 """
-CZPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits = np.load(prefix + "CZPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits.npy")
+CZPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits = np.load(
+    prefix + "CZPow_unitary_matrix_1_over_4_1_over_3_shift_02qubits.npy"
+)
 
 """ circuit.CZPow() tester
 
@@ -1468,7 +1574,9 @@ Parameters
 `control_qubit_index` = 2
 `target_qubit_index` = 0
 """
-CZPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits = np.load(prefix + "CZPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits.npy")
+CZPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits = np.load(
+    prefix + "CZPow_unitary_matrix_1_over_4_1_over_3_shift_20qubits.npy"
+)
 
 """ circuit.CZPow() tester
 
@@ -1479,7 +1587,9 @@ Parameters
 `control_qubit_index` = 1
 `target_qubit_index` = 2
 """
-CZPow_unitary_matrix_negative1_over_4_0_shift_12qubits = np.load(prefix + "CZPow_unitary_matrix_negative1_over_4_0_shift_12qubits.npy")
+CZPow_unitary_matrix_negative1_over_4_0_shift_12qubits = np.load(
+    prefix + "CZPow_unitary_matrix_negative1_over_4_0_shift_12qubits.npy"
+)
 
 """ circuit.CRXX() tester
 
@@ -1490,7 +1600,9 @@ Parameters
 `first_target_index` = 1
 `second_target_index` = 2
 """
-CRXX_unitary_matrix_pi_over_4_012qubits = np.load(prefix + "CRXX_unitary_matrix_pi_over_4_012qubits.npy")
+CRXX_unitary_matrix_pi_over_4_012qubits = np.load(
+    prefix + "CRXX_unitary_matrix_pi_over_4_012qubits.npy"
+)
 
 """ circuit.CRXX() tester
 
@@ -1501,7 +1613,9 @@ Parameters
 `first_target_index` = 0
 `second_target_index` = 2
 """
-CRXX_unitary_matrix_pi_over_4_102qubits = np.load(prefix + "CRXX_unitary_matrix_pi_over_4_102qubits.npy")
+CRXX_unitary_matrix_pi_over_4_102qubits = np.load(
+    prefix + "CRXX_unitary_matrix_pi_over_4_102qubits.npy"
+)
 
 """ circuit.CRXX() tester
 
@@ -1512,7 +1626,9 @@ Parameters
 `first_target_index` = 2
 `second_target_index` = 3
 """
-CRXX_unitary_matrix_1_over_4_123qubits = np.load(prefix + "CRXX_unitary_matrix_1_over_4_123qubits.npy")
+CRXX_unitary_matrix_1_over_4_123qubits = np.load(
+    prefix + "CRXX_unitary_matrix_1_over_4_123qubits.npy"
+)
 
 """ circuit.CRXX() tester
 
@@ -1523,7 +1639,9 @@ Parameters
 `first_target_index` = 1
 `second_target_index` = 3
 """
-CRXX_unitary_matrix_1_over_4_213qubits = np.load(prefix + "CRXX_unitary_matrix_1_over_4_213qubits.npy")
+CRXX_unitary_matrix_1_over_4_213qubits = np.load(
+    prefix + "CRXX_unitary_matrix_1_over_4_213qubits.npy"
+)
 
 """ circuit.CRXX() tester
 
@@ -1534,7 +1652,9 @@ Parameters
 `first_target_index` = 2
 `second_target_index` = 3
 """
-CRXX_unitary_matrix_pi_over_4_023qubits = np.load(prefix + "CRXX_unitary_matrix_pi_over_4_023qubits.npy")
+CRXX_unitary_matrix_pi_over_4_023qubits = np.load(
+    prefix + "CRXX_unitary_matrix_pi_over_4_023qubits.npy"
+)
 
 """ circuit.CRYY() tester
 
@@ -1545,7 +1665,9 @@ Parameters
 `first_target_index` = 1
 `second_target_index` = 2
 """
-CRYY_unitary_matrix_pi_over_4_012qubits = np.load(prefix + "CRYY_unitary_matrix_pi_over_4_012qubits.npy")
+CRYY_unitary_matrix_pi_over_4_012qubits = np.load(
+    prefix + "CRYY_unitary_matrix_pi_over_4_012qubits.npy"
+)
 
 """ circuit.CRYY() tester
 
@@ -1556,7 +1678,9 @@ Parameters
 `first_target_index` = 0
 `second_target_index` = 2
 """
-CRYY_unitary_matrix_pi_over_4_102qubits = np.load(prefix + "CRYY_unitary_matrix_pi_over_4_102qubits.npy")
+CRYY_unitary_matrix_pi_over_4_102qubits = np.load(
+    prefix + "CRYY_unitary_matrix_pi_over_4_102qubits.npy"
+)
 
 """ circuit.CRYY() tester
 
@@ -1567,7 +1691,9 @@ Parameters
 `first_target_index` = 2
 `second_target_index` = 3
 """
-CRYY_unitary_matrix_1_over_4_123qubits = np.load(prefix + "CRYY_unitary_matrix_1_over_4_123qubits.npy")
+CRYY_unitary_matrix_1_over_4_123qubits = np.load(
+    prefix + "CRYY_unitary_matrix_1_over_4_123qubits.npy"
+)
 
 """ circuit.CRYY() tester
 
@@ -1578,7 +1704,9 @@ Parameters
 `first_target_index` = 1
 `second_target_index` = 3
 """
-CRYY_unitary_matrix_1_over_4_213qubits = np.load(prefix + "CRYY_unitary_matrix_1_over_4_213qubits.npy")
+CRYY_unitary_matrix_1_over_4_213qubits = np.load(
+    prefix + "CRYY_unitary_matrix_1_over_4_213qubits.npy"
+)
 
 """ circuit.CRYY() tester
 
@@ -1589,7 +1717,9 @@ Parameters
 `first_target_index` = 2
 `second_target_index` = 3
 """
-CRYY_unitary_matrix_pi_over_4_023qubits = np.load(prefix + "CRYY_unitary_matrix_pi_over_4_023qubits.npy")
+CRYY_unitary_matrix_pi_over_4_023qubits = np.load(
+    prefix + "CRYY_unitary_matrix_pi_over_4_023qubits.npy"
+)
 
 """ circuit.CRZZ() tester
 
@@ -1600,7 +1730,9 @@ Parameters
 `first_target_index` = 1
 `second_target_index` = 2
 """
-CRZZ_unitary_matrix_pi_over_4_012qubits = np.load(prefix + "CRZZ_unitary_matrix_pi_over_4_012qubits.npy")
+CRZZ_unitary_matrix_pi_over_4_012qubits = np.load(
+    prefix + "CRZZ_unitary_matrix_pi_over_4_012qubits.npy"
+)
 
 """ circuit.CRZZ() tester
 
@@ -1611,7 +1743,9 @@ Parameters
 `first_target_index` = 0
 `second_target_index` = 2
 """
-CRZZ_unitary_matrix_pi_over_4_102qubits = np.load(prefix + "CRZZ_unitary_matrix_pi_over_4_102qubits.npy")
+CRZZ_unitary_matrix_pi_over_4_102qubits = np.load(
+    prefix + "CRZZ_unitary_matrix_pi_over_4_102qubits.npy"
+)
 
 """ circuit.CRZZ() tester
 
@@ -1622,7 +1756,9 @@ Parameters
 `first_target_index` = 2
 `second_target_index` = 3
 """
-CRZZ_unitary_matrix_1_over_4_123qubits = np.load(prefix + "CRZZ_unitary_matrix_1_over_4_123qubits.npy")
+CRZZ_unitary_matrix_1_over_4_123qubits = np.load(
+    prefix + "CRZZ_unitary_matrix_1_over_4_123qubits.npy"
+)
 
 """ circuit.CRZZ() tester
 
@@ -1633,7 +1769,9 @@ Parameters
 `first_target_index` = 1
 `second_target_index` = 3
 """
-CRZZ_unitary_matrix_1_over_4_213qubits = np.load(prefix + "CRZZ_unitary_matrix_1_over_4_213qubits.npy")
+CRZZ_unitary_matrix_1_over_4_213qubits = np.load(
+    prefix + "CRZZ_unitary_matrix_1_over_4_213qubits.npy"
+)
 
 """ circuit.CRZZ() tester
 
@@ -1644,7 +1782,9 @@ Parameters
 `first_target_index` = 2
 `second_target_index` = 3
 """
-CRZZ_unitary_matrix_pi_over_4_023qubits = np.load(prefix + "CRZZ_unitary_matrix_pi_over_4_023qubits.npy")
+CRZZ_unitary_matrix_pi_over_4_023qubits = np.load(
+    prefix + "CRZZ_unitary_matrix_pi_over_4_023qubits.npy"
+)
 
 """ circuit.CU3() tester
 
@@ -1654,7 +1794,9 @@ Parameters
 `control_index` = 0
 `target_index` = 1
 """
-CU3_unitary_matrix_pi2_pi3_pi4_01qubits = np.load(prefix + "CU3_unitary_matrix_pi2_pi3_pi4_01qubits.npy")
+CU3_unitary_matrix_pi2_pi3_pi4_01qubits = np.load(
+    prefix + "CU3_unitary_matrix_pi2_pi3_pi4_01qubits.npy"
+)
 
 """ circuit.CU3() tester
 
@@ -1664,7 +1806,9 @@ Parameters
 `control_index` = 1
 `target_index` = 0
 """
-CU3_unitary_matrix_pi2_pi3_pi4_10qubits = np.load(prefix + "CU3_unitary_matrix_pi2_pi3_pi4_10qubits.npy")
+CU3_unitary_matrix_pi2_pi3_pi4_10qubits = np.load(
+    prefix + "CU3_unitary_matrix_pi2_pi3_pi4_10qubits.npy"
+)
 
 """ circuit.CU3() tester
 
@@ -1674,7 +1818,9 @@ Parameters
 `control_index` = 0
 `target_index` = 1
 """
-CU3_unitary_matrix_pi2_pi3_pi4_02qubits = np.load(prefix + "CU3_unitary_matrix_pi2_pi3_pi4_02qubits.npy")
+CU3_unitary_matrix_pi2_pi3_pi4_02qubits = np.load(
+    prefix + "CU3_unitary_matrix_pi2_pi3_pi4_02qubits.npy"
+)
 
 """ circuit.CU3() tester
 
@@ -1684,7 +1830,9 @@ Parameters
 `control_index` = 0
 `target_index` = 1
 """
-CU3_unitary_matrix_pi2_pi3_pi4_20qubits = np.load(prefix + "CU3_unitary_matrix_pi2_pi3_pi4_20qubits.npy")
+CU3_unitary_matrix_pi2_pi3_pi4_20qubits = np.load(
+    prefix + "CU3_unitary_matrix_pi2_pi3_pi4_20qubits.npy"
+)
 
 """ circuit.CU3() tester
 
@@ -1694,7 +1842,9 @@ Parameters
 `control_index` = 1
 `target_index` = 2
 """
-CU3_unitary_matrix_pi2_pi3_pi4_12qubits = np.load(prefix + "CU3_unitary_matrix_pi2_pi3_pi4_12qubits.npy")
+CU3_unitary_matrix_pi2_pi3_pi4_12qubits = np.load(
+    prefix + "CU3_unitary_matrix_pi2_pi3_pi4_12qubits.npy"
+)
 
 """ circuit.CSWAP() tester
 
@@ -1750,89 +1900,107 @@ CSWAP_unitary_matrix_023qubits = np.load(prefix + "CSWAP_unitary_matrix_023qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCX_unitary_matrix_01_23_qubits = np.load(prefix + "MCX_unitary_matrix_01_23_qubits.npy")
+MCX_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCX_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCX_unitary_matrix_10_23_qubits = np.load(prefix + "MCX_unitary_matrix_10_23_qubits.npy")
+MCX_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCX_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCX_unitary_matrix_02_13_qubits = np.load(prefix + "MCX_unitary_matrix_02_13_qubits.npy")
+MCX_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCX_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCX_unitary_matrix_20_34_qubits = np.load(prefix + "MCX_unitary_matrix_20_34_qubits.npy")
+MCX_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCX_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCX_unitary_matrix_12_04_qubits = np.load(prefix + "MCX_unitary_matrix_12_04_qubits.npy")
+MCX_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCX_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCX_unitary_matrix_53_01_qubits = np.load(prefix + "MCX_unitary_matrix_53_01_qubits.npy")
+MCX_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCX_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCX_unitary_matrix_012_34_qubits = np.load(prefix + "MCX_unitary_matrix_012_34_qubits.npy")
+MCX_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCX_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCX_unitary_matrix_01_234_qubits = np.load(prefix + "MCX_unitary_matrix_01_234_qubits.npy")
+MCX_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCX_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCX_unitary_matrix_012_345_qubits = np.load(prefix + "MCX_unitary_matrix_012_345_qubits.npy")
+MCX_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCX_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCX() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
 MCX_unitary_matrix_01_2_qubits = np.load(prefix + "MCX_unitary_matrix_01_2_qubits.npy")
 
@@ -1840,8 +2008,8 @@ MCX_unitary_matrix_01_2_qubits = np.load(prefix + "MCX_unitary_matrix_01_2_qubit
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
 MCX_unitary_matrix_0_23_qubits = np.load(prefix + "MCX_unitary_matrix_0_23_qubits.npy")
 
@@ -1849,89 +2017,107 @@ MCX_unitary_matrix_0_23_qubits = np.load(prefix + "MCX_unitary_matrix_0_23_qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCY_unitary_matrix_01_23_qubits = np.load(prefix + "MCY_unitary_matrix_01_23_qubits.npy")
+MCY_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCY_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCY_unitary_matrix_10_23_qubits = np.load(prefix + "MCY_unitary_matrix_10_23_qubits.npy")
+MCY_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCY_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCY_unitary_matrix_02_13_qubits = np.load(prefix + "MCY_unitary_matrix_02_13_qubits.npy")
+MCY_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCY_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCY_unitary_matrix_20_34_qubits = np.load(prefix + "MCY_unitary_matrix_20_34_qubits.npy")
+MCY_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCY_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCY_unitary_matrix_12_04_qubits = np.load(prefix + "MCY_unitary_matrix_12_04_qubits.npy")
+MCY_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCY_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCY_unitary_matrix_53_01_qubits = np.load(prefix + "MCY_unitary_matrix_53_01_qubits.npy")
+MCY_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCY_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCY_unitary_matrix_012_34_qubits = np.load(prefix + "MCY_unitary_matrix_012_34_qubits.npy")
+MCY_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCY_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCY_unitary_matrix_01_234_qubits = np.load(prefix + "MCY_unitary_matrix_01_234_qubits.npy")
+MCY_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCY_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCY_unitary_matrix_012_345_qubits = np.load(prefix + "MCY_unitary_matrix_012_345_qubits.npy")
+MCY_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCY_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCY() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
 MCY_unitary_matrix_01_2_qubits = np.load(prefix + "MCY_unitary_matrix_01_2_qubits.npy")
 
@@ -1939,8 +2125,8 @@ MCY_unitary_matrix_01_2_qubits = np.load(prefix + "MCY_unitary_matrix_01_2_qubit
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
 MCY_unitary_matrix_0_23_qubits = np.load(prefix + "MCY_unitary_matrix_0_23_qubits.npy")
 
@@ -1948,89 +2134,107 @@ MCY_unitary_matrix_0_23_qubits = np.load(prefix + "MCY_unitary_matrix_0_23_qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCZ_unitary_matrix_01_23_qubits = np.load(prefix + "MCZ_unitary_matrix_01_23_qubits.npy")
+MCZ_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCZ_unitary_matrix_10_23_qubits = np.load(prefix + "MCZ_unitary_matrix_10_23_qubits.npy")
+MCZ_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCZ_unitary_matrix_02_13_qubits = np.load(prefix + "MCZ_unitary_matrix_02_13_qubits.npy")
+MCZ_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCZ_unitary_matrix_20_34_qubits = np.load(prefix + "MCZ_unitary_matrix_20_34_qubits.npy")
+MCZ_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCZ_unitary_matrix_12_04_qubits = np.load(prefix + "MCZ_unitary_matrix_12_04_qubits.npy")
+MCZ_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCZ_unitary_matrix_53_01_qubits = np.load(prefix + "MCZ_unitary_matrix_53_01_qubits.npy")
+MCZ_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCZ_unitary_matrix_012_34_qubits = np.load(prefix + "MCZ_unitary_matrix_012_34_qubits.npy")
+MCZ_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCZ_unitary_matrix_01_234_qubits = np.load(prefix + "MCZ_unitary_matrix_01_234_qubits.npy")
+MCZ_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCZ_unitary_matrix_012_345_qubits = np.load(prefix + "MCZ_unitary_matrix_012_345_qubits.npy")
+MCZ_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCZ_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCZ() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
 MCZ_unitary_matrix_01_2_qubits = np.load(prefix + "MCZ_unitary_matrix_01_2_qubits.npy")
 
@@ -2038,8 +2242,8 @@ MCZ_unitary_matrix_01_2_qubits = np.load(prefix + "MCZ_unitary_matrix_01_2_qubit
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
 MCZ_unitary_matrix_0_23_qubits = np.load(prefix + "MCZ_unitary_matrix_0_23_qubits.npy")
 
@@ -2047,89 +2251,107 @@ MCZ_unitary_matrix_0_23_qubits = np.load(prefix + "MCZ_unitary_matrix_0_23_qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCH_unitary_matrix_01_23_qubits = np.load(prefix + "MCH_unitary_matrix_01_23_qubits.npy")
+MCH_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCH_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCH_unitary_matrix_10_23_qubits = np.load(prefix + "MCH_unitary_matrix_10_23_qubits.npy")
+MCH_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCH_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCH_unitary_matrix_02_13_qubits = np.load(prefix + "MCH_unitary_matrix_02_13_qubits.npy")
+MCH_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCH_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCH_unitary_matrix_20_34_qubits = np.load(prefix + "MCH_unitary_matrix_20_34_qubits.npy")
+MCH_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCH_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCH_unitary_matrix_12_04_qubits = np.load(prefix + "MCH_unitary_matrix_12_04_qubits.npy")
+MCH_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCH_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCH_unitary_matrix_53_01_qubits = np.load(prefix + "MCH_unitary_matrix_53_01_qubits.npy")
+MCH_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCH_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCH_unitary_matrix_012_34_qubits = np.load(prefix + "MCH_unitary_matrix_012_34_qubits.npy")
+MCH_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCH_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCH_unitary_matrix_01_234_qubits = np.load(prefix + "MCH_unitary_matrix_01_234_qubits.npy")
+MCH_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCH_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCH_unitary_matrix_012_345_qubits = np.load(prefix + "MCH_unitary_matrix_012_345_qubits.npy")
+MCH_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCH_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCH() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
 MCH_unitary_matrix_01_2_qubits = np.load(prefix + "MCH_unitary_matrix_01_2_qubits.npy")
 
@@ -2137,8 +2359,8 @@ MCH_unitary_matrix_01_2_qubits = np.load(prefix + "MCH_unitary_matrix_01_2_qubit
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
 MCH_unitary_matrix_0_23_qubits = np.load(prefix + "MCH_unitary_matrix_0_23_qubits.npy")
 
@@ -2146,89 +2368,107 @@ MCH_unitary_matrix_0_23_qubits = np.load(prefix + "MCH_unitary_matrix_0_23_qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCS_unitary_matrix_01_23_qubits = np.load(prefix + "MCS_unitary_matrix_01_23_qubits.npy")
+MCS_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCS_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCS_unitary_matrix_10_23_qubits = np.load(prefix + "MCS_unitary_matrix_10_23_qubits.npy")
+MCS_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCS_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCS_unitary_matrix_02_13_qubits = np.load(prefix + "MCS_unitary_matrix_02_13_qubits.npy")
+MCS_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCS_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCS_unitary_matrix_20_34_qubits = np.load(prefix + "MCS_unitary_matrix_20_34_qubits.npy")
+MCS_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCS_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCS_unitary_matrix_12_04_qubits = np.load(prefix + "MCS_unitary_matrix_12_04_qubits.npy")
+MCS_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCS_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCS_unitary_matrix_53_01_qubits = np.load(prefix + "MCS_unitary_matrix_53_01_qubits.npy")
+MCS_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCS_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCS_unitary_matrix_012_34_qubits = np.load(prefix + "MCS_unitary_matrix_012_34_qubits.npy")
+MCS_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCS_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCS_unitary_matrix_01_234_qubits = np.load(prefix + "MCS_unitary_matrix_01_234_qubits.npy")
+MCS_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCS_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCS_unitary_matrix_012_345_qubits = np.load(prefix + "MCS_unitary_matrix_012_345_qubits.npy")
+MCS_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCS_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCS() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
 MCS_unitary_matrix_01_2_qubits = np.load(prefix + "MCS_unitary_matrix_01_2_qubits.npy")
 
@@ -2236,8 +2476,8 @@ MCS_unitary_matrix_01_2_qubits = np.load(prefix + "MCS_unitary_matrix_01_2_qubit
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
 MCS_unitary_matrix_0_23_qubits = np.load(prefix + "MCS_unitary_matrix_0_23_qubits.npy")
 
@@ -2245,188 +2485,228 @@ MCS_unitary_matrix_0_23_qubits = np.load(prefix + "MCS_unitary_matrix_0_23_qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCSdg_unitary_matrix_01_23_qubits = np.load(prefix + "MCSdg_unitary_matrix_01_23_qubits.npy")
+MCSdg_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCSdg_unitary_matrix_10_23_qubits = np.load(prefix + "MCSdg_unitary_matrix_10_23_qubits.npy")
+MCSdg_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCSdg_unitary_matrix_02_13_qubits = np.load(prefix + "MCSdg_unitary_matrix_02_13_qubits.npy")
+MCSdg_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCSdg_unitary_matrix_20_34_qubits = np.load(prefix + "MCSdg_unitary_matrix_20_34_qubits.npy")
+MCSdg_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCSdg_unitary_matrix_12_04_qubits = np.load(prefix + "MCSdg_unitary_matrix_12_04_qubits.npy")
+MCSdg_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCSdg_unitary_matrix_53_01_qubits = np.load(prefix + "MCSdg_unitary_matrix_53_01_qubits.npy")
+MCSdg_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCSdg_unitary_matrix_012_34_qubits = np.load(prefix + "MCSdg_unitary_matrix_012_34_qubits.npy")
+MCSdg_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCSdg_unitary_matrix_01_234_qubits = np.load(prefix + "MCSdg_unitary_matrix_01_234_qubits.npy")
+MCSdg_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCSdg_unitary_matrix_012_345_qubits = np.load(prefix + "MCSdg_unitary_matrix_012_345_qubits.npy")
+MCSdg_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCSdg_unitary_matrix_01_2_qubits = np.load(prefix + "MCSdg_unitary_matrix_01_2_qubits.npy")
+MCSdg_unitary_matrix_01_2_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_01_2_qubits.npy"
+)
 
 """ circuit.MCSdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCSdg_unitary_matrix_0_23_qubits = np.load(prefix + "MCSdg_unitary_matrix_0_23_qubits.npy")
+MCSdg_unitary_matrix_0_23_qubits = np.load(
+    prefix + "MCSdg_unitary_matrix_0_23_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCT_unitary_matrix_01_23_qubits = np.load(prefix + "MCT_unitary_matrix_01_23_qubits.npy")
+MCT_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCT_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCT_unitary_matrix_10_23_qubits = np.load(prefix + "MCT_unitary_matrix_10_23_qubits.npy")
+MCT_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCT_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCT_unitary_matrix_02_13_qubits = np.load(prefix + "MCT_unitary_matrix_02_13_qubits.npy")
+MCT_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCT_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCT_unitary_matrix_20_34_qubits = np.load(prefix + "MCT_unitary_matrix_20_34_qubits.npy")
+MCT_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCT_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCT_unitary_matrix_12_04_qubits = np.load(prefix + "MCT_unitary_matrix_12_04_qubits.npy")
+MCT_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCT_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCT_unitary_matrix_53_01_qubits = np.load(prefix + "MCT_unitary_matrix_53_01_qubits.npy")
+MCT_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCT_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCT_unitary_matrix_012_34_qubits = np.load(prefix + "MCT_unitary_matrix_012_34_qubits.npy")
+MCT_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCT_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCT_unitary_matrix_01_234_qubits = np.load(prefix + "MCT_unitary_matrix_01_234_qubits.npy")
+MCT_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCT_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCT_unitary_matrix_012_345_qubits = np.load(prefix + "MCT_unitary_matrix_012_345_qubits.npy")
+MCT_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCT_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
 MCT_unitary_matrix_01_2_qubits = np.load(prefix + "MCT_unitary_matrix_01_2_qubits.npy")
 
@@ -2434,8 +2714,8 @@ MCT_unitary_matrix_01_2_qubits = np.load(prefix + "MCT_unitary_matrix_01_2_qubit
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
 MCT_unitary_matrix_0_23_qubits = np.load(prefix + "MCT_unitary_matrix_0_23_qubits.npy")
 
@@ -2443,630 +2723,758 @@ MCT_unitary_matrix_0_23_qubits = np.load(prefix + "MCT_unitary_matrix_0_23_qubit
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCTdg_unitary_matrix_01_23_qubits = np.load(prefix + "MCTdg_unitary_matrix_01_23_qubits.npy")
+MCTdg_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCTdg_unitary_matrix_10_23_qubits = np.load(prefix + "MCTdg_unitary_matrix_10_23_qubits.npy")
+MCTdg_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCTdg_unitary_matrix_02_13_qubits = np.load(prefix + "MCTdg_unitary_matrix_02_13_qubits.npy")
+MCTdg_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCTdg_unitary_matrix_20_34_qubits = np.load(prefix + "MCTdg_unitary_matrix_20_34_qubits.npy")
+MCTdg_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCTdg_unitary_matrix_12_04_qubits = np.load(prefix + "MCTdg_unitary_matrix_12_04_qubits.npy")
+MCTdg_unitary_matrix_12_04_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_12_04_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCTdg_unitary_matrix_53_01_qubits = np.load(prefix + "MCTdg_unitary_matrix_53_01_qubits.npy")
+MCTdg_unitary_matrix_53_01_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_53_01_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCTdg_unitary_matrix_012_34_qubits = np.load(prefix + "MCTdg_unitary_matrix_012_34_qubits.npy")
+MCTdg_unitary_matrix_012_34_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_012_34_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1]
+`target_indices` = [3, 4, 5]
 """
-MCTdg_unitary_matrix_01_234_qubits = np.load(prefix + "MCTdg_unitary_matrix_01_234_qubits.npy")
+MCTdg_unitary_matrix_01_234_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_01_234_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCTdg_unitary_matrix_012_345_qubits = np.load(prefix + "MCTdg_unitary_matrix_012_345_qubits.npy")
+MCTdg_unitary_matrix_012_345_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_012_345_qubits.npy"
+)
 
 """ circuit.MCTdg() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCTdg_unitary_matrix_01_2_qubits = np.load(prefix + "MCTdg_unitary_matrix_01_2_qubits.npy")
+MCTdg_unitary_matrix_01_2_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_01_2_qubits.npy"
+)
 
 """ circuit.MCT() tester
 
 Parameters
 ----------
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCTdg_unitary_matrix_0_23_qubits = np.load(prefix + "MCTdg_unitary_matrix_0_23_qubits.npy")
+MCTdg_unitary_matrix_0_23_qubits = np.load(
+    prefix + "MCTdg_unitary_matrix_0_23_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCRX_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCRX_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCRX_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCRX_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCRX_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCRX_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCRX_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCRX_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCRX_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCRX_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCRX_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCRX_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCRX_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCRX_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCRX_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCRX_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCRX_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCRX_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCRX_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCRX_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCRX_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3, 4]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3, 4]
 """
-MCRX_unitary_matrix_1_over_3_01_234_qubits = np.load(prefix + "MCRX_unitary_matrix_1_over_3_01_234_qubits.npy")
+MCRX_unitary_matrix_1_over_3_01_234_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_1_over_3_01_234_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCRX_unitary_matrix_pi_over_4_012_345_qubits = np.load(prefix + "MCRX_unitary_matrix_pi_over_4_012_345_qubits.npy")
+MCRX_unitary_matrix_pi_over_4_012_345_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_pi_over_4_012_345_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCRX_unitary_matrix_pi_over_4_01_2_qubits = np.load(prefix + "MCRX_unitary_matrix_pi_over_4_01_2_qubits.npy")
+MCRX_unitary_matrix_pi_over_4_01_2_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_pi_over_4_01_2_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCRX_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCRX_unitary_matrix_pi_over_4_0_23_qubits.npy")
+MCRX_unitary_matrix_pi_over_4_0_23_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_pi_over_4_0_23_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5]
-`target_qubits` = [6]
+`control_indices` = [0, 1, 2, 3, 4, 5]
+`target_indices` = [6]
 """
-MCRX_unitary_matrix_0dot1_012345_6_qubits = np.load(prefix + "MCRX_unitary_matrix_0dot1_012345_6_qubits.npy")
+MCRX_unitary_matrix_0dot1_012345_6_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_0dot1_012345_6_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5, 6]
-`target_qubits` = [7]
+`control_indices` = [0, 1, 2, 3, 4, 5, 6]
+`target_indices` = [7]
 """
-MCRX_unitary_matrix_0dot1_0123456_7_qubits = np.load(prefix + "MCRX_unitary_matrix_0dot1_0123456_7_qubits.npy")
+MCRX_unitary_matrix_0dot1_0123456_7_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_0dot1_0123456_7_qubits.npy"
+)
 
 """ circuit.MCRX() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5, 6, 7]
-`target_qubits` = [8]
+`control_indices` = [0, 1, 2, 3, 4, 5, 6, 7]
+`target_indices` = [8]
 """
-MCRX_unitary_matrix_0dot1_01234567_8_qubits = np.load(prefix + "MCRX_unitary_matrix_0dot1_01234567_8_qubits.npy")
+MCRX_unitary_matrix_0dot1_01234567_8_qubits = np.load(
+    prefix + "MCRX_unitary_matrix_0dot1_01234567_8_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCRY_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCRY_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCRY_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCRY_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCRY_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCRY_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCRY_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCRY_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCRY_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCRY_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCRY_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCRY_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCRY_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCRY_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCRY_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCRY_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCRY_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCRY_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCRY_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCRY_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCRY_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3, 4]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3, 4]
 """
-MCRY_unitary_matrix_1_over_3_01_234_qubits = np.load(prefix + "MCRY_unitary_matrix_1_over_3_01_234_qubits.npy")
+MCRY_unitary_matrix_1_over_3_01_234_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_1_over_3_01_234_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCRY_unitary_matrix_pi_over_4_012_345_qubits = np.load(prefix + "MCRY_unitary_matrix_pi_over_4_012_345_qubits.npy")
+MCRY_unitary_matrix_pi_over_4_012_345_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_pi_over_4_012_345_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCRY_unitary_matrix_pi_over_4_01_2_qubits = np.load(prefix + "MCRY_unitary_matrix_pi_over_4_01_2_qubits.npy")
+MCRY_unitary_matrix_pi_over_4_01_2_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_pi_over_4_01_2_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCRY_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCRY_unitary_matrix_pi_over_4_0_23_qubits.npy")
+MCRY_unitary_matrix_pi_over_4_0_23_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_pi_over_4_0_23_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5]
-`target_qubits` = [6]
+`control_indices` = [0, 1, 2, 3, 4, 5]
+`target_indices` = [6]
 """
-MCRY_unitary_matrix_0dot1_012345_6_qubits = np.load(prefix + "MCRY_unitary_matrix_0dot1_012345_6_qubits.npy")
+MCRY_unitary_matrix_0dot1_012345_6_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_0dot1_012345_6_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5, 6]
-`target_qubits` = [7]
+`control_indices` = [0, 1, 2, 3, 4, 5, 6]
+`target_indices` = [7]
 """
-MCRY_unitary_matrix_0dot1_0123456_7_qubits = np.load(prefix + "MCRY_unitary_matrix_0dot1_0123456_7_qubits.npy")
+MCRY_unitary_matrix_0dot1_0123456_7_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_0dot1_0123456_7_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5, 6, 7]
-`target_qubits` = [8]
+`control_indices` = [0, 1, 2, 3, 4, 5, 6, 7]
+`target_indices` = [8]
 """
-MCRY_unitary_matrix_0dot1_01234567_8_qubits = np.load(prefix + "MCRY_unitary_matrix_0dot1_01234567_8_qubits.npy")
+MCRY_unitary_matrix_0dot1_01234567_8_qubits = np.load(
+    prefix + "MCRY_unitary_matrix_0dot1_01234567_8_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCRZ_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCRZ_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCRZ_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCRZ_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCRZ_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCRZ_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCRZ_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCRZ_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCRZ_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCRZ_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCRZ_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCRZ_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCRZ_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCRZ_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCRZ_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCRZ_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCRZ_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCRZ_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCRZ_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCRZ_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCRZ_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3, 4]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3, 4]
 """
-MCRZ_unitary_matrix_1_over_3_01_234_qubits = np.load(prefix + "MCRZ_unitary_matrix_1_over_3_01_234_qubits.npy")
+MCRZ_unitary_matrix_1_over_3_01_234_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_1_over_3_01_234_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCRZ_unitary_matrix_pi_over_4_012_345_qubits = np.load(prefix + "MCRZ_unitary_matrix_pi_over_4_012_345_qubits.npy")
+MCRZ_unitary_matrix_pi_over_4_012_345_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_pi_over_4_012_345_qubits.npy"
+)
 
 """ circuit.MCRY() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCRZ_unitary_matrix_pi_over_4_01_2_qubits = np.load(prefix + "MCRZ_unitary_matrix_pi_over_4_01_2_qubits.npy")
+MCRZ_unitary_matrix_pi_over_4_01_2_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_pi_over_4_01_2_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCRZ_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCRZ_unitary_matrix_pi_over_4_0_23_qubits.npy")
+MCRZ_unitary_matrix_pi_over_4_0_23_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_pi_over_4_0_23_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5]
-`target_qubits` = [6]
+`control_indices` = [0, 1, 2, 3, 4, 5]
+`target_indices` = [6]
 """
-MCRZ_unitary_matrix_0dot1_012345_6_qubits = np.load(prefix + "MCRZ_unitary_matrix_0dot1_012345_6_qubits.npy")
+MCRZ_unitary_matrix_0dot1_012345_6_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_0dot1_012345_6_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5, 6]
-`target_qubits` = [7]
+`control_indices` = [0, 1, 2, 3, 4, 5, 6]
+`target_indices` = [7]
 """
-MCRZ_unitary_matrix_0dot1_0123456_7_qubits = np.load(prefix + "MCRZ_unitary_matrix_0dot1_0123456_7_qubits.npy")
+MCRZ_unitary_matrix_0dot1_0123456_7_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_0dot1_0123456_7_qubits.npy"
+)
 
 """ circuit.MCRZ() tester
 
 Parameters
 ----------
 `angle` = 0.1
-`control_qubits` = [0, 1, 2, 3, 4, 5, 6, 7]
-`target_qubits` = [8]
+`control_indices` = [0, 1, 2, 3, 4, 5, 6, 7]
+`target_indices` = [8]
 """
-MCRZ_unitary_matrix_0dot1_01234567_8_qubits = np.load(prefix + "MCRZ_unitary_matrix_0dot1_01234567_8_qubits.npy")
+MCRZ_unitary_matrix_0dot1_01234567_8_qubits = np.load(
+    prefix + "MCRZ_unitary_matrix_0dot1_01234567_8_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCPhase_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCPhase_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCPhase_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCPhase_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCPhase_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCPhase_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCPhase_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCPhase_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCPhase_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCPhase_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCPhase_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCPhase_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCPhase_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCPhase_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCPhase_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
-`target_qubits` = [0, 1]
+`control_indices` = [5, 3]
+`target_indices` = [0, 1]
 """
-MCPhase_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCPhase_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCPhase_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4]
 """
-MCPhase_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCPhase_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCPhase_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3, 4]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3, 4]
 """
-MCPhase_unitary_matrix_1_over_3_01_234_qubits = np.load(prefix + "MCPhase_unitary_matrix_1_over_3_01_234_qubits.npy")
+MCPhase_unitary_matrix_1_over_3_01_234_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_1_over_3_01_234_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1, 2]
-`target_qubits` = [3, 4, 5]
+`control_indices` = [0, 1, 2]
+`target_indices` = [3, 4, 5]
 """
-MCPhase_unitary_matrix_pi_over_4_012_345_qubits = np.load(prefix + "MCPhase_unitary_matrix_pi_over_4_012_345_qubits.npy")
+MCPhase_unitary_matrix_pi_over_4_012_345_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_pi_over_4_012_345_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCPhase_unitary_matrix_pi_over_4_01_2_qubits = np.load(prefix + "MCPhase_unitary_matrix_pi_over_4_01_2_qubits.npy")
+MCPhase_unitary_matrix_pi_over_4_01_2_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_pi_over_4_01_2_qubits.npy"
+)
 
 """ circuit.MCPhase() tester
 
 Parameters
 ----------
 `angle` = pi/4
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCPhase_unitary_matrix_pi_over_4_0_23_qubits = np.load(prefix + "MCPhase_unitary_matrix_pi_over_4_0_23_qubits.npy")
+MCPhase_unitary_matrix_pi_over_4_0_23_qubits = np.load(
+    prefix + "MCPhase_unitary_matrix_pi_over_4_0_23_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3074,10 +3482,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCXPow_unitary_matrix_1_over_4_0_shift_01_23_qubits = np.load(prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_01_23_qubits.npy")
+MCXPow_unitary_matrix_1_over_4_0_shift_01_23_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_01_23_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3085,10 +3495,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCXPow_unitary_matrix_1_over_4_0_shift_10_23_qubits = np.load(prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_10_23_qubits.npy")
+MCXPow_unitary_matrix_1_over_4_0_shift_10_23_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_10_23_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3096,10 +3508,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCXPow_unitary_matrix_1_over_4_0_shift_02_13_qubits = np.load(prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_02_13_qubits.npy")
+MCXPow_unitary_matrix_1_over_4_0_shift_02_13_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_02_13_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3107,10 +3521,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCXPow_unitary_matrix_1_over_4_0_shift_20_34_qubits = np.load(prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_20_34_qubits.npy")
+MCXPow_unitary_matrix_1_over_4_0_shift_20_34_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_1_over_4_0_shift_20_34_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3118,10 +3534,12 @@ Parameters
 ----------
 `power` = -1/4
 `global_shift` = 0
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCXPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits = np.load(prefix + "MCXPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits.npy")
+MCXPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3129,10 +3547,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCXPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits = np.load(prefix + "MCXPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits.npy")
+MCXPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3140,10 +3560,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 1/3
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCXPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits = np.load(prefix + "MCXPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits.npy")
+MCXPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits = np.load(
+    prefix + "MCXPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits.npy"
+)
 
 """ circuit.MCXPow() tester
 
@@ -3151,10 +3573,13 @@ Parameters
 ----------
 `power` = -1/4
 `global_shift` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCXPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits = np.load(prefix + "MCXPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits.npy")
+MCXPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits = np.load(
+    prefix
+    + "MCXPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits.npy"
+)
 
 """ circuit.MCYPow() tester
 
@@ -3162,10 +3587,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCYPow_unitary_matrix_1_over_4_0_shift_01_23_qubits = np.load(prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_01_23_qubits.npy")
+MCYPow_unitary_matrix_1_over_4_0_shift_01_23_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_01_23_qubits.npy"
+)
 
 """ circuit.MCYPow() tester
 
@@ -3173,10 +3600,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCYPow_unitary_matrix_1_over_4_0_shift_10_23_qubits = np.load(prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_10_23_qubits.npy")
+MCYPow_unitary_matrix_1_over_4_0_shift_10_23_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_10_23_qubits.npy"
+)
 
 """ circuit.MCYPow() tester
 
@@ -3184,10 +3613,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCYPow_unitary_matrix_1_over_4_0_shift_02_13_qubits = np.load(prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_02_13_qubits.npy")
+MCYPow_unitary_matrix_1_over_4_0_shift_02_13_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_02_13_qubits.npy"
+)
 
 """ circuit.MCYPow() tester
 
@@ -3195,54 +3626,65 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCYPow_unitary_matrix_1_over_4_0_shift_20_34_qubits = np.load(prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_20_34_qubits.npy")
-
-""" circuit.MCYPow() tester
-
-Parameters
-----------
-`power` = -1/4
-`global_shift` = 0
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
-"""
-MCYPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits = np.load(prefix + "MCYPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits.npy")
-
-""" circuit.MCYPow() tester
-
-Parameters
-----------
-`power` = 1/4
-`global_shift` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
-"""
-MCYPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits = np.load(prefix + "MCYPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits.npy")
-
-""" circuit.MCYPow() tester
-
-Parameters
-----------
-`power` = 1/4
-`global_shift` = 1/3
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
-"""
-MCYPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits = np.load(prefix + "MCYPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits.npy")
+MCYPow_unitary_matrix_1_over_4_0_shift_20_34_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_1_over_4_0_shift_20_34_qubits.npy"
+)
 
 """ circuit.MCYPow() tester
 
 Parameters
 ----------
 `power` = -1/4
+`global_shift` = 0
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
+"""
+MCYPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits.npy"
+)
+
+""" circuit.MCYPow() tester
+
+Parameters
+----------
+`power` = 1/4
 `global_shift` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCYPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits = np.load(prefix + "MCYPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits.npy")
+MCYPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits.npy"
+)
+
+""" circuit.MCYPow() tester
+
+Parameters
+----------
+`power` = 1/4
+`global_shift` = 1/3
+`control_indices` = [0]
+`target_indices` = [2, 3]
+"""
+MCYPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits = np.load(
+    prefix + "MCYPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits.npy"
+)
+
+""" circuit.MCYPow() tester
+
+Parameters
+----------
+`power` = -1/4
+`global_shift` = 1/3
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
+"""
+MCYPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits = np.load(
+    prefix
+    + "MCYPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3250,10 +3692,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCZPow_unitary_matrix_1_over_4_0_shift_01_23_qubits = np.load(prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_01_23_qubits.npy")
+MCZPow_unitary_matrix_1_over_4_0_shift_01_23_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_01_23_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3261,10 +3705,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCZPow_unitary_matrix_1_over_4_0_shift_10_23_qubits = np.load(prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_10_23_qubits.npy")
+MCZPow_unitary_matrix_1_over_4_0_shift_10_23_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_10_23_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3272,10 +3718,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCZPow_unitary_matrix_1_over_4_0_shift_02_13_qubits = np.load(prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_02_13_qubits.npy")
+MCZPow_unitary_matrix_1_over_4_0_shift_02_13_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_02_13_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3283,10 +3731,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 0
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCZPow_unitary_matrix_1_over_4_0_shift_20_34_qubits = np.load(prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_20_34_qubits.npy")
+MCZPow_unitary_matrix_1_over_4_0_shift_20_34_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_1_over_4_0_shift_20_34_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3294,10 +3744,12 @@ Parameters
 ----------
 `power` = -1/4
 `global_shift` = 0
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCZPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits = np.load(prefix + "MCZPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits.npy")
+MCZPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_negative1_over_4_0_shift_12_04_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3305,10 +3757,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2]
+`control_indices` = [0, 1]
+`target_indices` = [2]
 """
-MCZPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits = np.load(prefix + "MCZPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits.npy")
+MCZPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_1_over_4_1_over_3_shift_01_2_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3316,10 +3770,12 @@ Parameters
 ----------
 `power` = 1/4
 `global_shift` = 1/3
-`control_qubits` = [0]
-`target_qubits` = [2, 3]
+`control_indices` = [0]
+`target_indices` = [2, 3]
 """
-MCZPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits = np.load(prefix + "MCZPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits.npy")
+MCZPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits = np.load(
+    prefix + "MCZPow_unitary_matrix_1_over_4_1_over_3_shift_0_23_qubits.npy"
+)
 
 """ circuit.MCZPow() tester
 
@@ -3327,810 +3783,1398 @@ Parameters
 ----------
 `power` = -1/4
 `global_shift` = 1/3
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCZPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits = np.load(prefix + "MCZPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits.npy")
+MCZPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits = np.load(
+    prefix
+    + "MCZPow_unitary_matrix_negative1_over_4_negative1_over_3_shift_01_23_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
+`control_indices` = [0, 1]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRXX_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCRXX_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCRXX_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
+`control_indices` = [1, 0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRXX_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCRXX_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCRXX_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
+`control_indices` = [0, 2]
 `first_target_index` = 1
 `second_target_index` = 3
 """
-MCRXX_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCRXX_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCRXX_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
+`control_indices` = [2, 0]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCRXX_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCRXX_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCRXX_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
+`control_indices` = [1, 2]
 `first_target_index` = 0
 `second_target_index` = 4
 """
-MCRXX_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCRXX_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCRXX_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
+`control_indices` = [5, 3]
 `first_target_index` = 0
 `second_target_index` = 1
 """
-MCRXX_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCRXX_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCRXX_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
+`control_indices` = [0, 1, 2]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCRXX_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCRXX_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCRXX_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCRXX() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0]
+`control_indices` = [0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRXX_unitary_matrix_1_over_3_0_23_qubits = np.load(prefix + "MCRXX_unitary_matrix_1_over_3_0_23_qubits.npy")
+MCRXX_unitary_matrix_1_over_3_0_23_qubits = np.load(
+    prefix + "MCRXX_unitary_matrix_1_over_3_0_23_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
+`control_indices` = [0, 1]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRYY_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCRYY_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCRYY_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
+`control_indices` = [1, 0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRYY_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCRYY_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCRYY_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
+`control_indices` = [0, 2]
 `first_target_index` = 1
 `second_target_index` = 3
 """
-MCRYY_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCRYY_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCRYY_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
+`control_indices` = [2, 0]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCRYY_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCRYY_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCRYY_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
+`control_indices` = [1, 2]
 `first_target_index` = 0
 `second_target_index` = 4
 """
-MCRYY_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCRYY_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCRYY_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
+`control_indices` = [5, 3]
 `first_target_index` = 0
 `second_target_index` = 1
 """
-MCRYY_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCRYY_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCRYY_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
+`control_indices` = [0, 1, 2]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCRYY_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCRYY_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCRYY_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCRYY() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0]
+`control_indices` = [0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRYY_unitary_matrix_1_over_3_0_23_qubits = np.load(prefix + "MCRYY_unitary_matrix_1_over_3_0_23_qubits.npy")
+MCRYY_unitary_matrix_1_over_3_0_23_qubits = np.load(
+    prefix + "MCRYY_unitary_matrix_1_over_3_0_23_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [0, 1]
+`control_indices` = [0, 1]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRZZ_unitary_matrix_pi_over_4_01_23_qubits = np.load(prefix + "MCRZZ_unitary_matrix_pi_over_4_01_23_qubits.npy")
+MCRZZ_unitary_matrix_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = np.pi/4
-`control_qubits` = [1, 0]
+`control_indices` = [1, 0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRZZ_unitary_matrix_pi_over_4_10_23_qubits = np.load(prefix + "MCRZZ_unitary_matrix_pi_over_4_10_23_qubits.npy")
+MCRZZ_unitary_matrix_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [0, 2]
+`control_indices` = [0, 2]
 `first_target_index` = 1
 `second_target_index` = 3
 """
-MCRZZ_unitary_matrix_1_over_4_02_13_qubits = np.load(prefix + "MCRZZ_unitary_matrix_1_over_4_02_13_qubits.npy")
+MCRZZ_unitary_matrix_1_over_4_02_13_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = 1/4
-`control_qubits` = [2, 0]
+`control_indices` = [2, 0]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCRZZ_unitary_matrix_1_over_4_20_34_qubits = np.load(prefix + "MCRZZ_unitary_matrix_1_over_4_20_34_qubits.npy")
+MCRZZ_unitary_matrix_1_over_4_20_34_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [1, 2]
+`control_indices` = [1, 2]
 `first_target_index` = 0
 `second_target_index` = 4
 """
-MCRZZ_unitary_matrix_negative1_over_4_12_04_qubits = np.load(prefix + "MCRZZ_unitary_matrix_negative1_over_4_12_04_qubits.npy")
+MCRZZ_unitary_matrix_negative1_over_4_12_04_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = -1/4
-`control_qubits` = [5, 3]
+`control_indices` = [5, 3]
 `first_target_index` = 0
 `second_target_index` = 1
 """
-MCRZZ_unitary_matrix_negative1_over_4_53_01_qubits = np.load(prefix + "MCRZZ_unitary_matrix_negative1_over_4_53_01_qubits.npy")
+MCRZZ_unitary_matrix_negative1_over_4_53_01_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_negative1_over_4_53_01_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0, 1, 2]
+`control_indices` = [0, 1, 2]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCRZZ_unitary_matrix_1_over_3_012_34_qubits = np.load(prefix + "MCRZZ_unitary_matrix_1_over_3_012_34_qubits.npy")
+MCRZZ_unitary_matrix_1_over_3_012_34_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_1_over_3_012_34_qubits.npy"
+)
 
 """ circuit.MCRZZ() tester
 
 Parameters
 ----------
 `angle` = 1/3
-`control_qubits` = [0]
+`control_indices` = [0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCRZZ_unitary_matrix_1_over_3_0_23_qubits = np.load(prefix + "MCRZZ_unitary_matrix_1_over_3_0_23_qubits.npy")
+MCRZZ_unitary_matrix_1_over_3_0_23_qubits = np.load(
+    prefix + "MCRZZ_unitary_matrix_1_over_3_0_23_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4)
-`control_qubits` = [0, 1]
-`target_qubits` = [2, 3]
+`control_indices` = [0, 1]
+`target_indices` = [2, 3]
 """
-MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_01_23_qubits = np.load(prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_01_23_qubits.npy")
+MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_01_23_qubits = np.load(
+    prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_01_23_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4)
-`control_qubits` = [1, 0]
-`target_qubits` = [2, 3]
+`control_indices` = [1, 0]
+`target_indices` = [2, 3]
 """
-MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_10_23_qubits = np.load(prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_10_23_qubits.npy")
+MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_10_23_qubits = np.load(
+    prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_10_23_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (1/2, 1/3, 1/4)
-`control_qubits` = [0, 2]
-`target_qubits` = [1, 3]
+`control_indices` = [0, 2]
+`target_indices` = [1, 3]
 """
-MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_02_13_qubits = np.load(prefix + "MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_02_13_qubits.npy")
+MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_02_13_qubits = np.load(
+    prefix + "MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_02_13_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (1/2, 1/3, 1/4)
-`control_qubits` = [2, 0]
-`target_qubits` = [3, 4]
+`control_indices` = [2, 0]
+`target_indices` = [3, 4]
 """
-MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_20_34_qubits = np.load(prefix + "MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_20_34_qubits.npy")
+MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_20_34_qubits = np.load(
+    prefix + "MCU3_unitary_matrix_1_over_2_1_over_3_1_over_4_20_34_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (-1/2, -1/3, -1/4)
-`control_qubits` = [1, 2]
-`target_qubits` = [0, 4]
+`control_indices` = [1, 2]
+`target_indices` = [0, 4]
 """
-MCU3_unitary_matrix_negative1_over_2_negative1_over_3_negative1_over_4_12_04_qubits = np.load(prefix + "MCU3_unitary_matrix_negative1_over_2_negative1_over_3_negative1_over_4_12_04_qubits.npy")
+MCU3_unitary_matrix_negative1_over_2_negative1_over_3_negative1_over_4_12_04_qubits = np.load(
+    prefix
+    + "MCU3_unitary_matrix_negative1_over_2_negative1_over_3_negative1_over_4_12_04_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4)
-`control_qubits` = [1, 2, 3]
-`target_qubits` = [4, 5]
+`control_indices` = [1, 2, 3]
+`target_indices` = [4, 5]
 """
-MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_123_45_qubits = np.load(prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_123_45_qubits.npy")
+MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_123_45_qubits = np.load(
+    prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_123_45_qubits.npy"
+)
 
 """ circuit.MCU3() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4)
-`control_qubits` = [0]
-`target_qubits` = [1, 2]
+`control_indices` = [0]
+`target_indices` = [1, 2]
 """
-MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_0_12_qubits = np.load(prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_0_12_qubits.npy")
+MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_0_12_qubits = np.load(
+    prefix + "MCU3_unitary_matrix_pi_over_2_pi_over_3_pi_over_4_0_12_qubits.npy"
+)
 
 """ circuit.MCSWAP() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 1]
+`control_indices` = [0, 1]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCSWAP_unitary_matrix_01_23_qubits = np.load(prefix + "MCSWAP_unitary_matrix_01_23_qubits.npy")
+MCSWAP_unitary_matrix_01_23_qubits = np.load(
+    prefix + "MCSWAP_unitary_matrix_01_23_qubits.npy"
+)
 
 """ circuit.MCSWAP() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 0]
+`control_indices` = [1, 0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCSWAP_unitary_matrix_10_23_qubits = np.load(prefix + "MCSWAP_unitary_matrix_10_23_qubits.npy")
+MCSWAP_unitary_matrix_10_23_qubits = np.load(
+    prefix + "MCSWAP_unitary_matrix_10_23_qubits.npy"
+)
 
 """ circuit.MCSWAP() tester
 
 Parameters
 ----------
-`control_qubits` = [0, 2]
+`control_indices` = [0, 2]
 `first_target_index` = 1
 `second_target_index` = 3
 """
-MCSWAP_unitary_matrix_02_13_qubits = np.load(prefix + "MCSWAP_unitary_matrix_02_13_qubits.npy")
+MCSWAP_unitary_matrix_02_13_qubits = np.load(
+    prefix + "MCSWAP_unitary_matrix_02_13_qubits.npy"
+)
 
 """ circuit.MCSWAP() tester
 
 Parameters
 ----------
-`control_qubits` = [2, 0]
+`control_indices` = [2, 0]
 `first_target_index` = 3
 `second_target_index` = 4
 """
-MCSWAP_unitary_matrix_20_34_qubits = np.load(prefix + "MCSWAP_unitary_matrix_20_34_qubits.npy")
+MCSWAP_unitary_matrix_20_34_qubits = np.load(
+    prefix + "MCSWAP_unitary_matrix_20_34_qubits.npy"
+)
 
 """ circuit.MCSWAP() tester
 
 Parameters
 ----------
-`control_qubits` = [1, 2, 3]
+`control_indices` = [1, 2, 3]
 `first_target_index` = 4
 `second_target_index` = 5
 """
-MCSWAP_unitary_matrix_123_45_qubits = np.load(prefix + "MCSWAP_unitary_matrix_123_45_qubits.npy")
+MCSWAP_unitary_matrix_123_45_qubits = np.load(
+    prefix + "MCSWAP_unitary_matrix_123_45_qubits.npy"
+)
 
 """ circuit.MCSWAP() tester
 
 Parameters
 ----------
-`control_qubits` = [0]
+`control_indices` = [0]
 `first_target_index` = 2
 `second_target_index` = 3
 """
-MCSWAP_unitary_matrix_0_23_qubits = np.load(prefix + "MCSWAP_unitary_matrix_0_23_qubits.npy")
+MCSWAP_unitary_matrix_0_23_qubits = np.load(
+    prefix + "MCSWAP_unitary_matrix_0_23_qubits.npy"
+)
 
 """ circuit.UCRX() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5)
-`control_qubits` = [0, 1]
-`target_qubits` = 2
+`control_indices` = [0, 1]
+`target_index` = 2
 """
-UCRX_unitary_matrix_3qubits_01control = np.load(prefix + "UCRX_unitary_matrix_3qubits_01control.npy")
+UCRX_unitary_matrix_3qubits_01control = np.load(
+    prefix + "UCRX_unitary_matrix_3qubits_01control.npy"
+)
 
 """ circuit.UCRX() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5)
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`control_indices` = [1, 0]
+`target_index` = 2
 """
-UCRX_unitary_matrix_3qubits_10control = np.load(prefix + "UCRX_unitary_matrix_3qubits_10control.npy")
+UCRX_unitary_matrix_3qubits_10control = np.load(
+    prefix + "UCRX_unitary_matrix_3qubits_10control.npy"
+)
 
 """ circuit.UCRX() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9)
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`control_indices` = [0, 2, 3]
+`target_index` = 1
 """
-UCRX_unitary_matrix_4qubits_023control = np.load(prefix + "UCRX_unitary_matrix_4qubits_023control.npy")
+UCRX_unitary_matrix_4qubits_023control = np.load(
+    prefix + "UCRX_unitary_matrix_4qubits_023control.npy"
+)
 
 """ circuit.UCRX() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9)
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`control_indices` = [2, 1, 3]
+`target_index` = 0
 """
-UCRX_unitary_matrix_4qubits_213control = np.load(prefix + "UCRX_unitary_matrix_4qubits_213control.npy")
+UCRX_unitary_matrix_4qubits_213control = np.load(
+    prefix + "UCRX_unitary_matrix_4qubits_213control.npy"
+)
 
 """ circuit.UCRY() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5)
-`control_qubits` = [0, 1]
-`target_qubits` = 2
+`control_indices` = [0, 1]
+`target_index` = 2
 """
-UCRY_unitary_matrix_3qubits_01control = np.load(prefix + "UCRY_unitary_matrix_3qubits_01control.npy")
+UCRY_unitary_matrix_3qubits_01control = np.load(
+    prefix + "UCRY_unitary_matrix_3qubits_01control.npy"
+)
 
 """ circuit.UCRY() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5)
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`control_indices` = [1, 0]
+`target_index` = 2
 """
-UCRY_unitary_matrix_3qubits_10control = np.load(prefix + "UCRY_unitary_matrix_3qubits_10control.npy")
+UCRY_unitary_matrix_3qubits_10control = np.load(
+    prefix + "UCRY_unitary_matrix_3qubits_10control.npy"
+)
 
 """ circuit.UCRY() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9)
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`control_indices` = [0, 2, 3]
+`target_index` = 1
 """
-UCRY_unitary_matrix_4qubits_023control = np.load(prefix + "UCRY_unitary_matrix_4qubits_023control.npy")
+UCRY_unitary_matrix_4qubits_023control = np.load(
+    prefix + "UCRY_unitary_matrix_4qubits_023control.npy"
+)
 
 """ circuit.UCRY() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9)
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`control_indices` = [2, 1, 3]
+`target_index` = 0
 """
-UCRY_unitary_matrix_4qubits_213control = np.load(prefix + "UCRY_unitary_matrix_4qubits_213control.npy")
+UCRY_unitary_matrix_4qubits_213control = np.load(
+    prefix + "UCRY_unitary_matrix_4qubits_213control.npy"
+)
 
 """ circuit.UCRZ() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5)
-`control_qubits` = [0, 1]
-`target_qubits` = 2
+`control_indices` = [0, 1]
+`target_index` = 2
 """
-UCRZ_unitary_matrix_3qubits_01control = np.load(prefix + "UCRZ_unitary_matrix_3qubits_01control.npy")
+UCRZ_unitary_matrix_3qubits_01control = np.load(
+    prefix + "UCRZ_unitary_matrix_3qubits_01control.npy"
+)
 
 """ circuit.UCRZ() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5)
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`control_indices` = [1, 0]
+`target_index` = 2
 """
-UCRZ_unitary_matrix_3qubits_10control = np.load(prefix + "UCRZ_unitary_matrix_3qubits_10control.npy")
+UCRZ_unitary_matrix_3qubits_10control = np.load(
+    prefix + "UCRZ_unitary_matrix_3qubits_10control.npy"
+)
 
 """ circuit.UCRZ() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9)
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`control_indices` = [0, 2, 3]
+`target_index` = 1
 """
-UCRZ_unitary_matrix_4qubits_023control = np.load(prefix + "UCRZ_unitary_matrix_4qubits_023control.npy")
+UCRZ_unitary_matrix_4qubits_023control = np.load(
+    prefix + "UCRZ_unitary_matrix_4qubits_023control.npy"
+)
 
 """ circuit.UCRZ() tester
 
 Parameters
 ----------
 `angles` = (np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9)
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`control_indices` = [2, 1, 3]
+`target_index` = 0
 """
-UCRZ_unitary_matrix_4qubits_213control = np.load(prefix + "UCRZ_unitary_matrix_4qubits_213control.npy")
+UCRZ_unitary_matrix_4qubits_213control = np.load(
+    prefix + "UCRZ_unitary_matrix_4qubits_213control.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliX().matrix, Hadamard().matrix, PauliX().matrix]
-`control_qubits` = [0, 1]
-`target_qubits` = 2
+`gates` = [
+    Hadamard().matrix,
+    PauliX().matrix,
+    Hadamard().matrix,
+    PauliX().matrix
+]
+`control_indices` = [0, 1]
+`target_index` = 2
 `up_to_diagonal` = False
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_no_diagonal_no_simplification_3qubits_01control_HXHX = np.load(prefix + "UC_unitary_matrix_no_diagonal_no_simplification_3qubits_01control_HXHX.npy")
+UC_unitary_matrix_no_diagonal_no_simplification_3qubits_01control_HXHX = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_no_simplification_3qubits_01control_HXHX.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliY().matrix, Hadamard().matrix, PauliY().matrix]
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`gates` = [
+    Hadamard().matrix,
+    PauliY().matrix,
+    Hadamard().matrix,
+    PauliY().matrix
+]
+`control_indices` = [1, 0]
+`target_index` = 2
 `up_to_diagonal` = False
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_no_diagonal_no_simplification_3qubits_10control_HYHY = np.load(prefix + "UC_unitary_matrix_no_diagonal_no_simplification_3qubits_10control_HYHY.npy")
+UC_unitary_matrix_no_diagonal_no_simplification_3qubits_10control_HYHY = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_no_simplification_3qubits_10control_HYHY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [0, 2, 3]
+`target_index` = 1
 `up_to_diagonal` = False
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_no_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_no_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_no_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
+`control_indices` = [2, 1, 3]
+`target_index` = 0
 `up_to_diagonal` = False
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliX().matrix, Hadamard().matrix, PauliX().matrix]
-`control_qubits` = [0, 1]
-`target_qubits` = 2
+`gates` = [
+    RYGate(np.pi).matrix,
+    RXGate(np.pi/2).matrix,
+    RYGate(np.pi/3).matrix,
+    RXGate(np.pi/4).matrix,
+    RYGate(np.pi/5).matrix,
+    RXGate(np.pi/6).matrix,
+    RYGate(np.pi/7).matrix,
+    RXGate(np.pi/8).matrix,
+    RYGate(np.pi/9).matrix,
+    RXGate(np.pi/10).matrix,
+    RYGate(np.pi/11).matrix,
+    RXGate(np.pi/12).matrix,
+    RYGate(np.pi/13).matrix,
+    RXGate(np.pi/14).matrix,
+    RYGate(np.pi/15).matrix,
+    RXGate(np.pi/16).matrix,
+    RYGate(np.pi/17).matrix,
+    RXGate(np.pi/18).matrix,
+    RYGate(np.pi/19).matrix,
+    RXGate(np.pi/20).matrix,
+    RYGate(np.pi/21).matrix,
+    RXGate(np.pi/22).matrix,
+    RYGate(np.pi/23).matrix,
+    RXGate(np.pi/24).matrix,
+    RYGate(np.pi/25).matrix,
+    RXGate(np.pi/26).matrix,
+    RYGate(np.pi/27).matrix,
+    RXGate(np.pi/28).matrix,
+    RYGate(np.pi/29).matrix,
+    RXGate(np.pi/30).matrix,
+    RYGate(np.pi/31).matrix,
+    RXGate(np.pi/32).matrix
+]
+`control_indices` = [3, 1, 4, 0, 5]
+`target_index` = 2
+`up_to_diagonal` = False
+`multiplexor_simplification` = False
+"""
+UC_unitary_matrix_no_diagonal_no_simplification_6qubits_31405control_RYRX_alternating = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_no_simplification_6qubits_31405control_RYRX_alternating.npy"
+)
+
+""" circuit.UC() tester
+
+Parameters
+----------
+`gates` = [
+    Hadamard().matrix,
+    PauliX().matrix,
+    Hadamard().matrix,
+    PauliX().matrix
+]
+`control_indices` = [0, 1]
+`target_indices` = 2
 `up_to_diagonal` = True
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_diagonal_no_simplification_3qubits_01control_HXHX = np.load(prefix + "UC_unitary_matrix_diagonal_no_simplification_3qubits_01control_HXHX.npy")
+UC_unitary_matrix_diagonal_no_simplification_3qubits_01control_HXHX = np.load(
+    prefix + "UC_unitary_matrix_diagonal_no_simplification_3qubits_01control_HXHX.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliY().matrix, Hadamard().matrix, PauliY().matrix]
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`gates` = [
+    Hadamard().matrix,
+    PauliY().matrix,
+    Hadamard().matrix,
+    PauliY().matrix
+]
+`control_indices` = [1, 0]
+`target_indices` = 2
 `up_to_diagonal` = True
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_diagonal_no_simplification_3qubits_10control_HYHY = np.load(prefix + "UC_unitary_matrix_diagonal_no_simplification_3qubits_10control_HYHY.npy")
+UC_unitary_matrix_diagonal_no_simplification_3qubits_10control_HYHY = np.load(
+    prefix + "UC_unitary_matrix_diagonal_no_simplification_3qubits_10control_HYHY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [0, 2, 3]
+`target_indices` = 1
 `up_to_diagonal` = True
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_diagonal_no_simplification_4qubits_023control_RXRYRXRYRXRY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [2, 1, 3]
+`target_indices` = 0
 `up_to_diagonal` = True
 `multiplexor_simplification` = False
 """
-UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_diagonal_no_simplification_4qubits_213control_RXRYRXRYRXRY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliX().matrix, Hadamard().matrix, PauliX().matrix]
-`control_qubits` = [0, 1]
-`target_qubits` = 2
+`gates` = [
+    RYGate(np.pi).matrix,
+    RXGate(np.pi/2).matrix,
+    RYGate(np.pi/3).matrix,
+    RXGate(np.pi/4).matrix,
+    RYGate(np.pi/5).matrix,
+    RXGate(np.pi/6).matrix,
+    RYGate(np.pi/7).matrix,
+    RXGate(np.pi/8).matrix,
+    RYGate(np.pi/9).matrix,
+    RXGate(np.pi/10).matrix,
+    RYGate(np.pi/11).matrix,
+    RXGate(np.pi/12).matrix,
+    RYGate(np.pi/13).matrix,
+    RXGate(np.pi/14).matrix,
+    RYGate(np.pi/15).matrix,
+    RXGate(np.pi/16).matrix,
+    RYGate(np.pi/17).matrix,
+    RXGate(np.pi/18).matrix,
+    RYGate(np.pi/19).matrix,
+    RXGate(np.pi/20).matrix,
+    RYGate(np.pi/21).matrix,
+    RXGate(np.pi/22).matrix,
+    RYGate(np.pi/23).matrix,
+    RXGate(np.pi/24).matrix,
+    RYGate(np.pi/25).matrix,
+    RXGate(np.pi/26).matrix,
+    RYGate(np.pi/27).matrix,
+    RXGate(np.pi/28).matrix,
+    RYGate(np.pi/29).matrix,
+    RXGate(np.pi/30).matrix,
+    RYGate(np.pi/31).matrix,
+    RXGate(np.pi/32).matrix
+]
+`control_indices` = [3, 1, 4, 0, 5]
+`target_index` = 2
+`up_to_diagonal` = True
+`multiplexor_simplification` = False
+"""
+UC_unitary_matrix_diagonal_no_simplification_6qubits_31405control_RYRX_alternating = np.load(
+    prefix
+    + "UC_unitary_matrix_diagonal_no_simplification_6qubits_31405control_RYRX_alternating.npy"
+)
+
+""" circuit.UC() tester
+
+Parameters
+----------
+`gates` = [
+    Hadamard().matrix,
+    PauliX().matrix,
+    Hadamard().matrix,
+    PauliX().matrix
+]
+`control_indices` = [0, 1]
+`target_indices` = 2
 `up_to_diagonal` = False
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_no_diagonal_simplification_3qubits_01control_HXHX = np.load(prefix + "UC_unitary_matrix_no_diagonal_simplification_3qubits_01control_HXHX.npy")
+UC_unitary_matrix_no_diagonal_simplification_3qubits_01control_HXHX = np.load(
+    prefix + "UC_unitary_matrix_no_diagonal_simplification_3qubits_01control_HXHX.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliY().matrix, Hadamard().matrix, PauliY().matrix]
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`gates` = [
+    Hadamard().matrix,
+    PauliY().matrix,
+    Hadamard().matrix,
+    PauliY().matrix
+]
+`control_indices` = [1, 0]
+`target_indices` = 2
 `up_to_diagonal` = False
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_no_diagonal_simplification_3qubits_10control_HYHY = np.load(prefix + "UC_unitary_matrix_no_diagonal_simplification_3qubits_10control_HYHY.npy")
+UC_unitary_matrix_no_diagonal_simplification_3qubits_10control_HYHY = np.load(
+    prefix + "UC_unitary_matrix_no_diagonal_simplification_3qubits_10control_HYHY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [0, 2, 3]
+`target_indices` = 1
 `up_to_diagonal` = False
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_no_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_no_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_no_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [2, 1, 3]
+`target_indices` = 0
 `up_to_diagonal` = False
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliX().matrix, Hadamard().matrix, PauliX().matrix]
-`control_qubits` = [0, 1]
-`target_qubits` = 2
-`up_to_diagonal` = True
+`gates` = [
+    RYGate(np.pi).matrix,
+    RXGate(np.pi/2).matrix,
+    RYGate(np.pi/3).matrix,
+    RXGate(np.pi/4).matrix,
+    RYGate(np.pi/5).matrix,
+    RXGate(np.pi/6).matrix,
+    RYGate(np.pi/7).matrix,
+    RXGate(np.pi/8).matrix,
+    RYGate(np.pi/9).matrix,
+    RXGate(np.pi/10).matrix,
+    RYGate(np.pi/11).matrix,
+    RXGate(np.pi/12).matrix,
+    RYGate(np.pi/13).matrix,
+    RXGate(np.pi/14).matrix,
+    RYGate(np.pi/15).matrix,
+    RXGate(np.pi/16).matrix,
+    RYGate(np.pi/17).matrix,
+    RXGate(np.pi/18).matrix,
+    RYGate(np.pi/19).matrix,
+    RXGate(np.pi/20).matrix,
+    RYGate(np.pi/21).matrix,
+    RXGate(np.pi/22).matrix,
+    RYGate(np.pi/23).matrix,
+    RXGate(np.pi/24).matrix,
+    RYGate(np.pi/25).matrix,
+    RXGate(np.pi/26).matrix,
+    RYGate(np.pi/27).matrix,
+    RXGate(np.pi/28).matrix,
+    RYGate(np.pi/29).matrix,
+    RXGate(np.pi/30).matrix,
+    RYGate(np.pi/31).matrix,
+    RXGate(np.pi/32).matrix
+]
+`control_indices` = [3, 1, 4, 0, 5]
+`target_index` = 2
+`up_to_diagonal` = False
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_diagonal_simplification_3qubits_01control_HXHX = np.load(prefix + "UC_unitary_matrix_diagonal_simplification_3qubits_01control_HXHX.npy")
+UC_unitary_matrix_no_diagonal_simplification_6qubits_31405control_RYRX_alternating = np.load(
+    prefix
+    + "UC_unitary_matrix_no_diagonal_simplification_6qubits_31405control_RYRX_alternating.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [Hadamard().matrix, PauliY().matrix, Hadamard().matrix, PauliY().matrix]
-`control_qubits` = [1, 0]
-`target_qubits` = 2
+`gates` = [
+    Hadamard().matrix,
+    PauliX().matrix,
+    Hadamard().matrix,
+    PauliX().matrix
+]
+`control_indices` = [0, 1]
+`target_indices` = 2
 `up_to_diagonal` = True
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_diagonal_simplification_3qubits_10control_HYHY = np.load(prefix + "UC_unitary_matrix_diagonal_simplification_3qubits_10control_HYHY.npy")
+UC_unitary_matrix_diagonal_simplification_3qubits_01control_HXHX = np.load(
+    prefix + "UC_unitary_matrix_diagonal_simplification_3qubits_01control_HXHX.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [0, 2, 3]
-`target_qubits` = 1
+`gates` = [
+    Hadamard().matrix,
+    PauliY().matrix,
+    Hadamard().matrix,
+    PauliY().matrix
+]
+`control_indices` = [1, 0]
+`target_indices` = 2
 `up_to_diagonal` = True
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_diagonal_simplification_3qubits_10control_HYHY = np.load(
+    prefix + "UC_unitary_matrix_diagonal_simplification_3qubits_10control_HYHY.npy"
+)
 
 """ circuit.UC() tester
 
 Parameters
 ----------
-`gates` = [RX(np.pi/2).matrix, RY(np.pi/3).matrix, RX(np.pi/4).matrix, RY(np.pi/5).matrix, RX(np.pi/6).matrix, RY(np.pi/7).matrix, RX(np.pi/8).matrix, RY(np.pi/9).matrix]
-`control_qubits` = [2, 1, 3]
-`target_qubits` = 0
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [0, 2, 3]
+`target_indices` = 1
 `up_to_diagonal` = True
 `multiplexor_simplification` = True
 """
-UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(prefix + "UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY.npy")
+UC_unitary_matrix_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_diagonal_simplification_4qubits_023control_RXRYRXRYRXRY.npy"
+)
+
+""" circuit.UC() tester
+
+Parameters
+----------
+`gates` = [
+    RX(np.pi/2).matrix,
+    RY(np.pi/3).matrix,
+    RX(np.pi/4).matrix,
+    RY(np.pi/5).matrix,
+    RX(np.pi/6).matrix,
+    RY(np.pi/7).matrix,
+    RX(np.pi/8).matrix,
+    RY(np.pi/9).matrix
+]
+`control_indices` = [2, 1, 3]
+`target_indices` = 0
+`up_to_diagonal` = True
+`multiplexor_simplification` = True
+"""
+UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY = np.load(
+    prefix
+    + "UC_unitary_matrix_diagonal_simplification_4qubits_213control_RXRYRXRYRXRY.npy"
+)
+
+""" circuit.UC() tester
+
+Parameters
+----------
+`gates` = [
+    RYGate(np.pi).matrix,
+    RXGate(np.pi/2).matrix,
+    RYGate(np.pi/3).matrix,
+    RXGate(np.pi/4).matrix,
+    RYGate(np.pi/5).matrix,
+    RXGate(np.pi/6).matrix,
+    RYGate(np.pi/7).matrix,
+    RXGate(np.pi/8).matrix,
+    RYGate(np.pi/9).matrix,
+    RXGate(np.pi/10).matrix,
+    RYGate(np.pi/11).matrix,
+    RXGate(np.pi/12).matrix,
+    RYGate(np.pi/13).matrix,
+    RXGate(np.pi/14).matrix,
+    RYGate(np.pi/15).matrix,
+    RXGate(np.pi/16).matrix,
+    RYGate(np.pi/17).matrix,
+    RXGate(np.pi/18).matrix,
+    RYGate(np.pi/19).matrix,
+    RXGate(np.pi/20).matrix,
+    RYGate(np.pi/21).matrix,
+    RXGate(np.pi/22).matrix,
+    RYGate(np.pi/23).matrix,
+    RXGate(np.pi/24).matrix,
+    RYGate(np.pi/25).matrix,
+    RXGate(np.pi/26).matrix,
+    RYGate(np.pi/27).matrix,
+    RXGate(np.pi/28).matrix,
+    RYGate(np.pi/29).matrix,
+    RXGate(np.pi/30).matrix,
+    RYGate(np.pi/31).matrix,
+    RXGate(np.pi/32).matrix
+]
+`control_indices` = [3, 1, 4, 0, 5]
+`target_index` = 2
+`up_to_diagonal` = True
+`multiplexor_simplification` = True
+"""
+UC_unitary_matrix_diagonal_simplification_6qubits_31405control_RYRX_alternating = np.load(
+    prefix
+    + "UC_unitary_matrix_diagonal_simplification_6qubits_31405control_RYRX_alternating.npy"
+)
 
 # QFT testers for (5, 6, 7, 8) qubits
 # QFT(no swap, no inverse, approximation_degree = 0)
-qft_no_swap_no_inverse_approx0_5qubits = np.load(prefix + "qft_no_swap_no_inverse_approx0_5qubits.npy")
-qft_no_swap_no_inverse_approx0_6qubits = np.load(prefix + "qft_no_swap_no_inverse_approx0_6qubits.npy")
-qft_no_swap_no_inverse_approx0_7qubits = np.load(prefix + "qft_no_swap_no_inverse_approx0_7qubits.npy")
-qft_no_swap_no_inverse_approx0_8qubits = np.load(prefix + "qft_no_swap_no_inverse_approx0_8qubits.npy")
+
+qft_no_swap_no_inverse_approx0_5qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx0_5qubits.npy"
+)
+qft_no_swap_no_inverse_approx0_6qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx0_6qubits.npy"
+)
+qft_no_swap_no_inverse_approx0_7qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx0_7qubits.npy"
+)
+qft_no_swap_no_inverse_approx0_8qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx0_8qubits.npy"
+)
 
 # QFT(no swap, no inverse, approximation_degree = 1)
-qft_no_swap_no_inverse_approx1_5qubits = np.load(prefix + "qft_no_swap_no_inverse_approx1_5qubits.npy")
-qft_no_swap_no_inverse_approx1_6qubits = np.load(prefix + "qft_no_swap_no_inverse_approx1_6qubits.npy")
-qft_no_swap_no_inverse_approx1_7qubits = np.load(prefix + "qft_no_swap_no_inverse_approx1_7qubits.npy")
-qft_no_swap_no_inverse_approx1_8qubits = np.load(prefix + "qft_no_swap_no_inverse_approx1_8qubits.npy")
+
+qft_no_swap_no_inverse_approx1_5qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx1_5qubits.npy"
+)
+qft_no_swap_no_inverse_approx1_6qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx1_6qubits.npy"
+)
+qft_no_swap_no_inverse_approx1_7qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx1_7qubits.npy"
+)
+qft_no_swap_no_inverse_approx1_8qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx1_8qubits.npy"
+)
 
 # QFT(no swap, no inverse, approximation_degree = 2)
-qft_no_swap_no_inverse_approx2_5qubits = np.load(prefix + "qft_no_swap_no_inverse_approx2_5qubits.npy")
-qft_no_swap_no_inverse_approx2_6qubits = np.load(prefix + "qft_no_swap_no_inverse_approx2_6qubits.npy")
-qft_no_swap_no_inverse_approx2_7qubits = np.load(prefix + "qft_no_swap_no_inverse_approx2_7qubits.npy")
-qft_no_swap_no_inverse_approx2_8qubits = np.load(prefix + "qft_no_swap_no_inverse_approx2_8qubits.npy")
+
+qft_no_swap_no_inverse_approx2_5qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx2_5qubits.npy"
+)
+qft_no_swap_no_inverse_approx2_6qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx2_6qubits.npy"
+)
+qft_no_swap_no_inverse_approx2_7qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx2_7qubits.npy"
+)
+qft_no_swap_no_inverse_approx2_8qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx2_8qubits.npy"
+)
 
 # QFT(no swap, no inverse, approximation_degree = 3)
-qft_no_swap_no_inverse_approx3_5qubits = np.load(prefix + "qft_no_swap_no_inverse_approx3_5qubits.npy")
-qft_no_swap_no_inverse_approx3_6qubits = np.load(prefix + "qft_no_swap_no_inverse_approx3_6qubits.npy")
-qft_no_swap_no_inverse_approx3_7qubits = np.load(prefix + "qft_no_swap_no_inverse_approx3_7qubits.npy")
-qft_no_swap_no_inverse_approx3_8qubits = np.load(prefix + "qft_no_swap_no_inverse_approx3_8qubits.npy")
+
+qft_no_swap_no_inverse_approx3_5qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx3_5qubits.npy"
+)
+qft_no_swap_no_inverse_approx3_6qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx3_6qubits.npy"
+)
+qft_no_swap_no_inverse_approx3_7qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx3_7qubits.npy"
+)
+qft_no_swap_no_inverse_approx3_8qubits = np.load(
+    prefix + "qft_no_swap_no_inverse_approx3_8qubits.npy"
+)
 
 # QFT(swap, no inverse, approximation_degree = 0)
-qft_swap_no_inverse_approx0_5qubits = np.load(prefix + "qft_swap_no_inverse_approx0_5qubits.npy")
-qft_swap_no_inverse_approx0_6qubits = np.load(prefix + "qft_swap_no_inverse_approx0_6qubits.npy")
-qft_swap_no_inverse_approx0_7qubits = np.load(prefix + "qft_swap_no_inverse_approx0_7qubits.npy")
-qft_swap_no_inverse_approx0_8qubits = np.load(prefix + "qft_swap_no_inverse_approx0_8qubits.npy")
+
+qft_swap_no_inverse_approx0_5qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx0_5qubits.npy"
+)
+qft_swap_no_inverse_approx0_6qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx0_6qubits.npy"
+)
+qft_swap_no_inverse_approx0_7qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx0_7qubits.npy"
+)
+qft_swap_no_inverse_approx0_8qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx0_8qubits.npy"
+)
 
 # QFT(swap, no inverse, approximation_degree = 1)
-qft_swap_no_inverse_approx1_5qubits = np.load(prefix + "qft_swap_no_inverse_approx1_5qubits.npy")
-qft_swap_no_inverse_approx1_6qubits = np.load(prefix + "qft_swap_no_inverse_approx1_6qubits.npy")
-qft_swap_no_inverse_approx1_7qubits = np.load(prefix + "qft_swap_no_inverse_approx1_7qubits.npy")
-qft_swap_no_inverse_approx1_8qubits = np.load(prefix + "qft_swap_no_inverse_approx1_8qubits.npy")
+
+qft_swap_no_inverse_approx1_5qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx1_5qubits.npy"
+)
+qft_swap_no_inverse_approx1_6qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx1_6qubits.npy"
+)
+qft_swap_no_inverse_approx1_7qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx1_7qubits.npy"
+)
+qft_swap_no_inverse_approx1_8qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx1_8qubits.npy"
+)
 
 # QFT(swap, no inverse, approximation_degree = 2)
-qft_swap_no_inverse_approx2_5qubits = np.load(prefix + "qft_swap_no_inverse_approx2_5qubits.npy")
-qft_swap_no_inverse_approx2_6qubits = np.load(prefix + "qft_swap_no_inverse_approx2_6qubits.npy")
-qft_swap_no_inverse_approx2_7qubits = np.load(prefix + "qft_swap_no_inverse_approx2_7qubits.npy")
-qft_swap_no_inverse_approx2_8qubits = np.load(prefix + "qft_swap_no_inverse_approx2_8qubits.npy")
+
+qft_swap_no_inverse_approx2_5qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx2_5qubits.npy"
+)
+qft_swap_no_inverse_approx2_6qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx2_6qubits.npy"
+)
+qft_swap_no_inverse_approx2_7qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx2_7qubits.npy"
+)
+qft_swap_no_inverse_approx2_8qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx2_8qubits.npy"
+)
 
 # QFT(swap, no inverse, approximation_degree = 3)
-qft_swap_no_inverse_approx3_5qubits = np.load(prefix + "qft_swap_no_inverse_approx3_5qubits.npy")
-qft_swap_no_inverse_approx3_6qubits = np.load(prefix + "qft_swap_no_inverse_approx3_6qubits.npy")
-qft_swap_no_inverse_approx3_7qubits = np.load(prefix + "qft_swap_no_inverse_approx3_7qubits.npy")
-qft_swap_no_inverse_approx3_8qubits = np.load(prefix + "qft_swap_no_inverse_approx3_8qubits.npy")
+
+qft_swap_no_inverse_approx3_5qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx3_5qubits.npy"
+)
+qft_swap_no_inverse_approx3_6qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx3_6qubits.npy"
+)
+qft_swap_no_inverse_approx3_7qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx3_7qubits.npy"
+)
+qft_swap_no_inverse_approx3_8qubits = np.load(
+    prefix + "qft_swap_no_inverse_approx3_8qubits.npy"
+)
 
 # QFT(no swap, inverse, approximation_degree = 0)
-qft_no_swap_inverse_approx0_5qubits = np.load(prefix + "qft_no_swap_inverse_approx0_5qubits.npy")
-qft_no_swap_inverse_approx0_6qubits = np.load(prefix + "qft_no_swap_inverse_approx0_6qubits.npy")
-qft_no_swap_inverse_approx0_7qubits = np.load(prefix + "qft_no_swap_inverse_approx0_7qubits.npy")
-qft_no_swap_inverse_approx0_8qubits = np.load(prefix + "qft_no_swap_inverse_approx0_8qubits.npy")
+
+qft_no_swap_inverse_approx0_5qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx0_5qubits.npy"
+)
+qft_no_swap_inverse_approx0_6qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx0_6qubits.npy"
+)
+qft_no_swap_inverse_approx0_7qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx0_7qubits.npy"
+)
+qft_no_swap_inverse_approx0_8qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx0_8qubits.npy"
+)
 
 # QFT(no swap, inverse, approximation_degree = 1)
-qft_no_swap_inverse_approx1_5qubits = np.load(prefix + "qft_no_swap_inverse_approx1_5qubits.npy")
-qft_no_swap_inverse_approx1_6qubits = np.load(prefix + "qft_no_swap_inverse_approx1_6qubits.npy")
-qft_no_swap_inverse_approx1_7qubits = np.load(prefix + "qft_no_swap_inverse_approx1_7qubits.npy")
-qft_no_swap_inverse_approx1_8qubits = np.load(prefix + "qft_no_swap_inverse_approx1_8qubits.npy")
+
+qft_no_swap_inverse_approx1_5qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx1_5qubits.npy"
+)
+qft_no_swap_inverse_approx1_6qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx1_6qubits.npy"
+)
+qft_no_swap_inverse_approx1_7qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx1_7qubits.npy"
+)
+qft_no_swap_inverse_approx1_8qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx1_8qubits.npy"
+)
 
 # QFT(no swap, inverse, approximation_degree = 2)
-qft_no_swap_inverse_approx2_5qubits = np.load(prefix + "qft_no_swap_inverse_approx2_5qubits.npy")
-qft_no_swap_inverse_approx2_6qubits = np.load(prefix + "qft_no_swap_inverse_approx2_6qubits.npy")
-qft_no_swap_inverse_approx2_7qubits = np.load(prefix + "qft_no_swap_inverse_approx2_7qubits.npy")
-qft_no_swap_inverse_approx2_8qubits = np.load(prefix + "qft_no_swap_inverse_approx2_8qubits.npy")
+
+qft_no_swap_inverse_approx2_5qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx2_5qubits.npy"
+)
+qft_no_swap_inverse_approx2_6qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx2_6qubits.npy"
+)
+qft_no_swap_inverse_approx2_7qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx2_7qubits.npy"
+)
+qft_no_swap_inverse_approx2_8qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx2_8qubits.npy"
+)
 
 # QFT(no swap, inverse, approximation_degree = 3)
-qft_no_swap_inverse_approx3_5qubits = np.load(prefix + "qft_no_swap_inverse_approx3_5qubits.npy")
-qft_no_swap_inverse_approx3_6qubits = np.load(prefix + "qft_no_swap_inverse_approx3_6qubits.npy")
-qft_no_swap_inverse_approx3_7qubits = np.load(prefix + "qft_no_swap_inverse_approx3_7qubits.npy")
-qft_no_swap_inverse_approx3_8qubits = np.load(prefix + "qft_no_swap_inverse_approx3_8qubits.npy")
+
+qft_no_swap_inverse_approx3_5qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx3_5qubits.npy"
+)
+qft_no_swap_inverse_approx3_6qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx3_6qubits.npy"
+)
+qft_no_swap_inverse_approx3_7qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx3_7qubits.npy"
+)
+qft_no_swap_inverse_approx3_8qubits = np.load(
+    prefix + "qft_no_swap_inverse_approx3_8qubits.npy"
+)
 
 # QFT(swap, inverse, approximation_degree = 0)
-qft_swap_inverse_approx0_5qubits = np.load(prefix + "qft_swap_inverse_approx0_5qubits.npy")
-qft_swap_inverse_approx0_6qubits = np.load(prefix + "qft_swap_inverse_approx0_6qubits.npy")
-qft_swap_inverse_approx0_7qubits = np.load(prefix + "qft_swap_inverse_approx0_7qubits.npy")
-qft_swap_inverse_approx0_8qubits = np.load(prefix + "qft_swap_inverse_approx0_8qubits.npy")
+
+qft_swap_inverse_approx0_5qubits = np.load(
+    prefix + "qft_swap_inverse_approx0_5qubits.npy"
+)
+qft_swap_inverse_approx0_6qubits = np.load(
+    prefix + "qft_swap_inverse_approx0_6qubits.npy"
+)
+qft_swap_inverse_approx0_7qubits = np.load(
+    prefix + "qft_swap_inverse_approx0_7qubits.npy"
+)
+qft_swap_inverse_approx0_8qubits = np.load(
+    prefix + "qft_swap_inverse_approx0_8qubits.npy"
+)
 
 # QFT(swap, inverse, approximation_degree = 1)
-qft_swap_inverse_approx1_5qubits = np.load(prefix + "qft_swap_inverse_approx1_5qubits.npy")
-qft_swap_inverse_approx1_6qubits = np.load(prefix + "qft_swap_inverse_approx1_6qubits.npy")
-qft_swap_inverse_approx1_7qubits = np.load(prefix + "qft_swap_inverse_approx1_7qubits.npy")
-qft_swap_inverse_approx1_8qubits = np.load(prefix + "qft_swap_inverse_approx1_8qubits.npy")
+
+qft_swap_inverse_approx1_5qubits = np.load(
+    prefix + "qft_swap_inverse_approx1_5qubits.npy"
+)
+qft_swap_inverse_approx1_6qubits = np.load(
+    prefix + "qft_swap_inverse_approx1_6qubits.npy"
+)
+qft_swap_inverse_approx1_7qubits = np.load(
+    prefix + "qft_swap_inverse_approx1_7qubits.npy"
+)
+qft_swap_inverse_approx1_8qubits = np.load(
+    prefix + "qft_swap_inverse_approx1_8qubits.npy"
+)
 
 # QFT(swap, inverse, approximation_degree = 2)
-qft_swap_inverse_approx2_5qubits = np.load(prefix + "qft_swap_inverse_approx2_5qubits.npy")
-qft_swap_inverse_approx2_6qubits = np.load(prefix + "qft_swap_inverse_approx2_6qubits.npy")
-qft_swap_inverse_approx2_7qubits = np.load(prefix + "qft_swap_inverse_approx2_7qubits.npy")
-qft_swap_inverse_approx2_8qubits = np.load(prefix + "qft_swap_inverse_approx2_8qubits.npy")
+
+qft_swap_inverse_approx2_5qubits = np.load(
+    prefix + "qft_swap_inverse_approx2_5qubits.npy"
+)
+qft_swap_inverse_approx2_6qubits = np.load(
+    prefix + "qft_swap_inverse_approx2_6qubits.npy"
+)
+qft_swap_inverse_approx2_7qubits = np.load(
+    prefix + "qft_swap_inverse_approx2_7qubits.npy"
+)
+qft_swap_inverse_approx2_8qubits = np.load(
+    prefix + "qft_swap_inverse_approx2_8qubits.npy"
+)
 
 # QFT(swap, inverse, approximation_degree = 3)
-qft_swap_inverse_approx3_5qubits = np.load(prefix + "qft_swap_inverse_approx3_5qubits.npy")
-qft_swap_inverse_approx3_6qubits = np.load(prefix + "qft_swap_inverse_approx3_6qubits.npy")
-qft_swap_inverse_approx3_7qubits = np.load(prefix + "qft_swap_inverse_approx3_7qubits.npy")
-qft_swap_inverse_approx3_8qubits = np.load(prefix + "qft_swap_inverse_approx3_8qubits.npy")
+
+qft_swap_inverse_approx3_5qubits = np.load(
+    prefix + "qft_swap_inverse_approx3_5qubits.npy"
+)
+qft_swap_inverse_approx3_6qubits = np.load(
+    prefix + "qft_swap_inverse_approx3_6qubits.npy"
+)
+qft_swap_inverse_approx3_7qubits = np.load(
+    prefix + "qft_swap_inverse_approx3_7qubits.npy"
+)
+qft_swap_inverse_approx3_8qubits = np.load(
+    prefix + "qft_swap_inverse_approx3_8qubits.npy"
+)
