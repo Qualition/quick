@@ -4873,6 +4873,8 @@ class Circuit(ABC):
                     self.CX(control_indices[control_index], target_index)
                     self.GlobalPhase(-PI4)
 
+            print("Diagonal:", diagonal)
+
             if not up_to_diagonal:
                 self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
 
