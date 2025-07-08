@@ -206,6 +206,8 @@ def extract_uvr_matrices(
         [0, r_2]
     ])
 
+    print("r:", r)
+
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
@@ -225,6 +227,9 @@ def extract_uvr_matrices(
 
     # Calculate v based on the decomposition (Eq 7)
     v = diagonal @ u.conj().T @ r.conj().T @ b
+
+    print("v:", v)
+    print("u:", u)
 
     return v, u, r # type: ignore
 
