@@ -4657,7 +4657,7 @@ class Circuit(ABC):
 
         # Repeatedly apply the decomposition of Theorem 7 from [1]
         while num_diagonal_entries >= 2:
-            rz_angles = []
+            rz_angles: list[float] = []
 
             # Extract the RZ angles and the relative phase
             # between the two diagonal entries
@@ -4788,6 +4788,12 @@ class Circuit(ABC):
         ...             [[0, 1],
         ...              [1, 0]]], multiplexor_simplification=False, control_state="01")
         """
+        # If there are no control indices, we use the ZYZ decomposition
+        # to apply the single qubit gate
+        if not control_indices:
+            self.unitary(single_qubit_gates[0], target_index)
+            return
+
         if isinstance(control_indices, int):
             control_indices = [control_indices]
 
@@ -4825,14 +4831,8 @@ class Circuit(ABC):
         # based on [2]
         if multiplexor_simplification:
             new_controls, single_qubit_gates = simplify(single_qubit_gates, num_controls)
-            control_indices = [qubits[len(control_indices) + 1 - i] for i in new_controls]
+            control_indices = [qubits[num_controls + 1 - i] for i in new_controls]
             control_indices.reverse()
-
-        # If there are no control indices, we use the ZYZ decomposition
-        # to apply the single qubit gate
-        if not control_indices:
-            self.unitary(single_qubit_gates[0], target_index)
-            return
 
         # If there is at least one control qubit, we decompose the multiplexor
         # into a sequence of single-qubit gates and CX gates
