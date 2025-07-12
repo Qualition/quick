@@ -86,7 +86,7 @@ PI4 = PI / 4
 
 def transform_to_magic_basis(
         U: NDArray[np.complex128],
-        reverse: bool=False
+        reverse: bool = False
     ) -> NDArray[np.complex128]:
     """ Transform the 4x4 matrix `U` into the magic basis.
 
@@ -186,7 +186,7 @@ def weyl_coordinates(U: NDArray[np.complex128]) -> NDArray[np.float64]:
 
 def partition_eigenvalues(
         eigenvalues: NDArray[np.complex128],
-        atol: float=1e-13
+        atol: float = 1e-13
     ) -> list[list[int]]:
     """ Group the indices of degenerate eigenvalues.
 

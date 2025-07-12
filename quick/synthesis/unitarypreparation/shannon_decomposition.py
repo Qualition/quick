@@ -142,7 +142,7 @@ class ShannonDecomposition(UnitaryPreparation):
                 circuit: Circuit,
                 qubit_indices: list[int],
                 unitary: NDArray[np.complex128],
-                recursion_depth: int=0
+                recursion_depth: int = 0
             ) -> None:
             """ Decompose n-qubit unitary into CX/RY/RZ/CX gates, preserving global phase.
 
@@ -226,7 +226,7 @@ class ShannonDecomposition(UnitaryPreparation):
                 demux_qubits: list[int],
                 unitary_1: NDArray[np.complex128],
                 unitary_2: NDArray[np.complex128],
-                recursion_depth: int=0
+                recursion_depth: int = 0
             ) -> None:
             """ Decompose a multiplexor defined by a pair of unitary matrices operating on
             the same subspace per Theorem 12.

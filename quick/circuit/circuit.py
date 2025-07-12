@@ -4718,8 +4718,8 @@ class Circuit(ABC):
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: int | Sequence[int],
             target_index: int,
-            up_to_diagonal: bool=False,
-            multiplexor_simplification: bool=True,
+            up_to_diagonal: bool = False,
+            multiplexor_simplification: bool = True,
             control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled gate to the circuit.
@@ -4913,9 +4913,9 @@ class Circuit(ABC):
     def QFT(
             self,
             qubit_indices: int | Sequence[int],
-            do_swaps: bool=True,
-            approximation_degree: int=0,
-            inverse: bool=False
+            do_swaps: bool = True,
+            approximation_degree: int = 0,
+            inverse: bool = False
         ) -> None:
         r""" Apply the Quantum Fourier Transform to the circuit.
 
@@ -5089,7 +5089,7 @@ class Circuit(ABC):
     @staticmethod
     def _horizontal_reverse(
             circuit_log: list[dict[str, Any]],
-            adjoint: bool=True
+            adjoint: bool = True
         ) -> list[dict[str, Any]]:
         """ Perform a horizontal reverse operation.
 
@@ -5143,7 +5143,7 @@ class Circuit(ABC):
 
     def horizontal_reverse(
             self,
-            adjoint: bool=True
+            adjoint: bool = True
         ) -> None:
         """ Perform a horizontal reverse operation. This is equivalent
         to the adjoint of the circuit if `adjoint=True`. Otherwise, it
@@ -5368,7 +5368,7 @@ class Circuit(ABC):
 
     def get_instructions(
             self,
-            include_measurements: bool=True
+            include_measurements: bool = True
         ) -> list[dict]:
         """ Get the instructions of the circuit.
 
@@ -5585,7 +5585,7 @@ class Circuit(ABC):
 
     def remove_measurements(
             self,
-            inplace: bool=False
+            inplace: bool = False
         ) -> Circuit | None:
         """ Remove the measurement instructions from the circuit.
 
@@ -5612,8 +5612,8 @@ class Circuit(ABC):
 
     def decompose(
             self,
-            reps: int=1,
-            full: bool=False
+            reps: int = 1,
+            full: bool = False
         ) -> Circuit:
         """ Decompose the gates in the circuit to their implementation gates.
 
@@ -5684,7 +5684,7 @@ class Circuit(ABC):
 
     def transpile(
             self,
-            direct_transpile: bool=True,
+            direct_transpile: bool = True,
             synthesis_method: UnitaryPreparation | None = None
         ) -> None:
         """ Transpile the circuit to U3 and CX gates.
@@ -5953,7 +5953,7 @@ class Circuit(ABC):
     @abstractmethod
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
         """ Convert the circuit to QASM.
 
@@ -6215,7 +6215,7 @@ class Circuit(ABC):
 
     def plot_histogram(
             self,
-            non_zeros_only: bool=False
+            non_zeros_only: bool = False
         ) -> plt.Figure:
         """ Plot the histogram of the circuit.
 
@@ -6338,8 +6338,8 @@ class Circuit(ABC):
     def is_equivalent(
             self,
             other_circuit: Circuit,
-            check_unitary: bool=True,
-            check_dag: bool=False
+            check_unitary: bool = True,
+            check_dag: bool = False
         ) -> bool:
         """ Check if the circuit is equivalent to another circuit.
 

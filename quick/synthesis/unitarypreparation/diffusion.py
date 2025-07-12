@@ -98,11 +98,11 @@ class Diffusion(UnitaryPreparation):
     def __init__(
             self,
             output_framework: type[Circuit],
-            model: str="Floki00/qc_unitary_3qubit",
-            prompt: str="Compile using: ['h', 'cx', 'z', 'ccx', 'swap']",
-            max_num_gates: int=12,
-            num_samples: int=128,
-            min_fidelity: float=0.99
+            model: str = "Floki00/qc_unitary_3qubit",
+            prompt: str = "Compile using: ['h', 'cx', 'z', 'ccx', 'swap']",
+            max_num_gates: int = 12,
+            num_samples: int = 128,
+            min_fidelity: float = 0.99
         ) -> None:
 
         super().__init__(output_framework)

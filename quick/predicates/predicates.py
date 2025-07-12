@@ -60,7 +60,7 @@ def _is_power(
 
 def is_statevector(
         statevector: NDArray[np.complex128],
-        system_size: int=2
+        system_size: int = 2
     ) -> bool:
     """ Test if an array is a statevector.
 
@@ -119,8 +119,8 @@ def is_square_matrix(matrix: NDArray[np.complex128]) -> bool:
 
 def is_diagonal_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a diagonal matrix.
 
@@ -149,8 +149,8 @@ def is_diagonal_matrix(
 
 def is_symmetric_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a symmetric matrix.
 
@@ -179,9 +179,9 @@ def is_symmetric_matrix(
 
 def is_identity_matrix(
         matrix: NDArray[np.complex128],
-        ignore_phase: bool=False,
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        ignore_phase: bool = False,
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is an identity matrix.
 
@@ -220,8 +220,8 @@ def is_identity_matrix(
 
 def is_unitary_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a unitary matrix.
 
@@ -251,8 +251,8 @@ def is_unitary_matrix(
 
 def is_hermitian_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a Hermitian matrix.
 
@@ -281,8 +281,8 @@ def is_hermitian_matrix(
 
 def is_positive_semidefinite_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if a matrix is positive semidefinite.
 
@@ -316,8 +316,8 @@ def is_positive_semidefinite_matrix(
 
 def is_isometry(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is an isometry.
 

@@ -58,7 +58,7 @@ class Backend(ABC):
     """
     def __init__(
             self,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
         """ Initialize a `quick.backend.Backend` instance.
         """
@@ -176,7 +176,7 @@ class Backend(ABC):
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
         """ Get the counts of the backend.
 
@@ -331,7 +331,7 @@ class NoisyBackend(Backend, ABC):
             self,
             single_qubit_error: float,
             two_qubit_error: float,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
         """ Initialize a `quick.backend.NoisyBackend` instance.
         """
@@ -380,7 +380,7 @@ class FakeBackend(Backend, ABC):
     """
     def __init__(
             self,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
         """ Initialize a `quick.backend.FakeBackend` instance.
         """
@@ -451,7 +451,7 @@ class FakeBackend(Backend, ABC):
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
         """ Get the counts of the backend.
 

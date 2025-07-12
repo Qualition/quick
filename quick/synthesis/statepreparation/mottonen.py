@@ -72,8 +72,8 @@ class Mottonen(StatePreparation):
             circuit: Circuit,
             state: NDArray[np.complex128] | Bra | Ket,
             qubit_indices: int | Sequence[int],
-            compression_percentage: float=0.0,
-            index_type: Literal["row", "snake"]="row"
+            compression_percentage: float = 0.0,
+            index_type: Literal["row", "snake"] = "row"
         ) -> Circuit:
 
         if not isinstance(state, (np.ndarray, Bra, Ket)):

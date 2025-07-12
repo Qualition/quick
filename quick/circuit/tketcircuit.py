@@ -273,7 +273,7 @@ class TKETCircuit(Circuit):
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit
