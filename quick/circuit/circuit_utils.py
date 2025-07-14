@@ -336,29 +336,28 @@ def simplify(
     -------
     `new_controls` : set[int]
         The new set of controls.
-    `new_mux` : list[NDArray[np.complex128]]
+    `mux_copy` : list[NDArray[np.complex128]]
         The new list of single qubit gates.
     """
-    c: set[int] = set()
-    nc: set[int] = set()
+    multiplexer_controls: set[int] = set()
+    removed_control_indices: set[int] = set()
     mux_copy = single_qubit_gates.copy()
 
     # Add the position of the multiplexer controls to the set c
     for i in range(num_controls):
-        c.add(i + 1)
+        multiplexer_controls.add(i + 1)
 
     # Identify repetitions in the array and return the unnecessary
     # controls and a copy of the array, marking the repeated operators
     # as null
     if len(single_qubit_gates) > 1:
-        nc, mux_copy = repetition_search(single_qubit_gates, num_controls)
+        removed_control_indices, mux_copy = repetition_search(single_qubit_gates, num_controls)
 
     # Remove the unnecessary controls and the marked operators, creating
     # a new set of controls and a new array representing the simplified multiplexer
-    controls_tree = {x for x in c if x not in nc}
-    mux_tree = [gate for gate in mux_copy if gate is not None]
+    controls_tree = {x for x in multiplexer_controls if x not in removed_control_indices}
 
-    return controls_tree, mux_tree
+    return controls_tree, mux_copy
 
 def repetition_search(
         multiplexor: list[NDArray[np.complex128]],
@@ -384,13 +383,13 @@ def repetition_search(
 
     Returns
     -------
-    `nc` : set[int]
+    `removed_control_indices` : set[int]
         The set of removed controls.
     `mux_copy` : list[NDArray[np.complex128]]
         The new list of gates.
     """
     mux_copy = multiplexor.copy()
-    nc = set()
+    removed_control_indices = set()
     d = 1
 
     # The positions of the multiplexer whose indices are a power of two
@@ -433,16 +432,16 @@ def repetition_search(
         # and add it to the set of unnecessary controls
         if disentanglement:
             removed_control_index = level - np.log2(d)
-            nc.add(removed_control_index)
+            removed_control_indices.add(removed_control_index)
         d *= 2
 
-    return nc, mux_copy
+    return removed_control_indices, mux_copy
 
 def repetition_verify(
-        base,
-        d,
-        multiplexor,
-        mux_copy
+        base: int,
+        d: int,
+        multiplexor: list[NDArray[np.complex128]],
+        mux_copy: list[NDArray[np.complex128]]
     ) -> tuple[bool, list[NDArray[np.complex128]]]:
     """ Verify if the repetitions are valid. This is done by comparing each
     pair of operators with a distance d between them.
@@ -454,7 +453,7 @@ def repetition_verify(
     Notes
     -----
     The implementation of this simplification is based on the paper
-    by by de Carvalho et al. [1]. The pseudocode is provided in Algorithm 3.
+    by de Carvalho et al. [1]. The pseudocode is provided in Algorithm 3.
 
     [1] de Carvalho, Batista, de Veras, Araujo, da Silva,
     Quantum multiplexer simplification for state preparation (2024).
@@ -484,8 +483,10 @@ def repetition_verify(
     while i < d:
         if not np.allclose(multiplexor[base], multiplexor[next_base]):
             return False, mux_copy
-        mux_copy[next_base] = None
+        mux_copy[next_base] = None # type: ignore
         base, next_base, i = base + 1, next_base + 1, i + 1
+
+    mux_copy = [gate for gate in mux_copy if gate is not None]
 
     return True, mux_copy
 
@@ -495,14 +496,14 @@ def flatten(array: Params) -> tuple[list[float], Params]: # pragma: no cover
 
     Parameters
     ----------
-    `array` : Tree
+    `array` : Params
         The nested list of floats.
 
     Returns
     -------
     `flattened` : list[float]
         The flattened list of parameters.
-    `shape` : Tree
+    `shape` : Params
         The shape of the original array.
     """
     flattened: list[float] = []
@@ -537,12 +538,12 @@ def reshape(
     ----------
     `flattened` : list[float]
         The flat list of floats.
-    `shape` : Tree
+    `shape` : Params
         The shape instruction.
 
     Returns
     -------
-    `reshaped` : Tree
+    `reshaped` : Params
         The reshaped list of floats.
     """
     reshaped: Params = []

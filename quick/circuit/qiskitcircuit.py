@@ -19,10 +19,10 @@ from __future__ import annotations
 
 __all__ = ["QiskitCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister # type: ignore
 from qiskit.circuit.library import ( # type: ignore

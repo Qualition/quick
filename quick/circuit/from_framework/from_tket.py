@@ -20,10 +20,10 @@ from __future__ import annotations
 __all__ = ["FromTKET"]
 
 import numpy as np
-from pytket import Circuit as TKCircuit
-from pytket._tket.circuit import Command
-from pytket import OpType
-from pytket.passes import AutoRebase
+from pytket import Circuit as TKCircuit # type: ignore
+from pytket._tket.circuit import Command # type: ignore
+from pytket import OpType # type: ignore
+from pytket.passes import AutoRebase # type: ignore
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

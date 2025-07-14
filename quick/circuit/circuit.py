@@ -35,7 +35,7 @@ from typing import (
 import qiskit # type: ignore
 import cirq # type: ignore
 import pennylane as qml # type: ignore
-import pytket
+import pytket # type: ignore
 import quimb.tensor as qtn # type: ignore
 
 if TYPE_CHECKING:
