@@ -26,7 +26,8 @@ __all__ = [
     "is_unitary_matrix",
     "is_hermitian_matrix",
     "is_positive_semidefinite_matrix",
-    "is_isometry"
+    "is_isometry",
+    "is_density_matrix"
 ]
 
 import numpy as np
@@ -60,7 +61,9 @@ def _is_power(
 
 def is_statevector(
         statevector: NDArray[np.complex128],
-        system_size: int = 2
+        system_size: int = 2,
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a statevector.
 
@@ -72,6 +75,10 @@ def is_statevector(
         The size of the quantum memory. If the size is 2, then the
         system uses qubits. If the size is 3, then the system uses qutrits,
         and so on.
+    `rtol` : float, optional, default=RTOL_DEFAULT
+        The relative tolerance parameter.
+    `atol` : float, optional, default=ATOL_DEFAULT
+        The absolute tolerance parameter.
 
     Returns
     -------
@@ -93,7 +100,11 @@ def is_statevector(
     if not _is_power(system_size, len(statevector)):
         return False
 
-    return np.linalg.norm(statevector) == 1 and statevector.ndim == 1 and len(statevector) > 1
+    return (
+        bool(np.isclose(np.linalg.norm(statevector), 1.0, rtol=rtol, atol=atol))
+        and statevector.ndim == 1
+        and len(statevector) > 1
+    )
 
 def is_square_matrix(matrix: NDArray[np.complex128]) -> bool:
     """ Test if an array is a square matrix.
@@ -345,3 +356,37 @@ def is_isometry(
     identity = np.eye(matrix.shape[1])
     matrix = matrix.conj().T @ matrix
     return np.allclose(matrix, identity, rtol=rtol, atol=atol)
+
+def is_density_matrix(
+        rho: NDArray[np.complex128],
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
+    ) -> bool:
+    """ Test if an array is a density matrix.
+
+    Parameters
+    ----------
+    `rho` : NDArray[np.complex128]
+        The input matrix.
+    `rtol` : float, optional, default=RTOL_DEFAULT
+        The relative tolerance parameter.
+    `atol` : float, optional, default=ATOL_DEFAULT
+        The absolute tolerance parameter.
+
+    Returns
+    -------
+    bool
+        True if the matrix is a density matrix, False otherwise.
+
+    Usage
+    -----
+    >>> is_density_matrix(np.eye(2))
+    """
+    if not (
+        is_hermitian_matrix(rho, rtol=rtol, atol=atol)
+        and is_positive_semidefinite_matrix(rho, rtol=rtol, atol=atol)
+        and np.isclose(np.trace(rho), 1.0, rtol=rtol, atol=atol)
+    ):
+        return False
+
+    return True
