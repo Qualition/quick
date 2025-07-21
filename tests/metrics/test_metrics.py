@@ -27,6 +27,7 @@ from quick.metrics import (
     calculate_entanglement_range,
     calculate_shannon_entropy,
     calculate_entanglement_entropy,
+    calculate_entanglement_entropy_slope,
     calculate_hilbert_schmidt_test
 )
 
@@ -49,6 +50,15 @@ class TestMetrics:
         entanglements = calculate_entanglement_range(qc.get_statevector())
         assert entanglements == [(0, 1), (2, 2), (3, 5)]
 
+    def test_calculate_entanglement_range_single_qubit(self) -> None:
+        """ Test the `calculate_entanglement_range` method with a single qubit.
+        """
+        qc = QiskitCircuit(1)
+        qc.H(0)
+
+        entanglements = calculate_entanglement_range(qc.get_statevector())
+        assert entanglements == [(0, 0)]
+
     def test_calculate_shannon_entropy(self) -> None:
         """ Test the `calculate_shannon_entropy` method.
         """
@@ -63,6 +73,15 @@ class TestMetrics:
         (np.array([0.5, 0.5j, -0.5j, 0.5]), 0.0),
         (np.array([1/np.sqrt(2), 0, 0, -1/np.sqrt(2)* 1j]), 0.0),
         (np.array([1/np.sqrt(2)] + (14 * [0]) + [1/np.sqrt(2) * 1j]), 0.0),
+        (
+            np.array([
+                [0.5],
+                [0.5],
+                [0.5],
+                [0.5]
+            ]),
+            0.0
+        ),
         (
             np.array([
                 [0.84048555+0.j, 0.0510054-0.02325157j],
@@ -106,6 +125,11 @@ class TestMetrics:
         np.array([
             [1, 2, 3],
             [4, 5, 6]
+        ], dtype=np.complex128),
+        np.array([
+            [1],
+            [2],
+            [3]
         ], dtype=np.complex128)
     ])
     def test_calculate_entanglement_entropy_invalid_data(
@@ -127,15 +151,17 @@ class TestMetrics:
         """ Test the `calculate_entanglement_entropy_slope` method with an area-law
         entangled state.
         """
-        area_law_slope = np.load("tests/metrics/area_law_slope.npy")
-        assert_almost_equal(0.20183287022097673, area_law_slope)
+        area_law_state = np.load("tests/metrics/area_law_state.npy")
+        slope = calculate_entanglement_entropy_slope(area_law_state)
+        assert_almost_equal(0.20183287022097673, slope)
 
     def test_calculate_entanglement_entropy_slope_volume_law_case(self) -> None:
         """ Test the `calculate_entanglement_entropy_slope` method with a volume-law
         entangled state.
         """
-        volume_law_slope = np.load("tests/metrics/volume_law_slope.npy")
-        assert_almost_equal(1.0, volume_law_slope)
+        volume_law_state = np.load("tests/metrics/volume_law_state.npy")
+        slope = calculate_entanglement_entropy_slope(volume_law_state)
+        assert_almost_equal(1.0, slope)
 
     def test_calculate_hilbert_schmidt_test(self) -> None:
         """ Test the `calculate_hilbert_schmidt_test` method.

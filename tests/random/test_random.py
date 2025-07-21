@@ -65,7 +65,7 @@ class TestRandom:
 
     @pytest.mark.parametrize("num_qubits", [1, 2, 3, 4, 5])
     @pytest.mark.parametrize("generator", ["hilbert-schmidt", "bures"])
-    @pytest.mark.parametrize("rank", [1, 2, 3])
+    @pytest.mark.parametrize("rank", [1, 2, 3, None])
     def test_generate_random_density_matrix(
             self,
             num_qubits: int,
