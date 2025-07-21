@@ -6251,6 +6251,107 @@ class Circuit(ABC):
 
         return figure
 
+    def __mul__(
+            self,
+            multiplier: int
+        ) -> Circuit:
+        """ Multiply the circuit by an integer to repeat the circuit.
+
+        Parameters
+        ----------
+        `multiplier` : int
+            The number of times to repeat the circuit.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The new circuit with the repeated operations.
+
+        Raises
+        ------
+        TypeError
+            - The multiplier must be an integer.
+
+        Usage
+        -----
+        >>> new_circuit = circuit * 3
+        """
+        if not isinstance(multiplier, int):
+            raise TypeError("The multiplier must be an integer.")
+
+        new_circuit = type(self)(self.num_qubits)
+        for _ in range(multiplier):
+            new_circuit.add(self, list(range(self.num_qubits)))
+
+        return new_circuit
+
+    def __rmul__(
+            self,
+            multiplier: int
+        ) -> Circuit:
+        """ Multiply the circuit by an integer to repeat the circuit.
+        This is the right-hand side multiplication, allowing for
+        the syntax `3 * circuit`.
+
+        Parameters
+        ----------
+        `multiplier` : int
+            The number of times to repeat the circuit.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The new circuit with the repeated operations.
+
+        Raises
+        ------
+        TypeError
+            - The multiplier must be an integer.
+
+        Usage
+        -----
+        >>> new_circuit = 3 * circuit
+        """
+        return self.__mul__(multiplier)
+
+    def __matmul__(
+            self,
+            other_circuit: Circuit
+        ) -> Circuit:
+        """ Tensor product two circuits together. This is
+        done by putting the circuits side by side.
+
+        Parameters
+        ----------
+        `other_circuit` : quick.circuit.Circuit
+            The circuit to tensor product with.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The tensor product circuit.
+
+        Raises
+        ------
+        TypeError
+            - The other circuit must be a `quick.circuit.Circuit`.
+
+        Usage
+        -----
+        >>> new_circuit = circuit @ other_circuit
+        """
+        if not isinstance(other_circuit, Circuit):
+            raise TypeError("The other circuit must be a `quick.circuit.Circuit`.")
+
+        new_circuit = type(self)(self.num_qubits + other_circuit.num_qubits)
+        new_circuit.add(self, list(range(self.num_qubits)))
+        new_circuit.add(
+            other_circuit,
+            list(range(self.num_qubits, self.num_qubits + other_circuit.num_qubits))
+        )
+
+        return new_circuit
+
     def __getitem__(
             self,
             index: int | slice
