@@ -100,6 +100,10 @@ def is_statevector(
     if not _is_power(system_size, len(statevector)):
         return False
 
+    if statevector.ndim == 2:
+        if statevector.shape[1] == 1:
+            statevector = statevector.flatten()
+
     return (
         bool(np.isclose(np.linalg.norm(statevector), 1.0, rtol=rtol, atol=atol))
         and statevector.ndim == 1

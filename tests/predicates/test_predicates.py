@@ -39,7 +39,8 @@ from quick.predicates import (
     (np.array([1, 0, 0]), 3, True),
     (np.array([1, 2]), 2, False),
     (np.array([1, 2, 3]), 3, False),
-    (np.array([1, 0, 0, 0]), 2, True)
+    (np.array([1, 0, 0, 0]), 2, True),
+    (np.array([[0.5], [0.5], [0.5], [0.5]]), 2, True)
 ])
 def test_is_statevector(
         array: NDArray[np.complex128],
