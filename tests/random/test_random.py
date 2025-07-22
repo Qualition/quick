@@ -18,8 +18,12 @@ __all__ = ["TestRandom"]
 
 import pytest
 
-from quick.predicates import is_unitary_matrix
-from quick.random import generate_random_state, generate_random_unitary
+from quick.predicates import is_unitary_matrix, is_statevector, is_density_matrix
+from quick.random import (
+    generate_random_state,
+    generate_random_unitary,
+    generate_random_density_matrix
+)
 
 
 class TestRandom:
@@ -40,8 +44,7 @@ class TestRandom:
         """
         state = generate_random_state(num_qubits)
 
-        assert state.shape == (2 ** num_qubits,)
-        assert pytest.approx(1.0) == abs(state @ state.conj())
+        assert is_statevector(state)
 
     @pytest.mark.parametrize("num_qubits", [1, 2, 3, 4, 5])
     def test_generate_random_unitary(
@@ -59,3 +62,44 @@ class TestRandom:
 
         assert unitary.shape == (2 ** num_qubits, 2 ** num_qubits)
         assert is_unitary_matrix(unitary)
+
+    @pytest.mark.parametrize("num_qubits", [1, 2, 3, 4, 5])
+    @pytest.mark.parametrize("generator", ["hilbert-schmidt", "bures"])
+    @pytest.mark.parametrize("rank", [1, 2, 3, None])
+    def test_generate_random_density_matrix(
+            self,
+            num_qubits: int,
+            generator: str,
+            rank: int
+        ) -> None:
+        """ Test the `generate_random_density_matrix` function.
+
+        Parameters
+        ----------
+        `num_qubits` : int
+            The number of qubits in the density matrix.
+        `generator` : str
+            The method to use for generating the density matrix.
+        `rank` : int
+            The rank of the density matrix.
+        """
+        density_matrix = generate_random_density_matrix(
+            num_qubits=num_qubits,
+            rank=rank,
+            generator=generator # type: ignore
+        )
+
+        assert is_density_matrix(density_matrix)
+
+    def test_generate_random_density_matrix_invalid_generator(
+            self
+        ) -> None:
+        """ Test the `generate_random_density_matrix` function with an
+        invalid generator.
+        """
+        with pytest.raises(ValueError):
+            generate_random_density_matrix(
+                num_qubits=2,
+                rank=1,
+                generator="invalid-generator" # type: ignore
+            )

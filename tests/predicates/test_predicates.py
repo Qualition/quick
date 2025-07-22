@@ -14,18 +14,6 @@
 
 from __future__ import annotations
 
-__all__ = [
-    "test_is_statevector",
-    "test_is_square_matrix",
-    "test_is_diagonal_matrix",
-    "test_is_symmetric_matrix",
-    "test_is_identity_matrix",
-    "test_is_unitary_matrix",
-    "test_is_hermitian_matrix",
-    "test_is_positive_semidefinite_matrix",
-    "test_is_isometry"
-]
-
 import numpy as np
 from numpy.typing import NDArray
 import pytest
@@ -40,7 +28,8 @@ from quick.predicates import (
     is_unitary_matrix,
     is_hermitian_matrix,
     is_positive_semidefinite_matrix,
-    is_isometry
+    is_isometry,
+    is_density_matrix
 )
 
 
@@ -50,7 +39,8 @@ from quick.predicates import (
     (np.array([1, 0, 0]), 3, True),
     (np.array([1, 2]), 2, False),
     (np.array([1, 2, 3]), 3, False),
-    (np.array([1, 0, 0, 0]), 2, True)
+    (np.array([1, 0, 0, 0]), 2, True),
+    (np.array([[0.5], [0.5], [0.5], [0.5]]), 2, True)
 ])
 def test_is_statevector(
         array: NDArray[np.complex128],
@@ -68,7 +58,7 @@ def test_is_statevector(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_statevector(array, system_size) == expected
+    assert is_statevector(array, system_size) is expected
 
 def test_is_statevector_invalid_system_size() -> None:
     """ Test the `.is_statevector()` method with invalid system size.
@@ -104,7 +94,7 @@ def test_is_square_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_square_matrix(array) == expected
+    assert is_square_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (np.diag([1, 2, 3]), True),
@@ -139,7 +129,7 @@ def test_is_diagonal_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_diagonal_matrix(array) == expected
+    assert is_diagonal_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (np.array([
@@ -187,7 +177,7 @@ def test_is_symmetric_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_symmetric_matrix(array) == expected
+    assert is_symmetric_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (np.eye(2), True),
@@ -213,7 +203,7 @@ def test_is_identity_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_identity_matrix(array) == expected
+    assert is_identity_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (unitary_group.rvs(2), True),
@@ -239,7 +229,7 @@ def test_is_unitary_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_unitary_matrix(array) == expected
+    assert is_unitary_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (np.array([
@@ -283,7 +273,7 @@ def test_is_hermitian_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_hermitian_matrix(array) == expected
+    assert is_hermitian_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (np.array([
@@ -325,7 +315,7 @@ def test_is_positive_semidefinite_matrix(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_positive_semidefinite_matrix(array) == expected
+    assert is_positive_semidefinite_matrix(array) is expected
 
 @pytest.mark.parametrize("array, expected", [
     (np.array([
@@ -362,4 +352,39 @@ def test_is_isometry(
     `expected` : bool
         The expected output of the function.
     """
-    assert is_isometry(array) == expected
+    assert is_isometry(array) is expected
+
+@pytest.mark.parametrize("array, expected", [
+    (np.array([
+        [0.55282636+0.j, 0.19339888+0.1369917j],
+        [0.19339888-0.1369917j, 0.44717364+0.j]
+    ], dtype=np.complex128), True),
+    (np.array([
+        [0.19834677+0.j, 0.21077084+0.08851485j, 0.07369894-0.03780167j],
+        [0.21077084-0.08851485j, 0.5556912 +0.j, 0.09721694-0.13294078j],
+        [0.07369894+0.03780167j, 0.09721694+0.13294078j, 0.24596203+0.j]
+    ], dtype=np.complex128), True),
+    (np.array([
+        [1, 2 + 1j],
+        [2 + 1j, 3]
+    ]), False),
+    (np.array([
+        [1, 2],
+        [3, 4]
+    ]), False),
+    (np.random.rand(2, 3, 3), False)
+])
+def test_is_density_matrix(
+        array: NDArray[np.complex128],
+        expected: bool
+    ) -> None:
+    """ Test the `is_density_matrix` function with various matrices.
+
+    Parameters
+    ----------
+    `array` : NDArray[np.complex128]
+        The input array to check if it is an isometry.
+    `expected` : bool
+        The expected out of the function.
+    """
+    assert is_density_matrix(array) is expected

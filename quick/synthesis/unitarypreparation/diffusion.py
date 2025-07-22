@@ -19,14 +19,15 @@ from __future__ import annotations
 
 __all__ = ["Diffusion"]
 
+from collections.abc import Sequence
 from genQC.pipeline.diffusion_pipeline import DiffusionPipeline # type: ignore
 from genQC.inference.infer_compilation import generate_comp_tensors, convert_tensors_to_circuits # type: ignore
 import genQC.util as util # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from qiskit.quantum_info import Operator as QiskitOperator # type: ignore
-import torch
-from typing import Sequence, SupportsIndex, TYPE_CHECKING
+import torch # type: ignore
+from typing import SupportsIndex, TYPE_CHECKING
 
 import quick
 if TYPE_CHECKING:
@@ -98,11 +99,11 @@ class Diffusion(UnitaryPreparation):
     def __init__(
             self,
             output_framework: type[Circuit],
-            model: str="Floki00/qc_unitary_3qubit",
-            prompt: str="Compile using: ['h', 'cx', 'z', 'ccx', 'swap']",
-            max_num_gates: int=12,
-            num_samples: int=128,
-            min_fidelity: float=0.99
+            model: str = "Floki00/qc_unitary_3qubit",
+            prompt: str = "Compile using: ['h', 'cx', 'z', 'ccx', 'swap']",
+            max_num_gates: int = 12,
+            num_samples: int = 128,
+            min_fidelity: float = 0.99
         ) -> None:
 
         super().__init__(output_framework)

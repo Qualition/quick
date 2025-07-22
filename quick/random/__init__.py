@@ -14,7 +14,12 @@
 
 __all__ = [
     "generate_random_state",
-    "generate_random_unitary"
+    "generate_random_unitary",
+    "generate_random_density_matrix"
 ]
 
-from quick.random.random import generate_random_state, generate_random_unitary
+from quick.random.random import (
+    generate_random_state,
+    generate_random_unitary,
+    generate_random_density_matrix
+)

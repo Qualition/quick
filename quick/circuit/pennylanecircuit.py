@@ -19,11 +19,11 @@ from __future__ import annotations
 
 __all__ = ["PennylaneCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import copy
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import pennylane as qml # type: ignore
 
@@ -306,7 +306,7 @@ class PennylaneCircuit(Circuit):
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit

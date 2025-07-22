@@ -26,7 +26,8 @@ __all__ = [
     "is_unitary_matrix",
     "is_hermitian_matrix",
     "is_positive_semidefinite_matrix",
-    "is_isometry"
+    "is_isometry",
+    "is_density_matrix"
 ]
 
 import numpy as np
@@ -60,7 +61,9 @@ def _is_power(
 
 def is_statevector(
         statevector: NDArray[np.complex128],
-        system_size: int=2
+        system_size: int = 2,
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a statevector.
 
@@ -72,6 +75,10 @@ def is_statevector(
         The size of the quantum memory. If the size is 2, then the
         system uses qubits. If the size is 3, then the system uses qutrits,
         and so on.
+    `rtol` : float, optional, default=RTOL_DEFAULT
+        The relative tolerance parameter.
+    `atol` : float, optional, default=ATOL_DEFAULT
+        The absolute tolerance parameter.
 
     Returns
     -------
@@ -93,7 +100,15 @@ def is_statevector(
     if not _is_power(system_size, len(statevector)):
         return False
 
-    return np.linalg.norm(statevector) == 1 and statevector.ndim == 1 and len(statevector) > 1
+    if statevector.ndim == 2:
+        if statevector.shape[1] == 1:
+            statevector = statevector.flatten()
+
+    return (
+        bool(np.isclose(np.linalg.norm(statevector), 1.0, rtol=rtol, atol=atol))
+        and statevector.ndim == 1
+        and len(statevector) > 1
+    )
 
 def is_square_matrix(matrix: NDArray[np.complex128]) -> bool:
     """ Test if an array is a square matrix.
@@ -119,8 +134,8 @@ def is_square_matrix(matrix: NDArray[np.complex128]) -> bool:
 
 def is_diagonal_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a diagonal matrix.
 
@@ -149,8 +164,8 @@ def is_diagonal_matrix(
 
 def is_symmetric_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a symmetric matrix.
 
@@ -179,9 +194,9 @@ def is_symmetric_matrix(
 
 def is_identity_matrix(
         matrix: NDArray[np.complex128],
-        ignore_phase: bool=False,
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        ignore_phase: bool = False,
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is an identity matrix.
 
@@ -220,8 +235,8 @@ def is_identity_matrix(
 
 def is_unitary_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a unitary matrix.
 
@@ -246,13 +261,13 @@ def is_unitary_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    matrix = np.conj(matrix.T).dot(matrix)
+    matrix = matrix.conj().T @ matrix
     return is_identity_matrix(matrix, ignore_phase=False, rtol=rtol, atol=atol)
 
 def is_hermitian_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is a Hermitian matrix.
 
@@ -277,12 +292,12 @@ def is_hermitian_matrix(
     if not is_square_matrix(matrix):
         return False
 
-    return np.allclose(matrix, np.conj(matrix.T), rtol=rtol, atol=atol)
+    return np.allclose(matrix, matrix.conj().T, rtol=rtol, atol=atol)
 
 def is_positive_semidefinite_matrix(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if a matrix is positive semidefinite.
 
@@ -316,8 +331,8 @@ def is_positive_semidefinite_matrix(
 
 def is_isometry(
         matrix: NDArray[np.complex128],
-        rtol: float=RTOL_DEFAULT,
-        atol: float=ATOL_DEFAULT
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
     ) -> bool:
     """ Test if an array is an isometry.
 
@@ -343,5 +358,39 @@ def is_isometry(
         return False
 
     identity = np.eye(matrix.shape[1])
-    matrix = np.conj(matrix.T).dot(matrix)
+    matrix = matrix.conj().T @ matrix
     return np.allclose(matrix, identity, rtol=rtol, atol=atol)
+
+def is_density_matrix(
+        rho: NDArray[np.complex128],
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
+    ) -> bool:
+    """ Test if an array is a density matrix.
+
+    Parameters
+    ----------
+    `rho` : NDArray[np.complex128]
+        The input matrix.
+    `rtol` : float, optional, default=RTOL_DEFAULT
+        The relative tolerance parameter.
+    `atol` : float, optional, default=ATOL_DEFAULT
+        The absolute tolerance parameter.
+
+    Returns
+    -------
+    bool
+        True if the matrix is a density matrix, False otherwise.
+
+    Usage
+    -----
+    >>> is_density_matrix(np.eye(2))
+    """
+    if not (
+        is_hermitian_matrix(rho, rtol=rtol, atol=atol)
+        and is_positive_semidefinite_matrix(rho, rtol=rtol, atol=atol)
+        and np.isclose(np.trace(rho), 1.0, rtol=rtol, atol=atol)
+    ):
+        return False
+
+    return True

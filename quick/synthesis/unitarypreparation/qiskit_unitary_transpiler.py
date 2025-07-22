@@ -28,7 +28,7 @@ from typing import SupportsIndex, TYPE_CHECKING
 from qiskit import QuantumCircuit, transpile # type: ignore
 from qiskit.transpiler.passes import unitary_synthesis_plugin_names # type: ignore
 from qiskit_ibm_runtime import QiskitRuntimeService # type: ignore
-from qiskit_transpiler_service.transpiler_service import TranspilerService # type: ignore
+from qiskit_ibm_transpiler.transpiler_service import TranspilerService # type: ignore
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -97,8 +97,8 @@ class QiskitUnitaryTranspiler(UnitaryPreparation):
     def __init__(
             self,
             output_framework: type[Circuit],
-            ai_transpilation: bool=False,
-            unitary_synthesis_plugin: str="default",
+            ai_transpilation: bool = False,
+            unitary_synthesis_plugin: str = "default",
             service: QiskitRuntimeService | None = None,
             backend_name: str | None = None
         ) -> None:

@@ -89,7 +89,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             self,
             hardware_name: str,
             qiskit_runtime: QiskitRuntimeService,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
 
         super().__init__(device=device)
@@ -161,7 +161,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
 
         result = self._counts_backend.run([circuit.circuit], shots=num_shots).result()

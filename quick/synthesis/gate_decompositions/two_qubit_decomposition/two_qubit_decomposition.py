@@ -46,97 +46,97 @@ using the CX gate as the basis.
 Q0L = np.array([
     [0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, 0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q0R = np.array([
     [-0.5-0.5j, 0.5-0.5j],
     [-0.5-0.5j, -0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q1LA = np.array([
     [0.+0.j, -1-1j],
     [1-1j, 0.+0.j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 Q1LB = np.array([
     [-0.5+0.5j, -0.5-0.5j],
     [0.5-0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q1RA = np.array([
     [1+0.j, 1+0.j],
     [-1+0.j, 1+0.j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 Q1RB = np.array([
     [0.5-0.5j, 0.5+0.5j],
     [-0.5+0.5j, 0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q2L = np.array([
     [-1+1j, 0.+0.j],
     [0.+0.j, -1-1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 Q2R = np.array([
     [0.+1j, 0.-1j],
     [0.-1j, 0.-1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U0L: NDArray[np.complex128] = np.array([
     [-1, 1],
     [-1, -1]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U0R: NDArray[np.complex128] = np.array([
     [-1j, 1j],
     [1j, 1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U1L: NDArray[np.complex128] = np.array([
     [-0.5+0.5j, -0.5+0.5j],
     [0.5+0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U1RA: NDArray[np.complex128] = np.array([
     [0.5-0.5j, -0.5-0.5j],
     [0.5-0.5j, 0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 UR1B: NDArray[np.complex128] = np.array([
     [-1, -1j],
     [-1j, -1]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 u2la: NDArray[np.complex128] = np.array([
     [0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, 0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U2LB: NDArray[np.complex128] = np.array([
     [-0.5+0.5j, -0.5-0.5j],
     [0.5-0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U2RA: NDArray[np.complex128] = np.array([
     [-0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U2RB: NDArray[np.complex128] = np.array([
     [0.5-0.5j, 0.5+0.5j],
     [-0.5+0.5j, 0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U3L: NDArray[np.complex128] = np.array([
     [-1+1j, 0+0j],
     [0+0j, -1-1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U3R: NDArray[np.complex128] = np.array([
     [1j, -1j],
     [-1j, -1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 
 class TwoQubitDecomposition(UnitaryPreparation):

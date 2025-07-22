@@ -522,7 +522,7 @@ def apply_diagonal_gate_to_diag(
     NDArray[np.complex128]
         The diagonal matrix after applying the diagonal gate.
     """
-    if not m_diagonal:
+    if m_diagonal.size == 0:
         return m_diagonal
     for state in product([0, 1], repeat=num_qubits):
         diagonal_index = sum(state[i] << (len(action_qubit_labels) - 1 - idx) for idx, i in enumerate(action_qubit_labels))

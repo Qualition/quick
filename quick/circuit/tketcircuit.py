@@ -19,15 +19,15 @@ from __future__ import annotations
 
 __all__ = ["TKETCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from pytket import Circuit as TKCircuit
-from pytket import OpType
-from pytket.circuit import Op, QControlBox
-from pytket.extensions.qiskit import AerBackend, AerStateBackend
+from pytket import Circuit as TKCircuit # type: ignore
+from pytket import OpType # type: ignore
+from pytket.circuit import Op, QControlBox # type: ignore
+from pytket.extensions.qiskit import AerBackend, AerStateBackend # type: ignore
 
 if TYPE_CHECKING:
     from quick.backend import Backend
@@ -273,7 +273,7 @@ class TKETCircuit(Circuit):
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit

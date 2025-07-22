@@ -22,7 +22,6 @@ __all__ = [
     "multiplexed_rz_angles",
     "extract_uvr_matrices",
     "extract_single_qubits_and_diagonal",
-    "multiplexor_diagonal_matrix",
     "simplify",
     "repetition_search",
     "repetition_verify",
@@ -39,12 +38,14 @@ Defined directly as complex numbers to avoid floating point errors
 """
 SQRT2 = 1/np.sqrt(2)
 
-RZ_PI2_00 = complex(
-    SQRT2, SQRT2
+RZ_PI2_00 = np.complex128(
+    SQRT2 + SQRT2 * 1j
 )
-RZ_PI2_11 = complex(
-    SQRT2, -SQRT2
+RZ_PI2_11 = np.complex128(
+    SQRT2 - SQRT2 * 1j
 )
+
+EPSILON = 1e-10
 
 # Type hint for nested lists of floats
 Params = list[list[float] | float] | list[float]
@@ -185,7 +186,7 @@ def extract_uvr_matrices(
         The diagonal matrix r.
     """
     # Hermitian conjugate of b (Eq 6)
-    X = a @ np.conj(b).T
+    X = a @ b.conj().T
 
     # Determinant and phase of x
     det_X = np.linalg.det(X)
@@ -207,20 +208,24 @@ def extract_uvr_matrices(
     # Eigendecomposition of r @ x @ r (Eq 8)
     # This is done via reforming Eq 6 to be similar to an eigenvalue decomposition
     rxr = r @ X @ r
-    eigenvalues, u = np.linalg.eig(rxr)
 
-    # Put the eigenvalues into a diagonal form
-    diagonal = np.diag(np.sqrt(eigenvalues))
+    eigenvalues, u = np.linalg.eig(rxr) # type: ignore
 
-    # Handle specific case where the eigenvalue is near -i
-    if np.abs(diagonal[0, 0] + 1j) < 1e-10:
-        diagonal = np.flipud(diagonal)
+    # Handle specific case where the first eigenvalue is near -i
+    # This is done by interchanging the eigenvalues and eigenvectors (Eq 13)
+    if abs(eigenvalues[0] + 1j) < EPSILON:
+        eigenvalues = np.flipud(eigenvalues)
         u = np.fliplr(u)
 
-    # Calculate v based on the decomposition (Eq 7)
-    v = diagonal @ np.conj(u).T @ np.conj(r).T @ b
+    diagonal = np.array([
+        [RZ_PI2_00, 0],
+        [0, RZ_PI2_11]
+    ])
 
-    return v, u, r
+    # Calculate v based on the decomposition (Eq 7)
+    v = diagonal @ u.conj().T @ r.conj().T @ b
+
+    return v, u, r # type: ignore
 
 def extract_single_qubits_and_diagonal(
         single_qubit_gates: list[NDArray[np.complex128]],
@@ -284,7 +289,7 @@ def extract_single_qubits_and_diagonal(
                 single_qubit_gates[shift + len_multiplexor // 2 + i] = u
 
                 # Decompose D gates per figure 3
-                r_dagger = np.conj(r).T
+                r_dagger = r.conj().T
 
                 if multiplexor_index < num_multiplexors - 1:
                     k = shift + len_multiplexor + i
@@ -304,46 +309,6 @@ def extract_single_qubits_and_diagonal(
                         diagonal[k + 1] *= r[1, 1] * RZ_PI2_11
 
     return single_qubit_gates, diagonal
-
-def multiplexor_diagonal_matrix(
-        single_qubit_gates: list[NDArray[np.complex128]],
-        num_qubits: int,
-        simplified_controls: set[int]
-    ) -> NDArray[np.complex128]:
-    """ Get the diagonal matrix arising in the decomposition of multiplexor
-    gates given in the paper by Bergholm et al.
-
-    Notes
-    -----
-    This function to extract the diagonal matrix arising in the decomposition
-    of multiplexed gates based on the paper by Bergholm et al.
-
-    Parameters
-    ----------
-    `single_qubit_gates` : list[NDArray[np.complex128]]
-        The list of single qubit gates.
-    `num_qubits` : int
-        The number of qubits.
-
-    Returns
-    -------
-    NDArray[np.complex128]
-        The diagonal matrix.
-    """
-    _, diagonal = extract_single_qubits_and_diagonal(single_qubit_gates, num_qubits)
-
-    # Simplify the diagonal to minimize the number of controlled gates
-    # needed to implement the diagonal gate
-    if simplified_controls:
-        control_qubits = sorted([num_qubits - i for i in simplified_controls], reverse=True)
-        for i in range(num_qubits):
-            if i not in [0] + control_qubits:
-                step = 2**i
-                diagonal = np.repeat(diagonal, 2, axis=0)
-                for j in range(step, len(diagonal), 2 * step):
-                    diagonal[j:j + step] = diagonal[j - step:j]
-
-    return diagonal
 
 def simplify(
         single_qubit_gates: list[NDArray[np.complex128]],
@@ -371,29 +336,28 @@ def simplify(
     -------
     `new_controls` : set[int]
         The new set of controls.
-    `new_mux` : list[NDArray[np.complex128]]
+    `mux_copy` : list[NDArray[np.complex128]]
         The new list of single qubit gates.
     """
-    c: set[int] = set()
-    nc: set[int] = set()
+    multiplexer_controls: set[int] = set()
+    removed_control_indices: set[int] = set()
     mux_copy = single_qubit_gates.copy()
 
     # Add the position of the multiplexer controls to the set c
     for i in range(num_controls):
-        c.add(i + 1)
+        multiplexer_controls.add(i + 1)
 
     # Identify repetitions in the array and return the unnecessary
     # controls and a copy of the array, marking the repeated operators
     # as null
     if len(single_qubit_gates) > 1:
-        nc, mux_copy = repetition_search(single_qubit_gates, num_controls)
+        removed_control_indices, mux_copy = repetition_search(single_qubit_gates, num_controls)
 
     # Remove the unnecessary controls and the marked operators, creating
     # a new set of controls and a new array representing the simplified multiplexer
-    controls_tree = {x for x in c if x not in nc}
-    mux_tree = [gate for gate in mux_copy if gate is not None]
+    controls_tree = {x for x in multiplexer_controls if x not in removed_control_indices}
 
-    return controls_tree, mux_tree
+    return controls_tree, mux_copy
 
 def repetition_search(
         multiplexor: list[NDArray[np.complex128]],
@@ -419,13 +383,13 @@ def repetition_search(
 
     Returns
     -------
-    `nc` : set[int]
+    `removed_control_indices` : set[int]
         The set of removed controls.
     `mux_copy` : list[NDArray[np.complex128]]
         The new list of gates.
     """
     mux_copy = multiplexor.copy()
-    nc = set()
+    removed_control_indices = set()
     d = 1
 
     # The positions of the multiplexer whose indices are a power of two
@@ -468,16 +432,16 @@ def repetition_search(
         # and add it to the set of unnecessary controls
         if disentanglement:
             removed_control_index = level - np.log2(d)
-            nc.add(removed_control_index)
+            removed_control_indices.add(removed_control_index)
         d *= 2
 
-    return nc, mux_copy
+    return removed_control_indices, mux_copy
 
 def repetition_verify(
-        base,
-        d,
-        multiplexor,
-        mux_copy
+        base: int,
+        d: int,
+        multiplexor: list[NDArray[np.complex128]],
+        mux_copy: list[NDArray[np.complex128]]
     ) -> tuple[bool, list[NDArray[np.complex128]]]:
     """ Verify if the repetitions are valid. This is done by comparing each
     pair of operators with a distance d between them.
@@ -489,7 +453,7 @@ def repetition_verify(
     Notes
     -----
     The implementation of this simplification is based on the paper
-    by by de Carvalho et al. [1]. The pseudocode is provided in Algorithm 3.
+    by de Carvalho et al. [1]. The pseudocode is provided in Algorithm 3.
 
     [1] de Carvalho, Batista, de Veras, Araujo, da Silva,
     Quantum multiplexer simplification for state preparation (2024).
@@ -519,8 +483,10 @@ def repetition_verify(
     while i < d:
         if not np.allclose(multiplexor[base], multiplexor[next_base]):
             return False, mux_copy
-        mux_copy[next_base] = None
+        mux_copy[next_base] = None # type: ignore
         base, next_base, i = base + 1, next_base + 1, i + 1
+
+    mux_copy = [gate for gate in mux_copy if gate is not None]
 
     return True, mux_copy
 
@@ -530,14 +496,14 @@ def flatten(array: Params) -> tuple[list[float], Params]: # pragma: no cover
 
     Parameters
     ----------
-    `array` : Tree
+    `array` : Params
         The nested list of floats.
 
     Returns
     -------
     `flattened` : list[float]
         The flattened list of parameters.
-    `shape` : Tree
+    `shape` : Params
         The shape of the original array.
     """
     flattened: list[float] = []
@@ -562,7 +528,6 @@ def flatten(array: Params) -> tuple[list[float], Params]: # pragma: no cover
 
     return flattened, shape
 
-
 def reshape(
         flattened: list[float],
         shape: Params
@@ -573,12 +538,12 @@ def reshape(
     ----------
     `flattened` : list[float]
         The flat list of floats.
-    `shape` : Tree
+    `shape` : Params
         The shape instruction.
 
     Returns
     -------
-    `reshaped` : Tree
+    `reshaped` : Params
         The reshaped list of floats.
     """
     reshaped: Params = []

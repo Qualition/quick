@@ -91,9 +91,9 @@ class Compiler:
     def __init__(
             self,
             circuit_framework: type[Circuit],
-            state_prep: type[StatePreparation]=Isometry,
-            unitary_prep: type[UnitaryPreparation]=ShannonDecomposition,
-            optimizer: Optimizer | None=None
+            state_prep: type[StatePreparation] = Isometry,
+            unitary_prep: type[UnitaryPreparation] = ShannonDecomposition,
+            optimizer: Optimizer | None = None
         ) -> None:
         """ Initialize a `quick.compiler.Compiler` object.
         """

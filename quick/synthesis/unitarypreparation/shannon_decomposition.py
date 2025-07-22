@@ -142,7 +142,7 @@ class ShannonDecomposition(UnitaryPreparation):
                 circuit: Circuit,
                 qubit_indices: list[int],
                 unitary: NDArray[np.complex128],
-                recursion_depth: int=0
+                recursion_depth: int = 0
             ) -> None:
             """ Decompose n-qubit unitary into CX/RY/RZ/CX gates, preserving global phase.
 
@@ -226,7 +226,7 @@ class ShannonDecomposition(UnitaryPreparation):
                 demux_qubits: list[int],
                 unitary_1: NDArray[np.complex128],
                 unitary_2: NDArray[np.complex128],
-                recursion_depth: int=0
+                recursion_depth: int = 0
             ) -> None:
             """ Decompose a multiplexor defined by a pair of unitary matrices operating on
             the same subspace per Theorem 12.
@@ -291,8 +291,8 @@ class ShannonDecomposition(UnitaryPreparation):
             # Take the square root of the eigenvalues to obtain the singular values
             # This is necessary because the singular values provide a more convenient form
             # for constructing the diagonal matrix D, which is used in the final decomposition
-            # We need to use `np.emath.sqrt` to handle negative eigenvalues
-            eigenvalues_sqrt = np.emath.sqrt(eigenvalues)
+            # We need to use `np.lib.scimath.sqrt` to handle negative eigenvalues
+            eigenvalues_sqrt = np.lib.scimath.sqrt(eigenvalues)
 
             # Create a diagonal matrix D from the singular values
             # The diagonal matrix D is used to scale the eigenvectors appropriately in the final step

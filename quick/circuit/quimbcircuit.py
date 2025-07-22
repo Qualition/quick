@@ -19,10 +19,10 @@ from __future__ import annotations
 
 __all__ = ["QuimbCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import quimb.tensor as qtn # type: ignore
 from quimb.gates import I, X, Y, Z, H, S, T, RX, RY, RZ, U3 # type: ignore
@@ -279,7 +279,7 @@ class QuimbCircuit(Circuit):
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit

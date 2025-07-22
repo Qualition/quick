@@ -68,8 +68,8 @@ class StatePreparation(ABC):
     def prepare_state(
             self,
             state: NDArray[np.complex128] | Bra | Ket,
-            compression_percentage: float=0.0,
-            index_type: Literal["row", "snake"]="row"
+            compression_percentage: float = 0.0,
+            index_type: Literal["row", "snake"] = "row"
         ) -> Circuit:
         """ Prepare the quantum state.
 
@@ -112,8 +112,8 @@ class StatePreparation(ABC):
             circuit: Circuit,
             state: NDArray[np.complex128] | Bra | Ket,
             qubit_indices: int | Sequence[int],
-            compression_percentage: float=0.0,
-            index_type: Literal["row", "snake"]="row"
+            compression_percentage: float = 0.0,
+            index_type: Literal["row", "snake"] = "row"
         ) -> Circuit:
         """ Apply the quantum state to a quantum circuit.
 

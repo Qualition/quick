@@ -21,7 +21,8 @@ __all__ = [
     "is_unitary_matrix",
     "is_hermitian_matrix",
     "is_positive_semidefinite_matrix",
-    "is_isometry"
+    "is_isometry",
+    "is_density_matrix"
 ]
 
 from quick.predicates.predicates import (
@@ -33,5 +34,6 @@ from quick.predicates.predicates import (
     is_unitary_matrix,
     is_hermitian_matrix,
     is_positive_semidefinite_matrix,
-    is_isometry
+    is_isometry,
+    is_density_matrix
 )

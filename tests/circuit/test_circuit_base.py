@@ -1095,6 +1095,75 @@ class TestCircuitBase:
         assert circuit == no_measurement_circuit
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_mul(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the repeat of circuits via `__mul__` operator.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit.H(0)
+        circuit.CX(0, 1)
+
+        new_circuit = circuit * 3
+        new_circuit_reverse = 3 * circuit
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+
+        assert checker_circuit == new_circuit
+        assert checker_circuit == new_circuit_reverse
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_matmul(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the tensor product of circuits via `__matmul__` operator.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit_1 = circuit_framework(3)
+        circuit_2 = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit_1.H(0)
+        circuit_1.CX(0, 2)
+        circuit_2.Z(0)
+        circuit_2.CY(1, 0)
+
+        new_circuit = circuit_1 @ circuit_2
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(5)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 2)
+        checker_circuit.Z(3)
+        checker_circuit.CY(4, 3)
+
+        assert checker_circuit == new_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_getitem(
             self,
             circuit_framework: type[Circuit]

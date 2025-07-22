@@ -36,6 +36,7 @@ import itertools
 import numpy as np
 from numpy.typing import NDArray
 import scipy.linalg # type: ignore
+import warnings
 
 """ Define the M matrix from section III to
 tranform the unitary matrix into the magic basis:
@@ -56,7 +57,7 @@ M_UNNORMALIZED = np.array([
     [0, 0, 1j, 1],
     [0, 0, 1j, -1],
     [1, -1j, 0, 0]
-], dtype=complex)
+], dtype=np.complex128)
 
 M_UNNORMALIZED_DAGGER = 0.5 * M_UNNORMALIZED.conj().T
 
@@ -64,17 +65,17 @@ M_UNNORMALIZED_DAGGER = 0.5 * M_UNNORMALIZED.conj().T
 X_MAGIC_BASIS = np.array([
     [0, 1j],
     [1j, 0]
-], dtype=complex)
+], dtype=np.complex128)
 
 Y_MAGIC_BASIS = np.array([
     [0, 1],
     [-1, 0]
-], dtype=complex)
+], dtype=np.complex128)
 
 Z_MAGIC_BASIS = np.array([
     [1j, 0],
     [0, -1j]
-], dtype=complex)
+], dtype=np.complex128)
 
 # Constants
 PI = np.pi
@@ -85,7 +86,7 @@ PI4 = PI / 4
 
 def transform_to_magic_basis(
         U: NDArray[np.complex128],
-        reverse: bool=False
+        reverse: bool = False
     ) -> NDArray[np.complex128]:
     """ Transform the 4x4 matrix `U` into the magic basis.
 
@@ -185,7 +186,7 @@ def weyl_coordinates(U: NDArray[np.complex128]) -> NDArray[np.float64]:
 
 def partition_eigenvalues(
         eigenvalues: NDArray[np.complex128],
-        atol: float=1e-13
+        atol: float = 1e-13
     ) -> list[list[int]]:
     """ Group the indices of degenerate eigenvalues.
 
@@ -283,7 +284,7 @@ def diagonalize_unitary_complex_symmetric(
     # If there are no degenerate subspaces, we return the eigenvalues and identity matrix
     # as the eigenvectors
     if len(spaces) == 1:
-        return eigenvalues, np.eye(4).astype(complex) # type: ignore
+        return eigenvalues, np.eye(4).astype(np.complex128) # type: ignore
 
     out_vectors = np.empty((4, 4), dtype=np.float64)
     n_done = 0
@@ -298,17 +299,17 @@ def diagonalize_unitary_complex_symmetric(
         # This is the hardest case, because there might not have even one real vector
         a, b = eigenvectors[:, spaces[0]].T
         b_zeros = np.abs(b) <= atol
+
         if np.any(np.abs(a[b_zeros]) > atol):
             # Make `a` real where `b` has zeros.
             a = remove_global_phase(a, index=np.argmax(np.where(b_zeros, np.abs(a), 0)))
-        if np.max(np.abs(a.imag)) <= atol:
-            # `a` is already all real
-            pass
-        else:
+
+        if np.max(np.abs(a.imag)) > atol:
             # We have to solve `(b.imag, b.real) @ (re, im).T = a.imag` for `re`
             # and `im`, which is overspecified
             multiplier, *_ = scipy.linalg.lstsq(np.transpose([b.imag, b.real]), a.imag) # type: ignore
             a = a - complex(*multiplier) * b
+
         a = a.real / scipy.linalg.norm(a.real)
         b = remove_global_phase(b - (a @ b) * a)
         out_vectors[:, :2] = np.transpose([a, b.real])
@@ -362,8 +363,6 @@ def decompose_two_qubit_product_gate(
     -----
     >>> L, R, phase = decompose_two_qubit_product_gate(np.eye(4))
     """
-    special_unitary_matrix = np.asarray(special_unitary_matrix, dtype=complex)
-
     # Extract the right component
     R = special_unitary_matrix[:2, :2].copy()
     R_det = R[0, 0] * R[1, 1] - R[0, 1] * R[1, 0]
@@ -450,7 +449,17 @@ class TwoQubitWeylDecomposition:
             NDArray[np.complex128],
             float
         ]:
-        """ Decompose a two-qubit unitary matrix into the Weyl coordinates and the product of two single-qubit unitaries.
+        """ Decompose a two-qubit unitary matrix into the Weyl coordinates and the
+        product of two single-qubit unitaries.
+
+        Notes
+        -----
+        M2 diagnolization may be wrong due to floating point errors, but it will work
+        correctly in Linux. Should you encounter a failure in the code, and the result
+        fails to encode the correct unitary matrix, please report it at
+        https://github.com/Qualition/quick/issues/11
+
+        with the unitary matrix that caused the failure.
 
         Parameters
         ----------
@@ -476,33 +485,37 @@ class TwoQubitWeylDecomposition:
         `global_phase` : float
             The global phase.
 
+        Raises
+        ------
+        ValueError
+            - If the determinant of the right or left component is
+            not in the expected range.
+            - If the decomposition fails due to a deviation from the
+            expected unitary matrix.
+
         Usage
         -----
         >>> a, b, c, K1l, K1r, K2l, K2r, global_phase = TwoQubitWeylDecomposition.decompose_unitary(np.eye(4))
         """
         # Make U be in SU(4)
-        U = np.array(unitary_matrix, dtype=complex, copy=True)
+        U = np.array(unitary_matrix, dtype=np.complex128, copy=True)
         U_det = scipy.linalg.det(U)
         U *= U_det ** (-0.25)
         global_phase = cmath.phase(U_det) / 4
 
-        U_magic_basis = transform_to_magic_basis(U.astype(complex), reverse=True)
-        M2 = U_magic_basis.T.dot(U_magic_basis)
-
-        # There is a floating point error in this implementation
-        # for certain U, which depends on OS and Python version
-        # This causes the numpy.linalg.eig() to produce different results
-        # for the same input matrix, leading to a decomposition failure
-        # To contribute to this issue, please refer to:
-        # https://github.com/Qualition/quick/issues/11
-
-        # Alternatively, you may propose an entirely new implementation
-        # so that we can replace this two qubit decomposition implementation
-        # with a more robust one that doesn't have floating point errors
-        # To contribute to this feature request, please refer to:
-        # https://github.com/Qualition/quick/issues/14
+        U_magic_basis = transform_to_magic_basis(U, reverse=True)
+        M2 = np.round(U_magic_basis.T.dot(U_magic_basis), decimals=15)
 
         D, P = diagonalize_unitary_complex_symmetric(M2)
+
+        # Given P is a real-symmetric unitary matrix we only use transpose
+        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M2, rtol=0, atol=1e-13):
+            warnings.warn(
+                "Failed to diagonalize M2."
+                "Kindly report this at https://github.com/Qualition/quick/issues/11: "
+                f"U: {U}"
+            )
+
         d = -np.angle(D) / 2
         d[3] = -d[0] - d[1] - d[2]
         weyl_coordinates = np.mod((d[:3] + d[3]) / 2, PI_DOUBLE)

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 __all__ = ["TKET2Optimizer"]
 
-from tket2.passes import badger_pass
+from tket2.passes import badger_pass # type: ignore
 
 from quick.circuit import Circuit, TKETCircuit
 from quick.optimizer.optimizer import Optimizer

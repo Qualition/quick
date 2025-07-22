@@ -20,7 +20,7 @@ from __future__ import annotations
 __all__ = ["Circuit"]
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 import copy
 import cmath
@@ -29,19 +29,22 @@ import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
 from typing import (
-    Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, TYPE_CHECKING
+    Any, Literal, overload, SupportsFloat, SupportsIndex, TYPE_CHECKING
 )
 
 import qiskit # type: ignore
 import cirq # type: ignore
 import pennylane as qml # type: ignore
-import pytket
+import pytket # type: ignore
 import quimb.tensor as qtn # type: ignore
 
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit.circuit_utils import (
-    multiplexed_rz_angles, decompose_multiplexor_rotations, extract_single_qubits_and_diagonal, simplify
+    multiplexed_rz_angles,
+    decompose_multiplexor_rotations,
+    extract_single_qubits_and_diagonal,
+    simplify
 )
 from quick.circuit.dag import DAGCircuit
 from quick.circuit.from_framework import FromCirq, FromPennyLane, FromQiskit, FromTKET
@@ -53,7 +56,7 @@ from quick.synthesis.unitarypreparation import (
     UnitaryPreparation, ShannonDecomposition, QiskitUnitaryTranspiler
 )
 
-EPSILON = 1e-10
+EPSILON = 1e-15
 
 """ Set the frozensets for the keys to be used:
 - Decorator `Circuit.gatemethod()`
@@ -4654,7 +4657,7 @@ class Circuit(ABC):
 
         # Repeatedly apply the decomposition of Theorem 7 from [1]
         while num_diagonal_entries >= 2:
-            rz_angles = []
+            rz_angles: list[float] = []
 
             # Extract the RZ angles and the relative phase
             # between the two diagonal entries
@@ -4715,8 +4718,8 @@ class Circuit(ABC):
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: int | Sequence[int],
             target_index: int,
-            up_to_diagonal: bool=False,
-            multiplexor_simplification: bool=True,
+            up_to_diagonal: bool = False,
+            multiplexor_simplification: bool = True,
             control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled gate to the circuit.
@@ -4785,6 +4788,12 @@ class Circuit(ABC):
         ...             [[0, 1],
         ...              [1, 0]]], multiplexor_simplification=False, control_state="01")
         """
+        # If there are no control indices, we use the ZYZ decomposition
+        # to apply the single qubit gate
+        if not control_indices:
+            self.unitary(single_qubit_gates[0], target_index)
+            return
+
         if isinstance(control_indices, int):
             control_indices = [control_indices]
 
@@ -4793,17 +4802,22 @@ class Circuit(ABC):
                 raise ValueError(f"The dimension of a gate is not equal to 2x2. Received {gate.shape}.")
 
         # Check if number of gates in gate_list is a positive power of two
-        num_control = np.log2(len(single_qubit_gates))
-        if num_control < 0 or not int(num_control) == num_control:
+        num_controls = int(
+            np.log2(
+                len(single_qubit_gates)
+            )
+        )
+
+        if num_controls < 0 or not int(num_controls) == num_controls:
             raise ValueError(
                 "The number of single-qubit gates is not a non-negative power of 2."
             )
 
-        if not num_control == len(control_indices):
+        if not num_controls == len(control_indices):
             raise ValueError(
                 "The number of control qubits passed must be equal to the number of gates. "
                 f"Received {len(control_indices)}. "
-                f"Expected {int(num_control)}."
+                f"Expected {int(num_controls)}."
             )
 
         # Check if the single-qubit gates are unitaries
@@ -4816,22 +4830,18 @@ class Circuit(ABC):
         # If the multiplexor simplification is enabled, we simplify the multiplexor
         # based on [2]
         if multiplexor_simplification:
-            new_controls, single_qubit_gates = simplify(single_qubit_gates, int(num_control))
-            control_indices = [qubits[len(control_indices) + 1 - i] for i in new_controls]
+            new_controls, single_qubit_gates = simplify(single_qubit_gates, num_controls)
+            control_indices = [qubits[num_controls + 1 - i] for i in new_controls]
             control_indices.reverse()
-
-        # If there are no control indices, we use the ZYZ decomposition
-        # to apply the single qubit gate
-        if not control_indices:
-            self.unitary(single_qubit_gates[0], target_index)
-            return
 
         # If there is at least one control qubit, we decompose the multiplexor
         # into a sequence of single-qubit gates and CX gates
-        (single_qubit_gates, diagonal) = extract_single_qubits_and_diagonal(
+        single_qubit_gates, diagonal = extract_single_qubits_and_diagonal(
             single_qubit_gates,
             len(control_indices) + 1
         )
+
+        num_single_qubit_gates = len(single_qubit_gates)
 
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # which are absorbed into the single-qubit unitaries to get back the full decomposition
@@ -4842,7 +4852,7 @@ class Circuit(ABC):
                     self.unitary(gate, target_index)
                     self.H(target_index)
 
-                elif i == len(single_qubit_gates) - 1:
+                elif i == num_single_qubit_gates - 1:
                     self.H(target_index)
                     self.RZ(-PI2, target_index)
                     self.unitary(gate, target_index)
@@ -4859,12 +4869,10 @@ class Circuit(ABC):
                 num_trailing_zeros = len(binary_rep) - len(binary_rep.rstrip("0"))
                 control_index = num_trailing_zeros
 
-                # Apply the CX gate
-                if not i == len(single_qubit_gates) - 1:
+                if not i == num_single_qubit_gates - 1:
                     self.CX(control_indices[control_index], target_index)
                     self.GlobalPhase(-PI4)
 
-            # If `up_to_diagonal` is False, we apply the diagonal gate
             if not up_to_diagonal:
                 self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
 
@@ -4905,9 +4913,9 @@ class Circuit(ABC):
     def QFT(
             self,
             qubit_indices: int | Sequence[int],
-            do_swaps: bool=True,
-            approximation_degree: int=0,
-            inverse: bool=False
+            do_swaps: bool = True,
+            approximation_degree: int = 0,
+            inverse: bool = False
         ) -> None:
         r""" Apply the Quantum Fourier Transform to the circuit.
 
@@ -5081,7 +5089,7 @@ class Circuit(ABC):
     @staticmethod
     def _horizontal_reverse(
             circuit_log: list[dict[str, Any]],
-            adjoint: bool=True
+            adjoint: bool = True
         ) -> list[dict[str, Any]]:
         """ Perform a horizontal reverse operation.
 
@@ -5135,7 +5143,7 @@ class Circuit(ABC):
 
     def horizontal_reverse(
             self,
-            adjoint: bool=True
+            adjoint: bool = True
         ) -> None:
         """ Perform a horizontal reverse operation. This is equivalent
         to the adjoint of the circuit if `adjoint=True`. Otherwise, it
@@ -5360,7 +5368,7 @@ class Circuit(ABC):
 
     def get_instructions(
             self,
-            include_measurements: bool=True
+            include_measurements: bool = True
         ) -> list[dict]:
         """ Get the instructions of the circuit.
 
@@ -5577,7 +5585,7 @@ class Circuit(ABC):
 
     def remove_measurements(
             self,
-            inplace: bool=False
+            inplace: bool = False
         ) -> Circuit | None:
         """ Remove the measurement instructions from the circuit.
 
@@ -5604,8 +5612,8 @@ class Circuit(ABC):
 
     def decompose(
             self,
-            reps: int=1,
-            full: bool=False
+            reps: int = 1,
+            full: bool = False
         ) -> Circuit:
         """ Decompose the gates in the circuit to their implementation gates.
 
@@ -5676,7 +5684,7 @@ class Circuit(ABC):
 
     def transpile(
             self,
-            direct_transpile: bool=True,
+            direct_transpile: bool = True,
             synthesis_method: UnitaryPreparation | None = None
         ) -> None:
         """ Transpile the circuit to U3 and CX gates.
@@ -5945,7 +5953,7 @@ class Circuit(ABC):
     @abstractmethod
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
         """ Convert the circuit to QASM.
 
@@ -6207,7 +6215,7 @@ class Circuit(ABC):
 
     def plot_histogram(
             self,
-            non_zeros_only: bool=False
+            non_zeros_only: bool = False
         ) -> plt.Figure:
         """ Plot the histogram of the circuit.
 
@@ -6242,6 +6250,107 @@ class Circuit(ABC):
         plt.close()
 
         return figure
+
+    def __mul__(
+            self,
+            multiplier: int
+        ) -> Circuit:
+        """ Multiply the circuit by an integer to repeat the circuit.
+
+        Parameters
+        ----------
+        `multiplier` : int
+            The number of times to repeat the circuit.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The new circuit with the repeated operations.
+
+        Raises
+        ------
+        TypeError
+            - The multiplier must be an integer.
+
+        Usage
+        -----
+        >>> new_circuit = circuit * 3
+        """
+        if not isinstance(multiplier, int):
+            raise TypeError("The multiplier must be an integer.")
+
+        new_circuit = type(self)(self.num_qubits)
+        for _ in range(multiplier):
+            new_circuit.add(self, list(range(self.num_qubits)))
+
+        return new_circuit
+
+    def __rmul__(
+            self,
+            multiplier: int
+        ) -> Circuit:
+        """ Multiply the circuit by an integer to repeat the circuit.
+        This is the right-hand side multiplication, allowing for
+        the syntax `3 * circuit`.
+
+        Parameters
+        ----------
+        `multiplier` : int
+            The number of times to repeat the circuit.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The new circuit with the repeated operations.
+
+        Raises
+        ------
+        TypeError
+            - The multiplier must be an integer.
+
+        Usage
+        -----
+        >>> new_circuit = 3 * circuit
+        """
+        return self.__mul__(multiplier)
+
+    def __matmul__(
+            self,
+            other_circuit: Circuit
+        ) -> Circuit:
+        """ Tensor product two circuits together. This is
+        done by putting the circuits side by side.
+
+        Parameters
+        ----------
+        `other_circuit` : quick.circuit.Circuit
+            The circuit to tensor product with.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The tensor product circuit.
+
+        Raises
+        ------
+        TypeError
+            - The other circuit must be a `quick.circuit.Circuit`.
+
+        Usage
+        -----
+        >>> new_circuit = circuit @ other_circuit
+        """
+        if not isinstance(other_circuit, Circuit):
+            raise TypeError("The other circuit must be a `quick.circuit.Circuit`.")
+
+        new_circuit = type(self)(self.num_qubits + other_circuit.num_qubits)
+        new_circuit.add(self, list(range(self.num_qubits)))
+        new_circuit.add(
+            other_circuit,
+            list(range(self.num_qubits, self.num_qubits + other_circuit.num_qubits))
+        )
+
+        return new_circuit
 
     def __getitem__(
             self,
@@ -6330,8 +6439,8 @@ class Circuit(ABC):
     def is_equivalent(
             self,
             other_circuit: Circuit,
-            check_unitary: bool=True,
-            check_dag: bool=False
+            check_unitary: bool = True,
+            check_dag: bool = False
         ) -> bool:
         """ Check if the circuit is equivalent to another circuit.
 

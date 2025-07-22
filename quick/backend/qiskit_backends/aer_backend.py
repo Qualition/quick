@@ -87,9 +87,9 @@ class AerBackend(NoisyBackend):
     """
     def __init__(
             self,
-            single_qubit_error: float=0.0,
-            two_qubit_error: float=0.0,
-            device: str="CPU"
+            single_qubit_error: float = 0.0,
+            two_qubit_error: float = 0.0,
+            device: str = "CPU"
         ) -> None:
 
         super().__init__(
@@ -189,7 +189,7 @@ class AerBackend(NoisyBackend):
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
 
         if len(circuit.measured_qubits) == 0:
