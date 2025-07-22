@@ -19,7 +19,6 @@ __all__ = ["TestCircuitBase"]
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
-from typing import Type
 
 from quick.circuit import Circuit
 from quick.random import generate_random_state, generate_random_unitary
@@ -1313,7 +1312,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_eq_fail(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__eq__` dunder method failure.
 
@@ -1360,7 +1359,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_eq_invalid_type(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__eq__` dunder method failure with invalid type.
 
@@ -1377,7 +1376,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_is_equivalent(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `is_equivalent` method.
 

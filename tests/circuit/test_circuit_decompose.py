@@ -18,7 +18,6 @@ __all__ = ["TestDecompose"]
 
 import numpy as np
 import pytest
-from typing import Type
 
 from quick.circuit import Circuit
 

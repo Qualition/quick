@@ -18,7 +18,6 @@ __all__ = ["TestAnsatz"]
 
 import pytest
 from quick.circuit import Ansatz, Circuit
-from typing import Type
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
 
