@@ -19,7 +19,6 @@ __all__ = ["TestDiffusion"]
 from numpy.testing import assert_almost_equal
 import pytest
 import random
-from typing import Type
 
 from quick.circuit import Circuit, QiskitCircuit
 from quick.primitives import Operator

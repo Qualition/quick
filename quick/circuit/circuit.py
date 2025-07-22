@@ -536,7 +536,7 @@ class Circuit(ABC):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
         """ Apply a gate to the circuit.
@@ -551,7 +551,7 @@ class Circuit(ABC):
             The gate to apply to the circuit.
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
-        `control_indices` : int | Sequence[int], optional, default=[]
+        `control_indices` : int | Sequence[int], optional, default=None
             The index of the control qubit(s).
         `angles` : Sequence[float], optional, default=(0, 0, 0)
             The rotation angles in radians.

@@ -137,23 +137,27 @@ class QiskitCircuit(Circuit):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
+
+        if control_indices is None:
+            controls: list[int] = []
+        else:
+            controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
         gate_operation = self.gate_mapping[gate](angles)
 
-        if control_indices:
-            for target_index in target_indices:
-                self.circuit.append(gate_operation.control(len(control_indices)), [*control_indices[:], target_index])
+        if controls:
+            for target_index in targets:
+                self.circuit.append(gate_operation.control(len(controls)), [*controls[:], target_index])
             return
 
-        for target_index in target_indices:
+        for target_index in targets:
             self.circuit.append(gate_operation, [target_index])
 
     def GlobalPhase(

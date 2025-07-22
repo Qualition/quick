@@ -159,12 +159,16 @@ class CirqCircuit(Circuit):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
         targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
-        controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
+
+        if control_indices is None:
+            controls: list[int] = []
+        else:
+            controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
 
         # Given Cirq uses MSB convention, we will explicitly
         # convert the qubit indices to LSB convention
