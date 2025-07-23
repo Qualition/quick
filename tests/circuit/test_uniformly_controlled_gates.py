@@ -23,7 +23,7 @@ import pytest
 from scipy.linalg import block_diag
 
 from quick.circuit import Circuit
-from quick.circuit.gate_matrix import PauliX, PauliY, Hadamard, RX, RY
+from quick.circuit.gate_matrix import PauliX, Hadamard, RX, RY
 
 from tests.circuit import CIRCUIT_FRAMEWORKS
 from tests.circuit.gate_utils import (
