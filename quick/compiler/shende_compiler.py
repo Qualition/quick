@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-__all__ = ["Compiler"]
+__all__ = ["ShendeCompiler"]
 
 from collections.abc import Sequence
 import numpy as np
@@ -25,27 +25,27 @@ from numpy.typing import NDArray
 from typing import TypeAlias
 
 from quick.circuit import Circuit
-from quick.optimizer import Optimizer
 from quick.primitives import Bra, Ket, Operator
 from quick.synthesis.statepreparation import StatePreparation, Isometry
 from quick.synthesis.unitarypreparation import UnitaryPreparation, ShannonDecomposition
 
 """ Type aliases for the primitives to be compiled:
-- `PRIMITIVE` is a single primitive object, which can be a `Bra`, `Ket`, `Operator`, or a `numpy.ndarray`.
+- `PRIMITIVE` is a single primitive object, which can be a `Bra`, `Ket`, `Operator`,or a `numpy.ndarray`.
 - `PRIMITIVES` is a list of tuples containing the primitive object and the qubits they need to be applied to.
 """
 PRIMITIVE: TypeAlias = Bra | Ket | Operator | NDArray[np.complex128]
 PRIMITIVES: TypeAlias = list[tuple[PRIMITIVE, Sequence[int]]]
 
 
-class Compiler:
-    """ `quick.compiler.Compiler` is the base class for creating quantum compilation passes
-    from primitives to circuits. The `compile` method is the main interface for the compiler,
-    which takes in a primitives object and returns a circuit object.
+class ShendeCompiler:
+    """ `quick.compiler.ShendeCompiler` provides compilation of states and unitaries
+    into circuits using the Shende et al. method. The `compile` method is the main
+    interface for the compiler, which takes in a primitives object and returns a
+    circuit object.
 
     Notes
     -----
-    To create a custom compiler, subclass `quick.compiler.Compiler` and overwrite the
+    To create a custom compiler, subclass `quick.compiler.ShendeCompiler` and overwrite the
     `state_preparation`, `unitary_preparation`, and `compile` methods. The default compiler
     uses Shende et al for compilation.
 
@@ -61,8 +61,6 @@ class Compiler:
         The state preparation schema for the compiler. Use `Shende` for the default schema.
     `unitary_prep` : type[quick.synthesis.unitarypreparation.UnitaryPreparation], optional, default=ShannonDecomposition
         The unitary preparation schema for the compiler. Use `ShannonDecomposition` for the default schema.
-    `optimizer` : quick.optimizer.Optimizer, optional, default=None
-        The optimizer for the compiler. Use `None` for no optimization.
 
     Attributes
     ----------
@@ -72,8 +70,6 @@ class Compiler:
         The state preparation schema for the compiler.
     `unitary_prep` : quick.synthesis.unitarypreparation.UnitaryPreparation
         The unitary preparation schema for the compiler.
-    `optimizer` : quick.optimizer.Optimizer, optional, default=None
-        The optimizer for the compiler. Uses `None` for no optimization.
 
     Raises
     ------
@@ -93,7 +89,6 @@ class Compiler:
             circuit_framework: type[Circuit],
             state_prep: type[StatePreparation] = Isometry,
             unitary_prep: type[UnitaryPreparation] = ShannonDecomposition,
-            optimizer: Optimizer | None = None
         ) -> None:
         """ Initialize a `quick.compiler.Compiler` object.
         """
@@ -103,13 +98,10 @@ class Compiler:
             raise TypeError("Invalid state preparation schema.")
         if not issubclass(unitary_prep, UnitaryPreparation):
             raise TypeError("Invalid unitary preparation schema.")
-        if not isinstance(optimizer, (Optimizer, type(None))):
-            raise TypeError("Invalid optimizer.")
 
         self.circuit_framework = circuit_framework
         self.state_prep = state_prep(circuit_framework)
         self.unitary_prep = unitary_prep(circuit_framework)
-        self.optimizer = optimizer
 
     def state_preparation(
             self,
@@ -154,37 +146,6 @@ class Compiler:
         >>> circuit = compiler.unitary_preparation(unitary)
         """
         return self.unitary_prep.prepare_unitary(unitary)
-
-    def optimize(
-            self,
-            circuit: Circuit
-        ) -> Circuit:
-        """ Optimize the given circuit.
-
-        Parameters
-        ----------
-        `circuit` : quick.circuit.Circuit
-            The circuit to be optimized.
-
-        Returns
-        -------
-        `optimized_circuit` : quick.circuit.Circuit
-            The optimized circuit.
-
-        Raises
-        ------
-        ValueError
-            - If the optimizer is None.
-
-        Usage
-        -----
-        >>> optimized_circuit = compiler.optimize(circuit)
-        """
-        if self.optimizer is None:
-            raise ValueError("No optimizer is defined. Add an optimizer to use this method.")
-
-        optimized_circuit = self.optimizer.optimize(circuit)
-        return optimized_circuit
 
     @staticmethod
     def _check_primitive(primitive: PRIMITIVE) -> None:
@@ -259,8 +220,8 @@ class Compiler:
             preparing the primitive object.
         """
         for primitive, qubit_indices in primitives:
-            Compiler._check_primitive(primitive)
-            Compiler._check_primitive_qubits(primitive, qubit_indices)
+            ShendeCompiler._check_primitive(primitive)
+            ShendeCompiler._check_primitive_qubits(primitive, qubit_indices)
 
     def _compile_primitive(
             self,
@@ -345,8 +306,5 @@ class Compiler:
         for primitive, qubits in primitives:
             compiled_circuit = self._compile_primitive(primitive)
             circuit.add(compiled_circuit, qubits)
-
-        if self.optimizer is not None:
-            circuit = self.optimize(circuit)
 
         return circuit
