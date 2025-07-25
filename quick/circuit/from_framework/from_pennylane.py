@@ -206,8 +206,6 @@ class FromPennyLane(FromFramework):
 
         tape = qml.workflow.construct_tape(circuit)()
 
-        print(tape.operations)
-
         for gate in tape.operations:
             gate_name = gate.name
             self.gate_mapping[gate_name](gate, params)
