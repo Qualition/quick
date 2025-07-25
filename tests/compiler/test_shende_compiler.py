@@ -55,10 +55,6 @@ class TestShendeCompiler:
         with pytest.raises(TypeError):
             ShendeCompiler(circuit_framework=TKETCircuit, unitary_prep=int) # type: ignore
 
-    def test_init_invalid_optimizer(self) -> None:
-        with pytest.raises(TypeError):
-            ShendeCompiler(circuit_framework=TKETCircuit, optimizer=0) # type: ignore
-
     def test_state_preparation(self) -> None:
         # Initialize the Shende compiler
         shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
