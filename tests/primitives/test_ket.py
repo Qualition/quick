@@ -197,7 +197,6 @@ class TestKet:
         """
         ket1 = Ket(np.array([1, 0, 0, 0]))
         ket2 = Ket(np.array([0, 1, 0, 0]))
-        print(ket1 + ket2)
         assert_allclose((ket1 + ket2).data, np.array([
             [(1+0j)/np.sqrt(2)],
             [(1+0j)/np.sqrt(2)],

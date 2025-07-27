@@ -260,8 +260,6 @@ class TestControlState:
         checker_circuit.CRX(0.1, 0, 1)
         checker_circuit.X(0)
 
-        print(repr(circuit))
-        print(repr(checker_circuit))
         # Check the circuit is equivalent to the checker circuit
         assert circuit == checker_circuit
 

@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ["Compiler"]
+__all__ = ["ShendeCompiler"]
 
-from quick.compiler.compiler import Compiler
+from quick.compiler.shende_compiler import ShendeCompiler

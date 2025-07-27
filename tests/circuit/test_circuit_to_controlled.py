@@ -408,11 +408,6 @@ class TestControlled:
         check_multiple_controlled_circuit.MCRZ(0.5, [0, 1], 2)
         check_multiple_controlled_circuit.MCRZ(0.5, [0, 1], [2, 3])
 
-        print(single_controlled_circuit.circuit_log)
-        print(check_single_controlled_circuit.circuit_log)
-
-        print(multiple_controlled_circuit.circuit_log)
-        print(check_multiple_controlled_circuit.circuit_log)
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
 

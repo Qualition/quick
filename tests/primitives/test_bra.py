@@ -243,5 +243,4 @@ class TestBra:
         """ Test the string representation of the `quick.primitives.Bra` object.
         """
         bra = Bra(np.array([1, 0, 0, 0]))
-        print(repr(bra))
         assert repr(bra) == "Bra(data=[1.+0.j 0.+0.j 0.+0.j 0.+0.j], label=Ψ)"
