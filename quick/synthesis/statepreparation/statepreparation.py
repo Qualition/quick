@@ -29,7 +29,7 @@ from typing import Literal, TYPE_CHECKING
 import quick
 if TYPE_CHECKING:
     from quick.circuit import Circuit
-from quick.primitives import Bra, Ket
+from quick.primitives import Statevector
 
 
 class StatePreparation(ABC):
@@ -67,7 +67,7 @@ class StatePreparation(ABC):
 
     def prepare_state(
             self,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
             compression_percentage: float = 0.0,
             index_type: Literal["row", "snake"] = "row"
         ) -> Circuit:
@@ -75,7 +75,7 @@ class StatePreparation(ABC):
 
         Parameters
         ----------
-        `state` : NDArray[np.complex128] | quick.primitives.Bra | quick.primitives.Ket
+        `state` : NDArray[np.complex128] | quick.primitives.Statevector
             The quantum state to prepare.
         `compression_percentage` : float, optional, default=0.0
             Number between 0 an 100, where 0 is no compression and 100 all statevector values are 0.
@@ -90,16 +90,19 @@ class StatePreparation(ABC):
         Raises
         ------
         TypeError
-            - If the state is not a numpy array or a Bra/Ket object.
+            - If the state is not a numpy array or a Statevector object.
         """
-        if not isinstance(state, (np.ndarray, Bra, Ket)):
+        if not isinstance(state, (np.ndarray, Statevector)):
             try:
                 state = np.array(state).astype(complex)
             except (ValueError, TypeError):
-                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
+                raise TypeError(
+                    "The state must be a numpy array or a Statevector object. "
+                    f"Received {type(state)} instead."
+                )
 
         if isinstance(state, np.ndarray):
-            state = Ket(state)
+            state = Statevector(state)
 
         num_qubits = state.num_qubits
         circuit = self.output_framework(num_qubits)
@@ -110,7 +113,7 @@ class StatePreparation(ABC):
     def apply_state(
             self,
             circuit: Circuit,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
             qubit_indices: int | Sequence[int],
             compression_percentage: float = 0.0,
             index_type: Literal["row", "snake"] = "row"
@@ -121,7 +124,7 @@ class StatePreparation(ABC):
         ----------
         `circuit` : quick.circuit.Circuit
             The quantum circuit to which the state is applied.
-        `state` : NDArray[np.complex128] | quick.primitives.Bra | quick.primitives.Ket
+        `state` : NDArray[np.complex128] | quick.primitives.Statevector
             The quantum state to apply.
         `qubit_indices` : int | Sequence[int]
             The qubit indices to which the state is applied.
@@ -138,7 +141,7 @@ class StatePreparation(ABC):
         Raises
         ------
         TypeError
-            - If the state is not a numpy array or a Bra/Ket object.
+            - If the state is not a numpy array or a Statevector object.
             - If the qubit indices are not integers or a sequence of integers.
         ValueError
             - If the compression percentage is not in the range [0, 100].

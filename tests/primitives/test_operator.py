@@ -11,3 +11,125 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from __future__ import annotations
+
+__all__ = ["TestOperator"]
+
+import numpy as np
+from numpy.testing import assert_allclose
+import pytest
+
+from quick.primitives import Statevector, Operator
+
+
+class TestOperator:
+    """ `tests.primitives.test_operator.TestOperator` is the tester class
+    for `quick.primitives.Operator`.
+    """
+    def test_init(self) -> None:
+        """ Test the initialization of the `quick.primitives.Operator` class.
+        """
+        operator = Operator(
+            np.array([
+                [1, 0],
+                [0, 1]
+            ]), label="A"
+        )
+        assert_allclose(operator.data, np.array([[1+0j, 0+0j], [0+0j, 1+0j]]))
+        assert operator.shape == (2, 2)
+        assert operator.num_qubits == 1
+        assert operator.label == "A"
+
+    def test_from_scalar_fail(self) -> None:
+        """ Test the failure of defining a `quick.primitives.Operator` object from a scalar.
+        """
+        with pytest.raises(ValueError):
+            Operator(1) # type: ignore
+
+    def test_from_statevector_fail(self) -> None:
+        """ Test the failure of defining a `quick.primitives.Operator` object from a statevector.
+        """
+        with pytest.raises(ValueError):
+            Operator(np.array([1, 0, 0, 0]))
+
+    def test_check_mul(self) -> None:
+        """ Test the multiplication of two `quick.primitives.Operator` objects.
+        """
+        op1 = Operator(np.array([[1, 0], [0, 1]]))
+        op2 = Operator(np.array([[0, 1], [1, 0]]))
+        state = Statevector(np.array([1, 0]))
+        op1._check__mul__(op2)
+        op1._check__mul__(state)
+
+    def test_check_mul_fail(self) -> None:
+        """ Test the failure of the multiplication of two `quick.primitives.Operator` objects.
+        """
+        op1 = Operator(np.array([[1, 0], [0, 1]]))
+        with pytest.raises(ValueError):
+            # Mismatched number of qubits
+            op1._check__mul__(Statevector(np.array([1, 0, 0, 0])))
+
+        with pytest.raises(TypeError):
+            # Incompatible type
+            op1._check__mul__("not an operator or statevector or scalar")
+
+    def test_eq(self) -> None:
+        """ Test the equality of two `quick.primitives.Operator` objects.
+        """
+        op1 = Operator(np.array([[1, 0], [0, 1]]))
+        op2 = Operator(np.array([[1, 0], [0, 1]]))
+
+        assert op1 == op2
+
+    def test_eq_fail(self) -> None:
+        """ Test the failure of the equality of two `quick.primitives.Operator` objects.
+        """
+        op1 = Operator(np.array([[1, 0], [0, 1]]))
+        op2 = Operator(np.array([[0, 1], [1, 0]]))
+        assert op1 != op2
+
+        with pytest.raises(TypeError):
+            # Incompatible type
+            op1 == "not an operator" # type: ignore
+
+    def test_mul_statevector(self) -> None:
+        """ Test the multiplication of a `quick.primitives.Operator` with a `quick.primitives.Statevector`.
+        """
+        operator = Operator(np.array([[1, 0], [0, 1]]))
+        state = Statevector(np.array([1, 0]))
+        result = operator * state
+        assert_allclose(result.data, np.array([1, 0]))
+
+    def test_mul_operator(self) -> None:
+        """ Test the multiplication of two `quick.primitives.Operator` objects.
+        """
+        op1 = Operator(np.array([[1, 0], [0, 1]]))
+        op2 = Operator(np.array([[0, 1], [1, 0]]))
+        result = op1 * op2
+        assert_allclose(result.data, np.array([[0, 1], [1, 0]]))
+
+    def test_mul_fail(self) -> None:
+        """ Test the failure of the multiplication of a `quick.primitives.Operator` with an incompatible type.
+        """
+        operator = Operator(np.array([[1, 0], [0, 1]]))
+
+        with pytest.raises(ValueError):
+            # Incompatible dimensions
+            operator * Statevector(np.array([1, 0, 0, 0])) # type: ignore
+
+        with pytest.raises(TypeError):
+            # Incompatible type
+            operator * "not an operator or statevector" # type: ignore
+
+    def test_str(self) -> None:
+        """ Test the string representation of the `quick.primitives.Operator` object.
+        """
+        operator = Operator(np.array([[1, 0], [0, 1]]), label="Identity")
+        assert str(operator) == "Identity"
+
+    def test_repr(self) -> None:
+        """ Test the string representation of the `quick.primitives.Operator` object.
+        """
+        operator = Operator(np.array([[1, 0], [0, 1]]), label="Identity")
+        assert repr(operator) == "Operator(data=[[1 0]\n [0 1]], label=Identity)"

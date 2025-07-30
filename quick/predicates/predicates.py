@@ -102,7 +102,7 @@ def is_statevector(
 
     if statevector.ndim == 2:
         if statevector.shape[1] == 1:
-            statevector = statevector.flatten()
+            statevector = statevector.ravel()
 
     return (
         bool(np.isclose(np.linalg.norm(statevector), 1.0, rtol=rtol, atol=atol))

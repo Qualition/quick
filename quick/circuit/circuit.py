@@ -49,7 +49,7 @@ from quick.circuit.circuit_utils import (
 from quick.circuit.dag import DAGCircuit
 from quick.circuit.from_framework import FromCirq, FromPennyLane, FromQiskit, FromTKET
 from quick.predicates import is_unitary_matrix
-from quick.primitives import Bra, Ket, Operator
+from quick.primitives import Statevector, Operator
 from quick.synthesis.gate_decompositions.multi_controlled_decomposition import MCRX, MCRY, MCRZ
 from quick.synthesis.statepreparation import Isometry
 from quick.synthesis.unitarypreparation import (
@@ -4992,14 +4992,14 @@ class Circuit(ABC):
 
     def initialize(
             self,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
             qubit_indices: int | Sequence[int]
         ) -> None:
         """ Initialize the state of the circuit.
 
         Parameters
         ----------
-        `state` : NDArray[np.complex128] | quick.primitives.Bra | quick.primitives.Ket
+        `state` : NDArray[np.complex128] | quick.primitives.Statevector
             The state to initialize the circuit to.
         `qubit_indices` : int | Sequence[int]
             The index of the qubit(s) to apply the gate to.
@@ -5007,7 +5007,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            - If the state is not a numpy array or a Bra/Ket object.
+            - If the state is not a numpy array or a Statevector object.
             - If the qubit indices are not integers or a sequence of integers.
         ValueError
             - If the compression percentage is not in the range [0, 100].

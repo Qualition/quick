@@ -13,11 +13,9 @@
 # limitations under the License.
 
 __all__ = [
-    "TestBra",
-    "TestKet",
+    "TestStatevector",
     "TestOperator"
 ]
 
-from tests.primitives.test_bra import TestBra
-from tests.primitives.test_ket import TestKet
+# from tests.primitives.test_statevector import TestStatevector
 # from tests.primitives.test_operator import TestOperator

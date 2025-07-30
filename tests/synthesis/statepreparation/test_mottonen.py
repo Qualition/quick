@@ -22,17 +22,15 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 from quick.circuit import QiskitCircuit
-from quick.primitives import Bra, Ket
+from quick.primitives import Statevector
 from quick.random import generate_random_state
 from quick.synthesis.statepreparation import Mottonen
 from tests.synthesis.statepreparation import StatePreparationTemplate
 
 # Define the test data
 generated_data = generate_random_state(7)
-test_data_bra = Bra(generated_data)
-test_data_ket = Ket(generated_data)
-checker_data_ket = copy.deepcopy(test_data_ket)
-checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
+test_statevector = Statevector(generated_data)
+checker_statevector = copy.deepcopy(test_statevector)
 
 
 class TestMottonen(StatePreparationTemplate):
@@ -46,31 +44,18 @@ class TestMottonen(StatePreparationTemplate):
         with pytest.raises(TypeError):
             Mottonen("invalid_framework") # type: ignore
 
-    def test_prepare_state_bra(self) -> None:
-        # Initialize the Mottonen encoder
-        shende_encoder = Mottonen(QiskitCircuit)
-
-        # Encode the data to a circuit
-        circuit = shende_encoder.prepare_state(test_data_bra)
-
-        # Get the state of the circuit
-        statevector = circuit.get_statevector()
-
-        # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_bra.data, decimal=8)
-
     def test_prepare_state_ket(self) -> None:
         # Initialize the Mottonen encoder
         shende_encoder = Mottonen(QiskitCircuit)
 
         # Encode the data to a circuit
-        circuit = shende_encoder.prepare_state(test_data_ket)
+        circuit = shende_encoder.prepare_state(test_statevector)
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_prepare_state_ndarray(self) -> None:
         # Initialize the Mottonen encoder
@@ -83,7 +68,7 @@ class TestMottonen(StatePreparationTemplate):
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_apply_state_ket(self) -> None:
         # Initialize the Mottonen encoder
@@ -93,29 +78,13 @@ class TestMottonen(StatePreparationTemplate):
         circuit = QiskitCircuit(7)
 
         # Apply the state to a circuit
-        circuit = shende_encoder.apply_state(circuit, test_data_ket, range(7))
+        circuit = shende_encoder.apply_state(circuit, test_statevector, range(7))
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
-
-    def test_apply_state_bra(self) -> None:
-        # Initialize the Mottonen encoder
-        shende_encoder = Mottonen(QiskitCircuit)
-
-        # Initialize the circuit
-        circuit = QiskitCircuit(7)
-
-        # Apply the state to a circuit
-        circuit = shende_encoder.apply_state(circuit, test_data_bra, range(7))
-
-        # Get the state of the circuit
-        statevector = circuit.get_statevector()
-
-        # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_bra.data, decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_apply_state_ndarray(self) -> None:
         # Initialize the Mottonen encoder
@@ -131,7 +100,7 @@ class TestMottonen(StatePreparationTemplate):
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_apply_state_invalid_input(self) -> None:
         # Initialize the Mottonen encoder
@@ -153,10 +122,10 @@ class TestMottonen(StatePreparationTemplate):
 
         # Apply the state to a circuit
         with pytest.raises(TypeError):
-            shende_encoder.apply_state(circuit, test_data_ket, "invalid_qubit_indices") # type: ignore
+            shende_encoder.apply_state(circuit, test_statevector, "invalid_qubit_indices") # type: ignore
 
         with pytest.raises(TypeError):
-            shende_encoder.apply_state(circuit, test_data_ket, [1+1j, 2+2j, 3+3j]) # type: ignore
+            shende_encoder.apply_state(circuit, test_statevector, [1+1j, 2+2j, 3+3j]) # type: ignore
 
     def test_apply_state_qubit_indices_out_of_range(self) -> None:
         # Initialize the Mottonen encoder
@@ -167,4 +136,4 @@ class TestMottonen(StatePreparationTemplate):
 
         # Apply the state to a circuit
         with pytest.raises(IndexError):
-            shende_encoder.apply_state(circuit, test_data_ket, [0, 1, 2, 3, 4, 5, 12])
+            shende_encoder.apply_state(circuit, test_statevector, [0, 1, 2, 3, 4, 5, 12])
