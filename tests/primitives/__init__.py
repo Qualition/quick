@@ -17,5 +17,5 @@ __all__ = [
     "TestOperator"
 ]
 
-# from tests.primitives.test_statevector import TestStatevector
-# from tests.primitives.test_operator import TestOperator
+from tests.primitives.test_statevector import TestStatevector
+from tests.primitives.test_operator import TestOperator
