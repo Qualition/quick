@@ -28,9 +28,9 @@ __all__ = [
 import numpy as np
 from numpy.typing import NDArray
 import quimb.tensor as qtn # type: ignore
-from qiskit.quantum_info import partial_trace # type: ignore
 
 from quick.predicates import is_density_matrix, is_statevector, is_unitary_matrix
+from quick.primitives import Statevector
 
 
 def _calculate_1d_entanglement_range(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
@@ -222,23 +222,19 @@ def calculate_entanglement_entropy_slope(statevector: NDArray[np.complex128]) ->
     -----
     >>> entanglement_entropy_slope = calculate_entanglement_entropy_slope(statevector)
     """
-    if not is_statevector(statevector):
-        raise ValueError("The input must be a statevector.")
+    if not isinstance(statevector, Statevector):
+        state = Statevector(statevector)
+    else:
+        state = statevector
 
-    num_qubits = int(
-        np.ceil(
-            np.log2(len(statevector))
-        )
-    )
-
-    max_k = num_qubits // 2
+    max_k = state.num_qubits // 2
     entropies = np.empty(max_k, dtype=np.float64)
 
     for k in range(1, max_k + 1):
         # Trace out rest of the qubits to extract the
         # reduced density matrix for the first k qubits
-        rho_A = partial_trace(statevector, list(range(k, num_qubits))) # type: ignore
-        S = calculate_entanglement_entropy(rho_A.data)
+        rho = state.partial_trace(list(range(k, state.num_qubits)))
+        S = calculate_entanglement_entropy(np.array(rho))
         entropies[k - 1] = S
 
     # We use half of the entropies to calculate the slope

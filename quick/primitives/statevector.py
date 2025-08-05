@@ -139,7 +139,7 @@ class Statevector:
 
         Usage
         -----
-        >>> data.is_normalized()
+        >>> statevector.is_normalized()
         """
         self.normalized = self.check_normalization(self.data)
 
@@ -176,7 +176,7 @@ class Statevector:
 
         Usage
         -----
-        >>> data.normalize()
+        >>> statevector.normalize()
         """
         if self.normalized:
             return
@@ -207,11 +207,11 @@ class Statevector:
         return (len_data & (len_data - 1) == 0) and len_data != 0
 
     def is_padded(self) -> None:
-        """ Check if a `quick.data.Data` instance is padded to a power of 2.
+        """ Check if a `quick.primitives.Statevector` instance is padded to a power of 2.
 
         Usage
         -----
-        >>> data.is_padded()
+        >>> statevector.is_padded()
         """
         self.padded = self.check_padding(self.data)
 
@@ -248,11 +248,11 @@ class Statevector:
         return padded_data
 
     def pad(self) -> None:
-        """ Pad a `quick.data.Data` instance.
+        """ Pad a `quick.primitives.Statevector` instance.
 
         Usage
         -----
-        >>> data.pad()
+        >>> statevector.pad()
         """
         if self.padded:
             return
@@ -261,11 +261,11 @@ class Statevector:
         self.padded = True
 
     def to_quantumstate(self) -> None:
-        """ Converts a `quick.data.Data` instance to a quantum state.
+        """ Ensure the statevector is in a valid quantum state.
 
         Usage
         -----
-        >>> data.to_quantumstate()
+        >>> statevector.to_quantumstate()
         """
         if not self.normalized:
             self.normalize()
@@ -286,7 +286,7 @@ class Statevector:
 
         Usage
         -----
-        >>> data.compress(50)
+        >>> statevector.compress(50)
         """
         data_sort_ind = np.argsort(np.abs(self.data))
 
@@ -313,7 +313,7 @@ class Statevector:
 
         Usage
         -----
-        >>> data.change_indexing("snake")
+        >>> statevector.change_indexing("snake")
         """
         if index_type == "snake":
             if self.num_qubits >= 3:
@@ -327,6 +327,67 @@ class Statevector:
             self.data = self.data
         else:
             raise ValueError("Index type not supported.")
+
+    def trace(self) -> float:
+        """ Calculate the trace of the statevector.
+
+        Returns
+        -------
+        float
+            The trace of the statevector.
+
+        Usage
+        -----
+        >>> statevector.trace()
+        """
+        return float(np.sum(np.abs(self.data) ** 2))
+
+    def partial_trace(
+            self,
+            trace_qubit_indices: list[int]
+        ) -> float | NDArray[np.complex128]:
+        """ Calculate the partial trace of the statevector.
+
+        Parameters
+        ----------
+        `trace_qubit_indices` : list[int]
+            The indices of the qubits to trace out.
+
+        Returns
+        -------
+        `rho` : float | NDArray[np.complex128]
+            The resulting density matrix after tracing out the specified qubits.
+            If the `trace_qubit_indices` match the total number of qubits, then
+            we return the trace of the statevector.
+
+        Raises
+        ------
+        ValueError
+            - If the trace qubit indices are invalid.
+
+        Usage
+        -----
+        >>> statevector.partial_trace([0, 1])
+        """
+        for i in trace_qubit_indices:
+            if not 0 <= i < self.num_qubits:
+                raise ValueError(
+                    f"Invalid trace qubit index {i}. "
+                    f"Valid indices are in range(0, {self.num_qubits})."
+                )
+
+        num_traced_qubits = len(trace_qubit_indices)
+        traced_shape = (2**(self.num_qubits - num_traced_qubits),) * 2
+
+        if num_traced_qubits == self.num_qubits:
+            return self.trace()
+
+        trace_systems = [self.num_qubits - 1 - i for i in trace_qubit_indices]
+        state = self.data.reshape([2] * self.num_qubits)
+        rho = np.tensordot(state, state.conj(), axes=(trace_systems, trace_systems))
+        rho = np.reshape(rho, traced_shape)
+
+        return rho
 
     def _check__mul__(
             self,
@@ -470,7 +531,7 @@ class Statevector:
         Raises
         ------
         TypeError
-            - If the `other` object is not a `quick.primitives.Scalar` instance.
+            - If the `other` object is not a number.
 
         Usage
         -----
@@ -514,7 +575,7 @@ class Statevector:
         Raises
         ------
         TypeError
-            - If the `other` object is not a `quick.primitives.Scalar` instance.
+            - If the `other` object is not a number.
 
         Usage
         -----
@@ -530,6 +591,43 @@ class Statevector:
 
         return Statevector(
             (self.data * complex(other)).astype(np.complex128)
+        )
+
+    def __matmul__(
+            self,
+            other: Statevector
+        ) -> Statevector:
+        """ Tensor product of two statevectors.
+
+        Parameters
+        ----------
+        `other` : quick.primitives.Statevector
+            The statevector to tensor product with.
+
+        Returns
+        -------
+        quick.primitives.Statevector
+            The resulting statevector.
+
+        Raises
+        ------
+        TypeError
+            - If `other` is not a `quick.primitives.Statevector`.
+
+        Usage
+        -----
+        >>> statevector1 = Statevector(np.array([1+0j, 0+0j]))
+        >>> statevector2 = Statevector(np.array([1+0j, 0+0j]))
+        >>> statevector1 @ statevector2
+        """
+        if not isinstance(other, Statevector):
+            raise TypeError(
+                "Statevector can only be tensored with other Statevector instances. "
+                f"Received {type(other)} instead."
+            )
+
+        return Statevector(
+            np.kron(self.data, other.data).astype(np.complex128)
         )
 
     def __str__(self) -> str:

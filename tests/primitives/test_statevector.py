@@ -20,6 +20,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
 
+from quick.predicates import is_statevector
 from quick.primitives import Statevector
 
 
@@ -102,6 +103,30 @@ class TestStatevector:
         # Re-pad the already padded to cover the case where if padded we simply return
         statevector.pad()
         assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+    def test_to_quantumstate(self) -> None:
+        """ Test the conversion of the `quick.primitives.Statevector` object to a quantum state.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4]))
+        assert is_statevector(statevector.data)
+
+    def test_trace(self) -> None:
+        """ Test the trace of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4, 5, 6]))
+        assert_almost_equal(statevector.trace(), 1)
+
+    def test_partial_trace(self) -> None:
+        """ Test the partial trace of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4, 5, 6, 7, 8]))
+        assert_almost_equal(
+            statevector.partial_trace([0, 2]),
+            np.array([
+                [0.32352941+0.j, 0.46078431+0.j],
+                [0.46078431+0.j, 0.67647059+0.j]
+            ])
+        )
 
     def test_change_indexing(self) -> None:
         """ Test the change of indexing of the `quick.primitives.Statevector` object.
@@ -203,6 +228,27 @@ class TestStatevector:
         """
         statevector = Statevector(np.array([1, 0, 0, 0]))
         assert_almost_equal((2 * statevector).data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+    def test_matmul(self) -> None:
+        """ Test the matrix multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        tensor_state = statevector @ statevector
+        assert tensor_state.num_qubits == 4
+        checker_state = np.zeros(16, dtype=complex)
+        checker_state[0] = 1
+        assert_almost_equal(
+            tensor_state.data,
+            checker_state
+        )
+
+    def test_matmul_fail(self) -> None:
+        """ Test the failure of the matrix multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+
+        with pytest.raises(TypeError):
+            statevector @ "invalid" # type: ignore
 
     def test_str(self) -> None:
         """ Test the string representation of the `quick.primitives.Statevector` object.
