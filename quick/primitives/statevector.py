@@ -56,6 +56,9 @@ class Statevector:
         Whether the statevector is normalized to 2-norm or not.
     `num_qubits` : int
         The number of qubits represented by the statevector.
+    `tensor_shape` : tuple[int, ...]
+        The shape of the statevector tensor based on qubits
+        as the physical dimension.
 
     Raises
     ------
@@ -84,6 +87,7 @@ class Statevector:
         self.data = data.flatten().astype(np.complex128)
         self.norm_scale = np.linalg.norm(self.data)
         self.num_qubits = int(np.ceil(np.log2(self.data.size)))
+        self.tensor_shape = (2,) * self.num_qubits
         self.is_normalized()
         self.is_padded()
         self.to_quantumstate()
@@ -328,6 +332,17 @@ class Statevector:
         else:
             raise ValueError("Index type not supported.")
 
+    def reverse_bits(self) -> None:
+        """ Reverse the order of the qubits in the statevector.
+        This changes MSB to LSB, and vice versa.
+        """
+        self.data = np.transpose(
+            np.reshape(
+                self.data,
+                self.tensor_shape
+            )
+        ).ravel()
+
     def trace(self) -> float:
         """ Calculate the trace of the statevector.
 
@@ -377,13 +392,13 @@ class Statevector:
                 )
 
         num_traced_qubits = len(trace_qubit_indices)
-        traced_shape = (2**(self.num_qubits - num_traced_qubits),) * 2
 
         if num_traced_qubits == self.num_qubits:
             return self.trace()
 
+        traced_shape = (2**(self.num_qubits - num_traced_qubits),) * 2
         trace_systems = [self.num_qubits - 1 - i for i in trace_qubit_indices]
-        state = self.data.reshape([2] * self.num_qubits)
+        state = self.data.reshape(self.tensor_shape)
         rho = np.tensordot(state, state.conj(), axes=(trace_systems, trace_systems))
         rho = np.reshape(rho, traced_shape)
 

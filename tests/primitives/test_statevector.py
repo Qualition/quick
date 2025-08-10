@@ -33,6 +33,8 @@ class TestStatevector:
         """
         statevector = Statevector(np.array([1, 0, 0, 0]))
         assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+        assert statevector.label == "Ψ"
+        assert statevector.tensor_shape == (2, 2)
 
     def test_from_scalar_fail(self) -> None:
         """ Test the failure of defining a `quick.primitives.Statevector` object from a scalar.
@@ -135,8 +137,9 @@ class TestStatevector:
         statevector.change_indexing("snake")
         assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
 
-        statevector = Statevector(np.array([1, 0, 0, 0,
-                            1, 0, 0, 0]))
+        statevector = Statevector(
+            np.array([1, 0, 0, 0, 1, 0, 0, 0])
+        )
         statevector.change_indexing("snake")
         assert_almost_equal(statevector.data, np.array([
             (1+0j)/np.sqrt(2), 0+0j, 0+0j, 0+0j,
@@ -149,6 +152,18 @@ class TestStatevector:
         statevector = Statevector(np.array([1, 0, 0, 0]))
         with pytest.raises(ValueError):
             statevector.change_indexing("invalid") # type: ignore
+
+    def test_reverse_bits(self) -> None:
+        """ Test the MSB to LSB (vice versa) conversion of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4]))
+        statevector.reverse_bits()
+        checker_statevector = Statevector(np.array([1, 3, 2, 4]))
+        assert_almost_equal(statevector.data, checker_statevector.data)
+
+        statevector.reverse_bits()
+        checker_statevector = Statevector(np.array([1, 2, 3, 4]))
+        assert_almost_equal(statevector.data, checker_statevector.data)
 
     def test_check_mul(self) -> None:
         """ Test the multiplication of the `quick.primitives.Statevector` object.

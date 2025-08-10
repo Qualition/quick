@@ -33,8 +33,8 @@ Scalar: TypeAlias = SupportsFloat | complex
 
 class Operator:
     """ `quick.primitives.Operator` class is used to represent a quantum operator.
-    Quantum operators are hermitian matrices (square, unitary matrices) which represent
-    operations applied to quantum states (represented with qubits).
+    Quantum operators are unitary matrices which represent operations applied to
+    quantum states (represented with qubits).
 
     Parameters
     ----------
@@ -54,6 +54,9 @@ class Operator:
         The shape of the quantum operator data.
     `num_qubits` : int
         The number of qubits the quantum operator acts on.
+    `tensor_shape` : tuple[int, ...]
+        The shape of the quantum operator tensor based on
+        qubits as the physical dimension.
 
     Raises
     ------
@@ -86,6 +89,20 @@ class Operator:
         self.data = data
         self.shape = self.data.shape
         self.num_qubits = int(np.ceil(np.log2(self.shape[0])))
+        self.tensor_shape = (2, 2) * self.num_qubits
+
+    def reverse_bits(self) -> None:
+        """ Reverse the order of the qubits in the statevector.
+        This changes MSB to LSB, and vice versa.
+        """
+        axes = tuple(range(self.num_qubits - 1, -1, -1))
+        axes = axes + tuple(len(axes) + i for i in axes)
+        self.data = np.reshape(
+            np.transpose(
+                np.reshape(self.data, self.tensor_shape), axes
+            ),
+            self.shape
+        )
 
     def _check__mul__(
             self,
@@ -207,6 +224,32 @@ class Operator:
             return Operator(self.data @ other.data)
 
         raise TypeError(f"Multiplication with {type(other)} is not supported.")
+
+    def __matmul__(
+            self,
+            other: Operator
+        ) -> Operator:
+        """ Calculate the tensor product of the two operators.
+
+        Parameters
+        ----------
+        `other` : quick.primitives.Operator
+            The operator to tensor with.
+
+        Returns
+        -------
+        quick.primitives.Operator
+            The tensor product of the two operators.
+
+        Raises
+        ------
+        TypeError
+            - If the `other` is not a `quick.primitives.Operator` instance.
+        """
+        if not isinstance(other, Operator):
+            raise TypeError(f"Cannot tensor Operator with {type(other)}.")
+
+        return Operator(np.kron(self.data, other.data))
 
     def __str__(self) -> str:
         """ Return the string representation of the operator.

@@ -17,7 +17,7 @@ from __future__ import annotations
 __all__ = ["TestOperator"]
 
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_almost_equal
 import pytest
 
 from quick.primitives import Statevector, Operator
@@ -36,7 +36,7 @@ class TestOperator:
                 [0, 1]
             ]), label="A"
         )
-        assert_allclose(operator.data, np.array([[1+0j, 0+0j], [0+0j, 1+0j]]))
+        assert_almost_equal(operator.data, np.array([[1+0j, 0+0j], [0+0j, 1+0j]]))
         assert operator.shape == (2, 2)
         assert operator.num_qubits == 1
         assert operator.label == "A"
@@ -52,6 +52,30 @@ class TestOperator:
         """
         with pytest.raises(ValueError):
             Operator(np.array([1, 0, 0, 0]))
+
+    def test_reverse_bits(self) -> None:
+        """ Test the MSB to LSB (vice versa) conversion of the `quick.primitives.Operator` object.
+        """
+        cx_msb = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0]
+        ])
+        cx_lsb = np.array([
+            [1, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0],
+            [0, 1, 0, 0]
+        ])
+        operator = Operator(cx_msb)
+        operator.reverse_bits()
+        checker_operator = Operator(cx_lsb)
+        assert_almost_equal(operator.data, checker_operator.data)
+
+        operator.reverse_bits()
+        checker_operator = Operator(cx_msb)
+        assert_almost_equal(operator.data, checker_operator.data)
 
     def test_check_mul(self) -> None:
         """ Test the multiplication of two `quick.primitives.Operator` objects.
@@ -99,7 +123,7 @@ class TestOperator:
         operator = Operator(np.array([[1, 0], [0, 1]]))
         state = Statevector(np.array([1, 0]))
         result = operator * state
-        assert_allclose(result.data, np.array([1, 0]))
+        assert_almost_equal(result.data, np.array([1, 0]))
 
     def test_mul_operator(self) -> None:
         """ Test the multiplication of two `quick.primitives.Operator` objects.
@@ -107,7 +131,7 @@ class TestOperator:
         op1 = Operator(np.array([[1, 0], [0, 1]]))
         op2 = Operator(np.array([[0, 1], [1, 0]]))
         result = op1 * op2
-        assert_allclose(result.data, np.array([[0, 1], [1, 0]]))
+        assert_almost_equal(result.data, np.array([[0, 1], [1, 0]]))
 
     def test_mul_fail(self) -> None:
         """ Test the failure of the multiplication of a `quick.primitives.Operator` with an incompatible type.
@@ -121,6 +145,38 @@ class TestOperator:
         with pytest.raises(TypeError):
             # Incompatible type
             operator * "not an operator or statevector" # type: ignore
+
+    def test_matmul(self) -> None:
+        """ Test the tensor product operation of the `quick.primitives.Operator` object.
+        """
+        op1 = Operator(np.array([
+            [1, 0],
+            [0, 1]
+        ]))
+        op2 = Operator(np.array([
+            [0, 1],
+            [1, 0]
+        ]))
+
+        op3 = op1 @ op2
+        op3_checker = np.array([
+            [0, 1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0]
+        ])
+
+        assert_almost_equal(op3.data, op3_checker)
+
+        op4 = op2 @ op1
+        op4_checker = np.array([
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+            [1, 0, 0, 0],
+            [0, 1, 0, 0]
+        ])
+
+        assert_almost_equal(op4.data, op4_checker)
 
     def test_str(self) -> None:
         """ Test the string representation of the `quick.primitives.Operator` object.
