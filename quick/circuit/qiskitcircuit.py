@@ -216,7 +216,7 @@ class QiskitCircuit(Circuit):
             # This is to counter https://github.com/Qiskit/qiskit/issues/13162
             circuit.transpile()
 
-            # If no backend is provided, use the AerSimualtor
+            # If no backend is provided, use the AerSimulator
             base_backend: BackendSampler = BackendSampler(backend=AerSimulator())
             result = base_backend.run([circuit.circuit], shots=num_shots).result()
 
