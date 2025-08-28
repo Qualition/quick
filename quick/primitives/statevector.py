@@ -21,7 +21,7 @@ __all__ = ["Statevector"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Literal, Self, SupportsFloat, TypeAlias
+from typing import Any, Literal, SupportsFloat, TypeAlias
 
 import quick.primitives.operator as operator
 
@@ -100,7 +100,7 @@ class Statevector:
             cls,
             value: int,
             num_qubits: int
-        ) -> Self:
+        ) -> Statevector:
         """ Create a statevector from the basis state
         representation of an integer.
 
