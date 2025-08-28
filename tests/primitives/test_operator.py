@@ -19,6 +19,7 @@ __all__ = ["TestOperator"]
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
+from scipy.stats import unitary_group
 
 from quick.primitives import Statevector, Operator
 
@@ -40,6 +41,30 @@ class TestOperator:
         assert operator.shape == (2, 2)
         assert operator.num_qubits == 1
         assert operator.label == "A"
+
+    def test_conj(self) -> None:
+        """ Test the conjugate of the `quick.primitives.Operator` class.
+        """
+        unitary = np.array(unitary_group.rvs(8)).astype(complex)
+        operator = Operator(unitary)
+        conjugate_operator = operator.conj()
+        assert_almost_equal(conjugate_operator.data, unitary.conj())
+
+    def test_T(self) -> None:
+        """ Test the transpose of `quick.primitives.Operator` class.
+        """
+        unitary = np.array(unitary_group.rvs(8)).astype(complex)
+        operator = Operator(unitary)
+        transpose_operator = operator.T()
+        assert_almost_equal(transpose_operator.data, unitary.T)
+
+    def test_adjoint(self) -> None:
+        """ Test the adjoint of the `quick.primitives.Operator` class.
+        """
+        unitary = np.array(unitary_group.rvs(8)).astype(complex)
+        operator = Operator(unitary)
+        adjoint_operator = operator.adjoint()
+        assert_almost_equal(adjoint_operator.data, unitary.conj().T)
 
     def test_from_scalar_fail(self) -> None:
         """ Test the failure of defining a `quick.primitives.Operator` object from a scalar.
@@ -76,6 +101,35 @@ class TestOperator:
         operator.reverse_bits()
         checker_operator = Operator(cx_msb)
         assert_almost_equal(operator.data, checker_operator.data)
+
+    def test_contract(self) -> None:
+        """ Test the application of operators to `quick.primitives.Operator` objects.
+        """
+        from quick.circuit import QiskitCircuit
+
+        uni1 = np.array(unitary_group.rvs(2 ** 5)).astype(complex)
+        uni2 = np.array(unitary_group.rvs(2 ** 3)).astype(complex)
+        uni3 = np.array(unitary_group.rvs(2 ** 2)).astype(complex)
+
+        op1 = Operator(uni1)
+        op2 = Operator(uni2)
+        op3 = Operator(uni3)
+
+        op1.contract(op2, [3, 0, 1])
+        op1.contract(op3, [2, 4])
+
+        checker_circuit = QiskitCircuit(5)
+        checker_circuit.unitary(uni1, [0, 1, 2, 3, 4])
+        checker_circuit.unitary(uni2, [3, 0, 1])
+        checker_circuit.unitary(uni3, [2, 4])
+
+        assert_almost_equal(checker_circuit.get_unitary(), op1.data)
+
+    def test_array(self) -> None:
+        """ Test the conversion of the `quick.primitives.Operator` to a NumPy array.
+        """
+        operator = Operator(np.array([[1, 0], [0, 1]]))
+        assert_almost_equal(np.array(operator), np.array([[1, 0], [0, 1]]))
 
     def test_check_mul(self) -> None:
         """ Test the multiplication of two `quick.primitives.Operator` objects.

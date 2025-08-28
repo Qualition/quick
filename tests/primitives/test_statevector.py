@@ -19,9 +19,10 @@ __all__ = ["TestStatevector"]
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
+from scipy.stats import unitary_group
 
 from quick.predicates import is_statevector
-from quick.primitives import Statevector
+from quick.primitives import Statevector, Operator
 
 
 class TestStatevector:
@@ -164,6 +165,39 @@ class TestStatevector:
         statevector.reverse_bits()
         checker_statevector = Statevector(np.array([1, 2, 3, 4]))
         assert_almost_equal(statevector.data, checker_statevector.data)
+
+    def test_contract(self) -> None:
+        """ Test the application of operators to `quick.primitives.Operator` objects.
+        """
+        from quick.circuit import QiskitCircuit
+
+        state = np.zeros(2 ** 5)
+        state[0] = 1
+        statevector = Statevector(state.astype(complex))
+        uni1 = np.array(unitary_group.rvs(2 ** 5)).astype(complex)
+        uni2 = np.array(unitary_group.rvs(2 ** 3)).astype(complex)
+        uni3 = np.array(unitary_group.rvs(2 ** 2)).astype(complex)
+
+        op1 = Operator(uni1)
+        op2 = Operator(uni2)
+        op3 = Operator(uni3)
+
+        op1.contract(op2, [3, 0, 1])
+        op1.contract(op3, [2, 4])
+        statevector.contract(op1, [0, 1, 2, 3, 4])
+
+        checker_circuit = QiskitCircuit(5)
+        checker_circuit.unitary(uni1, [0, 1, 2, 3, 4])
+        checker_circuit.unitary(uni2, [3, 0, 1])
+        checker_circuit.unitary(uni3, [2, 4])
+
+        assert_almost_equal(checker_circuit.get_statevector(), statevector.data)
+
+    def test_array(self) -> None:
+        """ Test the conversion of the `quick.primitives.Statevector` to a NumPy array.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert_almost_equal(np.array(statevector), np.array([1, 0, 0, 0]))
 
     def test_check_mul(self) -> None:
         """ Test the multiplication of the `quick.primitives.Statevector` object.

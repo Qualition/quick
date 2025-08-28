@@ -21,7 +21,7 @@ __all__ = ["Statevector"]
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Literal, SupportsFloat, TypeAlias
+from typing import Any, Literal, Self, SupportsFloat, TypeAlias
 
 import quick.primitives.operator as operator
 
@@ -54,6 +54,8 @@ class Statevector:
         The normalization scale.
     `normalized` : bool
         Whether the statevector is normalized to 2-norm or not.
+    `shape` : tuple[int,]
+        The shape of the quantum statevector data.
     `num_qubits` : int
         The number of qubits represented by the statevector.
     `tensor_shape` : tuple[int, ...]
@@ -87,10 +89,46 @@ class Statevector:
         self.data = data.flatten().astype(np.complex128)
         self.norm_scale = np.linalg.norm(self.data)
         self.num_qubits = int(np.ceil(np.log2(self.data.size)))
+        self.shape = (2 ** self.num_qubits,)
         self.tensor_shape = (2,) * self.num_qubits
         self.is_normalized()
         self.is_padded()
         self.to_quantumstate()
+
+    @classmethod
+    def from_int(
+            cls,
+            value: int,
+            num_qubits: int
+        ) -> Self:
+        """ Create a statevector from the basis state
+        representation of an integer.
+
+        Parameters
+        ----------
+        `value` : int
+            The integer value to convert.
+        `num_qubits` : int
+            The number of qubits to use.
+
+        Returns
+        -------
+        quick.primitives.Statevector
+            The resulting statevector.
+        """
+        statevector = np.zeros(2 ** num_qubits, dtype=np.complex128)
+        statevector[value] = 1
+        return cls(statevector)
+
+    def conj(self) -> Statevector:
+        """ Take the conjugate of the statevector.
+
+        Returns
+        -------
+        quick.primitives.Statevector
+            The conjugate of the statevector.
+        """
+        return Statevector(np.conjugate(self.data), label=self.label)
 
     @staticmethod
     def validate_data(data: NDArray[np.complex128]) -> None:
@@ -404,6 +442,51 @@ class Statevector:
 
         return rho
 
+    def contract(
+            self,
+            op: NDArray[np.complex128] | operator.Operator,
+            qubit_indices: list[int]
+        ) -> None:
+        """ Contract the statevector with an operator on the specified
+        qubits in place using Einstein's Summation convention.
+
+        Notes
+        -----
+        This implementation should be used for small systems,
+        as it requires significant memory and thus may not be
+        suitable for larger systems.
+
+        For larger systems, consider using the more efficient
+        `quick.backend.QuimbBackend` which leverages optimal
+        tensor network contraction for simulating the circuit.
+
+        Alternatively, consider using GPU-based simulators
+        present in `quick.backend` which can be faster at
+        scale.
+
+        Parameters
+        ----------
+        `op` : NDArray[np.complex128] | quick.primitives.Operator
+            The operator to contract with.
+        `qubit_indices` : list[int]
+            The indices of the qubits to contract over.
+
+        Raises
+        ------
+        ValueError
+            - If the operator is not unitary.
+            - If the number of indices is less than the number of qubits for `op`.
+            - If the number of qubit indices exceeds the number of qubits in `self`.
+            - If any of the qubit indices are out of range of `self`.
+
+        Usage
+        -----
+        >>> statevector.contract(op, [0, 1])
+        """
+        from quick.primitives.contraction import contract
+
+        contract(self, op, qubit_indices)
+
     def _check__mul__(
             self,
             other: Any
@@ -430,6 +513,15 @@ class Statevector:
                 raise ValueError("Cannot multiply two incompatible vectors.")
         else:
             raise TypeError(f"Multiplication with {type(other)} is not supported.")
+
+    def __array__(self) -> NDArray[np.complex128]:
+        """ Convert the `quick.primitives.Statevector` to a NumPy array.
+
+        Returns
+        -------
+        NDArray[np.complex128]
+        """
+        return np.array(self.data).astype(np.complex128)
 
     def __eq__(
             self,

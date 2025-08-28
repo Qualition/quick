@@ -91,6 +91,36 @@ class Operator:
         self.num_qubits = int(np.ceil(np.log2(self.shape[0])))
         self.tensor_shape = (2, 2) * self.num_qubits
 
+    def conj(self) -> Operator:
+        """ Take the conjugate of the operator.
+
+        Returns
+        -------
+        quick.primitives.Operator
+            The conjugate of the operator.
+        """
+        return Operator(np.conjugate(self.data), label=self.label)
+
+    def T(self) -> Operator:
+        """ Take the transpose of the operator.
+
+        Returns
+        -------
+        quick.primitives.Operator
+            The transpose of the operator.
+        """
+        return Operator(np.transpose(self.data), label=self.label)
+
+    def adjoint(self) -> Operator:
+        """ Take the adjoint of the operator.
+
+        Returns
+        -------
+        quick.primitives.Operator
+            The adjoint of the operator.
+        """
+        return self.conj().T()
+
     def reverse_bits(self) -> None:
         """ Reverse the order of the qubits in the statevector.
         This changes MSB to LSB, and vice versa.
@@ -103,6 +133,52 @@ class Operator:
             ),
             self.shape
         )
+
+    def contract(
+            self,
+            op: NDArray[np.complex128] | Operator,
+            qubit_indices: list[int]
+        ) -> None:
+        """ Contract the operator with an operator on the specified
+        qubits in place using Einstein's Summation convention.
+
+        Notes
+        -----
+        This implementation should be used for small systems,
+        as it requires significant memory and thus may not be
+        suitable for larger systems.
+
+        For larger systems, consider using the more efficient
+        `quick.backend.QuimbBackend` which leverages optimal
+        tensor network contraction for simulating the circuit.
+
+        Alternatively, consider using GPU-based simulators
+        present in `quick.backend` which can be faster at
+        scale.
+
+        Parameters
+        ----------
+        `op` : NDArray[np.complex128] | Operator
+            The operator or matrix to contract with.
+        `qubit_indices` : list[int]
+            The qubit indices to contract over.
+
+        Raises
+        ------
+        ValueError
+            ValueError
+            - If the operator is not unitary.
+            - If the number of indices is less than the number of qubits for `op`.
+            - If the number of qubit indices exceeds the number of qubits in `self`.
+            - If any of the qubit indices are out of range of `self`.
+
+        Usage
+        -----
+        >>> op1.contract(op2, [0, 1])
+        """
+        from quick.primitives.contraction import contract
+
+        contract(self, op, qubit_indices)
 
     def _check__mul__(
             self,
@@ -131,6 +207,15 @@ class Operator:
                 raise ValueError("Cannot multiply two incompatible operators.")
         else:
             raise TypeError(f"Multiplication with {type(other)} is not supported.")
+
+    def __array__(self) -> NDArray[np.complex128]:
+        """ Convert the `quick.primitives.Operator` to a NumPy array.
+
+        Returns
+        -------
+        NDArray[np.complex128]
+        """
+        return np.array(self.data).astype(np.complex128)
 
     def __eq__(
             self,
