@@ -18,6 +18,8 @@
 from __future__ import annotations
 
 __all__ = [
+    "is_power",
+    "is_normalized",
     "is_statevector",
     "is_square_matrix",
     "is_diagonal_matrix",
@@ -38,7 +40,7 @@ ATOL_DEFAULT = 1e-8
 RTOL_DEFAULT = 1e-5
 
 
-def _is_power(
+def is_power(
         base: int,
         number: int
     ) -> bool:
@@ -58,6 +60,33 @@ def _is_power(
     """
     result = math.log(number) / math.log(base)
     return result == math.floor(result)
+
+def is_normalized(
+        statevector: NDArray[np.complex128],
+        rtol: float = RTOL_DEFAULT,
+        atol: float = ATOL_DEFAULT
+    ) -> bool:
+    """ Test if an array is normalized.
+
+    Parameters
+    ----------
+    `statevector` : NDArray[np.complex128]
+        The input statevector.
+    `rtol` : float, optional, default=RTOL_DEFAULT
+        The relative tolerance parameter.
+    `atol` : float, optional, default=ATOL_DEFAULT
+        The absolute tolerance parameter.
+
+    Returns
+    -------
+    bool
+        True if the array is normalized, False otherwise.
+
+    Usage
+    -----
+    >>> is_normalized(np.array([1, 0]))
+    """
+    return bool(np.isclose(np.linalg.norm(statevector), 1.0, rtol=rtol, atol=atol))
 
 def is_statevector(
         statevector: NDArray[np.complex128],
@@ -97,7 +126,7 @@ def is_statevector(
     if system_size < 2:
         raise ValueError("System size must be greater than or equal to 2.")
 
-    if not _is_power(system_size, len(statevector)):
+    if not is_power(system_size, len(statevector)):
         return False
 
     if statevector.ndim == 2:
@@ -105,7 +134,7 @@ def is_statevector(
             statevector = statevector.ravel()
 
     return (
-        bool(np.isclose(np.linalg.norm(statevector), 1.0, rtol=rtol, atol=atol))
+        is_normalized(statevector, rtol=rtol, atol=atol)
         and statevector.ndim == 1
         and len(statevector) > 1
     )

@@ -23,6 +23,7 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Any, Literal, SupportsFloat, TypeAlias
 
+from quick.predicates import is_normalized
 import quick.primitives.operator as operator
 
 # `Scalar` is a type alias that represents a scalar value that can be either
@@ -34,7 +35,7 @@ class Statevector:
     """ `quick.primitives.Statevector` is a class that represents a qubit
     statevector. Qubit statevectors are complex vectors with a magnitude
     of 1 with 2^N elements where N is the number of qubits used to represent
-    the statevector.
+    the statevector. It uses LSB convention.
 
     Parameters
     ----------
@@ -151,31 +152,6 @@ class Statevector:
         elif data.ndim == 2 and data.shape[0] != 1:
             raise ValueError("Cannot convert an operator to a statevector.")
 
-    @staticmethod
-    def check_normalization(data: NDArray[np.complex128]) -> bool:
-        """ Check if a data is normalized to 2-norm.
-
-        Parameters
-        ----------
-        `data` : NDArray[np.complex128]
-            The data.
-
-        Returns
-        -------
-        bool
-            Whether the vector is normalized to 2-norm or not.
-
-        Usage
-        -----
-        >>> data = np.array([1, 2, 3, 4])
-        >>> check_normalization(data)
-        """
-        return bool(
-            np.isclose(
-                np.linalg.norm(data), 1.0, atol=1e-08
-            )
-        )
-
     def is_normalized(self) -> None:
         """ Check if a `quick.primitives.Statevector` instance is normalized to 2-norm.
 
@@ -183,7 +159,7 @@ class Statevector:
         -----
         >>> statevector.is_normalized()
         """
-        self.normalized = self.check_normalization(self.data)
+        self.normalized = is_normalized(self.data)
 
     @staticmethod
     def normalize_data(
@@ -618,13 +594,6 @@ class Statevector:
         ) -> Statevector:
         """ Multiply the statevector by a scalar.
 
-        Notes
-        -----
-        The multiplication of a statevector with a scalar does not change
-        the statevector. This is because the distribution of the statevector
-        is preserved as the scalar is multiplied with each element of the
-        statevector. We provide the scalar multiplication for completeness.
-
         Parameters
         ----------
         `other` : Scalar
@@ -662,13 +631,6 @@ class Statevector:
         ) -> Statevector:
         """ Multiply the statevector by a scalar.
 
-        Notes
-        -----
-        The multiplication of a statevector with a scalar does not change
-        the statevector. This is because the distribution of the statevector
-        is preserved as the scalar is multiplied with each element of the
-        statevector. We provide the scalar multiplication for completeness.
-
         Parameters
         ----------
         `other` : Scalar
@@ -704,7 +666,7 @@ class Statevector:
             self,
             other: Statevector
         ) -> Statevector:
-        """ Tensor product of two statevectors.
+        """ Calculate the tensor product of the two statevectors.
 
         Parameters
         ----------

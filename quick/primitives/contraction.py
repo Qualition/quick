@@ -68,7 +68,7 @@ def _einsum_tensor_contract(
 
     # The reason we reverse the order is because the gates themselves
     # are in LSB convention as well
-    op_free_indices = list(reversed(contract_indices))
+    op_free_indices = contract_indices[::-1]
 
     op_indices = op_free_indices + op_contract_indices
 

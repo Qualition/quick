@@ -20,6 +20,8 @@ import pytest
 from scipy.stats import unitary_group
 
 from quick.predicates import (
+    is_power,
+    is_normalized,
     is_statevector,
     is_square_matrix,
     is_diagonal_matrix,
@@ -32,6 +34,21 @@ from quick.predicates import (
     is_density_matrix
 )
 
+
+def test_is_power() -> None:
+    """ Test the `is_power()` function.
+    """
+    assert is_power(2, 2) is True
+    assert is_power(3, 2) is False
+    assert is_power(2, 4) is True
+
+def test_is_normalized() -> None:
+    """ Test the `is_normalized()` function.
+    """
+    state = np.arange(10).astype(np.complex128)
+    assert is_normalized(state) is False
+    state = state / np.linalg.norm(state)
+    assert is_normalized(state) is True
 
 @pytest.mark.parametrize("array, system_size, expected", [
     (np.array([1, 0]), 2, True),
@@ -47,7 +64,7 @@ def test_is_statevector(
         system_size: int,
         expected: bool
     ) -> None:
-    """ Test the `.is_statevector()` method.
+    """ Test the `is_statevector()` function.
 
     Parameters
     ----------
@@ -61,7 +78,7 @@ def test_is_statevector(
     assert is_statevector(array, system_size) is expected
 
 def test_is_statevector_invalid_system_size() -> None:
-    """ Test the `.is_statevector()` method with invalid system size.
+    """ Test the `is_statevector()` function with invalid system size.
 
     Parameters
     ----------
@@ -85,7 +102,7 @@ def test_is_square_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_square_matrix()` method.
+    """ Test the `is_square_matrix()` function.
 
     Parameters
     ----------
@@ -120,7 +137,7 @@ def test_is_diagonal_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_diagonal_matrix()` method with diagonal matrices.
+    """ Test the `is_diagonal_matrix()` function with diagonal matrices.
 
     Parameters
     ----------
@@ -168,7 +185,7 @@ def test_is_symmetric_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_symmetric_matrix()` method with symmetric matrices.
+    """ Test the `is_symmetric_matrix()` function with symmetric matrices.
 
     Parameters
     ----------
@@ -194,7 +211,7 @@ def test_is_identity_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_identity_matrix()` method with identity matrices.
+    """ Test the `is_identity_matrix()` function with identity matrices.
 
     Parameters
     ----------
@@ -220,7 +237,7 @@ def test_is_unitary_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_unitary_matrix()` method.
+    """ Test the `is_unitary_matrix()` function.
 
     Parameters
     ----------
@@ -264,7 +281,7 @@ def test_is_hermitian_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_hermitian_matrix()` method with Hermitian matrices.
+    """ Test the `is_hermitian_matrix()` function with Hermitian matrices.
 
     Parameters
     ----------
@@ -306,7 +323,8 @@ def test_is_positive_semidefinite_matrix(
         array: NDArray[np.complex128],
         expected: bool
     ) -> None:
-    """ Test the `.is_positive_semidefinite_matrix()` method with positive semidefinite matrices.
+    """ Test the `is_positive_semidefinite_matrix()` function with
+    positive semidefinite matrices.
 
     Parameters
     ----------

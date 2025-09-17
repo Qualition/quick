@@ -13,7 +13,6 @@
 # limitations under the License.
 
 __all__ = [
-    "Gate",
     "PauliX",
     "PauliY",
     "PauliZ",
@@ -33,7 +32,6 @@ __all__ = [
     "CT"
 ]
 
-from quick.circuit.gate_matrix.gate import Gate
 from quick.circuit.gate_matrix.single_qubit_gates import (
     PauliX, PauliY, PauliZ, Hadamard, S, T, RX, RY, RZ, U3, Phase
 )

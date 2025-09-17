@@ -108,7 +108,7 @@ UR1B: NDArray[np.complex128] = np.array([
     [-1j, -1]
 ], dtype=np.complex128) * SQRT2
 
-u2la: NDArray[np.complex128] = np.array([
+U2LA: NDArray[np.complex128] = np.array([
     [0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, 0.5-0.5j]
 ], dtype=np.complex128)
@@ -378,11 +378,8 @@ class TwoQubitDecomposition(UnitaryPreparation):
         `U0l` : NDArray[np.complex128]
             The left unitary matrix.
         """
-        # Get the CX gate in LSB ordering
-        CX.change_mapping("LSB")
-
         # Use the basis gate as the closest reflection in the Weyl chamber
-        basis = TwoQubitWeylDecomposition(CX.matrix)
+        basis = TwoQubitWeylDecomposition(CX.data)
 
         U0l = weyl_decomposition.K1l.dot(basis.K1l.T.conj())
         U0r = weyl_decomposition.K1r.dot(basis.K1r.T.conj())
@@ -440,8 +437,8 @@ class TwoQubitDecomposition(UnitaryPreparation):
         """
         U0l = weyl_decomposition.K1l.dot(Q0L)
         U0r = weyl_decomposition.K1r.dot(Q0R)
-        U1l = Q1LA.dot(RZ(-2 * float(weyl_decomposition.a)).matrix).dot(Q1LB)
-        U1r = Q1RA.dot(RZ(2 * float(weyl_decomposition.b)).matrix).dot(Q1RB)
+        U1l = Q1LA.dot(RZ(-2 * float(weyl_decomposition.a)).data).dot(Q1LB)
+        U1r = Q1RA.dot(RZ(2 * float(weyl_decomposition.b)).data).dot(Q1RB)
         U2l = Q2L.dot(weyl_decomposition.K2l)
         U2r = Q2R.dot(weyl_decomposition.K2r)
 
@@ -500,9 +497,9 @@ class TwoQubitDecomposition(UnitaryPreparation):
         U0l = weyl_decomposition.K1l.dot(U0L)
         U0r = weyl_decomposition.K1r.dot(U0R)
         U1l = U1L
-        U1r = U1RA.dot(RZ(-2 * float(weyl_decomposition.c)).matrix).dot(UR1B)
-        U2l = u2la.dot(RZ(-2 * float(weyl_decomposition.a)).matrix).dot(U2LB)
-        U2r = U2RA.dot(RZ(2 * float(weyl_decomposition.b)).matrix).dot(U2RB)
+        U1r = U1RA.dot(RZ(-2 * float(weyl_decomposition.c)).data).dot(UR1B)
+        U2l = U2LA.dot(RZ(-2 * float(weyl_decomposition.a)).data).dot(U2LB)
+        U2r = U2RA.dot(RZ(2 * float(weyl_decomposition.b)).data).dot(U2RB)
         U3l = U3L.dot(weyl_decomposition.K2l)
         U3r = U3R.dot(weyl_decomposition.K2r)
 

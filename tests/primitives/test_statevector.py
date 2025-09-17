@@ -49,18 +49,6 @@ class TestStatevector:
         with pytest.raises(ValueError):
             Statevector(np.eye(4, dtype=complex))
 
-    def test_check_normalization(self) -> None:
-        """ Test the normalization of the `quick.primitives.Statevector` object.
-        """
-        data = np.array([1, 0, 0, 0])
-        assert Statevector.check_normalization(data)
-
-    def test_check_normalization_fail(self) -> None:
-        """ Test the failure of the normalization of the `quick.primitives.Statevector` object.
-        """
-        data = np.array([1, 1, 1, 1])
-        assert not Statevector.check_normalization(data)
-
     def test_normalize(self) -> None:
         """ Test the normalization of the `quick.primitives.Statevector` object.
         """

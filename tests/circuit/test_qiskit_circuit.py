@@ -586,12 +586,12 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     @pytest.mark.parametrize("num_qubits, qubit_indices, angle, expected", [
-        [1, 0, np.pi/4, RX(np.pi/4).matrix],
-        [1, 0, 1/3, RX(1/3).matrix],
-        [1, 0, -1/4, RX(-1/4).matrix],
-        [2, 1, np.pi/4, np.kron(RX(np.pi/4).matrix, np.eye(2))],
-        [3, 2, 1/3, np.kron(RX(1/3).matrix, np.eye(4))],
-        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(RX(np.pi/4).matrix, RX(np.pi/4).matrix))]
+        [1, 0, np.pi/4, RX(np.pi/4).data],
+        [1, 0, 1/3, RX(1/3).data],
+        [1, 0, -1/4, RX(-1/4).data],
+        [2, 1, np.pi/4, np.kron(RX(np.pi/4).data, np.eye(2))],
+        [3, 2, 1/3, np.kron(RX(1/3).data, np.eye(4))],
+        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(RX(np.pi/4).data, RX(np.pi/4).data))]
     ])
     def test_RX(
             self,
@@ -609,12 +609,12 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     @pytest.mark.parametrize("num_qubits, qubit_indices, angle, expected", [
-        [1, 0, np.pi/4, RY(np.pi/4).matrix],
-        [1, 0, 1/3, RY(1/3).matrix],
-        [1, 0, -1/4, RY(-1/4).matrix],
-        [2, 1, np.pi/4, np.kron(RY(np.pi/4).matrix, np.eye(2))],
-        [3, 2, 1/3, np.kron(RY(1/3).matrix, np.eye(4))],
-        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(RY(np.pi/4).matrix, RY(np.pi/4).matrix))]
+        [1, 0, np.pi/4, RY(np.pi/4).data],
+        [1, 0, 1/3, RY(1/3).data],
+        [1, 0, -1/4, RY(-1/4).data],
+        [2, 1, np.pi/4, np.kron(RY(np.pi/4).data, np.eye(2))],
+        [3, 2, 1/3, np.kron(RY(1/3).data, np.eye(4))],
+        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(RY(np.pi/4).data, RY(np.pi/4).data))]
     ])
     def test_RY(
             self,
@@ -632,12 +632,12 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     @pytest.mark.parametrize("num_qubits, qubit_indices, angle, expected", [
-        [1, 0, np.pi/4, RZ(np.pi/4).matrix],
-        [1, 0, 1/3, RZ(1/3).matrix],
-        [1, 0, -1/4, RZ(-1/4).matrix],
-        [2, 1, np.pi/4, np.kron(RZ(np.pi/4).matrix, np.eye(2))],
-        [3, 2, 1/3, np.kron(RZ(1/3).matrix, np.eye(4))],
-        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(RZ(np.pi/4).matrix, RZ(np.pi/4).matrix))]
+        [1, 0, np.pi/4, RZ(np.pi/4).data],
+        [1, 0, 1/3, RZ(1/3).data],
+        [1, 0, -1/4, RZ(-1/4).data],
+        [2, 1, np.pi/4, np.kron(RZ(np.pi/4).data, np.eye(2))],
+        [3, 2, 1/3, np.kron(RZ(1/3).data, np.eye(4))],
+        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(RZ(np.pi/4).data, RZ(np.pi/4).data))]
     ])
     def test_RZ(
             self,
@@ -655,12 +655,12 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     @pytest.mark.parametrize("num_qubits, qubit_indices, angle, expected", [
-        [1, 0, np.pi/4, Phase(np.pi/4).matrix],
-        [1, 0, 1/3, Phase(1/3).matrix],
-        [1, 0, -1/4, Phase(-1/4).matrix],
-        [2, 1, np.pi/4, np.kron(Phase(np.pi/4).matrix, np.eye(2))],
-        [3, 2, 1/3, np.kron(Phase(1/3).matrix, np.eye(4))],
-        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(Phase(np.pi/4).matrix, Phase(np.pi/4).matrix))]
+        [1, 0, np.pi/4, Phase(np.pi/4).data],
+        [1, 0, 1/3, Phase(1/3).data],
+        [1, 0, -1/4, Phase(-1/4).data],
+        [2, 1, np.pi/4, np.kron(Phase(np.pi/4).data, np.eye(2))],
+        [3, 2, 1/3, np.kron(Phase(1/3).data, np.eye(4))],
+        [3, [0, 1], np.pi/4, np.kron(np.eye(2), np.kron(Phase(np.pi/4).data, Phase(np.pi/4).data))]
     ])
     def test_Phase(
             self,
@@ -825,22 +825,22 @@ class TestQiskitCircuit(Template):
         assert_almost_equal(circuit.get_unitary(), expected, 8)
 
     @pytest.mark.parametrize("num_qubits, qubit_indices, angles, expected", [
-        [1, 0, (np.pi/2, np.pi/3, np.pi/4), U3(np.pi/2, np.pi/3, np.pi/4).matrix],
-        [2, 1, (np.pi/2, -np.pi/3, np.pi/4), np.kron(U3(np.pi/2, -np.pi/3, np.pi/4).matrix, np.eye(2))],
-        [3, 2, (np.pi/2, np.pi/3, -np.pi/4), np.kron(U3(np.pi/2, np.pi/3, -np.pi/4).matrix, np.eye(4))],
-        [1, 0, (1/3, 1/4, 1/5), U3(1/3, 1/4, 1/5).matrix],
+        [1, 0, (np.pi/2, np.pi/3, np.pi/4), U3(np.pi/2, np.pi/3, np.pi/4).data],
+        [2, 1, (np.pi/2, -np.pi/3, np.pi/4), np.kron(U3(np.pi/2, -np.pi/3, np.pi/4).data, np.eye(2))],
+        [3, 2, (np.pi/2, np.pi/3, -np.pi/4), np.kron(U3(np.pi/2, np.pi/3, -np.pi/4).data, np.eye(4))],
+        [1, 0, (1/3, 1/4, 1/5), U3(1/3, 1/4, 1/5).data],
         [3, [0, 2], (np.pi/2, np.pi/3, np.pi/4), np.kron(
-            U3(np.pi/2, np.pi/3, np.pi/4).matrix,
+            U3(np.pi/2, np.pi/3, np.pi/4).data,
             np.kron(
                 np.eye(2),
-                U3(np.pi/2, np.pi/3, np.pi/4).matrix
+                U3(np.pi/2, np.pi/3, np.pi/4).data
             )
         )],
         [3, [0, 1], (np.pi/2, np.pi/3, np.pi/4), np.kron(
                 np.eye(2),
                 np.kron(
-                    U3(np.pi/2, np.pi/3, np.pi/4).matrix,
-                    U3(np.pi/2, np.pi/3, np.pi/4).matrix
+                    U3(np.pi/2, np.pi/3, np.pi/4).data,
+                    U3(np.pi/2, np.pi/3, np.pi/4).data
                 )
             )
         ]

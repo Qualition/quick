@@ -125,6 +125,20 @@ class TestOperator:
 
         assert_almost_equal(checker_circuit.get_unitary(), op1.data)
 
+    def test_control(self) -> None:
+        """ Test the control operation of the `quick.primitives.Operator` class.
+        """
+        from quick.circuit import QiskitCircuit
+
+        unitary = np.array(unitary_group.rvs(8)).astype(complex)
+        operator = Operator(unitary)
+        control_operator = operator.control(2)
+        
+        op_circuit = QiskitCircuit(3)
+        op_circuit.unitary(unitary, [0, 1, 2])
+        checker_circuit = op_circuit.control(2)
+        assert_almost_equal(checker_circuit.get_unitary(), control_operator.data)
+
     def test_array(self) -> None:
         """ Test the conversion of the `quick.primitives.Operator` to a NumPy array.
         """

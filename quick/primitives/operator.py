@@ -34,7 +34,7 @@ Scalar: TypeAlias = SupportsFloat | complex
 class Operator:
     """ `quick.primitives.Operator` class is used to represent a quantum operator.
     Quantum operators are unitary matrices which represent operations applied to
-    quantum states (represented with qubits).
+    quantum states (represented with qubits). It uses LSB convention.
 
     Parameters
     ----------
@@ -54,6 +54,8 @@ class Operator:
         The shape of the quantum operator data.
     `num_qubits` : int
         The number of qubits the quantum operator acts on.
+    `num_control_qubits` : int
+        The number of qubits the operator uses as controls.
     `tensor_shape` : tuple[int, ...]
         The shape of the quantum operator tensor based on
         qubits as the physical dimension.
@@ -89,6 +91,7 @@ class Operator:
         self.data = data
         self.shape = self.data.shape
         self.num_qubits = int(np.ceil(np.log2(self.shape[0])))
+        self.num_control_qubits = 0
         self.tensor_shape = (2, 2) * self.num_qubits
 
     def conj(self) -> Operator:
@@ -122,7 +125,7 @@ class Operator:
         return self.conj().T()
 
     def reverse_bits(self) -> None:
-        """ Reverse the order of the qubits in the statevector.
+        """ Reverse the order of the qubits in the operator.
         This changes MSB to LSB, and vice versa.
         """
         axes = tuple(range(self.num_qubits - 1, -1, -1))
@@ -179,6 +182,53 @@ class Operator:
         from quick.primitives.contraction import contract
 
         contract(self, op, qubit_indices)
+
+    def control(
+            self,
+            num_controls: int = 1
+        ) -> Operator:
+        """ Generate the controlled version of the operator.
+
+        Parameters
+        ----------
+        `num_controls` : int
+            The number of control qubits.
+
+        Returns
+        -------
+        quick.primitives.Operator
+            The controlled version of the operator.
+
+        Raises
+        ------
+        ValueError
+            - If the number of control qubits is less than 1.
+        """
+        if num_controls < 1:
+            raise ValueError(
+                "Number of control qubits must be at least 1."
+                f"Received {num_controls} instead."
+            )
+
+        self.num_control_qubits += num_controls
+
+        zero_projector = np.array([
+            [1, 0],
+            [0, 0]
+        ])
+        one_projector = np.array([
+            [0, 0],
+            [0, 1]
+        ])
+
+        controlled_operator = self.data
+
+        for _ in range(num_controls):
+            control_component = np.kron(np.eye(controlled_operator.shape[0]), zero_projector).astype(np.complex128)
+            target_component = np.kron(controlled_operator, one_projector).astype(np.complex128)
+            controlled_operator = control_component + target_component
+
+        return Operator(controlled_operator)
 
     def _check__mul__(
             self,
@@ -246,6 +296,13 @@ class Operator:
     @overload
     def __mul__(
             self,
+            other: Scalar
+        ) -> Operator:
+        ...
+
+    @overload
+    def __mul__(
+            self,
             other: statevector.Statevector
         ) -> statevector.Statevector:
         ...
@@ -259,9 +316,14 @@ class Operator:
 
     def __mul__(
             self,
-            other: statevector.Statevector | Operator
+            other: Scalar | statevector.Statevector | Operator
         ) -> Operator | statevector.Statevector:
-        """ Multiply an operator with a statevector or another operator.
+        """ Multiply an operator with a number, statevector, or another operator.
+
+        Notes
+        -----
+        The multiplication of a number with the operator behaves like the global
+        phase shift.
 
         The multiplication of an operator with a statevector is defined as:
         - A|ψ⟩ = |ψ'⟩
@@ -299,7 +361,9 @@ class Operator:
         ...                       [0+0j, 1+0j]])
         >>> operator1 * operator2
         """
-        if isinstance(other, statevector.Statevector):
+        if isinstance(other, Scalar):
+            return Operator(self.data * complex(other))
+        elif isinstance(other, statevector.Statevector):
             if self.num_qubits != other.num_qubits:
                 raise ValueError("Cannot multiply an operator with an incompatible statevector.")
             return statevector.Statevector((self.data @ other.data).astype(np.complex128))

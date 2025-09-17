@@ -29,7 +29,7 @@ import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
 from typing import (
-    Any, Literal, overload, SupportsFloat, SupportsIndex, TYPE_CHECKING
+    Any, Literal, overload, SupportsFloat, SupportsIndex, TypeAlias, TYPE_CHECKING
 )
 
 import qiskit # type: ignore
@@ -57,6 +57,8 @@ from quick.synthesis.unitarypreparation import (
 )
 
 EPSILON = 1e-15
+
+CIRCUIT_LOG: TypeAlias = list[dict[str, Any]]
 
 """ Set the frozensets for the keys to be used:
 - Decorator `Circuit.gatemethod()`
@@ -87,7 +89,11 @@ CONTROL_MAPPING = {
 }
 
 # List of 1Q gates wrapped by individual frameworks
-GATES = Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase", "U3"]
+GATES = Literal[
+    "I", "X", "Y", "Z", "H", "S", "Sdg",
+    "T", "Tdg", "RX", "RY", "RZ", "Phase",
+    "U3"
+]
 
 # List of self-adjoint gates
 SELF_ADJ_GATES = frozenset([
@@ -99,6 +105,20 @@ SELF_ADJ_GATES = frozenset([
 # List of gates that are considered as primitives
 # these gates cannot be decomposed further
 PRIMITIVE_GATES = frozenset(["U3", "CX", "GlobalPhase", "measure"])
+
+# List of gates that are compatible/convertible with `.control()`
+CONTROLLABLE_GATES = frozenset([
+    "I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg",
+    "RX", "RY", "RZ", "Phase", "XPow", "YPow", "ZPow",
+    "RXX", "RYY", "RZZ", "U3", "SWAP"
+])
+
+# Controlled versions of controllable gates
+CONTROLLED_GATES = frozenset([
+    *CONTROLLABLE_GATES,
+    *(f"C{gate}" for gate in CONTROLLABLE_GATES),
+    *(f"MC{gate}" for gate in CONTROLLABLE_GATES)
+])
 
 # Constants
 PI = np.pi
@@ -443,10 +463,10 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> def NewGate(qubit_indices: int | Sequence[int]):
+        >>> def NewGate(self, qubit_indices: int | Sequence[int]):
         >>>     gate = self.process_gate_params(gate="NewGate", params=locals())
-        >>>     with circuit.decompose_last():
-        >>>         circuit.X(qubit_indices)
+        >>>     with self.decompose_last():
+        >>>         self.X(qubit_indices)
         """
         # If the gate is parameterized, and its rotation is effectively zero, return
         # as no operation is needed
@@ -4634,7 +4654,6 @@ class Circuit(ABC):
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
-        # Check if the number of diagonal entries is a power of 2
         num_qubits = np.log2(len(diagnoal))
 
         if num_qubits < 1 or not int(num_qubits) == num_qubits:
@@ -4801,7 +4820,6 @@ class Circuit(ABC):
             if not gate.shape == (2, 2):
                 raise ValueError(f"The dimension of a gate is not equal to 2x2. Received {gate.shape}.")
 
-        # Check if number of gates in gate_list is a positive power of two
         num_controls = int(
             np.log2(
                 len(single_qubit_gates)
@@ -5021,10 +5039,8 @@ class Circuit(ABC):
         -----
         >>> circuit.initialize([1, 0], qubit_indices=0)
         """
-        # Initialize the state preparation schema
         isometry = Isometry(output_framework=type(self))
 
-        # Prepare the state
         self = isometry.apply_state(
             circuit=self,
             state=state,
@@ -5067,10 +5083,8 @@ class Circuit(ABC):
         ...                  [0, 1, 0, 0],
         ...                  [1, 0, 0, 0]], qubit_indices=[0, 1])
         """
-        # Initialize the unitary preparation schema
         unitary_preparer = ShannonDecomposition(output_framework=type(self))
 
-        # Prepare the unitary matrix
         self = unitary_preparer.apply_unitary(
             circuit=self,
             unitary=unitary_matrix,
@@ -5088,29 +5102,26 @@ class Circuit(ABC):
 
     @staticmethod
     def _horizontal_reverse(
-            circuit_log: list[dict[str, Any]],
+            circuit_log: CIRCUIT_LOG,
             adjoint: bool = True
-        ) -> list[dict[str, Any]]:
+        ) -> CIRCUIT_LOG:
         """ Perform a horizontal reverse operation.
 
         Parameters
         ----------
-        `circuit_log` : list[dict[str, Any]]
+        `circuit_log` : CIRCUIT_LOG
             The circuit log to reverse.
         `adjoint` : bool, optional, default=True
             Whether or not to apply the adjoint of the circuit.
 
         Returns
         -------
-        list[dict[str, Any]]
+        CIRCUIT_LOG
             The reversed circuit log.
         """
-        # Reverse the order of the operations
         circuit_log = circuit_log[::-1]
 
-        # If adjoint is True, then multiply the angles by -1
         if adjoint:
-            # Iterate over every operation, and change the index accordingly
             for i, operation in enumerate(circuit_log):
                 if "angle" in operation:
                     operation["angle"] = -operation["angle"]
@@ -5212,18 +5223,12 @@ class Circuit(ABC):
                 else:
                     operation[key] = list(qubit_indices)[operation[key]] # type: ignore
 
-        # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit_log:
-            # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate", None)
-
-            # Extract gate definition and remove it from gate_info for kwargs
             gate_definition = gate_info.pop("definition", None)
 
-            # Use the gate mapping to apply the corresponding gate with remaining kwargs
             getattr(self, gate_name)(**gate_info)
 
-            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
             gate_info["definition"] = gate_definition
 
@@ -5610,6 +5615,59 @@ class Circuit(ABC):
 
         return self._remove_measurements()
 
+    def decompose_gate(
+            self,
+            target_gates: str | Sequence[str]
+        ) -> Circuit:
+        """ Decompose the specified gates in the circuit.
+
+        Parameters
+        ----------
+        `gates` : str | Sequence[str]
+            The gates to decompose.
+
+        Returns
+        -------
+        `circuit` : quick.circuit.Circuit
+            The circuit with the decomposed gates.
+
+        Usage
+        -----
+        >>> new_circuit = circuit.decompose_gate("CX")
+        >>> new_circuit = circuit.decompose_gate(["Z", "Phase"])
+        """
+        circuit = type(self)(self.num_qubits)
+
+        # We cannot decompose primitive gates and to avoid losing them
+        # or getting stuck in an infinite loop we simply remove them
+        # from the target gates
+        target_gates_set = frozenset(set(target_gates) - PRIMITIVE_GATES)
+
+        circuit_log_copy = copy.deepcopy(self.circuit_log)
+
+        while True:
+            gates = set([operation["gate"] for operation in circuit_log_copy])
+
+            if gates.isdisjoint(target_gates_set):
+                break
+
+            if gates.issubset(PRIMITIVE_GATES):
+                break
+
+            for operation in circuit_log_copy:
+                if operation["gate"] in target_gates_set:
+                    circuit.circuit_log.extend(operation["definition"])
+                else:
+                    circuit.circuit_log.append(operation)
+
+            circuit_log_copy = circuit.circuit_log
+            circuit.circuit_log = []
+
+        circuit.circuit_log = circuit_log_copy
+        circuit.update()
+
+        return circuit
+
     def decompose(
             self,
             reps: int = 1,
@@ -5638,46 +5696,39 @@ class Circuit(ABC):
         if all([operation["definition"] == [] for operation in self.circuit_log]):
             return self.copy()
 
-        # Create a new circuit to store the decomposed gates
         circuit = type(self)(self.num_qubits)
 
         # Create a copy of the circuit log to use as placeholder for each layer of decomposition
         circuit_log_copy = copy.deepcopy(self.circuit_log)
 
         # Iterate over the circuit log, and use the `definition` key to define the decomposition
-        # Continue until the circuit log is fully decomposed
+        # Continue until the circuit log is fully decomposed or until the number of reps is reached
         if full:
-            while True:
-                gates = set([operation["gate"] for operation in circuit_log_copy])
+            reps = -1
 
-                if gates.issubset(PRIMITIVE_GATES):
-                    break
+        current_rep = 0
 
-                for operation in circuit_log_copy:
-                    if operation["definition"] != []:
-                        for op in operation["definition"]:
-                            circuit.circuit_log.append(op)
-                    else:
-                        circuit.circuit_log.append(operation)
+        while True:
+            if current_rep == reps:
+                break
 
-                circuit_log_copy = circuit.circuit_log
-                circuit.circuit_log = []
+            gates = set([operation["gate"] for operation in circuit_log_copy])
 
-        # Iterate over the circuit log, and use the `definition` key to define the decomposition
-        # Each rep will decompose the circuit one layer further
-        else:
-            for _ in range(reps):
-                for operation in circuit_log_copy:
-                    if operation["definition"] != []:
-                        for op in operation["definition"]:
-                            circuit.circuit_log.append(op)
-                    else:
-                        circuit.circuit_log.append(operation)
-                circuit_log_copy = circuit.circuit_log
-                circuit.circuit_log = []
+            if gates.issubset(PRIMITIVE_GATES):
+                break
+
+            for operation in circuit_log_copy:
+                if operation["definition"] != []:
+                    circuit.circuit_log.extend(operation["definition"])
+                else:
+                    circuit.circuit_log.append(operation)
+
+            circuit_log_copy = circuit.circuit_log
+            circuit.circuit_log = []
+
+            current_rep += 1
 
         circuit.circuit_log = circuit_log_copy
-
         circuit.update()
 
         return circuit
@@ -5830,21 +5881,14 @@ class Circuit(ABC):
         if not issubclass(circuit_framework, Circuit):
             raise TypeError("The circuit framework must be a subclass of `quick.circuit.Circuit`.")
 
-        # Define the new circuit using the provided framework
         converted_circuit = circuit_framework(self.num_qubits)
 
-        # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in self.circuit_log:
-            # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate")
-
-            # Extract gate definition and remove it from gate_info for kwargs
             gate_definition = gate_info.pop("definition", None)
 
-            # Use the gate mapping to apply the corresponding gate with remaining kwargs
             getattr(converted_circuit, gate_name)(**gate_info)
 
-            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
             gate_info["definition"] = gate_definition
 
@@ -5873,23 +5917,22 @@ class Circuit(ABC):
         `controlled_circuit` : quick.circuit.Circuit
             The circuit as a controlled gate.
         """
-        # Create a copy of the circuit
-        circuit = self.copy()
+        # To provide compatibility with gates that are not directly
+        # controllable we decompose such gates, which adds support
+        # for user-defined gates
+        gates = set([operation["gate"] for operation in self.circuit_log])
+
+        circuit = self.decompose_gate(gates - CONTROLLED_GATES) # type: ignore
 
         # When a target gate has global phase, we need to account for that by resetting
         # the global phase, and then applying it to the control indices using the Phase
         # or MCPhase gates depending on the number of control indices
         circuit.circuit_log = [op for op in circuit.circuit_log if op["gate"] != "GlobalPhase"]
 
-        # Define a controlled circuit
         controlled_circuit = type(circuit)(num_qubits=circuit.num_qubits + num_controls)
 
-        # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit.circuit_log:
-            # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate")
-
-            # Extract gate definition and remove it from gate_info for kwargs
             gate_definition = gate_info.pop("definition", None)
 
             # Change the gate name from single qubit and controlled to multi-controlled
@@ -5911,15 +5954,11 @@ class Circuit(ABC):
             if isinstance(control_indices, int):
                 control_indices = [control_indices]
 
-            # Add control indices
             gate_info["control_indices"] = list(range(num_controls)) + \
                 [idx for idx in control_indices if idx not in range(num_controls)]
 
-            # Use the gate mapping to apply the corresponding gate with remaining kwargs
-            # Add the control indices as the first indices given the number of control qubits
             getattr(controlled_circuit, gate_name)(**gate_info)
 
-            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
             gate_info["definition"] = gate_definition
 

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 __all__ = [
+    "is_power",
+    "is_normalized",
     "is_statevector",
     "is_square_matrix",
     "is_diagonal_matrix",
@@ -26,6 +28,8 @@ __all__ = [
 ]
 
 from quick.predicates.predicates import (
+    is_power,
+    is_normalized,
     is_statevector,
     is_square_matrix,
     is_diagonal_matrix,
