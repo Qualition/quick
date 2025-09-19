@@ -493,7 +493,6 @@ class TwoQubitDecomposition(UnitaryPreparation):
         `U0l` : NDArray[np.complex128]
             The left unitary matrix.
         """
-        # Calculate the decomposition
         U0l = weyl_decomposition.K1l.dot(U0L)
         U0r = weyl_decomposition.K1r.dot(U0R)
         U1l = U1L

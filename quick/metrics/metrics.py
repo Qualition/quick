@@ -296,3 +296,35 @@ def calculate_hilbert_schmidt_test(
     )**2
 
     return chst
+
+def calculate_frobenius_distance(
+        matrix_1: NDArray[np.complex128],
+        matrix_2: NDArray[np.complex128]
+    ) -> float:
+    """ Calculate the Frobenius distance between two matrices.
+
+    Parameters
+    ----------
+    `matrix_1` : NDArray[np.complex128]
+        The first matrix.
+    `matrix_2` : NDArray[np.complex128]
+        The second matrix.
+
+    Returns
+    -------
+    float
+        The Frobenius distance between the two matrices.
+
+    Raises
+    ------
+    ValueError
+        - If the matrices are not of the same shape.
+
+    Usage
+    -----
+    >>> frobenius_distance = calculate_frobenius_distance(matrix_1, matrix_2)
+    """
+    if matrix_1.shape != matrix_2.shape:
+        raise ValueError("The matrices must be of the same shape.")
+
+    return float(np.linalg.norm(matrix_1 - matrix_2, 'fro'))

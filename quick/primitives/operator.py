@@ -94,6 +94,31 @@ class Operator:
         self.num_control_qubits = 0
         self.tensor_shape = (2, 2) * self.num_qubits
 
+    @classmethod
+    def from_matrix(
+            cls,
+            matrix: NDArray[np.complex128]
+        ) -> Operator:
+        """ Create an `quick.primitives.Operator` from a matrix.
+
+        Parameters
+        ----------
+        `matrix` : NDArray[np.complex128]
+            The matrix to create the operator from. The matrix is not
+            required to be unitary, but if it is not, we will approximate
+            it to the nearest unitary matrix using Singular Value Decomposition (SVD).
+
+        Returns
+        -------
+        quick.primitives.Operator
+            The operator created from the matrix.
+        """
+        if is_unitary_matrix(matrix):
+            return cls(matrix)
+
+        U, _, Vh = np.linalg.svd(matrix)
+        return cls(np.array(U @ Vh).astype(complex))
+
     def conj(self) -> Operator:
         """ Take the conjugate of the operator.
 

@@ -42,6 +42,15 @@ class TestOperator:
         assert operator.num_qubits == 1
         assert operator.label == "A"
 
+    def test_from_matrix(self) -> None:
+        """ Test the initialization of the `quick.primitives.Operator` class from a matrix.
+        """
+        from quick.predicates import is_unitary_matrix
+
+        matrix = np.arange(4).reshape(2, 2).astype(complex)
+        op = Operator.from_matrix(matrix)
+        assert is_unitary_matrix(op.data)
+
     def test_conj(self) -> None:
         """ Test the conjugate of the `quick.primitives.Operator` class.
         """
