@@ -28,7 +28,6 @@ from functools import wraps
 import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
-from typing import Type
 
 from quick.circuit import Circuit
 
@@ -59,14 +58,14 @@ class Backend(ABC):
     """
     def __init__(
             self,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
         """ Initialize a `quick.backend.Backend` instance.
         """
         if device not in ["CPU", "GPU"]:
             raise ValueError(f"Invalid device: {device}. Must be either 'CPU' or 'GPU'.")
         self.device = device
-        self._qc_framework: Type[Circuit]
+        self._qc_framework: type[Circuit]
 
     @staticmethod
     def backendmethod(method):
@@ -177,7 +176,7 @@ class Backend(ABC):
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
         """ Get the counts of the backend.
 
@@ -316,7 +315,7 @@ class NoisyBackend(Backend, ABC):
     `device` : str
         The device to use for simulating the circuit.
         This can be either "CPU", or "GPU".
-    `_qc_framework` : Type[quick.circuit.Circuit]
+    `_qc_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to use.
     `noisy` : bool
         Whether the simulation is noisy or not.
@@ -332,7 +331,7 @@ class NoisyBackend(Backend, ABC):
             self,
             single_qubit_error: float,
             two_qubit_error: float,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
         """ Initialize a `quick.backend.NoisyBackend` instance.
         """
@@ -348,7 +347,7 @@ class NoisyBackend(Backend, ABC):
 
         self.noisy = self.single_qubit_error > 0.0 or self.two_qubit_error > 0.0
 
-        self._qc_framework: Type[Circuit]
+        self._qc_framework: type[Circuit]
 
 
 class FakeBackend(Backend, ABC):
@@ -367,7 +366,7 @@ class FakeBackend(Backend, ABC):
     `device` : str
         The device to use for simulating the circuit.
         This can be either "CPU", or "GPU".
-    `_qc_framework` : Type[quick.circuit.Circuit]
+    `_qc_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to use.
     `_backend_name` : str
         The name of the backend to use (usually the name of the backend being emulated).
@@ -381,12 +380,12 @@ class FakeBackend(Backend, ABC):
     """
     def __init__(
             self,
-            device: str="CPU"
+            device: str = "CPU"
         ) -> None:
         """ Initialize a `quick.backend.FakeBackend` instance.
         """
         super().__init__(device=device)
-        self._qc_framework: Type[Circuit]
+        self._qc_framework: type[Circuit]
         self._backend_name: str
         self._max_num_qubits: int
 
@@ -452,7 +451,7 @@ class FakeBackend(Backend, ABC):
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
         """ Get the counts of the backend.
 

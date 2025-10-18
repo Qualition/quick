@@ -23,186 +23,187 @@ __all__ = [
     "PauliZ",
     "Hadamard",
     "S",
+    "Sdg",
     "T",
+    "Tdg",
     "RX",
     "RY",
     "RZ",
-    "U3",
-    "Phase"
+    "Phase",
+    "U3"
 ]
 
 import numpy as np
 
-from quick.circuit.gate_matrix import Gate
+from quick.primitives import Operator
 
 
-class PauliX(Gate):
-    """ `quick.gate_matrix.PauliX` class represents the Pauli-X gate.
+PauliX = Operator(
+    label="X",
+    data=np.array([
+        [0, 1],
+        [1, 0]
+    ])
+)
+
+PauliY = Operator(
+    label="Y",
+    data=np.array([
+        [0, -1j],
+        [1j, 0]
+    ])
+)
+
+PauliZ = Operator(
+    label="Z",
+    data=np.array([
+        [1, 0],
+        [0, -1]
+    ])
+)
+
+Hadamard = Operator(
+    label="H",
+    data=np.array([
+        [1, 1],
+        [1, -1]
+    ]) / np.sqrt(2)
+)
+
+S = Operator(
+    label="S",
+    data=np.array([
+        [1, 0],
+        [0, 1j]
+    ])
+)
+
+Sdg = S.adjoint()
+
+T = Operator(
+    label="T",
+    data=np.array([
+        [1, 0],
+        [0, np.exp(1j * np.pi / 4)]
+    ])
+)
+
+Tdg = T.adjoint()
+
+def RX(theta: float) -> Operator:
+    """ Generate the RX rotation gate given angle parameter
+    theta.
+
+    Parameters
+    ----------
+    `theta` : float
+        The rotation angle in radians.
+
+    Returns
+    -------
+    quick.primitives.Operator
+        The matrix representation of the RX rotation gate.
     """
-    def __init__(self) -> None:
-        """ Initialize a `quick.gate_matrix.PauliX` instance.
-        """
-        super().__init__(
-            "X",
-            np.array([
-                [0, 1],
-                [1, 0]
-            ])
-        )
+    return Operator(
+        label=f"RX({theta})",
+        data=np.array([
+            [np.cos(theta / 2), -1j * np.sin(theta / 2)],
+            [-1j * np.sin(theta / 2), np.cos(theta / 2)]
+        ])
+    )
 
-class PauliY(Gate):
-    """ `quick.gate_matrix.PauliY` class represents the Pauli-Y gate.
-    """
-    def __init__(self) -> None:
-        """ Initialize a `quick.gate_matrix.PauliY` instance.
-        """
-        super().__init__(
-            "Y",
-            np.array([
-                [0, -1j],
-                [1j, 0]
-            ])
-        )
+def RY(theta: float) -> Operator:
+    """ Generate the RY rotation gate given angle parameter
+    theta.
 
-class PauliZ(Gate):
-    """ `quick.gate_matrix.PauliZ` class represents the Pauli-Z gate.
-    """
-    def __init__(self) -> None:
-        """ Initialize a `quick.gate_matrix.PauliZ` instance.
-        """
-        super().__init__(
-            "Z",
-            np.array([
-                [1, 0],
-                [0, -1]
-            ])
-        )
+    Parameters
+    ----------
+    `theta` : float
+        The rotation angle in radians.
 
-class Hadamard(Gate):
-    """ `quick.gate_matrix.Hadamard` class represents the Hadamard gate.
+    Returns
+    -------
+    quick.primitives.Operator
+        The matrix representation of the RY rotation gate.
     """
-    def __init__(self) -> None:
-        """ Initialize a `quick.gate_matrix.Hadamard` instance.
-        """
-        super().__init__(
-            "H",
-            np.array([
-                [1, 1],
-                [1, -1]
-            ]) / np.sqrt(2)
-        )
+    return Operator(
+        label=f"RY({theta})",
+        data=np.array([
+            [np.cos(theta / 2), -np.sin(theta / 2)],
+            [np.sin(theta / 2), np.cos(theta / 2)]
+        ])
+    )
 
-class S(Gate):
-    """ `quick.gate_matrix.S` class represents the S gate.
-    """
-    def __init__(self) -> None:
-        """ Initialize a `quick.gate_matrix.S` instance.
-        """
-        super().__init__(
-            "S",
-            np.array([
-                [1, 0],
-                [0, 1j]
-            ])
-        )
+def RZ(theta: float) -> Operator:
+    """ Generate the RZ rotation gate given angle parameter
+    theta.
 
-class T(Gate):
-    """ `quick.gate_matrix.T` class represents the T gate.
-    """
-    def __init__(self) -> None:
-        """ Initialize a `quick.gate_matrix.T` instance.
-        """
-        super().__init__(
-            "T",
-            np.array([
-                [1, 0],
-                [0, np.exp(1j * np.pi / 4)]
-            ])
-        )
+    Parameters
+    ----------
+    `theta` : float
+        The rotation angle in radians.
 
-class RX(Gate):
-    """ `quick.gate_matrix.RX` class represents the RX gate.
+    Returns
+    -------
+    quick.primitives.Operator
+        The matrix representation of the RZ rotation gate.
     """
-    def __init__(
-            self,
-            theta: float
-        ) -> None:
-        """ Initialize a `quick.gate_matrix.RX` instance.
-        """
-        super().__init__(
-            f"RX({theta})",
-            np.array([
-                [np.cos(theta / 2), -1j * np.sin(theta / 2)],
-                [-1j * np.sin(theta / 2), np.cos(theta / 2)]
-            ])
-        )
+    return Operator(
+        label=f"RZ({theta})",
+        data=np.array([
+            [np.exp(-1j * theta / 2), 0],
+            [0, np.exp(1j * theta / 2)]
+        ])
+    )
 
-class RY(Gate):
-    """ `quick.gate_matrix.RY` class represents the RY gate.
-    """
-    def __init__(
-            self,
-            theta: float
-        ) -> None:
-        """ Initialize a `quick.gate_matrix.RY` instance.
-        """
-        super().__init__(
-            f"RY({theta})",
-            np.array([
-                [np.cos(theta / 2), -np.sin(theta / 2)],
-                [np.sin(theta / 2), np.cos(theta / 2)]
-            ])
-        )
+def Phase(theta: float) -> Operator:
+    """ Generate the Phase gate given angle parameter
+    theta.
 
-class RZ(Gate):
-    """ `quick.gate_matrix.RZ` class represents the RZ gate.
-    """
-    def __init__(
-            self,
-            theta: float
-        ) -> None:
-        """ Initialize a `quick.gate_matrix.RZ` instance.
-        """
-        super().__init__(
-            f"RZ({theta})",
-            np.array([
-                [np.exp(-1j * theta / 2), 0],
-                [0, np.exp(1j * theta / 2)]
-            ])
-        )
+    Parameters
+    ----------
+    `theta` : float
+        The phase angle in radians.
 
-class U3(Gate):
-    """ `quick.gate_matrix.U3` class represents the U3 gate.
+    Returns
+    -------
+    quick.primitives.Operator
+        The matrix representation of the Phase gate.
     """
-    def __init__(
-            self,
-            theta: float,
-            phi: float,
-            lam: float
-        ) -> None:
-        """ Initialize a `quick.gate_matrix.U3` instance.
-        """
-        super().__init__(
-            f"U3({theta}, {phi}, {lam})",
-            np.array([
-                [np.cos(theta / 2), -np.exp(1j * lam) * np.sin(theta / 2)],
-                [np.exp(1j * phi) * np.sin(theta / 2), np.exp(1j * (phi + lam)) * np.cos(theta / 2)]
-            ])
-        )
+    return Operator(
+        label=f"Phase({theta})",
+        data=np.array([
+            [1, 0],
+            [0, np.exp(1j * theta)]
+        ])
+    )
 
-class Phase(Gate):
-    """ `quick.gate_matrix.Phase` class represents the Phase gate.
+def U3(
+        theta: float,
+        phi: float,
+        lam: float
+    ) -> Operator:
+    """ Generate the U3 gate given angle parameters
+    theta, phi, and lam.
+
+    Parameters
+    ----------
+    `theta` : float
+        The theta angle in radians.
+    `phi` : float
+        The phi angle in radians.
+    `lam` : float
+        The lambda angle in radians.
+
+    Returns
+    -------
+    quick.primitives.Operator
+        The matrix representation of the U3 gate.
     """
-    def __init__(
-            self,
-            theta: float
-        ) -> None:
-        """ Initialize a `quick.gate_matrix.Phase` instance.
-        """
-        super().__init__(
-            f"Phase({theta})",
-            np.array([
-                [1, 0],
-                [0, np.exp(1j * theta)]
-            ])
-        )
+    return Operator(
+        label=f"U3({theta}, {phi}, {lam})",
+        data=np.array([
+            [np.cos(theta / 2), -np.exp(1j * lam) * np.sin(theta / 2)],
+            [np.exp(1j * phi) * np.sin(theta / 2), np.exp(1j * (phi + lam)) * np.cos(theta / 2)]
+        ])
+    )

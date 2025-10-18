@@ -20,7 +20,6 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 import pytest
-from typing import Type
 
 from quick.circuit import Circuit, CirqCircuit, PennylaneCircuit, QiskitCircuit, TKETCircuit
 
@@ -119,7 +118,7 @@ class TestQFTCircuit:
     ])
     def test_qft_no_swap_no_inverse(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             num_qubits: int,
             approximation_degree: int,
             expected_unitary: NDArray[np.complex128]
@@ -128,7 +127,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -167,7 +166,7 @@ class TestQFTCircuit:
     ])
     def test_qft_swap_no_inverse(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             num_qubits: int,
             approximation_degree: int,
             expected_unitary: NDArray[np.complex128]
@@ -176,7 +175,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -215,7 +214,7 @@ class TestQFTCircuit:
     ])
     def test_qft_no_swap_inverse(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             num_qubits: int,
             approximation_degree: int,
             expected_unitary: NDArray[np.complex128]
@@ -224,7 +223,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -263,7 +262,7 @@ class TestQFTCircuit:
     ])
     def test_qft_swap_inverse(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             num_qubits: int,
             approximation_degree: int,
             expected_unitary: NDArray[np.complex128]
@@ -272,7 +271,7 @@ class TestQFTCircuit:
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         `num_qubits`: int
             The number of qubits in the quantum circuit.
@@ -293,13 +292,13 @@ class TestQFTCircuit:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_approximation_degree_value_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the error when the approximation degree is not in the range [0, 3].
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         """
         qft_circuit = circuit_framework(5)
@@ -310,13 +309,13 @@ class TestQFTCircuit:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_approximation_degree_type_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the error when the approximation degree is not an integer.
 
         Parameters
         ----------
-        `circuit_framework`: Type[quick.circuit.Circuit]
+        `circuit_framework`: type[quick.circuit.Circuit]
             The quantum circuit framework to use.
         """
         qft_circuit = circuit_framework(5)

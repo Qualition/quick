@@ -19,15 +19,15 @@ from __future__ import annotations
 
 __all__ = ["TKETCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from pytket import Circuit as TKCircuit
-from pytket import OpType
-from pytket.circuit import Op, QControlBox
-from pytket.extensions.qiskit import AerBackend, AerStateBackend
+from pytket import Circuit as TKCircuit # type: ignore
+from pytket import OpType # type: ignore
+from pytket.circuit import Op, QControlBox # type: ignore
+from pytket.extensions.qiskit import AerBackend, AerStateBackend # type: ignore
 
 if TYPE_CHECKING:
     from quick.backend import Backend
@@ -130,29 +130,42 @@ class TKETCircuit(Circuit):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
+
+        if control_indices is None:
+            controls: list[int] = []
+        else:
+            controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
+
+        # Given TKET uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(targets):
+            targets[i] = self.num_qubits - 1 - index
+
+        for i, index in enumerate(controls):
+            controls[i] = self.num_qubits - 1 - index
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
-        gate_operation = self.gate_mapping[gate](angles)
+        gate_operation = Op.create(*self.gate_mapping[gate](angles))
 
-        if control_indices:
+        if controls:
             gate_operation = QControlBox(
-                Op.create(*gate_operation),
-                len(control_indices)
+                gate_operation,
+                len(controls)
             )
 
-            for target_index in target_indices:
-                self.circuit.add_qcontrolbox(gate_operation, [*control_indices[:], target_index]) # type: ignore
+            for target_index in targets:
+                self.circuit.add_qcontrolbox(gate_operation, [*controls[:], target_index])
             return
 
-        for target_index in target_indices:
-            self.circuit.add_gate(*gate_operation, [target_index]) # type: ignore
+        for target_index in targets:
+            self.circuit.add_gate(gate_operation, [target_index])
 
     def GlobalPhase(
             self,
@@ -172,10 +185,15 @@ class TKETCircuit(Circuit):
 
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
 
-        for index in qubit_indices:
+        # Given TKET uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
+
+        for index in qubits:
             self.circuit.Measure(index, index)
             self.measured_qubits.add(index)
 
@@ -184,18 +202,12 @@ class TKETCircuit(Circuit):
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
 
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: TKETCircuit = self.copy() # type: ignore
-
-        # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
         if backend is None:
             base_backend = AerStateBackend()
-            circuit = base_backend.get_compiled_circuits([circuit.circuit]) # type: ignore
+            circuit = base_backend.get_compiled_circuits([self.circuit]) # type: ignore
             state_vector = base_backend.run_circuit(circuit[0]).get_state() # type: ignore
         else:
-            state_vector = backend.get_statevector(circuit)
+            state_vector = backend.get_statevector(self)
 
         return np.array(state_vector)
 
@@ -210,16 +222,10 @@ class TKETCircuit(Circuit):
         if num_qubits_to_measure == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: TKETCircuit = self.copy() # type: ignore
-
-        # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
         if backend is None:
             # If no backend is provided, use the AerBackend
             base_backend = AerBackend()
-            compiled_circuit = base_backend.get_compiled_circuits([circuit.circuit]) # type: ignore
+            compiled_circuit = base_backend.get_compiled_circuits([self.circuit]) # type: ignore
             result = base_backend.run_circuit(compiled_circuit[0], n_shots=num_shots, seed=0) # type: ignore
 
             counts = {
@@ -231,7 +237,7 @@ class TKETCircuit(Circuit):
 
             # Parse the binary strings to filter out the unmeasured qubits
             for key in counts.keys():
-                new_key = ''.join(key[i] for i in range(len(key)) if i in circuit.measured_qubits)
+                new_key = ''.join(key[i] for i in range(len(key)) if i in self.measured_qubits)
                 partial_counts[new_key] = counts[key]
 
             counts = partial_counts
@@ -243,20 +249,13 @@ class TKETCircuit(Circuit):
             }
 
         else:
-            counts = backend.get_counts(circuit=circuit, num_shots=num_shots)
+            counts = backend.get_counts(circuit=self, num_shots=num_shots)
 
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: TKETCircuit = self.copy() # type: ignore
-
-        # PyTKET uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
-        unitary = circuit.circuit.get_unitary()
-
-        return np.array(unitary)
+        unitary = self.circuit.get_unitary()
+        return unitary
 
     def reset_qubit(
             self,
@@ -265,15 +264,20 @@ class TKETCircuit(Circuit):
 
         self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
 
-        for qubit_index in qubit_indices:
+        # Given TKET uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
+
+        for qubit_index in qubits:
             self.circuit.Reset(qubit_index)
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit

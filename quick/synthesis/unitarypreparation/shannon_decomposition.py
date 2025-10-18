@@ -29,15 +29,10 @@ from typing import SupportsIndex, TYPE_CHECKING
 import quick
 if TYPE_CHECKING:
     from quick.circuit import Circuit
-from quick.circuit.circuit_utils import decompose_multiplexor_rotations
+from quick.circuit.utils import decompose_multiplexor_rotations
 from quick.predicates import is_hermitian_matrix
 from quick.primitives import Operator
 from quick.synthesis.unitarypreparation import UnitaryPreparation
-
-# Constants
-QUBIT_KEYS = frozenset([
-    "qubit_index", "control_index", "target_index"
-])
 
 
 class ShannonDecomposition(UnitaryPreparation):
@@ -142,7 +137,7 @@ class ShannonDecomposition(UnitaryPreparation):
                 circuit: Circuit,
                 qubit_indices: list[int],
                 unitary: NDArray[np.complex128],
-                recursion_depth: int=0
+                recursion_depth: int = 0
             ) -> None:
             """ Decompose n-qubit unitary into CX/RY/RZ/CX gates, preserving global phase.
 
@@ -226,7 +221,7 @@ class ShannonDecomposition(UnitaryPreparation):
                 demux_qubits: list[int],
                 unitary_1: NDArray[np.complex128],
                 unitary_2: NDArray[np.complex128],
-                recursion_depth: int=0
+                recursion_depth: int = 0
             ) -> None:
             """ Decompose a multiplexor defined by a pair of unitary matrices operating on
             the same subspace per Theorem 12.
@@ -291,8 +286,8 @@ class ShannonDecomposition(UnitaryPreparation):
             # Take the square root of the eigenvalues to obtain the singular values
             # This is necessary because the singular values provide a more convenient form
             # for constructing the diagonal matrix D, which is used in the final decomposition
-            # We need to use `np.emath.sqrt` to handle negative eigenvalues
-            eigenvalues_sqrt = np.emath.sqrt(eigenvalues)
+            # We need to use `np.lib.scimath.sqrt` to handle negative eigenvalues
+            eigenvalues_sqrt = np.lib.scimath.sqrt(eigenvalues)
 
             # Create a diagonal matrix D from the singular values
             # The diagonal matrix D is used to scale the eigenvectors appropriately in the final step
@@ -396,6 +391,8 @@ class ShannonDecomposition(UnitaryPreparation):
             `a2_qsd_blocks` : list[list[int]]
                 List of blocks to apply A.2 optimization to.
             """
+            from quick.circuit.circuit import ALL_QUBIT_KEYS as QUBIT_KEYS
+
             # If there are no blocks, or only one block which means
             # no neighbors to merge diagonal into, then return
             if len(a2_qsd_blocks) < 2:
@@ -428,11 +425,11 @@ class ShannonDecomposition(UnitaryPreparation):
                 if block_index == 0:
                     for operation in circuit_1.circuit_log:
                         for key in set(operation.keys()).intersection(QUBIT_KEYS):
-                            operation[key] = 0 if operation[key] == qubit_indices[0] else 1
+                            operation[key] = 0 if operation[key] == qubit_indices[0] else 1 # type: ignore
 
                 for operation in circuit_2.circuit_log:
                     for key in set(operation.keys()).intersection(QUBIT_KEYS):
-                        operation[key] = 0 if operation[key] == qubit_indices[0] else 1
+                        operation[key] = 0 if operation[key] == qubit_indices[0] else 1 # type: ignore
 
                 circuit_1.update()
                 circuit_2.update()
@@ -456,7 +453,7 @@ class ShannonDecomposition(UnitaryPreparation):
             for block in qsd_blocks: # type: ignore
                 for operation in block: # type: ignore
                     for key in set(operation.keys()).intersection(QUBIT_KEYS):
-                        operation[key] = qubit_indices[0] if operation[key] == 0 else qubit_indices[1]
+                        operation[key] = qubit_indices[0] if operation[key] == 0 else qubit_indices[1] # type: ignore
 
             # Reconstruct the circuit with the modified blocks in alternating order
             circuit.reset()

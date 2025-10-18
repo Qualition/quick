@@ -21,7 +21,7 @@ __all__ = ["FromQiskit"]
 
 from qiskit import QuantumCircuit, transpile # type: ignore
 from qiskit._accelerate.circuit import CircuitInstruction # type: ignore
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -51,12 +51,12 @@ class FromQiskit(FromFramework):
 
     Parameters
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
 
     Attributes
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
     `gate_mapping` : dict[str, Callable]
         The mapping of the gates in Qiskit to the gates in quick.
@@ -74,7 +74,7 @@ class FromQiskit(FromFramework):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
 
         super().__init__(output_framework=output_framework)
@@ -162,11 +162,6 @@ class FromQiskit(FromFramework):
         -------
         `params` : list[dict]
             The list of parameters of the gates in the Qiskit circuit.
-
-        Raises
-        ------
-        NotImplementedError
-            - If the gate is not found in the gate mapping.
         """
         params: list[dict] = []
 

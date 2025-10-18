@@ -19,7 +19,6 @@ __all__ = ["TestCircuitBase"]
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
-from typing import Type
 
 from quick.circuit import Circuit
 from quick.random import generate_random_state, generate_random_unitary
@@ -34,7 +33,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_init(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the initialization of the circuit.
 
@@ -48,7 +47,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_num_qubits_value_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test to see if the error is raised when the number of qubits
         is less than or equal to 0.
@@ -63,7 +62,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_num_qubits_type_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test to see if the error is raised when the number of qubits
         is not an integer.
@@ -75,7 +74,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_single_qubit_gate_from_range(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the single qubit gate when indices are passed as a range instance.
         """
@@ -97,7 +96,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_single_qubit_gate_from_tuple(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the single qubit gate when indices are passed as a tuple instance.
         """
@@ -119,7 +118,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_single_qubit_gate_from_ndarray(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the single qubit gate when indices are passed as a numpy.ndarray instance.
         """
@@ -141,7 +140,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_qubit_type_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the qubit type error.
 
@@ -163,7 +162,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_duplicate_qubits(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the duplicate qubit error.
 
@@ -186,7 +185,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_qubit_out_of_range(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the qubit out of range error.
 
@@ -208,7 +207,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_control_out_of_range(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the control qubit out of range error.
 
@@ -227,7 +226,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_target_out_of_range(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the target qubit out of range error.
 
@@ -246,7 +245,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_angle_type_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the angle type error.
 
@@ -271,7 +270,7 @@ class TestCircuitBase:
     ])
     def test_initialize(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             num_qubits: int
         ) -> None:
         """ Test the state initialization.
@@ -301,7 +300,7 @@ class TestCircuitBase:
     ])
     def test_unitary(
             self,
-            circuit_framework: Type[Circuit],
+            circuit_framework: type[Circuit],
             num_qubits: int
         ) -> None:
         """ Test the unitary preparation gate.
@@ -328,7 +327,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_get_global_phase(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the global phase extraction.
 
@@ -350,7 +349,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_merge_global_phases(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the global phase merging.
 
@@ -376,7 +375,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_vertical_reverse(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the vertical reversal of the circuit.
 
@@ -407,7 +406,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_horizontal_reverse(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the horizontal reversal of the circuit.
 
@@ -510,7 +509,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_horizontal_reverse_definition(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the horizontal reversal of the circuit definition.
 
@@ -550,7 +549,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_add(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the addition of circuits.
 
@@ -584,7 +583,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_add_fail(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the addition of circuits failure.
 
@@ -613,7 +612,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_transpile(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the transpilation of the circuit.
 
@@ -639,7 +638,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_get_depth(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the depth of the circuit.
 
@@ -651,38 +650,19 @@ class TestCircuitBase:
         # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
-        # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
 
-        # Get the depth of the circuit, and ensure it is correct
+        assert circuit.get_depth() == 1
+
+        circuit.transpile()
         depth = circuit.get_depth()
 
         assert depth == 25
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_get_width(
-            self,
-            circuit_framework: Type[Circuit]
-        ) -> None:
-        """ Test the width of the circuit.
-
-        Parameters
-        ----------
-        `circuit_framework`: type[quick.circuit.Circuit]
-            The circuit framework to test.
-        """
-        # Define the `quick.circuit.Circuit` instance
-        circuit = circuit_framework(4)
-
-        # Get the width of the circuit, and ensure it is correct
-        width = circuit.get_width()
-
-        assert width == 4
-
-    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_get_instructions(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the instructions of the circuit.
 
@@ -709,7 +689,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_get_instructions_with_measurements(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the instructions of the circuit with measurements.
 
@@ -747,7 +727,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_compress(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the compression of the circuit.
 
@@ -778,7 +758,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_compress_fail(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the compression of the circuit failure.
 
@@ -801,7 +781,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_change_mapping(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the mapping change of the circuit.
 
@@ -830,7 +810,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_change_mapping_indices_type_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the mapping change of the circuit failure.
 
@@ -849,7 +829,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_change_mapping_indices_value_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the mapping change of the circuit failure.
 
@@ -866,9 +846,9 @@ class TestCircuitBase:
             circuit.change_mapping([0, 1, 2])
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_from_circuit(
+    def test_convert(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `circuit.convert()` method.
 
@@ -1011,7 +991,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_convert_type_error(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `circuit.convert()` method failure.
 
@@ -1029,7 +1009,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_reset(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the reset of the circuit.
 
@@ -1056,7 +1036,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_remove_measurement(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the removal of measurement gate.
 
@@ -1095,9 +1075,78 @@ class TestCircuitBase:
         assert circuit == no_measurement_circuit
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_mul(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the repeat of circuits via `__mul__` operator.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit.H(0)
+        circuit.CX(0, 1)
+
+        new_circuit = circuit * 3
+        new_circuit_reverse = 3 * circuit
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(2)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 1)
+
+        assert checker_circuit == new_circuit
+        assert checker_circuit == new_circuit_reverse
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_matmul(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the tensor product of circuits via `__matmul__` operator.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the `quick.circuit.Circuit` instance
+        circuit_1 = circuit_framework(3)
+        circuit_2 = circuit_framework(2)
+
+        # Apply a series of gates
+        circuit_1.H(0)
+        circuit_1.CX(0, 2)
+        circuit_2.Z(0)
+        circuit_2.CY(1, 0)
+
+        new_circuit = circuit_1 @ circuit_2
+
+        # Define the equivalent `quick.circuit.Circuit` instance, and
+        # ensure they are equivalent
+        checker_circuit = circuit_framework(5)
+        checker_circuit.H(0)
+        checker_circuit.CX(0, 2)
+        checker_circuit.Z(3)
+        checker_circuit.CY(4, 3)
+
+        assert checker_circuit == new_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_getitem(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__getitem__` dunder method.
 
@@ -1150,7 +1199,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_setitem(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__setitem__` dunder method.
 
@@ -1205,7 +1254,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_frameworks", [CIRCUIT_FRAMEWORKS])
     def test_eq(
             self,
-            circuit_frameworks: list[Type[Circuit]]
+            circuit_frameworks: list[type[Circuit]]
         ) -> None:
         """ Test the `__eq__` dunder method.
 
@@ -1225,10 +1274,119 @@ class TestCircuitBase:
         for circuit_1, circuit_2 in zip(circuits[0:-1:], circuits[1::]):
             assert circuit_1 == circuit_2
 
+        # Test the equality of circuits when the order
+        # of the gates are different but the circuit is the same
+        circuit_1 = [circuit_framework(2) for circuit_framework in circuit_frameworks]
+        for circuit in circuit_1:
+            circuit.H(0)
+            circuit.X(1)
+
+        circuit_2 = [circuit_framework(2) for circuit_framework in circuit_frameworks]
+        for circuit in circuit_2:
+            circuit.X(1)
+            circuit.H(0)
+
+        # Test the equality of the circuits
+        for circuit_1, circuit_2 in zip(circuit_1, circuit_2):
+            assert circuit_1 == circuit_2
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_eq_fail(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the `__eq__` dunder method failure.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(3)
+
+        assert not circuit_1 == circuit_2
+
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(2)
+
+        circuit_1.H(0)
+        circuit_2.X(0)
+
+        assert not circuit_1 == circuit_2
+
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(2)
+
+        circuit_1.H(0)
+        circuit_2.H(0)
+
+        circuit_1.CX(0, 1)
+        circuit_2.CX(0, 1)
+
+        circuit_1.H(0)
+        circuit_2.H(1)
+
+        assert not circuit_1 == circuit_2
+
+        circuit_1 = circuit_framework(2)
+        circuit_2 = circuit_framework(2)
+
+        circuit_1.CX(0, 1)
+        circuit_2.CX(1, 0)
+
+        assert not circuit_1 == circuit_2
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_eq_invalid_type(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the `__eq__` dunder method failure with invalid type.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        circuit = circuit_framework(2)
+
+        with pytest.raises(TypeError):
+            circuit == "circuit" # type: ignore
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_is_equivalent(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the `is_equivalent` method.
+
+        Parameters
+        ----------
+        `circuit_framework`: type[quick.circuit.Circuit]
+            The circuit framework to test.
+        """
+        # Define the circuits
+        circuit_1 = circuit_framework(3)
+        circuit_2 = circuit_framework(3)
+
+        # Define the GHZ state
+        circuit_1.H(0)
+        circuit_1.CX(0, 1)
+        circuit_1.CX(0, 2)
+
+        circuit_2.H(0)
+        circuit_2.CX(0, 2)
+        circuit_2.CX(0, 1)
+
+        # Test the equivalence of the circuits
+        assert circuit_1.is_equivalent(circuit_2)
+        assert not circuit_1.is_equivalent(circuit_2, check_dag=True)
+
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_len(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__len__` dunder method.
 
@@ -1250,7 +1408,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_str(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__str__` dunder method.
 
@@ -1272,7 +1430,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_generate_calls(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `generate_calls` method.
 
@@ -1294,7 +1452,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_repr(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the `__repr__` dunder method.
 
@@ -1321,7 +1479,7 @@ class TestCircuitBase:
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_custom_gate(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> None:
         """ Test the custom gate functionality.
 

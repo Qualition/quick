@@ -29,6 +29,7 @@ class TestDAGNode:
         """
         dagnode = DAGNode("test_node")
         assert dagnode.name == "test_node"
+        assert dagnode.meta_name == "test_node"
         assert dagnode.children == set()
         assert dagnode.parents == set()
 
@@ -95,6 +96,52 @@ class TestDAGNode:
 
         with pytest.raises(TypeError):
             dagnode1.to(dagnode2) # type: ignore
+
+    def test_lt(self) -> None:
+        """ Test the less than comparison of two `DAGNode` objects.
+        """
+        dagnode1 = DAGNode("node1")
+        dagnode2 = DAGNode("node2")
+
+        assert dagnode1 < dagnode2
+
+    def test_lt_invalid(self) -> None:
+        """ Test the less than comparison of a `DAGNode` object with an invalid argument.
+        """
+        dagnode = DAGNode("node1")
+        invalid = "node2"
+
+        with pytest.raises(TypeError):
+            dagnode < invalid # type: ignore
+
+    def test_eq(self) -> None:
+        """ Test the equality of two `DAGNode` objects.
+        """
+        dagnode1 = DAGNode("node1")
+        dagnode2 = DAGNode("node2")
+        dagnode3 = DAGNode("node1")
+
+        assert dagnode1 == dagnode3
+        assert dagnode1 != dagnode2
+
+        node_a = DAGNode("A")
+        node_b = DAGNode("B")
+        node_a2 = DAGNode("A")
+        node_b2 = DAGNode("B")
+
+        node_a.to(node_b)
+        node_a2.to(node_b2)
+
+        assert node_a == node_a2
+
+    def test_eq_invalid(self) -> None:
+        """ Test the equality of a `DAGNode` object with an invalid argument.
+        """
+        dagnode = DAGNode("node1")
+        invalid = "node2"
+
+        with pytest.raises(TypeError):
+            dagnode == invalid # type: ignore
 
     def test_str(self) -> None:
         """ Test the string representation of a `DAGNode` object.

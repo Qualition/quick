@@ -20,7 +20,7 @@ from __future__ import annotations
 __all__ = ["Circuit"]
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 import copy
 import cmath
@@ -29,32 +29,36 @@ import numpy as np
 from numpy.typing import NDArray
 from types import NotImplementedType
 from typing import (
-    Any, Callable, Literal, overload, SupportsFloat, SupportsIndex, Type, TYPE_CHECKING
+    Any, Literal, overload, SupportsFloat, SupportsIndex, TypeAlias, TYPE_CHECKING
 )
 
 import qiskit # type: ignore
 import cirq # type: ignore
 import pennylane as qml # type: ignore
-import pytket
-import pytket.circuit
+import pytket # type: ignore
 import quimb.tensor as qtn # type: ignore
 
 if TYPE_CHECKING:
     from quick.backend import Backend
-from quick.circuit.circuit_utils import (
-    multiplexed_rz_angles, decompose_multiplexor_rotations, extract_single_qubits_and_diagonal, simplify
+from quick.circuit.utils import (
+    multiplexed_rz_angles,
+    decompose_multiplexor_rotations,
+    extract_single_qubits_and_diagonal,
+    simplify
 )
 from quick.circuit.dag import DAGCircuit
-from quick.circuit.from_framework import FromCirq, FromQiskit, FromTKET
+from quick.circuit.from_framework import FromCirq, FromPennyLane, FromQiskit, FromTKET
 from quick.predicates import is_unitary_matrix
-from quick.primitives import Bra, Ket, Operator
+from quick.primitives import Statevector, Operator
 from quick.synthesis.gate_decompositions.multi_controlled_decomposition import MCRX, MCRY, MCRZ
 from quick.synthesis.statepreparation import Isometry
 from quick.synthesis.unitarypreparation import (
     UnitaryPreparation, ShannonDecomposition, QiskitUnitaryTranspiler
 )
 
-EPSILON = 1e-10
+EPSILON = 1e-15
+
+CIRCUIT_LOG: TypeAlias = list[dict[str, Any]]
 
 """ Set the frozensets for the keys to be used:
 - Decorator `Circuit.gatemethod()`
@@ -85,12 +89,36 @@ CONTROL_MAPPING = {
 }
 
 # List of 1Q gates wrapped by individual frameworks
-GATES = Literal["I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg", "RX", "RY", "RZ", "Phase", "U3"]
-SELF_ADJ_GATES = [
+GATES = Literal[
+    "I", "X", "Y", "Z", "H", "S", "Sdg",
+    "T", "Tdg", "RX", "RY", "RZ", "Phase",
+    "U3"
+]
+
+# List of self-adjoint gates
+SELF_ADJ_GATES = frozenset([
     "I", "X", "Y", "Z", "H", "SWAP",
     "CX", "CY", "CZ", "CH", "CSWAP",
     "MCX", "MCY", "MCZ", "MCH", "MCSWAP"
-]
+])
+
+# List of gates that are considered as primitives
+# these gates cannot be decomposed further
+PRIMITIVE_GATES = frozenset(["U3", "CX", "GlobalPhase", "measure"])
+
+# List of gates that are compatible/convertible with `.control()`
+CONTROLLABLE_GATES = frozenset([
+    "I", "X", "Y", "Z", "H", "S", "Sdg", "T", "Tdg",
+    "RX", "RY", "RZ", "Phase", "XPow", "YPow", "ZPow",
+    "RXX", "RYY", "RZZ", "U3", "SWAP"
+])
+
+# Controlled versions of controllable gates
+CONTROLLED_GATES = frozenset([
+    *CONTROLLABLE_GATES,
+    *(f"C{gate}" for gate in CONTROLLABLE_GATES),
+    *(f"MC{gate}" for gate in CONTROLLABLE_GATES)
+])
 
 # Constants
 PI = np.pi
@@ -252,7 +280,7 @@ class Circuit(ABC):
         """
         if name in ALL_QUBIT_KEYS:
             if isinstance(value, list):
-                # For simplicity, we consider the [i] index to be just 1 (int instead of list)
+                # For simplicity, we consider the [i] index to be just i (int instead of list)
                 if len(value) == 1:
                     value = self._process_single_qubit_index(value[0])
                 else:
@@ -285,7 +313,10 @@ class Circuit(ABC):
             - Angle must be a number.
         """
         if not isinstance(angle, (int, float)):
-            raise TypeError(f"Angle must be a number. Unexpected type {type(angle)} received.")
+            raise TypeError(
+                "Angle must be a number. "
+                f"Received {type(angle)} instead."
+            )
 
         if abs(angle) <= EPSILON or abs(angle % PI_DOUBLE) <= EPSILON:
             angle = 0.0
@@ -395,7 +426,7 @@ class Circuit(ABC):
 
             params[name] = value
 
-        if sorted(list(set(qubit_indices))) != sorted(qubit_indices):
+        if len(set(qubit_indices)) != len(qubit_indices):
             raise ValueError(
                 "Qubit indices must be unique. "
                 f"Received {qubit_indices} instead."
@@ -432,10 +463,10 @@ class Circuit(ABC):
 
         Usage
         -----
-        >>> def NewGate(qubit_indices: int | Sequence[int]):
+        >>> def NewGate(self, qubit_indices: int | Sequence[int]):
         >>>     gate = self.process_gate_params(gate="NewGate", params=locals())
-        >>>     with circuit.decompose_last():
-        >>>         circuit.X(qubit_indices)
+        >>>     with self.decompose_last():
+        >>>         self.X(qubit_indices)
         """
         # If the gate is parameterized, and its rotation is effectively zero, return
         # as no operation is needed
@@ -525,7 +556,7 @@ class Circuit(ABC):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
         """ Apply a gate to the circuit.
@@ -540,7 +571,7 @@ class Circuit(ABC):
             The gate to apply to the circuit.
         `target_indices` : int | Sequence[int]
             The index of the target qubit(s).
-        `control_indices` : int | Sequence[int], optional, default=[]
+        `control_indices` : int | Sequence[int], optional, default=None
             The index of the control qubit(s).
         `angles` : Sequence[float], optional, default=(0, 0, 0)
             The rotation angles in radians.
@@ -4623,7 +4654,6 @@ class Circuit(ABC):
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
-        # Check if the number of diagonal entries is a power of 2
         num_qubits = np.log2(len(diagnoal))
 
         if num_qubits < 1 or not int(num_qubits) == num_qubits:
@@ -4646,7 +4676,7 @@ class Circuit(ABC):
 
         # Repeatedly apply the decomposition of Theorem 7 from [1]
         while num_diagonal_entries >= 2:
-            rz_angles = []
+            rz_angles: list[float] = []
 
             # Extract the RZ angles and the relative phase
             # between the two diagonal entries
@@ -4707,8 +4737,8 @@ class Circuit(ABC):
             single_qubit_gates: list[NDArray[np.complex128]],
             control_indices: int | Sequence[int],
             target_index: int,
-            up_to_diagonal: bool=False,
-            multiplexor_simplification: bool=True,
+            up_to_diagonal: bool = False,
+            multiplexor_simplification: bool = True,
             control_state: str | None = None
         ) -> None:
         """ Apply a multiplexed/uniformly controlled gate to the circuit.
@@ -4777,6 +4807,12 @@ class Circuit(ABC):
         ...             [[0, 1],
         ...              [1, 0]]], multiplexor_simplification=False, control_state="01")
         """
+        # If there are no control indices, we use the ZYZ decomposition
+        # to apply the single qubit gate
+        if not control_indices:
+            self.unitary(single_qubit_gates[0], target_index)
+            return
+
         if isinstance(control_indices, int):
             control_indices = [control_indices]
 
@@ -4784,18 +4820,22 @@ class Circuit(ABC):
             if not gate.shape == (2, 2):
                 raise ValueError(f"The dimension of a gate is not equal to 2x2. Received {gate.shape}.")
 
-        # Check if number of gates in gate_list is a positive power of two
-        num_control = np.log2(len(single_qubit_gates))
-        if num_control < 0 or not int(num_control) == num_control:
+        num_controls = int(
+            np.log2(
+                len(single_qubit_gates)
+            )
+        )
+
+        if num_controls < 0 or not int(num_controls) == num_controls:
             raise ValueError(
                 "The number of single-qubit gates is not a non-negative power of 2."
             )
 
-        if not num_control == len(control_indices):
+        if not num_controls == len(control_indices):
             raise ValueError(
                 "The number of control qubits passed must be equal to the number of gates. "
                 f"Received {len(control_indices)}. "
-                f"Expected {int(num_control)}."
+                f"Expected {int(num_controls)}."
             )
 
         # Check if the single-qubit gates are unitaries
@@ -4808,22 +4848,18 @@ class Circuit(ABC):
         # If the multiplexor simplification is enabled, we simplify the multiplexor
         # based on [2]
         if multiplexor_simplification:
-            new_controls, single_qubit_gates = simplify(single_qubit_gates, int(num_control))
-            control_indices = [qubits[len(control_indices) + 1 - i] for i in new_controls]
+            new_controls, single_qubit_gates = simplify(single_qubit_gates, num_controls)
+            control_indices = [qubits[num_controls + 1 - i] for i in new_controls]
             control_indices.reverse()
-
-        # If there are no control indices, we use the ZYZ decomposition
-        # to apply the single qubit gate
-        if not control_indices:
-            self.unitary(single_qubit_gates[0], target_index)
-            return
 
         # If there is at least one control qubit, we decompose the multiplexor
         # into a sequence of single-qubit gates and CX gates
-        (single_qubit_gates, diagonal) = extract_single_qubits_and_diagonal(
+        single_qubit_gates, diagonal = extract_single_qubits_and_diagonal(
             single_qubit_gates,
             len(control_indices) + 1
         )
+
+        num_single_qubit_gates = len(single_qubit_gates)
 
         # Now, it is easy to place the CX gates and some Hadamards and RZ(pi/2) gates
         # which are absorbed into the single-qubit unitaries to get back the full decomposition
@@ -4834,7 +4870,7 @@ class Circuit(ABC):
                     self.unitary(gate, target_index)
                     self.H(target_index)
 
-                elif i == len(single_qubit_gates) - 1:
+                elif i == num_single_qubit_gates - 1:
                     self.H(target_index)
                     self.RZ(-PI2, target_index)
                     self.unitary(gate, target_index)
@@ -4851,12 +4887,10 @@ class Circuit(ABC):
                 num_trailing_zeros = len(binary_rep) - len(binary_rep.rstrip("0"))
                 control_index = num_trailing_zeros
 
-                # Apply the CX gate
-                if not i == len(single_qubit_gates) - 1:
+                if not i == num_single_qubit_gates - 1:
                     self.CX(control_indices[control_index], target_index)
                     self.GlobalPhase(-PI4)
 
-            # If `up_to_diagonal` is False, we apply the diagonal gate
             if not up_to_diagonal:
                 self.Diagonal(diagonal, qubit_indices=[target_index] + list(control_indices))
 
@@ -4897,9 +4931,9 @@ class Circuit(ABC):
     def QFT(
             self,
             qubit_indices: int | Sequence[int],
-            do_swaps: bool=True,
-            approximation_degree: int=0,
-            inverse: bool=False
+            do_swaps: bool = True,
+            approximation_degree: int = 0,
+            inverse: bool = False
         ) -> None:
         r""" Apply the Quantum Fourier Transform to the circuit.
 
@@ -4976,14 +5010,14 @@ class Circuit(ABC):
 
     def initialize(
             self,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
             qubit_indices: int | Sequence[int]
         ) -> None:
         """ Initialize the state of the circuit.
 
         Parameters
         ----------
-        `state` : NDArray[np.complex128] | quick.primitives.Bra | quick.primitives.Ket
+        `state` : NDArray[np.complex128] | quick.primitives.Statevector
             The state to initialize the circuit to.
         `qubit_indices` : int | Sequence[int]
             The index of the qubit(s) to apply the gate to.
@@ -4991,7 +5025,7 @@ class Circuit(ABC):
         Raises
         ------
         TypeError
-            - If the state is not a numpy array or a Bra/Ket object.
+            - If the state is not a numpy array or a Statevector object.
             - If the qubit indices are not integers or a sequence of integers.
         ValueError
             - If the compression percentage is not in the range [0, 100].
@@ -5005,10 +5039,8 @@ class Circuit(ABC):
         -----
         >>> circuit.initialize([1, 0], qubit_indices=0)
         """
-        # Initialize the state preparation schema
         isometry = Isometry(output_framework=type(self))
 
-        # Prepare the state
         self = isometry.apply_state(
             circuit=self,
             state=state,
@@ -5051,10 +5083,8 @@ class Circuit(ABC):
         ...                  [0, 1, 0, 0],
         ...                  [1, 0, 0, 0]], qubit_indices=[0, 1])
         """
-        # Initialize the unitary preparation schema
         unitary_preparer = ShannonDecomposition(output_framework=type(self))
 
-        # Prepare the unitary matrix
         self = unitary_preparer.apply_unitary(
             circuit=self,
             unitary=unitary_matrix,
@@ -5068,33 +5098,30 @@ class Circuit(ABC):
         -----
         >>> circuit.vertical_reverse()
         """
-        self.change_mapping(list(range(self.num_qubits))[::-1])
+        self.change_mapping(range(self.num_qubits - 1, -1, -1))
 
     @staticmethod
     def _horizontal_reverse(
-            circuit_log: list[dict[str, Any]],
-            adjoint: bool=True
-        ) -> list[dict[str, Any]]:
+            circuit_log: CIRCUIT_LOG,
+            adjoint: bool = True
+        ) -> CIRCUIT_LOG:
         """ Perform a horizontal reverse operation.
 
         Parameters
         ----------
-        `circuit_log` : list[dict[str, Any]]
+        `circuit_log` : CIRCUIT_LOG
             The circuit log to reverse.
         `adjoint` : bool, optional, default=True
             Whether or not to apply the adjoint of the circuit.
 
         Returns
         -------
-        list[dict[str, Any]]
+        CIRCUIT_LOG
             The reversed circuit log.
         """
-        # Reverse the order of the operations
         circuit_log = circuit_log[::-1]
 
-        # If adjoint is True, then multiply the angles by -1
         if adjoint:
-            # Iterate over every operation, and change the index accordingly
             for i, operation in enumerate(circuit_log):
                 if "angle" in operation:
                     operation["angle"] = -operation["angle"]
@@ -5127,7 +5154,7 @@ class Circuit(ABC):
 
     def horizontal_reverse(
             self,
-            adjoint: bool=True
+            adjoint: bool = True
         ) -> None:
         """ Perform a horizontal reverse operation. This is equivalent
         to the adjoint of the circuit if `adjoint=True`. Otherwise, it
@@ -5196,18 +5223,12 @@ class Circuit(ABC):
                 else:
                     operation[key] = list(qubit_indices)[operation[key]] # type: ignore
 
-        # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit_log:
-            # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate", None)
-
-            # Extract gate definition and remove it from gate_info for kwargs
             gate_definition = gate_info.pop("definition", None)
 
-            # Use the gate mapping to apply the corresponding gate with remaining kwargs
             getattr(self, gate_name)(**gate_info)
 
-            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
             gate_info["definition"] = gate_definition
 
@@ -5312,29 +5333,7 @@ class Circuit(ABC):
         -----
         >>> circuit.get_depth()
         """
-        circuit = self.copy()
-
-        # Transpile the circuit to both simplify and optimize it
-        circuit.transpile()
-
-        # Get the depth of the circuit
-        depth = circuit.get_dag().get_depth()
-
-        return depth
-
-    def get_width(self) -> int:
-        """ Get the width of the circuit.
-
-        Returns
-        -------
-        `width` : int
-            The width of the circuit.
-
-        Usage
-        -----
-        >>> circuit.get_width()
-        """
-        return self.num_qubits
+        return self.get_dag().get_depth()
 
     @abstractmethod
     def get_unitary(self) -> NDArray[np.complex128]:
@@ -5352,7 +5351,7 @@ class Circuit(ABC):
 
     def get_instructions(
             self,
-            include_measurements: bool=True
+            include_measurements: bool = True
         ) -> list[dict]:
         """ Get the instructions of the circuit.
 
@@ -5569,7 +5568,7 @@ class Circuit(ABC):
 
     def remove_measurements(
             self,
-            inplace: bool=False
+            inplace: bool = False
         ) -> Circuit | None:
         """ Remove the measurement instructions from the circuit.
 
@@ -5594,10 +5593,63 @@ class Circuit(ABC):
 
         return self._remove_measurements()
 
+    def decompose_gate(
+            self,
+            target_gates: str | Sequence[str]
+        ) -> Circuit:
+        """ Decompose the specified gates in the circuit.
+
+        Parameters
+        ----------
+        `gates` : str | Sequence[str]
+            The gates to decompose.
+
+        Returns
+        -------
+        `circuit` : quick.circuit.Circuit
+            The circuit with the decomposed gates.
+
+        Usage
+        -----
+        >>> new_circuit = circuit.decompose_gate("CX")
+        >>> new_circuit = circuit.decompose_gate(["Z", "Phase"])
+        """
+        circuit = type(self)(self.num_qubits)
+
+        # We cannot decompose primitive gates and to avoid losing them
+        # or getting stuck in an infinite loop we simply remove them
+        # from the target gates
+        target_gates_set = frozenset(set(target_gates) - PRIMITIVE_GATES)
+
+        circuit_log_copy = copy.deepcopy(self.circuit_log)
+
+        while True:
+            gates = set([operation["gate"] for operation in circuit_log_copy])
+
+            if gates.isdisjoint(target_gates_set):
+                break
+
+            if gates.issubset(PRIMITIVE_GATES):
+                break
+
+            for operation in circuit_log_copy:
+                if operation["gate"] in target_gates_set:
+                    circuit.circuit_log.extend(operation["definition"])
+                else:
+                    circuit.circuit_log.append(operation)
+
+            circuit_log_copy = circuit.circuit_log
+            circuit.circuit_log = []
+
+        circuit.circuit_log = circuit_log_copy
+        circuit.update()
+
+        return circuit
+
     def decompose(
             self,
-            reps: int=1,
-            full: bool=False
+            reps: int = 1,
+            full: bool = False
         ) -> Circuit:
         """ Decompose the gates in the circuit to their implementation gates.
 
@@ -5622,53 +5674,46 @@ class Circuit(ABC):
         if all([operation["definition"] == [] for operation in self.circuit_log]):
             return self.copy()
 
-        # Create a new circuit to store the decomposed gates
         circuit = type(self)(self.num_qubits)
 
         # Create a copy of the circuit log to use as placeholder for each layer of decomposition
         circuit_log_copy = copy.deepcopy(self.circuit_log)
 
         # Iterate over the circuit log, and use the `definition` key to define the decomposition
-        # Continue until the circuit log is fully decomposed
+        # Continue until the circuit log is fully decomposed or until the number of reps is reached
         if full:
-            while True:
-                gates = set([operation["gate"] for operation in circuit_log_copy])
+            reps = -1
 
-                if gates.issubset(set(["U3", "CX", "GlobalPhase", "measure"])):
-                    break
+        current_rep = 0
 
-                for operation in circuit_log_copy:
-                    if operation["definition"] != []:
-                        for op in operation["definition"]:
-                            circuit.circuit_log.append(op)
-                    else:
-                        circuit.circuit_log.append(operation)
+        while True:
+            if current_rep == reps:
+                break
 
-                circuit_log_copy = circuit.circuit_log
-                circuit.circuit_log = []
+            gates = set([operation["gate"] for operation in circuit_log_copy])
 
-        # Iterate over the circuit log, and use the `definition` key to define the decomposition
-        # Each rep will decompose the circuit one layer further
-        else:
-            for _ in range(reps):
-                for operation in circuit_log_copy:
-                    if operation["definition"] != []:
-                        for op in operation["definition"]:
-                            circuit.circuit_log.append(op)
-                    else:
-                        circuit.circuit_log.append(operation)
-                circuit_log_copy = circuit.circuit_log
-                circuit.circuit_log = []
+            if gates.issubset(PRIMITIVE_GATES):
+                break
+
+            for operation in circuit_log_copy:
+                if operation["definition"] != []:
+                    circuit.circuit_log.extend(operation["definition"])
+                else:
+                    circuit.circuit_log.append(operation)
+
+            circuit_log_copy = circuit.circuit_log
+            circuit.circuit_log = []
+
+            current_rep += 1
 
         circuit.circuit_log = circuit_log_copy
-
         circuit.update()
 
         return circuit
 
     def transpile(
             self,
-            direct_transpile: bool=True,
+            direct_transpile: bool = True,
             synthesis_method: UnitaryPreparation | None = None
         ) -> None:
         """ Transpile the circuit to U3 and CX gates.
@@ -5729,23 +5774,20 @@ class Circuit(ABC):
         # Define angle closeness threshold
         threshold = PI * compression_percentage
 
-        # Initialize a list for the indices that will be removed
-        indices_to_remove = []
+        new_circuit_log = []
 
         # Iterate over all angles, and set the angles within the
         # compression percentage to 0 (this means the gate does nothing, and can be removed)
-        for index, operation in enumerate(self.circuit_log):
+        for operation in self.circuit_log:
             if "angle" in operation:
                 if abs(operation["angle"]) < threshold:
-                    indices_to_remove.append(index)
+                    continue
             elif "angles" in operation:
                 if all([abs(angle) < threshold for angle in operation["angles"]]):
-                    indices_to_remove.append(index)
+                    continue
+            new_circuit_log.append(operation)
 
-        # Remove the operations with angles within the compression percentage
-        for index in sorted(indices_to_remove, reverse=True):
-            del self.circuit_log[index]
-
+        self.circuit_log = new_circuit_log
         self.update()
 
     def change_mapping(
@@ -5771,24 +5813,18 @@ class Circuit(ABC):
         -----
         >>> circuit.change_mapping(qubit_indices=[1, 0])
         """
-        if not all(isinstance(index, int) for index in qubit_indices):
-            raise TypeError("Qubit indices must be a collection of integers.")
-
-        if sorted(list(set(qubit_indices))) != list(range(self.num_qubits)):
+        if len(set(qubit_indices)) != self.num_qubits:
             raise ValueError("Qubit indices must be unique.")
 
-        if isinstance(qubit_indices, Sequence):
-            qubit_indices = list(qubit_indices)
-        elif isinstance(qubit_indices, np.ndarray):
-            qubit_indices = qubit_indices.tolist()
+        if any(not isinstance(qubit_index, int) for qubit_index in qubit_indices):
+            raise TypeError("Qubit indices must all be integers.")
 
         if self.num_qubits != len(qubit_indices):
             raise ValueError("The number of qubits must match the number of qubits in the circuit.")
 
-        # Update the qubit indices
         for operation in self.circuit_log:
             for key in set(operation.keys()).intersection(ALL_QUBIT_KEYS):
-                if isinstance(operation[key], list):
+                if isinstance(operation[key], Sequence):
                     operation[key] = [qubit_indices[index] for index in operation[key]]
                 else:
                     operation[key] = qubit_indices[operation[key]]
@@ -5797,7 +5833,7 @@ class Circuit(ABC):
 
     def convert(
             self,
-            circuit_framework: Type[Circuit]
+            circuit_framework: type[Circuit]
         ) -> Circuit:
         """ Convert the circuit to another circuit framework.
 
@@ -5823,21 +5859,14 @@ class Circuit(ABC):
         if not issubclass(circuit_framework, Circuit):
             raise TypeError("The circuit framework must be a subclass of `quick.circuit.Circuit`.")
 
-        # Define the new circuit using the provided framework
         converted_circuit = circuit_framework(self.num_qubits)
 
-        # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in self.circuit_log:
-            # Extract gate name and remove it from gate_info for kwargs
-            gate_name = gate_info.pop("gate", None)
-
-            # Extract gate definition and remove it from gate_info for kwargs
+            gate_name = gate_info.pop("gate")
             gate_definition = gate_info.pop("definition", None)
 
-            # Use the gate mapping to apply the corresponding gate with remaining kwargs
             getattr(converted_circuit, gate_name)(**gate_info)
 
-            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
             gate_info["definition"] = gate_definition
 
@@ -5866,23 +5895,22 @@ class Circuit(ABC):
         `controlled_circuit` : quick.circuit.Circuit
             The circuit as a controlled gate.
         """
-        # Create a copy of the circuit
-        circuit = self.copy()
+        # To provide compatibility with gates that are not directly
+        # controllable we decompose such gates, which adds support
+        # for user-defined gates
+        gates = set([operation["gate"] for operation in self.circuit_log])
+
+        circuit = self.decompose_gate(gates - CONTROLLED_GATES) # type: ignore
 
         # When a target gate has global phase, we need to account for that by resetting
         # the global phase, and then applying it to the control indices using the Phase
         # or MCPhase gates depending on the number of control indices
         circuit.circuit_log = [op for op in circuit.circuit_log if op["gate"] != "GlobalPhase"]
 
-        # Define a controlled circuit
         controlled_circuit = type(circuit)(num_qubits=circuit.num_qubits + num_controls)
 
-        # Iterate over the gate log and apply corresponding gates in the new framework
         for gate_info in circuit.circuit_log:
-            # Extract gate name and remove it from gate_info for kwargs
             gate_name = gate_info.pop("gate")
-
-            # Extract gate definition and remove it from gate_info for kwargs
             gate_definition = gate_info.pop("definition", None)
 
             # Change the gate name from single qubit and controlled to multi-controlled
@@ -5904,15 +5932,11 @@ class Circuit(ABC):
             if isinstance(control_indices, int):
                 control_indices = [control_indices]
 
-            # Add control indices
             gate_info["control_indices"] = list(range(num_controls)) + \
                 [idx for idx in control_indices if idx not in range(num_controls)]
 
-            # Use the gate mapping to apply the corresponding gate with remaining kwargs
-            # Add the control indices as the first indices given the number of control qubits
             getattr(controlled_circuit, gate_name)(**gate_info)
 
-            # Re-insert gate name and definition into gate_info if needed elsewhere
             gate_info["gate"] = gate_name
             gate_info["definition"] = gate_definition
 
@@ -5946,7 +5970,7 @@ class Circuit(ABC):
     @abstractmethod
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
         """ Convert the circuit to QASM.
 
@@ -5973,7 +5997,7 @@ class Circuit(ABC):
     @staticmethod
     def from_cirq(
             cirq_circuit: cirq.Circuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.Circuit` from a `cirq.Circuit`.
 
@@ -6005,7 +6029,7 @@ class Circuit(ABC):
     @staticmethod
     def from_pennylane(
             pennylane_circuit: qml.QNode,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `qml.QNode`.
 
@@ -6030,20 +6054,14 @@ class Circuit(ABC):
         -----
         >>> circuit.from_pennylane(pennylane_circuit)
         """
-        if not issubclass(output_framework, Circuit):
-            raise TypeError("The circuit framework must be a subclass of `quick.circuit.Circuit`.")
-
-        # Define a circuit
-        num_qubits = len(pennylane_circuit.device.wires)
-        circuit = output_framework(num_qubits=num_qubits)
-
-        # TODO: Implement the conversion from PennyLane to quick
+        pennylane_converter = FromPennyLane(output_framework=output_framework)
+        circuit = pennylane_converter.convert(pennylane_circuit)
         return circuit
 
     @staticmethod
     def from_qiskit(
             qiskit_circuit: qiskit.QuantumCircuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `qiskit.QuantumCircuit`.
 
@@ -6075,7 +6093,7 @@ class Circuit(ABC):
     @staticmethod
     def from_tket(
             tket_circuit: pytket.Circuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `tket.Circuit`.
 
@@ -6107,7 +6125,7 @@ class Circuit(ABC):
     @staticmethod
     def from_qasm(
             qasm: str,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a QASM string.
 
@@ -6146,7 +6164,7 @@ class Circuit(ABC):
     @staticmethod
     def from_quimb(
             quimb_circuit: qtn.Circuit,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> Circuit:
         """ Create a `quick.circuit.Circuit` from a `qtn.Circuit`.
 
@@ -6214,7 +6232,7 @@ class Circuit(ABC):
 
     def plot_histogram(
             self,
-            non_zeros_only: bool=False
+            non_zeros_only: bool = False
         ) -> plt.Figure:
         """ Plot the histogram of the circuit.
 
@@ -6249,6 +6267,107 @@ class Circuit(ABC):
         plt.close()
 
         return figure
+
+    def __mul__(
+            self,
+            multiplier: int
+        ) -> Circuit:
+        """ Multiply the circuit by an integer to repeat the circuit.
+
+        Parameters
+        ----------
+        `multiplier` : int
+            The number of times to repeat the circuit.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The new circuit with the repeated operations.
+
+        Raises
+        ------
+        TypeError
+            - The multiplier must be an integer.
+
+        Usage
+        -----
+        >>> new_circuit = circuit * 3
+        """
+        if not isinstance(multiplier, int):
+            raise TypeError("The multiplier must be an integer.")
+
+        new_circuit = type(self)(self.num_qubits)
+        for _ in range(multiplier):
+            new_circuit.add(self, list(range(self.num_qubits)))
+
+        return new_circuit
+
+    def __rmul__(
+            self,
+            multiplier: int
+        ) -> Circuit:
+        """ Multiply the circuit by an integer to repeat the circuit.
+        This is the right-hand side multiplication, allowing for
+        the syntax `3 * circuit`.
+
+        Parameters
+        ----------
+        `multiplier` : int
+            The number of times to repeat the circuit.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The new circuit with the repeated operations.
+
+        Raises
+        ------
+        TypeError
+            - The multiplier must be an integer.
+
+        Usage
+        -----
+        >>> new_circuit = 3 * circuit
+        """
+        return self.__mul__(multiplier)
+
+    def __matmul__(
+            self,
+            other_circuit: Circuit
+        ) -> Circuit:
+        """ Tensor product two circuits together. This is
+        done by putting the circuits side by side.
+
+        Parameters
+        ----------
+        `other_circuit` : quick.circuit.Circuit
+            The circuit to tensor product with.
+
+        Returns
+        -------
+        `new_circuit` : quick.circuit.Circuit
+            The tensor product circuit.
+
+        Raises
+        ------
+        TypeError
+            - The other circuit must be a `quick.circuit.Circuit`.
+
+        Usage
+        -----
+        >>> new_circuit = circuit @ other_circuit
+        """
+        if not isinstance(other_circuit, Circuit):
+            raise TypeError("The other circuit must be a `quick.circuit.Circuit`.")
+
+        new_circuit = type(self)(self.num_qubits + other_circuit.num_qubits)
+        new_circuit.add(self, list(range(self.num_qubits)))
+        new_circuit.add(
+            other_circuit,
+            list(range(self.num_qubits, self.num_qubits + other_circuit.num_qubits))
+        )
+
+        return new_circuit
 
     def __getitem__(
             self,
@@ -6328,8 +6447,58 @@ class Circuit(ABC):
         >>> circuit1 == circuit2
         """
         if not isinstance(other_circuit, Circuit):
-            raise TypeError("Circuits must be compared with other circuits.")
-        return self.circuit_log == other_circuit.circuit_log
+            raise TypeError(
+                "Circuits can only be compared with other Circuits. "
+                f"Received {type(other_circuit)} instead."
+            )
+        return self.get_dag() == other_circuit.get_dag()
+
+    def is_equivalent(
+            self,
+            other_circuit: Circuit,
+            check_unitary: bool = True,
+            check_dag: bool = False
+        ) -> bool:
+        """ Check if the circuit is equivalent to another circuit.
+
+        Parameters
+        ----------
+        `other_circuit` : quick.circuit.Circuit
+            The other circuit to compare to.
+        `check_unitary` : bool, optional, default=True
+            Whether or not to check the unitary of the circuit.
+        `check_dag` : bool, optional, default=False
+            Whether or not to check the DAG of the circuit.
+
+        Returns
+        -------
+        bool
+            Whether the two circuits are equivalent.
+
+        Raises
+        ------
+        TypeError
+            - Circuits must be compared with other circuits.
+
+        Usage
+        -----
+        >>> circuit1.is_equivalent(circuit2)
+        """
+        if not isinstance(other_circuit, Circuit):
+            raise TypeError(
+                "Circuits can only be compared with other Circuits. "
+                f"Received {type(other_circuit)} instead."
+            )
+
+        if check_unitary:
+            if not np.allclose(self.get_unitary(), other_circuit.get_unitary()):
+                return False
+
+        if check_dag:
+            if self.get_dag() != other_circuit.get_dag():
+                return False
+
+        return True
 
     def __len__(self) -> int:
         """ Get the number of the circuit operations.

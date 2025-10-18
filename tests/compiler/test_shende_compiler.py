@@ -22,47 +22,40 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 from quick.circuit import TKETCircuit
-from quick.compiler import Compiler
-from quick.primitives import Bra, Ket, Operator
+from quick.compiler import ShendeCompiler
+from quick.primitives import Statevector, Operator
 from quick.random import generate_random_state, generate_random_unitary
-
-from tests.compiler import Template
 
 # Define the test data
 generated_statevector = generate_random_state(7)
-test_data_bra = Bra(generated_statevector)
-test_data_ket = Ket(generated_statevector)
-checker_data_ket = copy.deepcopy(test_data_ket)
-checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
+test_statevector = Statevector(generated_statevector)
+checker_statevector = copy.deepcopy(test_statevector)
 
 unitary_matrix = generate_random_unitary(3)
 
 
-class TestShendeCompiler(Template):
-    """ `tests.compiler.TestShendeCompiler` is the tester for the `quick.compiler.Compiler` class.
+class TestShendeCompiler:
+    """ `tests.compiler.TestShendeCompiler` is the tester for the
+    `quick.compiler.ShendeCompiler` class.
     """
     def test_init(self) -> None:
-        Compiler(circuit_framework=TKETCircuit)
+        ShendeCompiler(circuit_framework=TKETCircuit)
 
     def test_init_invalid_framework(self) -> None:
         with pytest.raises(TypeError):
-            Compiler(circuit_framework=int) # type: ignore
+            ShendeCompiler(circuit_framework=int) # type: ignore
 
     def test_init_invalid_state_preparation(self) -> None:
         with pytest.raises(TypeError):
-            Compiler(circuit_framework=TKETCircuit, state_prep=int) # type: ignore
+            ShendeCompiler(circuit_framework=TKETCircuit, state_prep=int) # type: ignore
 
     def test_init_invalid_unitary_preparation(self) -> None:
         with pytest.raises(TypeError):
-            Compiler(circuit_framework=TKETCircuit, unitary_prep=int) # type: ignore
-
-    def test_init_invalid_optimizer(self) -> None:
-        with pytest.raises(TypeError):
-            Compiler(circuit_framework=TKETCircuit, optimizer=0) # type: ignore
+            ShendeCompiler(circuit_framework=TKETCircuit, unitary_prep=int) # type: ignore
 
     def test_state_preparation(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
         circuit = shende_compiler.state_preparation(generated_statevector)
@@ -71,11 +64,11 @@ class TestShendeCompiler(Template):
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_unitary_preparation(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
         circuit = shende_compiler.unitary_preparation(unitary_matrix)
@@ -86,24 +79,19 @@ class TestShendeCompiler(Template):
         # Ensure that the unitary matrix is close enough to the expected unitary matrix
         assert_almost_equal(unitary, unitary_matrix, decimal=8)
 
-    def test_optimize(self) -> None:
-        # TODO: Implement the test_optimize method
-        pass
-
     def test_check_primitive(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Ensure that the checker does not raise an error when a valid primitive is passed
-        shende_compiler._check_primitive(test_data_ket)
-        shende_compiler._check_primitive(test_data_bra)
+        shende_compiler._check_primitive(test_statevector)
         shende_compiler._check_primitive(Operator(unitary_matrix))
         shende_compiler._check_primitive(generated_statevector)
         shende_compiler._check_primitive(unitary_matrix)
 
     def test_check_primitive_invalid_primitive(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Ensure that the checker raises a ValueError when an invalid primitive is passed
         with pytest.raises(TypeError):
@@ -123,66 +111,50 @@ class TestShendeCompiler(Template):
 
     def test_check_primitive_qubits(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Ensure that the checker does not raise an error when valid qubits are passed
-        shende_compiler._check_primitive_qubits(test_data_ket, range(7))
-        shende_compiler._check_primitive_qubits(test_data_bra, range(7))
+        shende_compiler._check_primitive_qubits(test_statevector, range(7))
         shende_compiler._check_primitive_qubits(Operator(unitary_matrix), range(3))
         shende_compiler._check_primitive_qubits(generated_statevector, range(7))
         shende_compiler._check_primitive_qubits(unitary_matrix, range(3))
 
     def test_check_primitive_qubits_invalid_qubits(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Ensure that the checker raises a ValueError when invalid qubits are passed
         with pytest.raises(ValueError):
-            shende_compiler._check_primitive_qubits(test_data_ket, range(8))
+            shende_compiler._check_primitive_qubits(test_statevector, range(8))
 
     def test_check_primitives(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Ensure that the checker does not raise an error when valid primitives are passed
         shende_compiler._check_primitives([
-            (test_data_ket, range(7)),
-            (test_data_bra, range(7)),
+            (test_statevector, range(7)),
             (Operator(unitary_matrix), range(3)),
             (generated_statevector, range(7)),
             (unitary_matrix, range(3))
         ])
 
-    def test_compile_primitive_bra(self) -> None:
-        # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
-
-        # Encode the data to a circuit
-        circuit = shende_compiler._compile_primitive(test_data_bra)
-
-        # Get the state of the circuit
-        statevector = circuit.get_statevector()
-
-        # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_bra.data, decimal=8)
-
-
     def test_compile_primitive_ket(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
-        circuit = shende_compiler._compile_primitive(test_data_ket)
+        circuit = shende_compiler._compile_primitive(test_statevector)
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_compile_primitive_operator(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
         circuit = shende_compiler._compile_primitive(Operator(unitary_matrix))
@@ -195,7 +167,7 @@ class TestShendeCompiler(Template):
 
     def test_compile_primitive_ndarray(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
         circuit = shende_compiler._compile_primitive(generated_statevector)
@@ -204,7 +176,7 @@ class TestShendeCompiler(Template):
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
         # Encode the data to a circuit
         circuit = shende_compiler._compile_primitive(unitary_matrix)
@@ -217,7 +189,7 @@ class TestShendeCompiler(Template):
 
     def test_compile_primitive_invalid_primitive(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Ensure that the compiler raises a ValueError when an invalid primitive is passed
         with pytest.raises(TypeError):
@@ -229,35 +201,22 @@ class TestShendeCompiler(Template):
         with pytest.raises(ValueError):
             shende_compiler._compile_primitive(np.array([0]))
 
-    def test_compile_bra(self) -> None:
-        # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
-
-        # Encode the data to a circuit
-        circuit = shende_compiler.compile(test_data_bra)
-
-        # Get the state of the circuit
-        statevector = circuit.get_statevector()
-
-        # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_bra.data, decimal=8)
-
     def test_compile_ket(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
-        circuit = shende_compiler.compile(test_data_ket)
+        circuit = shende_compiler.compile(test_statevector)
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
     def test_compile_operator(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
         circuit = shende_compiler.compile(Operator(unitary_matrix))
@@ -270,7 +229,7 @@ class TestShendeCompiler(Template):
 
     def test_compile_ndarray(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Encode the data to a circuit
         circuit = shende_compiler.compile(generated_statevector)
@@ -279,7 +238,7 @@ class TestShendeCompiler(Template):
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        assert_almost_equal(np.array(statevector), checker_data_ket.data.flatten(), decimal=8)
+        assert_almost_equal(np.array(statevector), checker_statevector.data.flatten(), decimal=8)
 
         # Encode the data to a circuit
         circuit = shende_compiler.compile(unitary_matrix)
@@ -292,14 +251,12 @@ class TestShendeCompiler(Template):
 
     def test_compile_multiple_primitives(self) -> None:
         # Initialize the Shende compiler
-        shende_compiler = Compiler(circuit_framework=TKETCircuit)
+        shende_compiler = ShendeCompiler(circuit_framework=TKETCircuit)
 
         # Generate a random bra and ket over three qubits
         generated_statevector = generate_random_state(3)
-        test_data_ket = Ket(generated_statevector)
-        test_data_bra = Bra(generated_statevector)
+        test_data_ket = Statevector(generated_statevector)
         checker_data_ket = copy.deepcopy(test_data_ket)
-        checker_data_bra = copy.deepcopy(test_data_ket.to_bra())
 
         # Generate two random unitary matrix over three qubits
         unitary_matrix_1 = generate_random_unitary(3)
@@ -308,19 +265,17 @@ class TestShendeCompiler(Template):
         # Encode the data to a circuit
         circuit = shende_compiler.compile([
             (test_data_ket, [0, 1, 2]),
-            (test_data_bra, [3, 4, 5]),
+            (test_data_ket, [3, 4, 5]),
             (unitary_matrix_1, [0, 1, 2]),
             (unitary_matrix_2, [3, 4, 5])
         ])
-
-        # TODO: Add a check for the optimized circuit
 
         # Get the state of the circuit
         statevector = circuit.get_statevector()
 
         # Ensure that the state vector is close enough to the expected state vector
-        checker_data_ket = np.dot(unitary_matrix_1, checker_data_ket.data.flatten())
-        checker_data_bra = np.dot(unitary_matrix_2, checker_data_bra.data.flatten())
-        checker_statevector = np.kron(checker_data_bra, checker_data_ket)
+        checker_data_ket_1 = np.dot(unitary_matrix_1, checker_data_ket.data.flatten())
+        checker_data_ket_2 = np.dot(unitary_matrix_2, checker_data_ket.data.flatten())
+        checker_statevector = np.kron(checker_data_ket_2, checker_data_ket_1)
 
         assert_almost_equal(np.array(statevector), checker_statevector, decimal=8)

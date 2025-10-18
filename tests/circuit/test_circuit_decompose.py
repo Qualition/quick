@@ -18,7 +18,6 @@ __all__ = ["TestDecompose"]
 
 import numpy as np
 import pytest
-from typing import Type
 
 from quick.circuit import Circuit
 
@@ -40,7 +39,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_X(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the X gate.
 
@@ -70,7 +69,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_Z(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the Z gate.
 
@@ -119,7 +118,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_CZ(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the CZ gate.
 
@@ -173,7 +172,7 @@ class TestDecompose:
     @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
     def test_MCX(
             self,
-            framework: Type[Circuit]
+            framework: type[Circuit]
         ) -> None:
         """ Test the decomposition of the MCX gate.
 
@@ -275,11 +274,20 @@ class TestDecompose:
     @pytest.mark.parametrize("gate_func, num_qubits", GATE_TYPES)
     def test_primitive_gates(
             self,
-            framework: Type[Circuit],
+            framework: type[Circuit],
             gate_func,
             num_qubits: int
         ) -> None:
         """ Test the decomposition of the primitive gates.
+
+        Parameters
+        ----------
+        `framework` : type[quick.circuit.Circuit]
+            The circuit framework to use.
+        `gate_func` : Callable[[Circuit], None]
+            The gate function to apply.
+        `num_qubits` : int
+            The number of qubits in the circuit.
         """
         # Define the circuit and apply the gate
         circuit: Circuit = framework(num_qubits)
@@ -289,6 +297,81 @@ class TestDecompose:
 
         # Decompose the circuit
         decomposed_circuit = circuit.decompose()
+
+        # Check the decomposed circuit
+        # Assert it's unchanged
+        checker_circuit: Circuit = framework(num_qubits)
+        gate_func(checker_circuit)
+
+        assert decomposed_circuit == checker_circuit
+
+    @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
+    def test_decompose_gates(
+            self,
+            framework: type[Circuit]
+        ) -> None:
+        """ Test specific gate decomposition using `decompose_gates` method.
+
+        Parameters
+        ----------
+        `framework` : type[quick.circuit.Circuit]
+        """
+        circuit: Circuit = framework(3)
+        circuit.UCRZ([0.1, 0.2, 0.3, 0.4], [0, 1], 2)
+        circuit.H(0)
+        circuit.Z(0)
+
+        decomposed_circuit = circuit.decompose_gate(["UCRZ", "RZ", "Z"])
+
+        checker_circuit: Circuit = framework(3)
+
+        checker_circuit.RX(angle=1.5707963267948966, qubit_indices=2)
+        checker_circuit.RY(angle=-0.25, qubit_indices=2)
+        checker_circuit.RX(angle=-1.5707963267948966, qubit_indices=2)
+        checker_circuit.CX(control_index=0, target_index=2)
+        checker_circuit.RX(angle=1.5707963267948966, qubit_indices=2)
+        checker_circuit.RY(angle=0.05000000000000002, qubit_indices=2)
+        checker_circuit.RX(angle=-1.5707963267948966, qubit_indices=2)
+        checker_circuit.CX(control_index=1, target_index=2)
+        checker_circuit.RX(angle=1.5707963267948966, qubit_indices=2)
+        checker_circuit.RX(angle=-1.5707963267948966, qubit_indices=2)
+        checker_circuit.CX(control_index=0, target_index=2)
+        checker_circuit.RX(angle=1.5707963267948966, qubit_indices=2)
+        checker_circuit.RY(angle=0.1, qubit_indices=2)
+        checker_circuit.RX(angle=-1.5707963267948966, qubit_indices=2)
+        checker_circuit.CX(control_index=1, target_index=2)
+        checker_circuit.H(qubit_indices=0)
+        checker_circuit.Phase(angle=3.141592653589793, qubit_indices=0)
+
+        assert decomposed_circuit == checker_circuit
+
+    @pytest.mark.parametrize("framework", CIRCUIT_FRAMEWORKS)
+    @pytest.mark.parametrize("gate_func, num_qubits", GATE_TYPES)
+    def test_decompose_gates_primitive_gates(
+            self,
+            framework: type[Circuit],
+            gate_func,
+            num_qubits: int
+        ) -> None:
+        """ Test the decomposition of the primitive gates with `decompose_gates` method.
+
+        Parameters
+        ----------
+        `framework` : type[quick.circuit.Circuit]
+            The circuit framework to use.
+        `gate_func` : Callable[[Circuit], None]
+            The gate function to apply.
+        `num_qubits` : int
+            The number of qubits in the circuit.
+        """
+        # Define the circuit and apply the gate
+        circuit: Circuit = framework(num_qubits)
+        gate_func(circuit)
+
+        assert circuit.circuit_log[-1]["definition"] == []
+
+        # Decompose the circuit
+        decomposed_circuit = circuit.decompose_gate(circuit.circuit_log[-1]["gate"])
 
         # Check the decomposed circuit
         # Assert it's unchanged

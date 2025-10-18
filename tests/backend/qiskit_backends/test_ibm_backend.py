@@ -97,7 +97,7 @@ class MockIBMBackend(FakeBackend):
     def get_counts(
             self,
             circuit: Circuit,
-            num_shots: int=1024
+            num_shots: int = 1024
         ) -> dict[str, int]:
 
         # Create a copy of the circuit as measurement is applied inplace

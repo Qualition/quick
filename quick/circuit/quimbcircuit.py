@@ -19,10 +19,10 @@ from __future__ import annotations
 
 __all__ = ["QuimbCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import quimb.tensor as qtn # type: ignore
 from quimb.gates import I, X, Y, Z, H, S, T, RX, RY, RZ, U3 # type: ignore
@@ -129,29 +129,42 @@ class QuimbCircuit(Circuit):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
+
+        if control_indices is None:
+            controls: list[int] = []
+        else:
+            controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
+
+        # Given Quimb uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(targets):
+            targets[i] = self.num_qubits - 1 - index
+
+        for i, index in enumerate(controls):
+            controls[i] = self.num_qubits - 1 - index
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the polymorphism
         gate_operation: qtn.Gate = self.gate_mapping[gate](angles)
 
-        if control_indices:
-            gate_operation = control(ncontrol=len(control_indices), gate=gate_operation) # type: ignore
+        if controls:
+            gate_operation = control(ncontrol=len(controls), gate=gate_operation) # type: ignore
 
-            for target_index in target_indices:
+            for target_index in targets:
                 self.circuit.apply_gate(
                     gate_operation,
-                    *control_indices,
+                    *controls,
                     target_index
                 )
             return
 
-        for target_index in target_indices:
+        for target_index in targets:
             self.circuit.apply_gate(gate_operation, target_index)
 
     def GlobalPhase(
@@ -174,10 +187,15 @@ class QuimbCircuit(Circuit):
 
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
 
-        for qubit_index in qubit_indices:
+        # Given Quimb uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
+
+        for qubit_index in qubits:
             self.measured_qubits.add(qubit_index)
 
     def get_statevector(
@@ -185,18 +203,12 @@ class QuimbCircuit(Circuit):
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
 
-        # Copy the circuit as the vertical operation is inplace
-        circuit: QuimbCircuit = self.copy() # type: ignore
-
-        # Quimb uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
         if backend is None:
-            psi: qtn.tensor_arbgeom.TensorNetworkGenVector = circuit.circuit.psi
+            psi: qtn.tensor_arbgeom.TensorNetworkGenVector = self.circuit.psi
             state_vector = np.array(psi.to_dense()).flatten()
 
             # Apply the global phase to the state vector
-            state_vector *= np.exp(1j * circuit.global_phase)
+            state_vector *= np.exp(1j * self.global_phase)
         else:
             state_vector = backend.get_statevector(self)
 
@@ -211,14 +223,8 @@ class QuimbCircuit(Circuit):
         if len(self.measured_qubits) == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the vertical operation is inplace
-        circuit: QuimbCircuit = self.copy() # type: ignore
-
-        # Quimb uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
         if backend is None:
-            samples = circuit.circuit.sample(C=num_shots, qubits=circuit.measured_qubits)
+            samples = self.circuit.sample(C=num_shots, qubits=self.measured_qubits)
 
             counts: dict[str, int] = {}
             for sample in samples:
@@ -226,24 +232,47 @@ class QuimbCircuit(Circuit):
                 counts[key] = counts.get(key, 0) + 1
 
         else:
-            counts = backend.get_counts(circuit=circuit, num_shots=num_shots)
+            counts = backend.get_counts(circuit=self, num_shots=num_shots)
 
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the vertical operation is inplace
-        circuit: QuimbCircuit = self.copy() # type: ignore
-
-        # Quimb uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
-        uni: qtn.tensor_arbgeom.TensorNetworkGenOperator = circuit.circuit.get_uni()
+        uni: qtn.tensor_arbgeom.TensorNetworkGenOperator = self.circuit.get_uni()
         unitary = np.array(uni.to_dense())
 
         # Apply the global phase to the unitary
-        unitary *= np.exp(1j * circuit.global_phase)
+        unitary *= np.exp(1j * self.global_phase)
 
         return unitary
+
+    def get_tensor_network(self) -> qtn.TensorNetwork:
+        """ Get the tensor network representation of the circuit.
+
+        Notes
+        -----
+        The tensor network follows MSB convention for compatibility
+        with quimb. To avoid circular imports, this functionality is
+        only accessible through the `QuimbCircuit` class.
+
+        Returns
+        -------
+        `tensor_network` : qtn.TensorNetwork
+            The tensor network representation of the circuit.
+
+        Usage
+        -----
+        >>> circuit = QuimbCircuit(num_qubits=2)
+        >>> circuit.get_tensor_network()
+        """
+        tensor_network = qtn.TensorNetwork(self.circuit.psi)
+
+        for gate in tensor_network:
+            gate.drop_tags([f"I{i}" for i in range(self.num_qubits)])
+
+        # Apply the global phase to the tensor network
+        tensor_network *= np.exp(1j * self.global_phase)
+
+        return tensor_network
 
     def reset_qubit(
             self,
@@ -254,7 +283,7 @@ class QuimbCircuit(Circuit):
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit

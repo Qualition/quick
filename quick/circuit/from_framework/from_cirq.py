@@ -21,7 +21,7 @@ __all__ = ["FromCirq"]
 
 import cirq # type: ignore
 import numpy as np
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -55,12 +55,12 @@ class FromCirq(FromFramework):
 
     Parameters
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
 
     Attributes
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
     `gate_mapping` : dict[str, Callable]
         The mapping of the gates in Qiskit to the gates in quick.
@@ -76,7 +76,7 @@ class FromCirq(FromFramework):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
 
         super().__init__(output_framework=output_framework)

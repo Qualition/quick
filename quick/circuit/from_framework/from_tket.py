@@ -20,11 +20,11 @@ from __future__ import annotations
 __all__ = ["FromTKET"]
 
 import numpy as np
-from pytket import Circuit as TKCircuit
-from pytket._tket.circuit import Command
-from pytket import OpType
-from pytket.passes import AutoRebase
-from typing import Type, TYPE_CHECKING
+from pytket import Circuit as TKCircuit # type: ignore
+from pytket._tket.circuit import Command # type: ignore
+from pytket import OpType # type: ignore
+from pytket.passes import AutoRebase # type: ignore
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
@@ -53,12 +53,12 @@ class FromTKET(FromFramework):
 
     Parameters
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
 
     Attributes
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
     `gate_mapping` : dict[str, Callable]
         The mapping of the gate names between TKET and quick.
@@ -74,7 +74,7 @@ class FromTKET(FromFramework):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
 
         super().__init__(output_framework=output_framework)

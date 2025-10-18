@@ -68,7 +68,7 @@ class OneQubitDecomposition(UnitaryPreparation):
     def __init__(
             self,
             output_framework: type[Circuit],
-            basis: Literal["zyz", "u3"]="u3"
+            basis: Literal["zyz", "u3"] = "u3"
         ) -> None:
 
         super().__init__(output_framework)

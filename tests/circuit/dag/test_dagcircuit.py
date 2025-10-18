@@ -38,6 +38,11 @@ class TestDAGCircuit:
 
         assert repr(circuit) == "\n".join(["Q0: Q0 -> {H -> {CX}}", "Q1: Q1 -> {CX}"])
 
+        circuit = DAGCircuit(1)
+        circuit.add_operation({"gate": "RX", "angle": 0.1, "qubit_indices": 0})
+
+        assert repr(circuit) == "Q0: Q0 -> {RX('angle': 0.1)}"
+
     def test_get_depth(self) -> None:
         """ Test the `get_depth` method of a `DAGCircuit` object.
         """

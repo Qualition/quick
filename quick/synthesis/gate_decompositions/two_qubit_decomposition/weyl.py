@@ -21,12 +21,9 @@ https://github.com/jakelishman/qiskit-terra/tree/storage/deterministic-weyl-deco
 from __future__ import annotations
 
 __all__ = [
-    "transform_to_magic_basis",
+    "M",
+    "M_DAGGER",
     "weyl_coordinates",
-    "partition_eigenvalues",
-    "remove_global_phase",
-    "diagonalize_unitary_complex_symmetric",
-    "decompose_two_qubit_product_gate",
     "TwoQubitWeylDecomposition"
 ]
 
@@ -36,45 +33,70 @@ import itertools
 import numpy as np
 from numpy.typing import NDArray
 import scipy.linalg # type: ignore
+import warnings
 
-""" Define the M matrix from section III to
-tranform the unitary matrix into the magic basis:
-https://arxiv.org/pdf/quant-ph/0308006
+from quick.synthesis.gate_decompositions.two_qubit_decomposition.utils import u4_to_su4
+
+""" Define the magic basis matrix from eq(3):
+https://arxiv.org/pdf/quant-ph/9703041
+
+There is another well-known definition:
+
+M = 1/np.sqrt(2) * np.array([
+    [1, 0, 0, 1j],
+    [0, 1j, 1, 0],
+    [0, 1j, -1, 0],
+    [1, 0, 0, -1j]
+], dtype=complex)
+
+But as far as we can tell, this choice does not affect the
+decomposition.
 
 The basis M and its adjoint are stored individually unnormalized,
-but such that their matrix multiplication is still the identity
-This is because they are only used in unitary transformations
-(so it's safe to do so), and `sqrt(0.5)` is not exactly representable
-in floating point.
+but given each has a factor of `sqrt(0.5)`, once we multiply them
+together the factor becomes 0.5, so we directly store the factor
+0.5 in the adjoint matrix.
 
-Doing it this way means that every element of the matrix is stored exactly
-correctly, and the multiplication is exactly the identity rather than
-differing by 1ULP.
+This is done to minimize the floating-point errors that arise
+in the M^2 calculation which cause issues for certain OS.
+
+Notes
+-----
+The following use our definition of the magic basis:
+- https://arxiv.org/pdf/quant-ph/0308006
+- https://arxiv.org/pdf/quant-ph/0011050
+- https://arxiv.org/pdf/0806.4015
+- https://arxiv.org/pdf/quant-ph/0405046
+
+And the following use the other definition:
+- https://arxiv.org/pdf/cond-mat/0609750
+- https://arxiv.org/pdf/quant-ph/0209120
+- https://arxiv.org/pdf/quant-ph/0507171
 """
-M_UNNORMALIZED = np.array([
+M = np.array([
     [1, 1j, 0, 0],
     [0, 0, 1j, 1],
     [0, 0, 1j, -1],
     [1, -1j, 0, 0]
-], dtype=complex)
+], dtype=np.complex128)
 
-M_UNNORMALIZED_DAGGER = 0.5 * M_UNNORMALIZED.conj().T
+M_DAGGER = 0.5 * M.conj().T
 
 # Pauli matrices in magic basis
 X_MAGIC_BASIS = np.array([
     [0, 1j],
     [1j, 0]
-], dtype=complex)
+], dtype=np.complex128)
 
 Y_MAGIC_BASIS = np.array([
     [0, 1],
     [-1, 0]
-], dtype=complex)
+], dtype=np.complex128)
 
 Z_MAGIC_BASIS = np.array([
     [1j, 0],
     [0, -1j]
-], dtype=complex)
+], dtype=np.complex128)
 
 # Constants
 PI = np.pi
@@ -85,25 +107,26 @@ PI4 = PI / 4
 
 def transform_to_magic_basis(
         U: NDArray[np.complex128],
-        reverse: bool=False
+        reverse: bool = False
     ) -> NDArray[np.complex128]:
-    """ Transform the 4x4 matrix `U` into the magic basis.
+    """ Transform the SU4 matrix `U` into the magic basis.
 
-    Notes
-    -----
-    This method internally uses non-normalized versions of the basis
-    to minimize (but not eliminate) the floating-point errors that arise
-    during the transformation.
+    ..math::
+        U_{magic\_basis} = M \cdot U \cdot M^\dagger
 
-    This implementation is based on the following paper:
-    [1] Vatan, Williams.
-    Optimal Quantum Circuits for General Two-Qubit Gates (2004).
-    https://arxiv.org/abs/quant-ph/0308006
+    for the forward transformation, and
+
+    ..math::
+        U_{magic\_basis} = M^\dagger \cdot U \cdot M
+
+    for the reverse transformation. Note that if
+    we do forward followed by reverse transformation
+    or vice versa, we get back the original matrix.
 
     Parameters
     ----------
     `U` : NDArray[np.complex128]
-        The input 4-by-4 matrix to be transformed.
+        The SU4 matrix to be transformed.
     `reverse` : bool, optional, default=False
         If True, the transformation is done in the reverse direction.
 
@@ -114,15 +137,16 @@ def transform_to_magic_basis(
 
     Usage
     -----
-    >>> U_magic = transform_to_magic_basis(np.eye(4))
+    >>> U_magic_basi = transform_to_magic_basis(np.eye(4))
     """
     if reverse:
-        return M_UNNORMALIZED_DAGGER @ U @ M_UNNORMALIZED
-    return M_UNNORMALIZED @ U @ M_UNNORMALIZED_DAGGER
+        return M_DAGGER @ U @ M
+    return M @ U @ M_DAGGER
 
 def weyl_coordinates(U: NDArray[np.complex128]) -> NDArray[np.float64]:
     """ Calculate the Weyl coordinates for a given two-qubit unitary matrix.
-    This is used for unit-testing the Weyl decomposition.
+    This function is used for unit-testing Weyl decomposition, and certain
+    predicates in `quick.predicates`.
 
     Notes
     -----
@@ -145,10 +169,10 @@ def weyl_coordinates(U: NDArray[np.complex128]) -> NDArray[np.float64]:
     -----
     >>> weyl_coordinates = weyl_coordinates(np.eye(4))
     """
-    U /= scipy.linalg.det(U) ** (0.25)
+    U = u4_to_su4(U)[0]
     U_magic_basis = transform_to_magic_basis(U, reverse=True)
 
-    # We only need the eigenvalues of `M2 = Up.T @ Up` here, not the full diagonalization
+    # We only need the eigenvalues of `M_squared = Up.T @ Up` here, not the full diagonalization
     D = scipy.linalg.eigvals(U_magic_basis.T @ U_magic_basis)
 
     d = -np.angle(D) / 2
@@ -185,7 +209,7 @@ def weyl_coordinates(U: NDArray[np.complex128]) -> NDArray[np.float64]:
 
 def partition_eigenvalues(
         eigenvalues: NDArray[np.complex128],
-        atol: float=1e-13
+        atol: float = 1e-13
     ) -> list[list[int]]:
     """ Group the indices of degenerate eigenvalues.
 
@@ -283,7 +307,7 @@ def diagonalize_unitary_complex_symmetric(
     # If there are no degenerate subspaces, we return the eigenvalues and identity matrix
     # as the eigenvectors
     if len(spaces) == 1:
-        return eigenvalues, np.eye(4).astype(complex) # type: ignore
+        return eigenvalues, np.eye(4).astype(np.complex128) # type: ignore
 
     out_vectors = np.empty((4, 4), dtype=np.float64)
     n_done = 0
@@ -298,17 +322,17 @@ def diagonalize_unitary_complex_symmetric(
         # This is the hardest case, because there might not have even one real vector
         a, b = eigenvectors[:, spaces[0]].T
         b_zeros = np.abs(b) <= atol
+
         if np.any(np.abs(a[b_zeros]) > atol):
             # Make `a` real where `b` has zeros.
             a = remove_global_phase(a, index=np.argmax(np.where(b_zeros, np.abs(a), 0)))
-        if np.max(np.abs(a.imag)) <= atol:
-            # `a` is already all real
-            pass
-        else:
+
+        if np.max(np.abs(a.imag)) > atol:
             # We have to solve `(b.imag, b.real) @ (re, im).T = a.imag` for `re`
             # and `im`, which is overspecified
             multiplier, *_ = scipy.linalg.lstsq(np.transpose([b.imag, b.real]), a.imag) # type: ignore
             a = a - complex(*multiplier) * b
+
         a = a.real / scipy.linalg.norm(a.real)
         b = remove_global_phase(b - (a @ b) * a)
         out_vectors[:, :2] = np.transpose([a, b.real])
@@ -362,8 +386,6 @@ def decompose_two_qubit_product_gate(
     -----
     >>> L, R, phase = decompose_two_qubit_product_gate(np.eye(4))
     """
-    special_unitary_matrix = np.asarray(special_unitary_matrix, dtype=complex)
-
     # Extract the right component
     R = special_unitary_matrix[:2, :2].copy()
     R_det = R[0, 0] * R[1, 1] - R[0, 1] * R[1, 0]
@@ -381,7 +403,7 @@ def decompose_two_qubit_product_gate(
     R /= np.sqrt(R_det)
 
     # Extract the left component
-    temp = np.kron(np.eye(2), R.T.conj())
+    temp = np.kron(np.eye(2), R.conj().T)
     temp = special_unitary_matrix.dot(temp)
     L = temp[::2, ::2]
     L_det = L[0, 0] * L[1, 1] - L[0, 1] * L[1, 0]
@@ -405,7 +427,21 @@ def decompose_two_qubit_product_gate(
 
 class TwoQubitWeylDecomposition:
     """ Decompose a two-qubit unitary matrix into the Weyl coordinates and
-    the product of two single-qubit unitaries.
+    the product of two single-qubit unitaries via KAK decomposition.
+
+    .. math::
+        U = (K_1^l \otimes K_1^r) \cdot A(a, b, c) \cdot (K_2^l \otimes K_2^r) \cdot e^{i \phi}
+
+    where :math:`A(a, b, c) = e^{(ia X \otimes X + ib Y \otimes Y + ic Z \otimes Z)}`,
+    :math:`K_1^l, K_1^r, K_2^l, K_2^r` are single-qubit unitaries, and :math:`\phi` is
+    the global phase.
+
+    Notes
+    -----
+    This implementation is based on the following paper:
+    [1] Vatan, Williams.
+    Optimal Quantum Circuits for General Two-Qubit Gates (2004).
+    https://arxiv.org/abs/quant-ph/0308006
 
     Parameters
     ----------
@@ -415,11 +451,11 @@ class TwoQubitWeylDecomposition:
     Attributes
     ----------
     `a` : np.float64
-        The first Weyl coordinate.
+        The multiplier for XX term in the canonical gate.
     `b` : np.float64
-        The second Weyl coordinate.
+        The multiplier for YY term in the canonical gate.
     `c` : np.float64
-        The third Weyl coordinate.
+        The multiplier for ZZ term in the canonical gate.
     `K1l` : NDArray[np.complex128]
         The left component of the first single-qubit unitary.
     `K1r` : NDArray[np.complex128]
@@ -431,105 +467,72 @@ class TwoQubitWeylDecomposition:
     `global_phase` : float
         The global phase.
     """
-    def __init__(self, unitary_matrix: NDArray[np.complex128]) -> None:
+    def __init__(
+            self,
+            unitary_matrix: NDArray[np.complex128]
+        ) -> None:
         """ Initialize a `quick.synthesis.gate_decompositions.two_qubit_decomposition.weyl.
         TwoQubitWeylDecomposition` instance.
         """
-        self.a, self.b, self.c, self.K1l, self.K1r, self.K2l, self.K2r, self.global_phase = self.decompose_unitary(
-            unitary_matrix
-        )
+        U, global_phase = u4_to_su4(unitary_matrix)
 
-    @staticmethod
-    def decompose_unitary(unitary_matrix: NDArray[np.complex128]) -> tuple[
-            np.float64,
-            np.float64,
-            np.float64,
-            NDArray[np.complex128],
-            NDArray[np.complex128],
-            NDArray[np.complex128],
-            NDArray[np.complex128],
-            float
-        ]:
-        """ Decompose a two-qubit unitary matrix into the Weyl coordinates and the product of two single-qubit unitaries.
+        # Transforming U into the magic basis has two remarkable properties:
+        # 1) If U is in SO(4) (real, U.T=U, det U=1) then U_magic_basis is in SU(2)xSU(2)
+        # which means we can decompose it into two single-qubit unitaries
+        # 2) The magic basis diagonalizes the canonical gate A (as in A from KAK)
+        U_magic_basis = transform_to_magic_basis(U, reverse=True)
 
-        Parameters
-        ----------
-        `unitary_matrix` : NDArray[np.complex128]
-            The input 4-by-4 unitary matrix.
+        # Construct type AI global Cartan involution
+        # To minimize the floating point issues arising in different OS
+        # we round M^2
+        # This is a fix for known issues in Windows and MacOS
+        # See https://github.com/Qualition/quick/issues/11
+        M_squared = np.round(U_magic_basis.T.dot(U_magic_basis), decimals=15)
 
-        Returns
-        -------
-        `a` : np.float64
-            The first Weyl coordinate.
-        `b` : np.float64
-            The second Weyl coordinate.
-        `c` : np.float64
-            The third Weyl coordinate.
-        `K1l` : NDArray[np.complex128]
-            The left component of the first single-qubit unitary.
-        `K1r` : NDArray[np.complex128]
-            The right component of the first single-qubit unitary.
-        `K2l` : NDArray[np.complex128]
-            The left component of the second single-qubit unitary.
-        `K2r` : NDArray[np.complex128]
-            The right component of the second single-qubit unitary.
-        `global_phase` : float
-            The global phase.
+        # Diagonalize M^2 into D and P where D is complex diagonal
+        # and P is real-symmetric unitary
+        # M^2 = P.diag(D).P^T
+        D, P = diagonalize_unitary_complex_symmetric(M_squared)
 
-        Usage
-        -----
-        >>> a, b, c, K1l, K1r, K2l, K2r, global_phase = TwoQubitWeylDecomposition.decompose_unitary(np.eye(4))
-        """
-        # Make U be in SU(4)
-        U = np.array(unitary_matrix, dtype=complex, copy=True)
-        U_det = scipy.linalg.det(U)
-        U *= U_det ** (-0.25)
-        global_phase = cmath.phase(U_det) / 4
+        # Given P is a real-symmetric unitary matrix we only use transpose
+        if not np.allclose(P.dot(np.diag(D)).dot(P.T), M_squared, rtol=0, atol=1e-13):
+            warnings.warn(
+                "Failed to diagonalize M_squared. "
+                "Kindly report this at https://github.com/Qualition/quick/issues/11: "
+                f"U: {U}"
+            )
 
-        U_magic_basis = transform_to_magic_basis(U.astype(complex), reverse=True)
-        M2 = U_magic_basis.T.dot(U_magic_basis)
-
-        # There is a floating point error in this implementation
-        # for certain U, which depends on OS and Python version
-        # This causes the numpy.linalg.eig() to produce different results
-        # for the same input matrix, leading to a decomposition failure
-        # To contribute to this issue, please refer to:
-        # https://github.com/Qualition/quick/issues/11
-
-        # Alternatively, you may propose an entirely new implementation
-        # so that we can replace this two qubit decomposition implementation
-        # with a more robust one that doesn't have floating point errors
-        # To contribute to this feature request, please refer to:
-        # https://github.com/Qualition/quick/issues/14
-
-        D, P = diagonalize_unitary_complex_symmetric(M2)
-        d = -np.angle(D) / 2
-        d[3] = -d[0] - d[1] - d[2]
-        weyl_coordinates = np.mod((d[:3] + d[3]) / 2, PI_DOUBLE)
+        # We want M which is P.sqrt(diag(D)).P^T so we take the square root of D
+        D_sqrt = -np.angle(D) / 2
+        D_sqrt[3] = -D_sqrt[0] - D_sqrt[1] - D_sqrt[2]
+        weyl_coordinates = np.mod((D_sqrt[:3] + D_sqrt[3]) / 2, PI_DOUBLE)
 
         # Reorder the eigenvalues to get in the Weyl chamber
         weyl_coordinates_temp = np.mod(weyl_coordinates, PI2)
-        np.minimum(weyl_coordinates_temp, PI2 - weyl_coordinates_temp, weyl_coordinates_temp)
+        weyl_coordinates_temp = np.minimum(weyl_coordinates_temp, PI2 - weyl_coordinates_temp)
         order = np.argsort(weyl_coordinates_temp)[[1, 2, 0]]
         weyl_coordinates = weyl_coordinates[order]
-        d[:3] = d[order]
+        D_sqrt[:3] = D_sqrt[order]
         P[:, :3] = P[:, order]
 
-        # Fix the sign of P to be in SO(4)
+        # Sometimes computing the diagonalization of M_squared gives a P with determinant -1 as
+        # opposed to +1 which results in P not being in SO(4)
+        # To fix this we can negate the last column of P
         if np.real(scipy.linalg.det(P)) < 0:
-            P[:, -1] = -P[:, -1]
+            P[:, -1] *= -1
 
         # Find K1, K2 so that U = K1.A.K2, with K being product of single-qubit unitaries
-        K1 = transform_to_magic_basis(U_magic_basis @ P @ np.diag(np.exp(1j * d)))
+        # SU2 x SU2
+        K1 = transform_to_magic_basis(U_magic_basis @ P @ np.diag(np.exp(1j * D_sqrt)))
         K2 = transform_to_magic_basis(P.T)
 
         K1l, K1r, phase_l = decompose_two_qubit_product_gate(K1)
         K2l, K2r, phase_r = decompose_two_qubit_product_gate(K2)
         global_phase += phase_l + phase_r
 
-        K1l = K1l.copy()
-
-        # Flip into Weyl chamber
+        # Flip into Weyl chamber such that pi/4 >= a >= b >= |c| >= 0
+        # This is because the maximal entangling power of A is symmetric
+        # around pi/4 and pi/2-periodic in a, b, and c
         if weyl_coordinates[0] > PI2:
             weyl_coordinates[0] -= 3 * PI2
             K1l = K1l.dot(Y_MAGIC_BASIS)
@@ -575,4 +578,11 @@ class TwoQubitWeylDecomposition:
 
         a, b, c = weyl_coordinates[1], weyl_coordinates[0], weyl_coordinates[2]
 
-        return a, b, c, K1l, K1r, K2l, K2r, global_phase
+        self.a = a
+        self.b = b
+        self.c = c
+        self.K1l = K1l
+        self.K1r = K1r
+        self.K2l = K2l
+        self.K2r = K2r
+        self.global_phase = global_phase

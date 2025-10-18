@@ -20,81 +20,69 @@ from __future__ import annotations
 __all__ = [
     "calculate_entanglement_range",
     "calculate_shannon_entropy",
-    "calculate_entanglement_entropy"
+    "calculate_entanglement_entropy",
+    "calculate_entanglement_entropy_slope",
+    "calculate_hilbert_schmidt_test"
 ]
 
 import numpy as np
 from numpy.typing import NDArray
 import quimb.tensor as qtn # type: ignore
 
+from quick.predicates import is_density_matrix, is_statevector, is_unitary_matrix
+from quick.primitives import Statevector
 
-def _get_submps_indices(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
-    """ Get the indices of contiguous blocks in the MPS. For testing purposes,
-    this method is static.
 
-    Notes
-    -----
-    Certain sites may not be entangled with the rest, and thus we can simply apply
-    a single qubit gate to them as opposed to a two qubit gate.
+def _calculate_1d_entanglement_range(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
+    """ Get the entanglement range for entangled qubits in a 1D chain
+    by checking the virtual (bond) dimensions of the tensors at each
+    site in the MPS.
 
-    This reduces the overall cost of the circuit for a given layer. If all sites are
-    entangled, then the method will simply return the indices of the MPS, i.e., for
-    10 qubit system [(0, 9)]. If sites 0 and 1 are not entangled at all with the rest,
-    the method will return [(0, 0), (1,1), (2, 9)].
-
-    The implementation is based on the analytical decomposition [1].
-
-    For more information, refer to the publication below:
-    [1] Shi-Ju.
-    Encoding of Matrix Product States into Quantum Circuits of One- and Two-Qubit Gates (2020).
-    https://arxiv.org/abs/1908.07958
+    Parameters
+    ----------
+    `mps` : qtn.MatrixProductState
+        The MPS representation of the quantum state.
 
     Returns
     -------
-    `submps_indices` : list[tuple[int, int]]
-        The indices of the MPS contiguous blocks.
-
-    Usage
-    -----
-    >>> mps.get_submps_indices()
+    `entangled_blocks_indices` : list[tuple[int, int]]
+        The indices of the MPS entangled blocks.
     """
-    sub_mps_indices: list[tuple[int, int]] = []
+    entangled_blocks_indices: list[tuple[int, int]] = []
 
     if mps.L == 1:
         return [(0, 0)]
 
     for site in range(mps.L):
-        # Reset the dimension variables for each iteration
         dim_left, dim_right = 1, 1
 
         # Define the dimensions for each site
         # The first and last sites are connected to only one site
         # as opposed to the other sites in the middle which are connected
         # to two sites to their left and right
-        #
         #  |
         #  ●━━ `dim_right`
         if site == 0:
             _, dim_right = mps[site].shape # type: ignore
-        #
+
         #              |
         # `dim_left` ━━●
         elif site == (mps.L - 1):
             dim_left, _ = mps[site].shape # type: ignore
-        #
+
         #              |
         # `dim_left` ━━●━━ `dim_right`
         else:
             dim_left, _, dim_right = mps[site].shape # type: ignore
 
         if dim_left < 2 and dim_right < 2:
-            sub_mps_indices.append((site, site))
+            entangled_blocks_indices.append((site, site))
         elif dim_left < 2 and dim_right >= 2:
             temp = site
         elif dim_left >= 2 and dim_right < 2:
-            sub_mps_indices.append((temp, site))
+            entangled_blocks_indices.append((temp, site))
 
-    return sub_mps_indices
+    return entangled_blocks_indices
 
 def calculate_entanglement_range(statevector: NDArray[np.complex128]) -> list[tuple[int, int]]:
     """ Get the entanglements of the circuit.
@@ -109,11 +97,18 @@ def calculate_entanglement_range(statevector: NDArray[np.complex128]) -> list[tu
     list[tuple[int, int]]
         The entanglements of the circuit.
 
+    Raises
+    ------
+    ValueError
+        - If the input is not a statevector.
+
     Usage
     -----
     >>> entanglements = get_entanglements(statevector)
     """
-    statevector = statevector.flatten()
+    if not is_statevector(statevector):
+        raise ValueError("The input must be a statevector.")
+
     num_qubits = int(np.log2(statevector.size))
 
     # We need to have the statevector in MSB order for
@@ -124,15 +119,15 @@ def calculate_entanglement_range(statevector: NDArray[np.complex128]) -> list[tu
         .flatten()
     )
 
-    return _get_submps_indices(qtn.MatrixProductState.from_dense(statevector))
+    return _calculate_1d_entanglement_range(qtn.MatrixProductState.from_dense(statevector))
 
-def calculate_shannon_entropy(statevector: NDArray[np.complex128]) -> float:
-    """ Calculate the Shannon entropy.
+def calculate_shannon_entropy(probability_vector: NDArray[np.complex128]) -> float:
+    """ Calculate the Shannon entropy of a probability vector.
 
     Parameters
     ----------
-    `statevector` : NDArray[np.complex128]
-        The statevector of the circuit.
+    `probability_vector` : NDArray[np.complex128]
+        The probability vector.
 
     Returns
     -------
@@ -143,11 +138,70 @@ def calculate_shannon_entropy(statevector: NDArray[np.complex128]) -> float:
     -----
     >>> shannon_entropy = calculate_shannon_entropy(statevector)
     """
-    statevector = statevector[(0 < statevector) & (statevector < 1)]
-    return -np.sum(statevector * np.log2(statevector)).astype(float)
+    probability_vector = probability_vector[(0 < probability_vector) & (probability_vector < 1)]
+    return -np.sum(probability_vector * np.log2(probability_vector)).astype(float)
 
-def calculate_entanglement_entropy(statevector: NDArray[np.complex128]) -> float:
-    """ Calculate the entanglement entropy of the circuit.
+def calculate_entanglement_entropy(data: NDArray[np.complex128]) -> float:
+    """ Calculate the Von Neumann entanglement entropy from the
+    density matrix. In case of statevectors the entropy is simply
+    0.
+
+    Parameters
+    ----------
+    `data` : NDArray[np.complex128]
+        The data, which can be a statevector or a density matrix.
+
+    Returns
+    -------
+    float
+        The entanglement entropy of the data.
+
+    Raises
+    ------
+    ValueError
+        - Input dimension matches a statevector but is not a valid statevector.
+        - The input is not a valid density matrix.
+
+    Usage
+    -----
+    >>> entanglement_entropy = calculate_entanglement_entropy(data)
+    """
+    # Handle the case of statevectors
+    # and ensure the density matrix is
+    # valid
+    if data.ndim == 1:
+        if is_statevector(data):
+            return 0.0
+        else:
+            raise ValueError(
+                "Input dimension matches a statevector "
+                "but is not a valid statevector."
+            )
+    if data.ndim == 2:
+        if data.shape[1] == 1:
+            if is_statevector(data):
+                return 0.0
+            else:
+                raise ValueError(
+                    "Input dimension matches a statevector "
+                    "but is not a valid statevector."
+                )
+        else:
+            if not is_density_matrix(data):
+                raise ValueError("The input is not a valid density matrix.")
+
+    eigenvalues = np.maximum(np.real(np.linalg.eigvals(data)), 0.0)
+    return calculate_shannon_entropy(eigenvalues)
+
+def calculate_entanglement_entropy_slope(statevector: NDArray[np.complex128]) -> float:
+    """ Calculate the slope of the entanglement entropy. This is
+    used to determine whether a state is area-law or volume-law
+    entangled, which is a measure of how the entanglement entropy
+    scales with the number of qubits.
+
+    If the slope is 1, which is a straight line, then the state is
+    volume-law entangled. If the entropy decays after a while and
+    forms a decaying curve, then the state is area-law entangled.
 
     Parameters
     ----------
@@ -156,13 +210,121 @@ def calculate_entanglement_entropy(statevector: NDArray[np.complex128]) -> float
 
     Returns
     -------
-    float
-        The entanglement entropy of the circuit.
+    `slope` : float
+        The slope of the entanglement entropy of the circuit.
+
+    Raises
+    ------
+    ValueError
+        - The input must be a statevector.
 
     Usage
     -----
-    >>> entanglement_entropy = calculate_entanglement_entropy(statevector)
+    >>> entanglement_entropy_slope = calculate_entanglement_entropy_slope(statevector)
     """
-    density_matrix = np.outer(statevector, statevector.conj())
-    eigenvalues = np.maximum(np.real(np.linalg.eigvals(density_matrix)), 0.0)
-    return calculate_shannon_entropy(eigenvalues)
+    if not isinstance(statevector, Statevector):
+        state = Statevector(statevector)
+    else:
+        state = statevector
+
+    max_k = state.num_qubits // 2
+    entropies = np.empty(max_k, dtype=np.float64)
+
+    for k in range(1, max_k + 1):
+        # Trace out rest of the qubits to extract the
+        # reduced density matrix for the first k qubits
+        rho = state.partial_trace(list(range(k, state.num_qubits)))
+        S = calculate_entanglement_entropy(np.array(rho))
+        entropies[k - 1] = S
+
+    # We use half of the entropies to calculate the slope
+    # for efficiency
+    entropies = entropies[len(entropies) // 2:]
+    x = np.arange(1, len(entropies) + 1)
+
+    x_mean = np.mean(x)
+    y_mean = np.mean(entropies)
+
+    numerator = np.sum((x - x_mean) * (entropies - y_mean))
+    denominator = np.sum((x - x_mean) ** 2)
+
+    slope = numerator / denominator if denominator != 0 else 0
+
+    return float(slope)
+
+def calculate_hilbert_schmidt_test(
+        unitary_1: NDArray[np.complex128],
+        unitary_2: NDArray[np.complex128]
+    ) -> float:
+    """ Calculate the Hilbert-Schmidt test. This is a measure of the
+    similarity of two unitary matrices.
+
+    Parameters
+    ----------
+    `unitary_1` : NDArray[np.complex128]
+        The first unitary matrix.
+
+    `unitary_2` : NDArray[np.complex128]
+        The second unitary matrix.
+
+    Returns
+    -------
+    `chst` : float
+        The Hilbert-Schmidt test of the two unitary matrices.
+
+    Raises
+    ------
+    ValueError
+        - If either of the matrices is not unitary.
+        - If the matrices are not square.
+
+    Usage
+    -----
+    >>> hilbert_schmidt_test = calculate_hilbert_schmidt_test(unitary_1, unitary_2)
+    """
+    if not is_unitary_matrix(unitary_1):
+        raise ValueError("The first matrix is not unitary.")
+    if not is_unitary_matrix(unitary_2):
+        raise ValueError("The second matrix is not unitary.")
+
+    num_qubits = int(np.log2(unitary_1.shape[0]))
+
+    chst = 1/2**(2 * num_qubits) * np.abs(
+        np.trace(
+            np.dot(unitary_1.conj().T, unitary_2)
+        )
+    )**2
+
+    return chst
+
+def calculate_frobenius_distance(
+        matrix_1: NDArray[np.complex128],
+        matrix_2: NDArray[np.complex128]
+    ) -> float:
+    """ Calculate the Frobenius distance between two matrices.
+
+    Parameters
+    ----------
+    `matrix_1` : NDArray[np.complex128]
+        The first matrix.
+    `matrix_2` : NDArray[np.complex128]
+        The second matrix.
+
+    Returns
+    -------
+    float
+        The Frobenius distance between the two matrices.
+
+    Raises
+    ------
+    ValueError
+        - If the matrices are not of the same shape.
+
+    Usage
+    -----
+    >>> frobenius_distance = calculate_frobenius_distance(matrix_1, matrix_2)
+    """
+    if matrix_1.shape != matrix_2.shape:
+        raise ValueError("The matrices must be of the same shape.")
+
+    return float(np.linalg.norm(matrix_1 - matrix_2, 'fro'))

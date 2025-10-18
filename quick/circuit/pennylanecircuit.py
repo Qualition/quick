@@ -19,10 +19,11 @@ from __future__ import annotations
 
 __all__ = ["PennylaneCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+import copy
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import pennylane as qml # type: ignore
 
@@ -127,30 +128,42 @@ class PennylaneCircuit(Circuit):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
+
+        if control_indices is None:
+            controls: list[int] = []
+        else:
+            controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
+
+        # Given Pennylane uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(targets):
+            targets[i] = self.num_qubits - 1 - index
+
+        for i, index in enumerate(controls):
+            controls[i] = self.num_qubits - 1 - index
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
         # Apply the gate operation to the specified qubits
         gate_operation = self.gate_mapping[gate](angles)
 
-        if control_indices:
-            for target_index in target_indices:
+        if controls:
+            for target_index in targets:
                 self.circuit.append(
                 qml.ControlledQubitUnitary(
                     gate_operation,
-                    control_wires=control_indices,
-                    wires=target_index
+                    wires=controls + [target_index]
                 )
             )
             return
 
-        for target_index in target_indices:
+        for target_index in targets:
             self.circuit.append(
                 qml.QubitUnitary(gate_operation, wires=target_index)
             )
@@ -178,10 +191,15 @@ class PennylaneCircuit(Circuit):
         # methods
         # This is due to the need for PennyLane quantum functions to return measurement results
         # Therefore, we do not need to do anything here
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
 
-        for qubit_index in qubit_indices:
+        # Given Pennylane uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
+
+        for qubit_index in qubits:
             self.measured_qubits.add(qubit_index)
             self.circuit.append((qml.measure(qubit_index), False)) # type: ignore
 
@@ -190,26 +208,8 @@ class PennylaneCircuit(Circuit):
             backend: Backend | None = None,
         ) -> NDArray[np.complex128]:
 
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: PennylaneCircuit = self.copy() # type: ignore
-
-        # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
-        def compile_circuit() -> qml.StateMP:
-            """ Compile the circuit.
-
-            Parameters
-            ----------
-            circuit : Collection[qml.Op]
-                The list of operations representing the circuit.
-
-            Returns
-            -------
-            qml.StateMP
-                The state vector of the circuit.
-            """
-            for op in circuit.circuit:
+        def compile_circuit() -> qml.measurements.StateMP:
+            for op in self.circuit:
                 if isinstance(op, tuple):
                     qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
                     continue
@@ -219,9 +219,9 @@ class PennylaneCircuit(Circuit):
             return qml.state()
 
         if backend is None:
-            state_vector = qml.QNode(compile_circuit, circuit.device)()
+            state_vector = qml.QNode(compile_circuit, self.device)()
         else:
-            state_vector = backend.get_statevector(circuit)
+            state_vector = backend.get_statevector(self)
 
         return np.array(state_vector)
 
@@ -233,43 +233,34 @@ class PennylaneCircuit(Circuit):
 
         np.random.seed(0)
 
+        num_qubits_to_measure = len(self.measured_qubits)
+
         if len(self.measured_qubits) == 0:
             raise ValueError("At least one qubit must be measured.")
 
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: PennylaneCircuit = self.copy() # type: ignore
-
-        # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
-
-        def compile_circuit() -> qml.CountsMp:
-            """ Compile the circuit.
-
-            Parameters
-            ----------
-            circuit : Collection[qml.Op]
-                The list of operations representing the circuit.
-
-            Returns
-            -------
-            Collection[qml.ProbabilityMP]
-                The list of probability measurements.
-            """
-            for op in circuit.circuit:
+        def compile_circuit() -> qml.measurements.CountsMp:
+            for op in self.circuit:
                 if isinstance(op, tuple):
                     qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
                     continue
 
                 qml.apply(op)
 
-            return qml.counts(wires=circuit.measured_qubits, all_outcomes=True)
+            return qml.counts(wires=self.measured_qubits)
 
         if backend is None:
-            device = qml.device(circuit.device.name, wires=circuit.num_qubits, shots=num_shots)
+            device = qml.device(self.device.name, wires=self.num_qubits, shots=num_shots)
             result = qml.QNode(compile_circuit, device)()
             counts = {
                 list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))
             }
+
+            for i in range(2**num_qubits_to_measure):
+                basis = format(int(i),"0{}b".format(num_qubits_to_measure))
+                if basis not in counts:
+                    counts[basis] = 0
+                else:
+                    counts[basis] = int(counts[basis])
 
             # Sort the counts by their keys (basis states)
             # This is simply for readability
@@ -281,27 +272,17 @@ class PennylaneCircuit(Circuit):
         return counts
 
     def get_unitary(self) -> NDArray[np.complex128]:
-        # Copy the circuit as the vertical reverse is applied inplace
-        circuit: PennylaneCircuit = self.copy() # type: ignore
-
-        # PennyLane uses MSB convention for qubits, so we need to reverse the qubit indices
-        circuit.vertical_reverse()
+        # Copy the circuit as the identity gates are applied inplace
+        circuit_ops: list[qml.Operation] = copy.deepcopy(self.circuit) # type: ignore
 
         def compile_circuit() -> None:
-            """ Compile the circuit.
-
-            Parameters
-            ----------
-            `circuit` : Collection[qml.Op]
-                The list of operations representing the circuit.
-            """
-            if circuit.circuit == [] or (
-                isinstance(circuit.circuit[0], qml.GlobalPhase) and len(circuit.circuit) == 1
+            if circuit_ops == [] or (
+                isinstance(circuit_ops[0], qml.GlobalPhase) and len(circuit_ops) == 1
             ):
-                for i in range(circuit.num_qubits):
-                    circuit.circuit.append(qml.Identity(wires=i))
+                for i in range(self.num_qubits):
+                    circuit_ops.append(qml.Identity(wires=i))
 
-            for op in circuit.circuit:
+            for op in circuit_ops:
                 if isinstance(op, tuple):
                     qml.measure(op[0].wires[0], reset=op[1]) # type: ignore
                     continue
@@ -309,7 +290,10 @@ class PennylaneCircuit(Circuit):
                 qml.apply(op)
 
         unitary = np.array(
-            qml.matrix(compile_circuit, wire_order=range(self.num_qubits))(), dtype=complex # type: ignore
+            qml.matrix(
+                compile_circuit, # type: ignore
+                wire_order=range(self.num_qubits),
+            )(), dtype=complex
         )
 
         return unitary
@@ -321,15 +305,20 @@ class PennylaneCircuit(Circuit):
 
         self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubits = [qubit_indices] if isinstance(qubit_indices, int) else list(qubit_indices)
 
-        for qubit_index in qubit_indices:
+        # Given Pennylane uses MSB convention, we will explicitly
+        # convert the qubit indices to LSB convention
+        # This will help performance by avoiding `circuit.vertical_reverse()` calls
+        for i, index in enumerate(qubits):
+            qubits[i] = self.num_qubits - 1 - index
+
+        for qubit_index in qubits:
             self.circuit.append((qml.measure(qubit_index), True)) # type: ignore
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         from quick.circuit import QiskitCircuit

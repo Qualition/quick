@@ -12,24 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = [
-    "test_is_square_matrix",
-    "test_is_diagonal_matrix",
-    "test_is_symmetric_matrix",
-    "test_is_identity_matrix",
-    "test_is_unitary_matrix",
-    "test_is_hermitian_matrix",
-    "test_is_positive_semidefinite_matrix",
-    "test_is_isometry"
-]
+__all__ = ["TestPredicates"]
 
-from tests.predicates.test_predicates import (
-    test_is_square_matrix,
-    test_is_diagonal_matrix,
-    test_is_symmetric_matrix,
-    test_is_identity_matrix,
-    test_is_unitary_matrix,
-    test_is_hermitian_matrix,
-    test_is_positive_semidefinite_matrix,
-    test_is_isometry
-)
+from tests.predicates.test_predicates import TestPredicates

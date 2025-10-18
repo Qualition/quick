@@ -26,9 +26,9 @@ from typing import Literal, SupportsIndex, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
-from quick.primitives import Bra, Ket
+from quick.primitives import Statevector
 from quick.synthesis.statepreparation import StatePreparation
-from quick.synthesis.statepreparation.statepreparation_utils import (
+from quick.synthesis.statepreparation.utils import (
     compute_alpha_y, compute_alpha_z, compute_control_indices, compute_m
 )
 
@@ -70,22 +70,23 @@ class Mottonen(StatePreparation):
     def apply_state(
             self,
             circuit: Circuit,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
             qubit_indices: int | Sequence[int],
-            compression_percentage: float=0.0,
-            index_type: Literal["row", "snake"]="row"
+            compression_percentage: float = 0.0,
+            index_type: Literal["row", "snake"] = "row"
         ) -> Circuit:
 
-        if not isinstance(state, (np.ndarray, Bra, Ket)):
+        if not isinstance(state, (np.ndarray, Statevector)):
             try:
                 state = np.array(state).astype(complex)
             except (ValueError, TypeError):
-                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
+                raise TypeError(
+                    "The state must be a numpy array or a Statevector object. "
+                    f"Received {type(state)} instead."
+                )
 
         if isinstance(state, np.ndarray):
-            state = Ket(state)
-        elif isinstance(state, Bra):
-            state = state.to_ket()
+            state = Statevector(state)
 
         if isinstance(qubit_indices, SupportsIndex):
             qubit_indices = [qubit_indices]
@@ -164,9 +165,6 @@ class Mottonen(StatePreparation):
         # The implementation is in MSB order, so reverse the circuit
         # to retrieve the LSB ordering
         mottonen_circuit.vertical_reverse()
-
-        if isinstance(state, Bra):
-            mottonen_circuit.horizontal_reverse()
 
         circuit.add(mottonen_circuit, qubit_indices)
 

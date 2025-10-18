@@ -19,7 +19,6 @@ __all__ = ["TestDiffusion"]
 from numpy.testing import assert_almost_equal
 import pytest
 import random
-from typing import Type
 
 from quick.circuit import Circuit, QiskitCircuit
 from quick.primitives import Operator
@@ -29,7 +28,7 @@ from tests.synthesis.unitarypreparation import UnitaryPreparationTemplate
 # Define the test data
 def generate_random_circuit(
         max_depth: int,
-        qc_framework: Type[Circuit]
+        qc_framework: type[Circuit]
     ) -> Circuit:
     """ Generate a random circuit using the allowed gate set
     with a given maximum depth.

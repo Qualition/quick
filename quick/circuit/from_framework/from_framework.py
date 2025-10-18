@@ -21,7 +21,7 @@ from __future__ import annotations
 __all__ = ["FromFramework"]
 
 from abc import ABC, abstractmethod
-from typing import Any, Type, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import quick
 if TYPE_CHECKING:
@@ -34,12 +34,12 @@ class FromFramework(ABC):
 
     Parameters
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
 
     Attributes
     ----------
-    `output_framework` : type[Circuit]
+    `output_framework` : type[quick.circuit.Circuit]
         The quantum computing framework to convert the quantum circuit to.
 
     Raises
@@ -53,7 +53,7 @@ class FromFramework(ABC):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
         """ Initialize a `quick.circuit.from_framework.FromFramework` instance.
         """

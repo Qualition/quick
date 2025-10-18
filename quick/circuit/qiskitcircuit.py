@@ -19,10 +19,10 @@ from __future__ import annotations
 
 __all__ = ["QiskitCircuit"]
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister # type: ignore
 from qiskit.circuit.library import ( # type: ignore
@@ -137,23 +137,27 @@ class QiskitCircuit(Circuit):
             self,
             gate: GATES,
             target_indices: int | Sequence[int],
-            control_indices: int | Sequence[int] = [],
+            control_indices: int | Sequence[int] | None = None,
             angles: Sequence[float] = (0, 0, 0)
         ) -> None:
 
-        target_indices = [target_indices] if isinstance(target_indices, int) else target_indices
-        control_indices = [control_indices] if isinstance(control_indices, int) else control_indices
+        targets = [target_indices] if isinstance(target_indices, int) else list(target_indices)
+
+        if control_indices is None:
+            controls: list[int] = []
+        else:
+            controls = [control_indices] if isinstance(control_indices, int) else list(control_indices)
 
         # Lazily extract the value of the gate from the mapping to avoid
         # creating all the gates at once, and to maintain the abstraction
         gate_operation = self.gate_mapping[gate](angles)
 
-        if control_indices:
-            for target_index in target_indices:
-                self.circuit.append(gate_operation.control(len(control_indices)), [*control_indices[:], target_index])
+        if controls:
+            for target_index in targets:
+                self.circuit.append(gate_operation.control(len(controls)), [*controls[:], target_index])
             return
 
-        for target_index in target_indices:
+        for target_index in targets:
             self.circuit.append(gate_operation, [target_index])
 
     def GlobalPhase(
@@ -174,8 +178,7 @@ class QiskitCircuit(Circuit):
 
         self.process_gate_params(gate=self.measure.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         self.circuit.measure(qubit_indices, qubit_indices)
 
@@ -213,7 +216,7 @@ class QiskitCircuit(Circuit):
             # This is to counter https://github.com/Qiskit/qiskit/issues/13162
             circuit.transpile()
 
-            # If no backend is provided, use the AerSimualtor
+            # If no backend is provided, use the AerSimulator
             base_backend: BackendSampler = BackendSampler(backend=AerSimulator())
             result = base_backend.run([circuit.circuit], shots=num_shots).result()
 
@@ -245,7 +248,6 @@ class QiskitCircuit(Circuit):
 
     def get_unitary(self) -> NDArray[np.complex128]:
         unitary = Operator(self.circuit).data
-
         return np.array(unitary)
 
     def reset_qubit(
@@ -255,15 +257,14 @@ class QiskitCircuit(Circuit):
 
         self.process_gate_params(gate=self.reset_qubit.__name__, params=locals())
 
-        if isinstance(qubit_indices, int):
-            qubit_indices = [qubit_indices]
+        qubit_indices = [qubit_indices] if isinstance(qubit_indices, int) else qubit_indices
 
         for qubit_index in qubit_indices:
             self.circuit.reset(qubit_index)
 
     def to_qasm(
             self,
-            qasm_version: int=2
+            qasm_version: int = 2
         ) -> str:
 
         if qasm_version == 2:

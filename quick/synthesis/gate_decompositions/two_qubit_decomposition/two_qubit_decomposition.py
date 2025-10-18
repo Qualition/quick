@@ -22,7 +22,6 @@ from __future__ import annotations
 
 __all__ = ["TwoQubitDecomposition"]
 
-import cmath
 from collections.abc import Sequence
 import math
 import numpy as np
@@ -34,6 +33,7 @@ if TYPE_CHECKING:
 from quick.circuit.gate_matrix import RZ, CX
 from quick.primitives import Operator
 from quick.synthesis.gate_decompositions.one_qubit_decomposition import OneQubitDecomposition
+from quick.synthesis.gate_decompositions.two_qubit_decomposition.utils import u4_to_su4
 from quick.synthesis.gate_decompositions.two_qubit_decomposition.weyl import TwoQubitWeylDecomposition
 from quick.synthesis.unitarypreparation import UnitaryPreparation
 
@@ -43,124 +43,136 @@ SQRT2 = 1 / np.sqrt(2)
 """ Hardcoded basis gates for the KAK decomposition
 using the CX gate as the basis.
 """
+CX_BASIS = TwoQubitWeylDecomposition(CX.data)
+
 Q0L = np.array([
     [0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, 0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q0R = np.array([
     [-0.5-0.5j, 0.5-0.5j],
     [-0.5-0.5j, -0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q1LA = np.array([
     [0.+0.j, -1-1j],
     [1-1j, 0.+0.j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 Q1LB = np.array([
     [-0.5+0.5j, -0.5-0.5j],
     [0.5-0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q1RA = np.array([
     [1+0.j, 1+0.j],
     [-1+0.j, 1+0.j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 Q1RB = np.array([
     [0.5-0.5j, 0.5+0.5j],
     [-0.5+0.5j, 0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 Q2L = np.array([
     [-1+1j, 0.+0.j],
     [0.+0.j, -1-1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 Q2R = np.array([
     [0.+1j, 0.-1j],
     [0.-1j, 0.-1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U0L: NDArray[np.complex128] = np.array([
     [-1, 1],
     [-1, -1]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U0R: NDArray[np.complex128] = np.array([
     [-1j, 1j],
     [1j, 1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U1L: NDArray[np.complex128] = np.array([
     [-0.5+0.5j, -0.5+0.5j],
     [0.5+0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U1RA: NDArray[np.complex128] = np.array([
     [0.5-0.5j, -0.5-0.5j],
     [0.5-0.5j, 0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 UR1B: NDArray[np.complex128] = np.array([
     [-1, -1j],
     [-1j, -1]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
-u2la: NDArray[np.complex128] = np.array([
+U2LA: NDArray[np.complex128] = np.array([
     [0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, 0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U2LB: NDArray[np.complex128] = np.array([
     [-0.5+0.5j, -0.5-0.5j],
     [0.5-0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U2RA: NDArray[np.complex128] = np.array([
     [-0.5+0.5j, 0.5-0.5j],
     [-0.5-0.5j, -0.5-0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U2RB: NDArray[np.complex128] = np.array([
     [0.5-0.5j, 0.5+0.5j],
     [-0.5+0.5j, 0.5+0.5j]
-], dtype=complex)
+], dtype=np.complex128)
 
 U3L: NDArray[np.complex128] = np.array([
     [-1+1j, 0+0j],
     [0+0j, -1-1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 U3R: NDArray[np.complex128] = np.array([
     [1j, -1j],
     [-1j, -1j]
-], dtype=complex) * SQRT2
+], dtype=np.complex128) * SQRT2
 
 
 class TwoQubitDecomposition(UnitaryPreparation):
     """ `quick.synthesis.unitarypreparation.TwoQubitDecomposition` is
     the class for decomposing two-qubit unitary matrices into one qubit
-    quantum gates and CX gates.
+    quantum gates and a fixed super-controlled basis gate, which in this
+    class we hardcode to be the CX gate.
 
     Notes
     -----
-    The decomposition is based on the KAK decomposition, which decomposes a 2-qubit unitary matrix
-    into a sequence of three unitary matrices, each of which is a product of one-qubit gates and a
-    CX gate.
+    The decomposition is based on the KAK decomposition, which decomposes a U(4)
+    matrix into
 
-    The up to diagonal decomposition of two qubit unitaries into the product of a diagonal gate
-    and another unitary gate can be represented by two CX gates instead of the usual three.
-    This can be used when neighboring gates commute with the diagonal to potentially reduce
-    overall CX count.
+    .. math::
+        U = (K_1^l \otimes K_1^r) \cdot A(a, b, c) \cdot (K_2^l \otimes K_2^r) \cdot e^{i \phi}
 
-    To use the up to diagonal decomposition, the `apply_unitary_up_to_diagonal` method can be used.
+    where :math:`A(a, b, c) = e^{(ia X \otimes X + ib Y \otimes Y + ic Z \otimes Z)}`,
+    :math:`K_1^l, K_1^r, K_2^l, K_2^r` are single-qubit unitaries, and :math:`\phi` is
+    the global phase.
 
-    For more information on KAK decomposition, refer to the following paper:
-    [1] Vidal, Dawson.
-    A Universal Quantum Circuit for Two-qubit Transformations with 3 CNOT Gates (2003)
-    https://arxiv.org/pdf/quant-ph/0307177
+    The non-local part A(a, b, c) can be expressed in terms of the basis gate
+    ~A(pi/4, b, 0) (super-controlled basis) using at most 3 uses of the basis gate
+    and some one-qubit gates.
+
+    For certain unitaries, we can use fewer basis gates. If the target unitary
+    is locally equivalent to ~A(0, 0, 0) then we can use 0 basis gates. If the
+    target unitary is locally equivalent to the basis gate then we can use 1
+    basis gate. If the target unitary is locally equivalent to ~A(x, y, 0)
+    then we can use 2 basis gates.
+
+    To use the up to diagonal decomposition, the `apply_unitary_up_to_diagonal`
+    method can be used.
+
+    https://arxiv.org/pdf/1811.12926 (Passage between (B6) and (B7))
 
     Parameters
     ----------
@@ -173,6 +185,8 @@ class TwoQubitDecomposition(UnitaryPreparation):
         The quantum circuit framework.
     `one_qubit_decomposition` : quick.synthesis.gate_decompositions.OneQubitDecomposition
         The one-qubit decomposition class.
+    `decompositions` : list[callable]
+        The list of decomposition functions.
 
     Raises
     ------
@@ -192,31 +206,19 @@ class TwoQubitDecomposition(UnitaryPreparation):
         super().__init__(output_framework)
 
         self.one_qubit_decomposition = OneQubitDecomposition(output_framework)
-
-    @staticmethod
-    def u4_to_su4(u4: NDArray[np.complex128]) -> tuple[NDArray[np.complex128], float]:
-        """ Convert a general 4x4 unitary matrix to a SU(4) matrix.
-
-        Parameters
-        ----------
-        `u4` : NDArray[np.complex128]
-            The 4x4 unitary matrix.
-
-        Returns
-        -------
-        `su4` : NDArray[np.complex128]
-            The 4x4 special unitary matrix.
-        `phase_factor` : float
-            The phase factor.
-        """
-        phase_factor = np.conj(np.linalg.det(u4) ** (-1 / u4.shape[0]))
-        su4: NDArray[np.complex128] = u4 / phase_factor
-        return su4, cmath.phase(phase_factor)
+        self.decompositions = [
+            self._decomp0,
+            self._decomp1,
+            self._decomp2_supercontrolled,
+            self._decomp3_supercontrolled,
+        ]
 
     @staticmethod
     def traces(target: TwoQubitWeylDecomposition) -> list[complex]:
         """ Calculate the expected traces $|Tr(U \cdot U_{target}^\dagger)|$
         for different number of basis gates.
+
+        https://arxiv.org/pdf/1811.12926 (B3)
 
         Parameters
         ----------
@@ -280,7 +282,6 @@ class TwoQubitDecomposition(UnitaryPreparation):
             U[0, 0] * U[3, 3]
         )
 
-        # Initialize theta and phi (they can be arbitrary)
         theta = 0
         phi = 0
 
@@ -320,8 +321,11 @@ class TwoQubitDecomposition(UnitaryPreparation):
         return (4 + abs(trace) ** 2) / 20
 
     @staticmethod
-    def _decomp0(weyl_decomposition: TwoQubitWeylDecomposition) -> tuple[NDArray[np.complex128], NDArray[np.complex128]]:
-        """ Decompose target ~Ud(x, y, z) with 0 uses of the basis gate.
+    def _decomp0(weyl_decomposition: TwoQubitWeylDecomposition) -> tuple[
+            NDArray[np.complex128],
+            NDArray[np.complex128]
+        ]:
+        """ Decompose target ~A(x, y, z) with 0 uses of the basis gate.
         Result Ur has trace:
 
         ..math::
@@ -338,9 +342,9 @@ class TwoQubitDecomposition(UnitaryPreparation):
         Returns
         -------
         `U0r` : NDArray[np.complex128]
-            The right unitary matrix.
+            One qubit unitary gate.
         `U0l` : NDArray[np.complex128]
-            The left unitary matrix.
+            One qubit unitary gate.
         """
         U0l = weyl_decomposition.K1l.dot(weyl_decomposition.K2l)
         U0r = weyl_decomposition.K1r.dot(weyl_decomposition.K2r)
@@ -353,14 +357,12 @@ class TwoQubitDecomposition(UnitaryPreparation):
             NDArray[np.complex128],
             NDArray[np.complex128]
         ]:
-        """ Decompose target ~Ud(x, y, z) with 1 uses of the basis gate ~Ud(a, b, c).
+        """ Decompose target ~A(x, y, z) with 1 uses of the basis gate ~A(a, b, c).
         Result Ur has trace:
 
         .. math::
 
             |Tr(Ur.U_{target}^\dagger)| = 4|\cos(x-a) \cos(y-b) \cos(z-c) + i \sin(x-a) \sin(y-b) \sin(z-c)|
-
-        which is optimal for all targets and bases with z==0 or c==0.
 
         Parameters
         ----------
@@ -370,24 +372,18 @@ class TwoQubitDecomposition(UnitaryPreparation):
         Returns
         -------
         `U1r` : NDArray[np.complex128]
-            The right unitary matrix.
+            One qubit unitary gate.
         `U1l` : NDArray[np.complex128]
-            The left unitary matrix.
+            One qubit unitary gate.
         `U0r` : NDArray[np.complex128]
-            The right unitary matrix.
+            One qubit unitary gate.
         `U0l` : NDArray[np.complex128]
-            The left unitary matrix.
+            One qubit unitary gate.
         """
-        # Get the CX gate in LSB ordering
-        CX.change_mapping("LSB")
-
-        # Use the basis gate as the closest reflection in the Weyl chamber
-        basis = TwoQubitWeylDecomposition(CX.matrix)
-
-        U0l = weyl_decomposition.K1l.dot(basis.K1l.T.conj())
-        U0r = weyl_decomposition.K1r.dot(basis.K1r.T.conj())
-        U1l = basis.K2l.T.conj().dot(weyl_decomposition.K2l)
-        U1r = basis.K2r.T.conj().dot(weyl_decomposition.K2r)
+        U0l = weyl_decomposition.K1l.dot(CX_BASIS.K1l.T.conj())
+        U0r = weyl_decomposition.K1r.dot(CX_BASIS.K1r.T.conj())
+        U1l = CX_BASIS.K2l.T.conj().dot(weyl_decomposition.K2l)
+        U1r = CX_BASIS.K2r.T.conj().dot(weyl_decomposition.K2r)
 
         return U1r, U1l, U0r, U0l
 
@@ -400,23 +396,13 @@ class TwoQubitDecomposition(UnitaryPreparation):
             NDArray[np.complex128],
             NDArray[np.complex128]
         ]:
-        """ Decompose target ~Ud(x, y, z) with 2 uses of the basis gate.
+        """ Decompose target ~A(x, y, z) with 2 uses of the super-controlled basis gate.
 
-        For supercontrolled basis ~Ud(pi/4, b, 0), all b, result Ur has trace
+        For supercontrolled basis ~A(pi/4, b, 0), all b, result Ur has trace
 
         .. math::
 
             |Tr(Ur.U_{target}^\dagger)| = 4 \cos(z)
-
-        which is the optimal approximation for basis of CX-class ``~Ud(pi/4, 0, 0)``
-        or DCX-class ``~Ud(pi/4, pi/4, 0)`` and any target.
-
-        Notes
-        -----
-        May be sub-optimal for b!=0 (e.g. there exists exact decomposition for any target using B
-        ``B~Ud(pi/4, pi/8, 0)``, but not this decomposition.)
-        This is an exact decomposition for supercontrolled basis and target ``~Ud(x, y, 0)``.
-        No guarantees for non-supercontrolled basis.
 
         Parameters
         ----------
@@ -426,22 +412,22 @@ class TwoQubitDecomposition(UnitaryPreparation):
         Returns
         -------
         `U2r` : NDArray[np.complex128]
-            The right unitary matrix.
+            One qubit unitary gate.
         `U2l` : NDArray[np.complex128]
-            The left unitary matrix.
+            One qubit unitary gate.
         `U1r` : NDArray[np.complex128]
-            The right unitary matrix.
+            One qubit unitary gate.
         `U1l` : NDArray[np.complex128]
-            The left unitary matrix.
+            One qubit unitary gate.
         `U0r` : NDArray[np.complex128]
-            The right unitary matrix.
+            One qubit unitary gate.
         `U0l` : NDArray[np.complex128]
-            The left unitary matrix.
+            One qubit unitary gate.
         """
         U0l = weyl_decomposition.K1l.dot(Q0L)
         U0r = weyl_decomposition.K1r.dot(Q0R)
-        U1l = Q1LA.dot(RZ(-2 * float(weyl_decomposition.a)).matrix).dot(Q1LB)
-        U1r = Q1RA.dot(RZ(2 * float(weyl_decomposition.b)).matrix).dot(Q1RB)
+        U1l = Q1LA.dot(RZ(-2 * float(weyl_decomposition.a)).data).dot(Q1LB)
+        U1r = Q1RA.dot(RZ(2 * float(weyl_decomposition.b)).data).dot(Q1RB)
         U2l = Q2L.dot(weyl_decomposition.K2l)
         U2r = Q2R.dot(weyl_decomposition.K2r)
 
@@ -458,19 +444,7 @@ class TwoQubitDecomposition(UnitaryPreparation):
             NDArray[np.complex128],
             NDArray[np.complex128]
         ]:
-        """ Decompose a 2-qubit unitary matrix into a sequence of one-qubit gates and CX gates.
-        The decomposition uses three CX gates.
-
-        Notes
-        -----
-        The decomposition is based on the KAK decomposition, which decomposes a 2-qubit unitary matrix
-        into a sequence of three unitary matrices, each of which is a product of one-qubit gates and a
-        CX gate.
-
-        For more information on KAK decomposition, refer to the following paper:
-        - Vidal, Dawson.
-        A Universal Quantum Circuit for Two-qubit Transformations with 3 CNOT Gates (2003)
-        https://arxiv.org/pdf/quant-ph/0307177
+        """ Decompose target ~A(x, y, z) with 3 uses of the super-controlled basis gate.
 
         Parameters
         ----------
@@ -496,13 +470,12 @@ class TwoQubitDecomposition(UnitaryPreparation):
         `U0l` : NDArray[np.complex128]
             The left unitary matrix.
         """
-        # Calculate the decomposition
         U0l = weyl_decomposition.K1l.dot(U0L)
         U0r = weyl_decomposition.K1r.dot(U0R)
         U1l = U1L
-        U1r = U1RA.dot(RZ(-2 * float(weyl_decomposition.c)).matrix).dot(UR1B)
-        U2l = u2la.dot(RZ(-2 * float(weyl_decomposition.a)).matrix).dot(U2LB)
-        U2r = U2RA.dot(RZ(2 * float(weyl_decomposition.b)).matrix).dot(U2RB)
+        U1r = U1RA.dot(RZ(-2 * float(weyl_decomposition.c)).data).dot(UR1B)
+        U2l = U2LA.dot(RZ(-2 * float(weyl_decomposition.a)).data).dot(U2LB)
+        U2r = U2RA.dot(RZ(2 * float(weyl_decomposition.b)).data).dot(U2RB)
         U3l = U3L.dot(weyl_decomposition.K2l)
         U3r = U3R.dot(weyl_decomposition.K2r)
 
@@ -542,8 +515,6 @@ class TwoQubitDecomposition(UnitaryPreparation):
         -----
         >>> circuit = two_qubit_decomposition.apply_unitary(circuit, unitary, qubit_indices)
         """
-        # Cast the qubit indices to a list if it is an integer
-        # Note this is only to inform pylance that `qubit_indices` is a list
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
 
@@ -556,39 +527,40 @@ class TwoQubitDecomposition(UnitaryPreparation):
         if unitary.num_qubits != 2:
             raise ValueError("Two-qubit decomposition requires a 4x4 unitary matrix.")
 
-        decomposition_functions = [
-            self._decomp0,
-            self._decomp1,
-            self._decomp2_supercontrolled,
-            self._decomp3_supercontrolled,
-        ]
-
-        # Hardcoded global phase for supercontrolled basis ~Ud(pi/4, b, 0),
-        # all b when using CX as KAK basis
-        cx_basis_global_phase = -np.pi/4
-
         target_decomposed = TwoQubitWeylDecomposition(unitary.data)
 
         # Calculate the expected fidelities for different number of basis gates
+        # By default, we choose the decomposition with fidelity of 1.0, however
+        # if a lower fidelity is permitted we can choose a decomposition with
+        # fewer basis gates
         traces = self.traces(target_decomposed)
         expected_fidelities = [TwoQubitDecomposition.trace_to_fidelity(traces[i]) for i in range(4)]
-
         best_num_basis = int(np.argmax(expected_fidelities))
 
-        decomposition = decomposition_functions[best_num_basis](target_decomposed)
-
+        cx_basis_global_phase = -np.pi/4
         overall_global_phase = target_decomposed.global_phase - best_num_basis * cx_basis_global_phase
 
+        # Handling the global phase for the up to diagonal case which uses 2 CX gates
         if best_num_basis == 2:
             overall_global_phase += np.pi
 
+        decomposition = self.decompositions[best_num_basis](target_decomposed)
+
         for i in range(best_num_basis):
-            self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * i], qubit_indices[0])
-            self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * i + 1], qubit_indices[1])
+            self.one_qubit_decomposition.apply_unitary(
+                circuit, decomposition[2 * i], qubit_indices[0]
+            )
+            self.one_qubit_decomposition.apply_unitary(
+                circuit, decomposition[2 * i + 1], qubit_indices[1]
+            )
             circuit.CX(qubit_indices[0], qubit_indices[1])
 
-        self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * best_num_basis], qubit_indices[0])
-        self.one_qubit_decomposition.apply_unitary(circuit, decomposition[2 * best_num_basis + 1], qubit_indices[1])
+        self.one_qubit_decomposition.apply_unitary(
+            circuit, decomposition[2 * best_num_basis], qubit_indices[0]
+        )
+        self.one_qubit_decomposition.apply_unitary(
+            circuit, decomposition[2 * best_num_basis + 1], qubit_indices[1]
+        )
 
         circuit.GlobalPhase(overall_global_phase)
 
@@ -628,7 +600,11 @@ class TwoQubitDecomposition(UnitaryPreparation):
 
         Usage
         -----
-        >>> circuit, diagonal = two_qubit_decomposition.apply_unitary_up_to_diagonal(circuit, unitary, qubit_indices)
+        >>> circuit, diagonal = two_qubit_decomposition.apply_unitary_up_to_diagonal(
+        ...     circuit,
+        ...     unitary,
+        ...     qubit_indices
+        ... )
         """
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
@@ -642,7 +618,7 @@ class TwoQubitDecomposition(UnitaryPreparation):
         if unitary.num_qubits != 2:
             raise ValueError("Two-qubit decomposition requires a 4x4 unitary matrix.")
 
-        su4, phase = TwoQubitDecomposition.u4_to_su4(unitary.data)
+        su4, phase = u4_to_su4(unitary.data)
         diagonal = TwoQubitDecomposition.real_trace_transform(su4)
         mapped_su4 = diagonal @ su4
 

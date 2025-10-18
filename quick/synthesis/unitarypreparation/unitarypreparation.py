@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import quick
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ class UnitaryPreparation(ABC):
     """
     def __init__(
             self,
-            output_framework: Type[Circuit]
+            output_framework: type[Circuit]
         ) -> None:
         """ Initalize a Unitary Preparation instance.
         """
