@@ -1474,14 +1474,14 @@ class TestControlState:
             The circuit framework to test.
         """
         gates = [
-            RX(np.pi/2).matrix,
-            RX(np.pi/3).matrix,
-            RX(np.pi/4).matrix,
-            RX(np.pi/5).matrix,
-            RX(np.pi/6).matrix,
-            RX(np.pi/7).matrix,
-            RX(np.pi/8).matrix,
-            RX(np.pi/9).matrix
+            RX(np.pi/2).data,
+            RX(np.pi/3).data,
+            RX(np.pi/4).data,
+            RX(np.pi/5).data,
+            RX(np.pi/6).data,
+            RX(np.pi/7).data,
+            RX(np.pi/8).data,
+            RX(np.pi/9).data
         ]
 
         # Given control state "0"

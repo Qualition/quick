@@ -1,0 +1,303 @@
+# Copyright 2023-2025 Qualition Computing LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://github.com/Qualition/quick/blob/main/LICENSE
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import annotations
+
+__all__ = ["TestStatevector"]
+
+import numpy as np
+from numpy.testing import assert_almost_equal
+import pytest
+from scipy.stats import unitary_group
+
+from quick.predicates import is_statevector
+from quick.primitives import Statevector, Operator
+
+
+class TestStatevector:
+    """ `tests.primitives.test_statevector.TestStatevector` is the tester class
+    for `quick.primitives.Statevector`.
+    """
+    def test_init(self) -> None:
+        """ Test the initialization of the `quick.primitives.Statevector` class.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+        assert statevector.label == "Ψ"
+        assert statevector.tensor_shape == (2, 2)
+
+    def test_from_scalar_fail(self) -> None:
+        """ Test the failure of defining a `quick.primitives.Statevector` object from a scalar.
+        """
+        with pytest.raises(ValueError):
+            Statevector(1) # type: ignore
+
+    def test_from_operator_fail(self) -> None:
+        """ Test the failure of defining a `quick.primitives.Statevector` object from an operator.
+        """
+        with pytest.raises(ValueError):
+            Statevector(np.eye(4, dtype=complex))
+
+    def test_normalize(self) -> None:
+        """ Test the normalization of the `quick.primitives.Statevector` object.
+        """
+        data = np.array([1, 0, 0, 1])
+        assert_almost_equal(
+            Statevector.normalize_data(
+                data,
+                np.linalg.norm(data)), np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]
+            )
+        )
+
+        statevector = Statevector(data)
+        statevector.normalize()
+        assert_almost_equal(statevector.data, np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+
+        # Re-normalize the already normalized to cover the case where if normalized we simply return
+        statevector.normalize()
+        assert_almost_equal(statevector.data, np.array([(1+0j)/np.sqrt(2), 0+0j, 0+0j, (1+0j)/np.sqrt(2)]))
+
+    def test_check_padding(self) -> None:
+        """ Test the padding of the `quick.primitives.Statevector` object.
+        """
+        data = np.array([1, 0, 0, 0])
+        assert Statevector.check_padding(data)
+
+    def test_check_padding_fail(self) -> None:
+        """ Test the failure of the padding of the `quick.primitives.Statevector` object.
+        """
+        data = np.array([1, 0, 0])
+        assert not Statevector.check_padding(data)
+
+    def test_pad(self) -> None:
+        """ Test the padding of the `quick.primitives.Statevector` object.
+        """
+        data = np.array([1, 0, 0])
+        padded_data = Statevector.pad_data(data, 4)
+        assert_almost_equal(padded_data, np.array([1, 0, 0, 0]))
+
+        statevector = Statevector(data)
+        statevector.pad()
+        assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+        # Re-pad the already padded to cover the case where if padded we simply return
+        statevector.pad()
+        assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+    def test_to_quantumstate(self) -> None:
+        """ Test the conversion of the `quick.primitives.Statevector` object to a quantum state.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4]))
+        assert is_statevector(statevector.data)
+
+    def test_trace(self) -> None:
+        """ Test the trace of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4, 5, 6]))
+        assert_almost_equal(statevector.trace(), 1)
+
+    def test_partial_trace(self) -> None:
+        """ Test the partial trace of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4, 5, 6, 7, 8]))
+        assert_almost_equal(
+            statevector.partial_trace([0, 2]),
+            np.array([
+                [0.32352941+0.j, 0.46078431+0.j],
+                [0.46078431+0.j, 0.67647059+0.j]
+            ])
+        )
+
+    def test_change_indexing(self) -> None:
+        """ Test the change of indexing of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        statevector.change_indexing("snake")
+        assert_almost_equal(statevector.data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+        statevector = Statevector(
+            np.array([1, 0, 0, 0, 1, 0, 0, 0])
+        )
+        statevector.change_indexing("snake")
+        assert_almost_equal(statevector.data, np.array([
+            (1+0j)/np.sqrt(2), 0+0j, 0+0j, 0+0j,
+            0+0j, 0+0j, 0+0j, (1+0j)/np.sqrt(2)
+        ]))
+
+    def test_change_indexing_fail(self) -> None:
+        """ Test the failure of the change of indexing of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        with pytest.raises(ValueError):
+            statevector.change_indexing("invalid") # type: ignore
+
+    def test_reverse_bits(self) -> None:
+        """ Test the MSB to LSB (vice versa) conversion of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 2, 3, 4]))
+        statevector.reverse_bits()
+        checker_statevector = Statevector(np.array([1, 3, 2, 4]))
+        assert_almost_equal(statevector.data, checker_statevector.data)
+
+        statevector.reverse_bits()
+        checker_statevector = Statevector(np.array([1, 2, 3, 4]))
+        assert_almost_equal(statevector.data, checker_statevector.data)
+
+    def test_contract(self) -> None:
+        """ Test the application of operators to `quick.primitives.Operator` objects.
+        """
+        from quick.circuit import QiskitCircuit
+
+        state = np.zeros(2 ** 5)
+        state[0] = 1
+        statevector = Statevector(state.astype(complex))
+        uni1 = np.array(unitary_group.rvs(2 ** 5)).astype(complex)
+        uni2 = np.array(unitary_group.rvs(2 ** 3)).astype(complex)
+        uni3 = np.array(unitary_group.rvs(2 ** 2)).astype(complex)
+
+        op1 = Operator(uni1)
+        op2 = Operator(uni2)
+        op3 = Operator(uni3)
+
+        op1.contract(op2, [3, 0, 1])
+        op1.contract(op3, [2, 4])
+        statevector.contract(op1, [0, 1, 2, 3, 4])
+
+        checker_circuit = QiskitCircuit(5)
+        checker_circuit.unitary(uni1, [0, 1, 2, 3, 4])
+        checker_circuit.unitary(uni2, [3, 0, 1])
+        checker_circuit.unitary(uni3, [2, 4])
+
+        assert_almost_equal(checker_circuit.get_statevector(), statevector.data)
+
+    def test_array(self) -> None:
+        """ Test the conversion of the `quick.primitives.Statevector` to a NumPy array.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert_almost_equal(np.array(statevector), np.array([1, 0, 0, 0]))
+
+    def test_check_mul(self) -> None:
+        """ Test the multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        statevector._check__mul__(1)
+
+    def test_check_mul_fail(self) -> None:
+        """ Test the failure of the multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+
+        with pytest.raises(TypeError):
+            statevector._check__mul__("invalid")
+
+    def test_eq(self) -> None:
+        """ Test the equality of the `quick.primitives.Statevector` object.
+        """
+        statevector1 = Statevector(np.array([1, 0, 0, 0]))
+        statevector2 = Statevector(np.array([1, 0, 0, 0]))
+        assert statevector1 == statevector2
+
+    def test_eq_fail(self) -> None:
+        """ Test the failure of the equality of the `quick.primitives.Statevector` object.
+        """
+        statevector1 = Statevector(np.array([1, 0, 0, 0]))
+        statevector2 = Statevector(np.array([0, 1, 0, 0]))
+        assert statevector1 != statevector2
+
+        with pytest.raises(TypeError):
+            statevector1 == "invalid" # type: ignore
+
+    def test_len(self) -> None:
+        """ Test the length of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert len(statevector) == 4
+
+    def test_add(self) -> None:
+        """ Test the addition of the `quick.primitives.Statevector` objects.
+        """
+        statevector1 = Statevector(np.array([1, 0, 0, 0]))
+        statevector2 = Statevector(np.array([0, 1, 0, 0]))
+        assert_almost_equal(
+            (statevector1 + statevector2).data,
+            np.array([(1+0j)/np.sqrt(2), (1+0j)/np.sqrt(2), 0+0j, 0+0j])
+        )
+
+    def test_add_fail(self) -> None:
+        """ Test the failure of the addition of the `quick.primitives.Statevector` objects.
+        """
+        statevector1 = Statevector(np.array([1, 0, 0, 0]))
+        statevector2 = Statevector(np.array([1, 0]))
+
+        with pytest.raises(ValueError):
+            statevector1 + statevector2 # type: ignore
+
+        with pytest.raises(TypeError):
+            statevector1 + "invalid" # type: ignore
+
+    def test_mul_scalar(self) -> None:
+        """ Test the multiplication of the `quick.primitives.Statevector` object with a scalar.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert_almost_equal((statevector * 2).data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+    def test_mul_fail(self) -> None:
+        """ Test the failure of the multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0]))
+
+        with pytest.raises(TypeError):
+            statevector * "invalid" # type: ignore
+
+    def test_rmul_scalar(self) -> None:
+        """ Test the multiplication of a `quick.primitives.Statevector` object with a scalar.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert_almost_equal((2 * statevector).data, np.array([1+0j, 0+0j, 0+0j, 0+0j]))
+
+    def test_matmul(self) -> None:
+        """ Test the matrix multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        tensor_state = statevector @ statevector
+        assert tensor_state.num_qubits == 4
+        checker_state = np.zeros(16, dtype=complex)
+        checker_state[0] = 1
+        assert_almost_equal(
+            tensor_state.data,
+            checker_state
+        )
+
+    def test_matmul_fail(self) -> None:
+        """ Test the failure of the matrix multiplication of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+
+        with pytest.raises(TypeError):
+            statevector @ "invalid" # type: ignore
+
+    def test_str(self) -> None:
+        """ Test the string representation of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert str(statevector) == "|Ψ⟩"
+
+        statevector = Statevector(np.array([1, 0, 0, 0]), label="psi")
+        assert str(statevector) == "|psi⟩"
+
+    def test_repr(self) -> None:
+        """ Test the string representation of the `quick.primitives.Statevector` object.
+        """
+        statevector = Statevector(np.array([1, 0, 0, 0]))
+        assert repr(statevector) == "Statevector(data=[1.+0.j 0.+0.j 0.+0.j 0.+0.j], label=Ψ)"

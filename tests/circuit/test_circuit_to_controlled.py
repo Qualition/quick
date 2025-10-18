@@ -1439,3 +1439,34 @@ class TestControlled:
 
         assert single_controlled_circuit == check_single_controlled_circuit
         assert multiple_controlled_circuit == check_multiple_controlled_circuit
+
+    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
+    def test_unitary_control(
+            self,
+            circuit_framework: type[Circuit]
+        ) -> None:
+        """ Test the `.control()` method with a unitary.
+
+        Parameters
+        ----------
+        `circuit_framework` : type[quick.circuit.Circuit]
+            The framework to convert the circuit to.
+        """
+        from quick.random import generate_random_unitary
+        from quick.primitives import Operator
+        from numpy.testing import assert_almost_equal
+
+        unitary = generate_random_unitary(3)
+
+        circuit = circuit_framework(num_qubits=3)
+        circuit.unitary(unitary, [0, 1, 2])
+
+        single_controlled_circuit = circuit.control(1)
+        multiple_controlled_circuit = circuit.control(2)
+
+        operator = Operator(unitary)
+        single_controlled_checker = operator.control(1)
+        multiple_controlled_checker = operator.control(2)
+
+        assert_almost_equal(single_controlled_circuit.get_unitary(), single_controlled_checker.data)
+        assert_almost_equal(multiple_controlled_circuit.get_unitary(), multiple_controlled_checker.data)

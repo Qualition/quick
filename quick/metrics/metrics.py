@@ -28,9 +28,9 @@ __all__ = [
 import numpy as np
 from numpy.typing import NDArray
 import quimb.tensor as qtn # type: ignore
-from qiskit.quantum_info import partial_trace # type: ignore
 
 from quick.predicates import is_density_matrix, is_statevector, is_unitary_matrix
+from quick.primitives import Statevector
 
 
 def _calculate_1d_entanglement_range(mps: qtn.MatrixProductState) -> list[tuple[int, int]]:
@@ -222,23 +222,19 @@ def calculate_entanglement_entropy_slope(statevector: NDArray[np.complex128]) ->
     -----
     >>> entanglement_entropy_slope = calculate_entanglement_entropy_slope(statevector)
     """
-    if not is_statevector(statevector):
-        raise ValueError("The input must be a statevector.")
+    if not isinstance(statevector, Statevector):
+        state = Statevector(statevector)
+    else:
+        state = statevector
 
-    num_qubits = int(
-        np.ceil(
-            np.log2(len(statevector))
-        )
-    )
-
-    max_k = num_qubits // 2
+    max_k = state.num_qubits // 2
     entropies = np.empty(max_k, dtype=np.float64)
 
     for k in range(1, max_k + 1):
         # Trace out rest of the qubits to extract the
         # reduced density matrix for the first k qubits
-        rho_A = partial_trace(statevector, list(range(k, num_qubits))) # type: ignore
-        S = calculate_entanglement_entropy(rho_A.data)
+        rho = state.partial_trace(list(range(k, state.num_qubits)))
+        S = calculate_entanglement_entropy(np.array(rho))
         entropies[k - 1] = S
 
     # We use half of the entropies to calculate the slope
@@ -300,3 +296,35 @@ def calculate_hilbert_schmidt_test(
     )**2
 
     return chst
+
+def calculate_frobenius_distance(
+        matrix_1: NDArray[np.complex128],
+        matrix_2: NDArray[np.complex128]
+    ) -> float:
+    """ Calculate the Frobenius distance between two matrices.
+
+    Parameters
+    ----------
+    `matrix_1` : NDArray[np.complex128]
+        The first matrix.
+    `matrix_2` : NDArray[np.complex128]
+        The second matrix.
+
+    Returns
+    -------
+    float
+        The Frobenius distance between the two matrices.
+
+    Raises
+    ------
+    ValueError
+        - If the matrices are not of the same shape.
+
+    Usage
+    -----
+    >>> frobenius_distance = calculate_frobenius_distance(matrix_1, matrix_2)
+    """
+    if matrix_1.shape != matrix_2.shape:
+        raise ValueError("The matrices must be of the same shape.")
+
+    return float(np.linalg.norm(matrix_1 - matrix_2, 'fro'))

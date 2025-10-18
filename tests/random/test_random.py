@@ -18,11 +18,21 @@ __all__ = ["TestRandom"]
 
 import pytest
 
-from quick.predicates import is_unitary_matrix, is_statevector, is_density_matrix
+from quick.predicates import (
+    is_unitary_matrix,
+    is_statevector,
+    is_density_matrix,
+    is_orthogonal_matrix,
+    is_special_orthogonal_matrix,
+    is_special_unitary_matrix
+)
 from quick.random import (
     generate_random_state,
     generate_random_unitary,
-    generate_random_density_matrix
+    generate_random_density_matrix,
+    generate_random_orthogonal_matrix,
+    generate_random_special_orthogonal_matrix,
+    generate_random_special_unitary_matrix
 )
 
 
@@ -35,7 +45,7 @@ class TestRandom:
             self,
             num_qubits: int
         ) -> None:
-        """ Test the `generate_random_state` function.
+        """ Test the `generate_random_state()` function.
 
         Parameters
         ----------
@@ -51,7 +61,7 @@ class TestRandom:
             self,
             num_qubits: int
         ) -> None:
-        """ Test the `generate_random_unitary` function.
+        """ Test the `generate_random_unitary()` function.
 
         Parameters
         ----------
@@ -72,7 +82,7 @@ class TestRandom:
             generator: str,
             rank: int
         ) -> None:
-        """ Test the `generate_random_density_matrix` function.
+        """ Test the `generate_random_density_matrix()` function.
 
         Parameters
         ----------
@@ -94,7 +104,7 @@ class TestRandom:
     def test_generate_random_density_matrix_invalid_generator(
             self
         ) -> None:
-        """ Test the `generate_random_density_matrix` function with an
+        """ Test the `generate_random_density_matrix()` function with an
         invalid generator.
         """
         with pytest.raises(ValueError):
@@ -103,3 +113,51 @@ class TestRandom:
                 rank=1,
                 generator="invalid-generator" # type: ignore
             )
+
+    @pytest.mark.parametrize("num_qubits", [1, 2, 3, 4, 5])
+    def test_generate_random_orthogonal_matrix(
+            self,
+            num_qubits: int
+        ) -> None:
+        """ Test the `generate_random_orthogonal_matrix()` function.
+
+        Parameters
+        ----------
+        `num_qubits` : int
+            The number of qubits in the SO matrix.
+        """
+        o_matrix = generate_random_orthogonal_matrix(num_qubits)
+
+        assert is_orthogonal_matrix(o_matrix)
+
+    @pytest.mark.parametrize("num_qubits", [1, 2, 3, 4, 5])
+    def test_generate_random_special_orthogonal_matrix(
+            self,
+            num_qubits: int
+        ) -> None:
+        """ Test the `generate_random_special_orthogonal_matrix()` function.
+
+        Parameters
+        ----------
+        `num_qubits` : int
+            The number of qubits in the SO matrix.
+        """
+        so_matrix = generate_random_special_orthogonal_matrix(num_qubits)
+
+        assert is_special_orthogonal_matrix(so_matrix)
+
+    @pytest.mark.parametrize("num_qubits", [1, 2, 3, 4, 5])
+    def test_generate_random_special_unitary_matrix(
+            self,
+            num_qubits: int
+        ) -> None:
+        """ Test the `generate_random_special_unitary_matrix()` function.
+
+        Parameters
+        ----------
+        `num_qubits` : int
+            The number of qubits in the SU matrix.
+        """
+        su_matrix = generate_random_special_unitary_matrix(num_qubits)
+
+        assert is_special_unitary_matrix(su_matrix)

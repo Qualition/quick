@@ -35,12 +35,7 @@ class StatePreparationTemplate(ABC):
 
     @abstractmethod
     def test_prepare_state_ket(self) -> None:
-        """ Test the preparation of the state from a `quick.primitives.Ket` instance.
-        """
-
-    @abstractmethod
-    def test_prepare_state_bra(self) -> None:
-        """ Test the preparation of the state from a `quick.primitives.Bra` instance.
+        """ Test the preparation of the state from a `quick.primitives.Statevector` instance.
         """
 
     @abstractmethod
@@ -50,12 +45,7 @@ class StatePreparationTemplate(ABC):
 
     @abstractmethod
     def test_apply_state_ket(self) -> None:
-        """ Test the application of the state from a `quick.primitives.Ket` instance.
-        """
-
-    @abstractmethod
-    def test_apply_state_bra(self) -> None:
-        """ Test the application of the state from a `quick.primitives.Bra` instance.
+        """ Test the application of the state from a `quick.primitives.Statevector` instance.
         """
 
     @abstractmethod

@@ -158,8 +158,7 @@ class PennylaneCircuit(Circuit):
                 self.circuit.append(
                 qml.ControlledQubitUnitary(
                     gate_operation,
-                    control_wires=controls,
-                    wires=target_index
+                    wires=controls + [target_index]
                 )
             )
             return
@@ -234,6 +233,8 @@ class PennylaneCircuit(Circuit):
 
         np.random.seed(0)
 
+        num_qubits_to_measure = len(self.measured_qubits)
+
         if len(self.measured_qubits) == 0:
             raise ValueError("At least one qubit must be measured.")
 
@@ -245,7 +246,7 @@ class PennylaneCircuit(Circuit):
 
                 qml.apply(op)
 
-            return qml.counts(wires=self.measured_qubits, all_outcomes=True)
+            return qml.counts(wires=self.measured_qubits)
 
         if backend is None:
             device = qml.device(self.device.name, wires=self.num_qubits, shots=num_shots)
@@ -253,6 +254,13 @@ class PennylaneCircuit(Circuit):
             counts = {
                 list(result.keys())[i]: int(list(result.values())[i]) for i in range(len(result))
             }
+
+            for i in range(2**num_qubits_to_measure):
+                basis = format(int(i),"0{}b".format(num_qubits_to_measure))
+                if basis not in counts:
+                    counts[basis] = 0
+                else:
+                    counts[basis] = int(counts[basis])
 
             # Sort the counts by their keys (basis states)
             # This is simply for readability

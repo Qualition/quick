@@ -25,15 +25,15 @@ from numpy.typing import NDArray
 from typing import TypeAlias
 
 from quick.circuit import Circuit
-from quick.primitives import Bra, Ket, Operator
+from quick.primitives import Statevector, Operator
 from quick.synthesis.statepreparation import StatePreparation, Isometry
 from quick.synthesis.unitarypreparation import UnitaryPreparation, ShannonDecomposition
 
 """ Type aliases for the primitives to be compiled:
-- `PRIMITIVE` is a single primitive object, which can be a `Bra`, `Ket`, `Operator`,or a `numpy.ndarray`.
+- `PRIMITIVE` is a single primitive object, which can be a `Statevector`, `Operator`,or a `numpy.ndarray`.
 - `PRIMITIVES` is a list of tuples containing the primitive object and the qubits they need to be applied to.
 """
-PRIMITIVE: TypeAlias = Bra | Ket | Operator | NDArray[np.complex128]
+PRIMITIVE: TypeAlias = Statevector | Operator | NDArray[np.complex128]
 PRIMITIVES: TypeAlias = list[tuple[PRIMITIVE, Sequence[int]]]
 
 
@@ -105,13 +105,13 @@ class ShendeCompiler:
 
     def state_preparation(
             self,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
         ) -> Circuit:
         """ Prepare a quantum state.
 
         Parameters
         ----------
-        `state` : NDArray[np.complex128] | quick.primitives.Bra | quick.primitives.Ket
+        `state` : NDArray[np.complex128] | quick.primitives.Statevector
             The quantum state to be prepared.
 
         Returns
@@ -161,11 +161,11 @@ class ShendeCompiler:
         ValueError
             - If the primitive object is invalid.
         """
-        if not isinstance(primitive, (Bra, Ket, Operator, np.ndarray)):
+        if not isinstance(primitive, (Statevector, Operator, np.ndarray)):
             raise TypeError("Invalid primitive object.")
 
         if isinstance(primitive, np.ndarray):
-            if len(primitive.flatten()) < 2:
+            if len(primitive.ravel()) < 2:
                 raise ValueError("Invalid primitive object.")
             elif primitive.ndim not in [1, 2]:
                 raise ValueError("Invalid primitive object.")
@@ -246,13 +246,13 @@ class ShendeCompiler:
         """
         self._check_primitive(primitive)
 
-        if isinstance(primitive, (Bra, Ket)):
+        if isinstance(primitive, Statevector):
             return self.state_preparation(primitive)
         elif isinstance(primitive, Operator):
             return self.unitary_preparation(primitive)
         elif isinstance(primitive, np.ndarray):
             if primitive.ndim == 1:
-                return self.state_preparation(Ket(primitive))
+                return self.state_preparation(Statevector(primitive))
             else:
                 return self.unitary_preparation(Operator(primitive))
 
@@ -286,8 +286,8 @@ class ShendeCompiler:
         -----
         >>> primitive = Operator(unitary_matrix)
         >>> circuit = compiler.compile(primitive)
-        >>> primitives = [(Bra(bra_vector), [0, 1]),
-        ...               (Ket(ket_vector), [2, 3])]
+        >>> primitives = [(Operator(unitary_matrix), [0, 1]),
+        ...               (Statevector(statevector), [2, 3])]
         >>> circuit = compiler.compile(primitives)
         """
         if isinstance(primitives, list):

@@ -223,7 +223,7 @@ def MCRX(
             circuit,
             control_indices,
             target_index,
-            RX(theta).matrix
+            RX(theta).data
         )
 
 def MCRY(
@@ -271,7 +271,7 @@ def MCRY(
             circuit,
             control_indices,
             target_index,
-            RY(theta).matrix,
+            RY(theta).data,
         )
 
 def MCRZ(
@@ -319,5 +319,5 @@ def MCRZ(
             circuit,
             control_indices,
             target_index,
-            RZ(theta).matrix,
+            RZ(theta).data,
         )

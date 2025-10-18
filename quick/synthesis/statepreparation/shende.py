@@ -26,9 +26,9 @@ from typing import Literal, SupportsIndex, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
-from quick.primitives import Bra, Ket
+from quick.primitives import Statevector
 from quick.synthesis.statepreparation import StatePreparation
-from quick.synthesis.statepreparation.statepreparation_utils import rotations_to_disentangle
+from quick.synthesis.statepreparation.utils import rotations_to_disentangle
 
 
 class Shende(StatePreparation):
@@ -68,22 +68,20 @@ class Shende(StatePreparation):
     def apply_state(
             self,
             circuit: Circuit,
-            state: NDArray[np.complex128] | Bra | Ket,
+            state: NDArray[np.complex128] | Statevector,
             qubit_indices: int | Sequence[int],
             compression_percentage: float = 0.0,
             index_type: Literal["row", "snake"] = "row"
         ) -> Circuit:
 
-        if not isinstance(state, (np.ndarray, Bra, Ket)):
+        if not isinstance(state, (np.ndarray, Statevector)):
             try:
                 state = np.array(state).astype(complex)
             except (ValueError, TypeError):
-                raise TypeError(f"The state must be a numpy array or a Bra/Ket object. Received {type(state)} instead.")
+                raise TypeError(f"The state must be a numpy array or a Statevector object. Received {type(state)} instead.")
 
         if isinstance(state, np.ndarray):
-            state = Ket(state)
-        elif isinstance(state, Bra):
-            state = state.to_ket()
+            state = Statevector(state)
 
         if isinstance(qubit_indices, SupportsIndex):
             qubit_indices = [qubit_indices]
@@ -240,11 +238,7 @@ class Shende(StatePreparation):
         # We must reverse the circuit to prepare the state,
         # as the circuit is uncomputing from the target state
         # to the zero state
-        # If the state is a bra, we will apply a horizontal reverse
-        # which will nullify this reverse, thus we will first check
-        # if the state is not a bra before applying the reverse
-        if not isinstance(state, Bra):
-            disentangling_circuit.horizontal_reverse()
+        disentangling_circuit.horizontal_reverse()
 
         circuit.add(disentangling_circuit, qubit_indices)
 

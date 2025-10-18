@@ -13,11 +13,9 @@
 # limitations under the License.
 
 __all__ = [
-    "Bra",
-    "Ket",
+    "Statevector",
     "Operator"
 ]
 
-from quick.primitives.bra import Bra
-from quick.primitives.ket import Ket
+from quick.primitives.statevector import Statevector
 from quick.primitives.operator import Operator

@@ -17,7 +17,8 @@ __all__ = [
     "calculate_shannon_entropy",
     "calculate_entanglement_entropy",
     "calculate_entanglement_entropy_slope",
-    "calculate_hilbert_schmidt_test"
+    "calculate_hilbert_schmidt_test",
+    "calculate_frobenius_distance"
 ]
 
 from quick.metrics.metrics import (
@@ -25,5 +26,6 @@ from quick.metrics.metrics import (
     calculate_shannon_entropy,
     calculate_entanglement_entropy,
     calculate_entanglement_entropy_slope,
-    calculate_hilbert_schmidt_test
+    calculate_hilbert_schmidt_test,
+    calculate_frobenius_distance
 )

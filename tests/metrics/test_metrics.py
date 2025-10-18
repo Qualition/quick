@@ -28,7 +28,8 @@ from quick.metrics import (
     calculate_shannon_entropy,
     calculate_entanglement_entropy,
     calculate_entanglement_entropy_slope,
-    calculate_hilbert_schmidt_test
+    calculate_hilbert_schmidt_test,
+    calculate_frobenius_distance
 )
 
 
@@ -180,3 +181,9 @@ class TestMetrics:
             calculate_hilbert_schmidt_test(unitary, np.zeros((4, 3))) # type: ignore
         with pytest.raises(ValueError):
             calculate_hilbert_schmidt_test(np.zeros((4, 4)), unitary) # type: ignore
+
+    def test_calculate_frobenius_distance(self) -> None:
+        """ Test the `calculate_frobenius_distance` method.
+        """
+        unitary = unitary_group.rvs(4).astype(np.complex128)
+        assert_almost_equal(0.0, calculate_frobenius_distance(unitary, unitary))

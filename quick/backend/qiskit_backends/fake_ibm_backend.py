@@ -21,6 +21,7 @@ __all__ = ["FakeIBMBackend"]
 
 import numpy as np
 from numpy.typing import NDArray
+import warnings
 
 from qiskit.primitives import BackendSamplerV2 as BackendSampler # type: ignore
 from qiskit_aer import AerSimulator # type: ignore
@@ -113,7 +114,7 @@ class FakeIBMBackend(FakeBackend): # pragma: no cover
             self._op_backend = AerSimulator.from_backend(backend, device="GPU", method="unitary")
         else:
             if self.device == "GPU" and available_devices["GPU"] is None:
-                print("Warning: GPU acceleration is not available. Defaulted to CPU.")
+                warnings.warn("Warning: GPU acceleration is not available. Defaulted to CPU.")
             self._counts_backend = BackendSampler(backend=AerSimulator.from_backend(backend))
             self._op_backend = AerSimulator.from_backend(backend, method="unitary")
 
