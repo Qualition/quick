@@ -17,7 +17,10 @@ from __future__ import annotations
 __all__ = [
     "generate_random_state",
     "generate_random_unitary",
-    "generate_random_density_matrix"
+    "generate_random_density_matrix",
+    "generate_random_orthogonal_matrix",
+    "generate_random_special_orthogonal_matrix",
+    "generate_random_special_unitary_matrix"
 ]
 
 import numpy as np
@@ -46,7 +49,9 @@ def _generate_ginibre_matrix(
         entry is sampled from the normal distribution.
     """
     rng = np.random.default_rng()
-    ginibre_ensemble = rng.normal(size=(num_rows, num_columns)) + 1j * rng.normal(size=(num_rows, num_columns))
+    ginibre_ensemble = rng.normal(size=(num_rows, num_columns)) + 1j * rng.normal(
+        size=(num_rows, num_columns)
+    )
     return ginibre_ensemble
 
 def generate_random_state(num_qubits: int) -> NDArray[np.complex128]:
@@ -124,3 +129,65 @@ def generate_random_density_matrix(
         density_matrix = density_matrix @ density_matrix.conj().T
 
     return density_matrix / np.trace(density_matrix)
+
+def generate_random_orthogonal_matrix(num_qubits: int) -> NDArray[np.complex128]:
+    """ Generate a random orthogonal matrix for the given number of qubits.
+
+    Parameters
+    ----------
+    `num_qubits` : int
+        The number of qubits in the orthogonal matrix.
+
+    Returns
+    -------
+    `NDArray[np.complex128]`
+        The random orthogonal matrix.
+    """
+    A = np.random.rand(2**num_qubits, 2**num_qubits)
+    Q, R = np.linalg.qr(A)
+
+    d = np.sign(np.diag(R))
+    d[d == 0] = 1
+    Q = Q @ np.diag(d)
+
+    return Q.astype(np.complex128)
+
+def generate_random_special_orthogonal_matrix(num_qubits: int) -> NDArray[np.float64]:
+    """ Generate a random special orthogonal matrix for the given number of qubits.
+
+    Parameters
+    ----------
+    `num_qubits` : int
+        The number of qubits in the special orthogonal matrix.
+
+    Returns
+    -------
+    `NDArray[np.float64]`
+        The random special orthogonal matrix.
+    """
+    Q = generate_random_orthogonal_matrix(num_qubits)
+
+    if np.linalg.det(Q) < 0:
+        Q[:, 0] *= -1
+
+    return Q.astype(np.float64)
+
+def generate_random_special_unitary_matrix(num_qubits: int) -> NDArray[np.complex128]:
+    """ Generate a random special unitary matrix for the given number of qubits.
+
+    Parameters
+    ----------
+    `num_qubits` : int
+        The number of qubits in the special unitary matrix.
+
+    Returns
+    -------
+    `NDArray[np.complex128]`
+        The random special unitary matrix.
+    """
+    U = generate_random_unitary(num_qubits)
+
+    det = np.linalg.det(U)
+    U = U / det**(1 / U.shape[0])
+
+    return U

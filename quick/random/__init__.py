@@ -15,11 +15,17 @@
 __all__ = [
     "generate_random_state",
     "generate_random_unitary",
-    "generate_random_density_matrix"
+    "generate_random_density_matrix",
+    "generate_random_orthogonal_matrix",
+    "generate_random_special_orthogonal_matrix",
+    "generate_random_special_unitary_matrix"
 ]
 
 from quick.random.random import (
     generate_random_state,
     generate_random_unitary,
-    generate_random_density_matrix
+    generate_random_density_matrix,
+    generate_random_orthogonal_matrix,
+    generate_random_special_orthogonal_matrix,
+    generate_random_special_unitary_matrix
 )

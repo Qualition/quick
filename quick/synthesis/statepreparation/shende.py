@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from quick.circuit import Circuit
 from quick.primitives import Statevector
 from quick.synthesis.statepreparation import StatePreparation
-from quick.synthesis.statepreparation.statepreparation_utils import rotations_to_disentangle
+from quick.synthesis.statepreparation.utils import rotations_to_disentangle
 
 
 class Shende(StatePreparation):

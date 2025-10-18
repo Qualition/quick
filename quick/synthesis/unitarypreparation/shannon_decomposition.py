@@ -29,7 +29,7 @@ from typing import SupportsIndex, TYPE_CHECKING
 import quick
 if TYPE_CHECKING:
     from quick.circuit import Circuit
-from quick.circuit.circuit_utils import decompose_multiplexor_rotations
+from quick.circuit.utils import decompose_multiplexor_rotations
 from quick.predicates import is_hermitian_matrix
 from quick.primitives import Operator
 from quick.synthesis.unitarypreparation import UnitaryPreparation

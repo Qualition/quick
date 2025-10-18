@@ -343,7 +343,7 @@ class TestUniformlyControlledGates:
         `multiplexor_simplification` : bool, optional, default=True
             Determines if the multiplexor is simplified.
         """
-        from quick.circuit.circuit_utils import (
+        from quick.circuit.utils import (
             extract_single_qubits_and_diagonal,
             simplify
         )

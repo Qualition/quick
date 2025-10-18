@@ -40,7 +40,7 @@ import quimb.tensor as qtn # type: ignore
 
 if TYPE_CHECKING:
     from quick.backend import Backend
-from quick.circuit.circuit_utils import (
+from quick.circuit.utils import (
     multiplexed_rz_angles,
     decompose_multiplexor_rotations,
     extract_single_qubits_and_diagonal,
@@ -5333,29 +5333,7 @@ class Circuit(ABC):
         -----
         >>> circuit.get_depth()
         """
-        circuit = self.copy()
-
-        # Transpile the circuit to both simplify and optimize it
-        circuit.transpile()
-
-        # Get the depth of the circuit
-        depth = circuit.get_dag().get_depth()
-
-        return depth
-
-    def get_width(self) -> int:
-        """ Get the width of the circuit.
-
-        Returns
-        -------
-        `width` : int
-            The width of the circuit.
-
-        Usage
-        -----
-        >>> circuit.get_width()
-        """
-        return self.num_qubits
+        return self.get_dag().get_depth()
 
     @abstractmethod
     def get_unitary(self) -> NDArray[np.complex128]:

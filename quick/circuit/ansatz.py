@@ -48,7 +48,7 @@ class Ansatz:
 
     ```python
     from quick.circuit import Ansatz, QiskitCircuit
-    from quick.circuit.circuit_utils import reshape, flatten
+    from quick.circuit.utils import reshape, flatten
     from quick.random import generate_random_state
     from scipy.optimize import minimize
 

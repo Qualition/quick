@@ -29,10 +29,10 @@ from typing import Literal, SupportsIndex, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from quick.circuit import Circuit
-from quick.circuit.circuit_utils import extract_single_qubits_and_diagonal
+from quick.circuit.utils import extract_single_qubits_and_diagonal
 from quick.primitives import Statevector
 from quick.synthesis.statepreparation import StatePreparation
-from quick.synthesis.statepreparation.statepreparation_utils import (
+from quick.synthesis.statepreparation.utils import (
     a,
     b,
     k_s,

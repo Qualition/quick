@@ -650,33 +650,14 @@ class TestCircuitBase:
         # Define the `quick.circuit.Circuit` instance
         circuit = circuit_framework(4)
 
-        # Apply the MCX gate
         circuit.MCX([0, 1], [2, 3])
 
-        # Get the depth of the circuit, and ensure it is correct
+        assert circuit.get_depth() == 1
+
+        circuit.transpile()
         depth = circuit.get_depth()
 
         assert depth == 25
-
-    @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
-    def test_get_width(
-            self,
-            circuit_framework: type[Circuit]
-        ) -> None:
-        """ Test the width of the circuit.
-
-        Parameters
-        ----------
-        `circuit_framework`: type[quick.circuit.Circuit]
-            The circuit framework to test.
-        """
-        # Define the `quick.circuit.Circuit` instance
-        circuit = circuit_framework(4)
-
-        # Get the width of the circuit, and ensure it is correct
-        width = circuit.get_width()
-
-        assert width == 4
 
     @pytest.mark.parametrize("circuit_framework", CIRCUIT_FRAMEWORKS)
     def test_get_instructions(

@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from quick.circuit import Circuit
 from quick.primitives import Statevector
 from quick.synthesis.statepreparation import StatePreparation
-from quick.synthesis.statepreparation.statepreparation_utils import (
+from quick.synthesis.statepreparation.utils import (
     compute_alpha_y, compute_alpha_z, compute_control_indices, compute_m
 )
 

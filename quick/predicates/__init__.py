@@ -17,6 +17,11 @@ __all__ = [
     "is_normalized",
     "is_statevector",
     "is_square_matrix",
+    "is_orthogonal_matrix",
+    "is_real_matrix",
+    "is_special_matrix",
+    "is_special_orthogonal_matrix",
+    "is_special_unitary_matrix",
     "is_diagonal_matrix",
     "is_symmetric_matrix",
     "is_identity_matrix",
@@ -24,7 +29,10 @@ __all__ = [
     "is_hermitian_matrix",
     "is_positive_semidefinite_matrix",
     "is_isometry",
-    "is_density_matrix"
+    "is_density_matrix",
+    "is_product_matrix",
+    "is_locally_equivalent",
+    "is_supercontrolled"
 ]
 
 from quick.predicates.predicates import (
@@ -32,6 +40,11 @@ from quick.predicates.predicates import (
     is_normalized,
     is_statevector,
     is_square_matrix,
+    is_orthogonal_matrix,
+    is_real_matrix,
+    is_special_matrix,
+    is_special_orthogonal_matrix,
+    is_special_unitary_matrix,
     is_diagonal_matrix,
     is_symmetric_matrix,
     is_identity_matrix,
@@ -39,5 +52,8 @@ from quick.predicates.predicates import (
     is_hermitian_matrix,
     is_positive_semidefinite_matrix,
     is_isometry,
-    is_density_matrix
+    is_density_matrix,
+    is_product_matrix,
+    is_locally_equivalent,
+    is_supercontrolled
 )
