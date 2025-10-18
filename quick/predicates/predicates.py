@@ -168,7 +168,7 @@ def is_square_matrix(matrix: NDArray[np.complex128]) -> bool:
         return False
     shape = matrix.shape
     return bool(shape[0] == shape[1])
- 
+
 def is_orthogonal_matrix(
         matrix: NDArray[np.complex128],
         rtol: float = RTOL_DEFAULT,

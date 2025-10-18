@@ -142,7 +142,7 @@ class TestOperator:
         unitary = np.array(unitary_group.rvs(8)).astype(complex)
         operator = Operator(unitary)
         control_operator = operator.control(2)
-        
+
         op_circuit = QiskitCircuit(3)
         op_circuit.unitary(unitary, [0, 1, 2])
         checker_circuit = op_circuit.control(2)
