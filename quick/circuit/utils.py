@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 __all__ = [
+    "const"
     "decompose_multiplexor_rotations",
     "multiplexed_rz_angles",
     "extract_uvr_matrices",
@@ -31,6 +32,10 @@ __all__ = [
 
 import numpy as np
 from numpy.typing import NDArray
+
+
+def const(x):
+    return lambda _angles: x
 
 """ Constants for decomposing multiplexed RZ gates from Bergholm et al.
 These are the (0, 0) and (1, 1) elements of the RZ gate matrix with angle -pi/2

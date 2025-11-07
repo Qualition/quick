@@ -159,8 +159,6 @@ class Circuit(ABC):
         The stack of the circuit log. Used for logging gate definitions.
     `global_phase` : float
         The global phase of the circuit.
-    `process_gate_params_flag` : bool
-        The flag to process the gate parameters.
 
     Raises
     ------
@@ -169,6 +167,8 @@ class Circuit(ABC):
     ValueError
         - Number of qubits must be greater than 0.
     """
+    gate_mapping: dict[str, Callable] = {}
+
     def __init__(
             self,
             num_qubits: int
@@ -183,12 +183,10 @@ class Circuit(ABC):
 
         self.num_qubits = num_qubits
         self.circuit: Any
-        self.gate_mapping: dict[str, Callable] = self._define_gate_mapping()
         self.measured_qubits: set[int] = set()
         self.circuit_log: list[dict] = []
         self.stack: list[list[dict]] = [self.circuit_log]
         self.global_phase: float = 0
-        self.process_gate_params_flag: bool = True
 
     def _convert_param_type(
             self,
@@ -353,14 +351,12 @@ class Circuit(ABC):
                 value = [self._validate_single_angle(angle) for angle in value]
 
                 if all(angle == 0 for angle in value):
-                    # Indicate no operation needed
                     return None
 
             else:
                 value = self._validate_single_angle(value)
 
                 if value == 0:
-                    # Indicate no operation needed
                     return None
 
         return value
@@ -368,7 +364,8 @@ class Circuit(ABC):
     def process_gate_params(
             self,
             gate: str,
-            params: dict
+            params: dict,
+            fast_append: bool = False
         ) -> dict | None:
         """ Process the gate parameters for the circuit.
 
@@ -378,6 +375,10 @@ class Circuit(ABC):
             The gate to apply to the circuit.
         `params` : dict
             The parameters of the gate.
+        `fast_append` : bool, optional, default=False
+            If True, append the gate to the circuit log without validation.
+            This is useful for internal methods that already validate
+            the parameters.
 
         Returns
         -------
@@ -399,45 +400,41 @@ class Circuit(ABC):
         -----
         >>> gate = self.process_gate_params(gate="X", params={"qubit_indices": 0})
         """
-        if not self.process_gate_params_flag:
-            return None
-
         # Remove the "self" key from the dictionary to avoid the inclusion of str(circuit)
         # in the circuit log
         params.pop("self", None)
 
-        qubit_indices = []
+        if not fast_append:
+            qubit_indices = []
 
-        for name, value in params.items():
-            value = self._convert_param_type(value)
-            value = self._validate_qubit_index(name, value)
+            for name, value in params.items():
+                value = self._convert_param_type(value)
+                value = self._validate_qubit_index(name, value)
 
-            if value is None:
-                continue
+                if value is None:
+                    continue
 
-            if name in ALL_QUBIT_KEYS:
-                qubit_indices.append(value) if isinstance(value, int) else qubit_indices.extend(value)
+                if name in ALL_QUBIT_KEYS:
+                    qubit_indices.append(value) if isinstance(value, int) else qubit_indices.extend(value)
 
-            value = self._validate_angle(name, value)
+                value = self._validate_angle(name, value)
 
-            # Indicate no operation needed
-            if value is None:
-                return None
+                if value is None:
+                    return None
 
-            params[name] = value
+                params[name] = value
 
-        if len(set(qubit_indices)) != len(qubit_indices):
-            raise ValueError(
-                "Qubit indices must be unique. "
-                f"Received {qubit_indices} instead."
-            )
+            if len(set(qubit_indices)) != len(qubit_indices):
+                raise ValueError(
+                    "Qubit indices must be unique. "
+                    f"Received {qubit_indices} instead."
+                )
 
         # Given the control state affects the circuit by adding X gates to
         # 0 valued control qubits, we don't need to include the control state
         # in the gate definition
         params.pop("control_state", None)
 
-        # Add the gate to the circuit log
         gate_dict = {"gate": gate, **params, "definition": []}
         self.stack[-1].append(gate_dict)
 
@@ -468,8 +465,6 @@ class Circuit(ABC):
         >>>     with self.decompose_last():
         >>>         self.X(qubit_indices)
         """
-        # If the gate is parameterized, and its rotation is effectively zero, return
-        # as no operation is needed
         if gate is None:
             yield
             return
@@ -535,21 +530,6 @@ class Circuit(ABC):
         finally:
             if control_state_bits:
                 self.X(control_state_bits)
-
-    @staticmethod
-    @abstractmethod
-    def _define_gate_mapping() -> dict[str, Callable]:
-        """ Define the gate mapping for the circuit.
-
-        Notes
-        -----
-        The gate mapping is defined for each QC framework, and is meant to be used internally.
-
-        Returns
-        -------
-        `gate_mapping` : dict[str, Callable]
-            The mapping of the gates to the circuit.
-        """
 
     @abstractmethod
     def _gate_mapping(

@@ -30,6 +30,7 @@ from cirq.ops import Rx, Ry, Rz, X, Y, Z, H, S, T, I
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit import Circuit
+from quick.circuit.utils import const
 from quick.circuit.circuit import GATES
 
 
@@ -94,8 +95,6 @@ class CirqCircuit(Circuit):
         The circuit log.
     `global_phase` : float
         The global phase of the circuit.
-    `process_gate_params_flag` : bool
-        The flag to process the gate parameters.
 
     Raises
     ------
@@ -108,6 +107,23 @@ class CirqCircuit(Circuit):
     -----
     >>> circuit = CirqCircuit(num_qubits=2)
     """
+    gate_mapping: dict[str, Callable] = {
+        "I": const(I),
+        "X": const(X),
+        "Y": const(Y),
+        "Z": const(Z),
+        "H": const(H),
+        "S": const(S),
+        "Sdg": const(S**-1),
+        "T": const(T),
+        "Tdg": const(T**-1),
+        "RX": lambda angles: Rx(rads=angles[0]),
+        "RY": lambda angles: Ry(rads=angles[0]),
+        "RZ": lambda angles: Rz(rads=angles[0]),
+        "Phase": lambda angles: cirq.ZPowGate(exponent=angles[0]/np.pi),
+        "U3": lambda angles: U3(angles)
+    }
+
     def __init__(
             self,
             num_qubits: int
@@ -125,35 +141,6 @@ class CirqCircuit(Circuit):
         self.circuit: cirq.Circuit = cirq.Circuit()
         for i in range(self.num_qubits):
             self.circuit.append(I(self.qr[i]))
-
-    @staticmethod
-    def _define_gate_mapping() -> dict[str, Callable]:
-        # Define lambda factory for non-parameterized gates
-        def const(x):
-            return lambda _angles: x
-
-        # Note that quick only uses U3, CX, and Global Phase gates and constructs the other gates
-        # by performing decomposition
-        # However, if the user wants to override the decomposition and use the native gates, they
-        # can do so by using the below gate mapping
-        gate_mapping = {
-            "I": const(I),
-            "X": const(X),
-            "Y": const(Y),
-            "Z": const(Z),
-            "H": const(H),
-            "S": const(S),
-            "Sdg": const(S**-1),
-            "T": const(T),
-            "Tdg": const(T**-1),
-            "RX": lambda angles: Rx(rads=angles[0]),
-            "RY": lambda angles: Ry(rads=angles[0]),
-            "RZ": lambda angles: Rz(rads=angles[0]),
-            "Phase": lambda angles: cirq.ZPowGate(exponent=angles[0]/np.pi),
-            "U3": lambda angles: U3(angles)
-        }
-
-        return gate_mapping
 
     def _gate_mapping(
             self,

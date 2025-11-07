@@ -31,6 +31,7 @@ from quimb.gen.operators import ncontrolled_gate as control # type: ignore
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit import Circuit
+from quick.circuit.utils import const
 from quick.circuit.circuit import GATES
 
 
@@ -68,8 +69,6 @@ class QuimbCircuit(Circuit):
         The circuit log.
     `global_phase` : float
         The global phase of the circuit.
-    `process_gate_params_flag` : bool
-        The flag to process the gate parameters.
 
     Raises
     ------
@@ -82,6 +81,23 @@ class QuimbCircuit(Circuit):
     -----
     >>> circuit = CirqCircuit(num_qubits=2)
     """
+    gate_mapping: dict[str, Callable] = {
+        "I": const(I),
+        "X": const(X),
+        "Y": const(Y),
+        "Z": const(Z),
+        "H": const(H),
+        "S": const(S),
+        "Sdg": const(U3(0, 0, -np.pi/2)),
+        "T": const(T),
+        "Tdg": const(U3(0, 0, -np.pi/4)),
+        "RX": lambda angles: RX(angles[0]),
+        "RY": lambda angles: RY(angles[0]),
+        "RZ": lambda angles: RZ(angles[0]),
+        "Phase": lambda angles: U3(0, 0, angles[0]),
+        "U3": lambda angles: U3(*angles)
+    }
+
     def __init__(
             self,
             num_qubits: int
@@ -95,35 +111,6 @@ class QuimbCircuit(Circuit):
         # unitary accounts for all qubits, including idle ones
         for i in range(num_qubits):
             self.circuit.apply_gate(I, i)
-
-    @staticmethod
-    def _define_gate_mapping() -> dict[str, Callable]:
-        # Define lambda factory for non-parameterized gates
-        def const(x):
-            return lambda _angles: x
-
-        # Note that quick only uses U3, CX, and Global Phase gates and constructs the other gates
-        # by performing decomposition
-        # However, if the user wants to override the decomposition and use the native gates, they
-        # can do so by using the below gate mapping
-        gate_mapping = {
-            "I": const(I),
-            "X": const(X),
-            "Y": const(Y),
-            "Z": const(Z),
-            "H": const(H),
-            "S": const(S),
-            "Sdg": const(U3(0, 0, -np.pi/2)),
-            "T": const(T),
-            "Tdg": const(U3(0, 0, -np.pi/4)),
-            "RX": lambda angles: RX(angles[0]),
-            "RY": lambda angles: RY(angles[0]),
-            "RZ": lambda angles: RZ(angles[0]),
-            "Phase": lambda angles: U3(0, 0, angles[0]),
-            "U3": lambda angles: U3(*angles)
-        }
-
-        return gate_mapping
 
     def _gate_mapping(
             self,

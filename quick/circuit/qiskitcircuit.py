@@ -39,6 +39,7 @@ from qiskit.quantum_info import Statevector, Operator # type: ignore
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit import Circuit
+from quick.circuit.utils import const
 from quick.circuit.circuit import GATES
 
 
@@ -78,8 +79,6 @@ class QiskitCircuit(Circuit):
         The circuit log.
     `global_phase` : float
         The global phase of the circuit.
-    `process_gate_params_flag` : bool
-        The flag to process the gate parameters.
 
     Raises
     ------
@@ -92,6 +91,23 @@ class QiskitCircuit(Circuit):
     -----
     >>> circuit = QiskitCircuit(num_qubits=2)
     """
+    gate_mapping: dict[str, Callable] = {
+        "I": const(IGate()),
+        "X": const(XGate()),
+        "Y": const(YGate()),
+        "Z": const(ZGate()),
+        "H": const(HGate()),
+        "S": const(SGate()),
+        "Sdg": const(SdgGate()),
+        "T": const(TGate()),
+        "Tdg": const(TdgGate()),
+        "RX": lambda angles: RXGate(angles[0]),
+        "RY": lambda angles: RYGate(angles[0]),
+        "RZ": lambda angles: RZGate(angles[0]),
+        "Phase": lambda angles: PhaseGate(angles[0]),
+        "U3": lambda angles: U3Gate(theta=angles[0], phi=angles[1], lam=angles[2])
+    }
+
     def __init__(
             self,
             num_qubits: int
@@ -102,36 +118,6 @@ class QiskitCircuit(Circuit):
         qr = QuantumRegister(self.num_qubits)
         cr = ClassicalRegister(self.num_qubits)
         self.circuit: QuantumCircuit = QuantumCircuit(qr, cr)
-        self.gate_mapping = self._define_gate_mapping()
-
-    @staticmethod
-    def _define_gate_mapping() -> dict[str, Callable]:
-        # Define lambda factory for non-parameterized gates
-        def const(x):
-            return lambda _angles: x
-
-        # Note that quick only uses U3, CX, and Global Phase gates and constructs the other gates
-        # by performing decomposition
-        # However, if the user wants to override the decomposition and use the native gates, they
-        # can do so by using the below gate mapping
-        gate_mapping = {
-            "I": const(IGate()),
-            "X": const(XGate()),
-            "Y": const(YGate()),
-            "Z": const(ZGate()),
-            "H": const(HGate()),
-            "S": const(SGate()),
-            "Sdg": const(SdgGate()),
-            "T": const(TGate()),
-            "Tdg": const(TdgGate()),
-            "RX": lambda angles: RXGate(angles[0]),
-            "RY": lambda angles: RYGate(angles[0]),
-            "RZ": lambda angles: RZGate(angles[0]),
-            "Phase": lambda angles: PhaseGate(angles[0]),
-            "U3": lambda angles: U3Gate(theta=angles[0], phi=angles[1], lam=angles[2])
-        }
-
-        return gate_mapping
 
     def _gate_mapping(
             self,

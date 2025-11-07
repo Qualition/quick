@@ -32,6 +32,7 @@ from pytket.extensions.qiskit import AerBackend, AerStateBackend # type: ignore
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit import Circuit
+from quick.circuit.utils import const
 from quick.circuit.circuit import GATES
 
 # Constants
@@ -74,8 +75,6 @@ class TKETCircuit(Circuit):
         The circuit log.
     `global_phase` : float
         The global phase of the circuit.
-    `process_gate_params_flag` : bool
-        The flag to process the gate parameters.
 
     Raises
     ------
@@ -88,6 +87,23 @@ class TKETCircuit(Circuit):
     -----
     >>> circuit = TKETCircuit(num_qubits=2)
     """
+    gate_mapping: dict[str, Callable] = {
+        "I": const((OpType.noop,)),
+        "X": const((OpType.X,)),
+        "Y": const((OpType.Y,)),
+        "Z": const((OpType.Z,)),
+        "H": const((OpType.H,)),
+        "S": const((OpType.S,)),
+        "Sdg": const((OpType.Sdg,)),
+        "T": const((OpType.T,)),
+        "Tdg": const((OpType.Tdg,)),
+        "RX": lambda angles: (OpType.Rx, angles[0]/PI),
+        "RY": lambda angles: (OpType.Ry, angles[0]/PI),
+        "RZ": lambda angles: (OpType.Rz, angles[0]/PI),
+        "Phase": lambda angles: (OpType.U1, angles[0]/PI),
+        "U3": lambda angles: (OpType.U3, [angles[i]/PI for i in range(3)])
+    }
+
     def __init__(
             self,
             num_qubits: int
@@ -96,35 +112,6 @@ class TKETCircuit(Circuit):
         super().__init__(num_qubits=num_qubits)
 
         self.circuit: TKCircuit = TKCircuit(self.num_qubits, self.num_qubits)
-
-    @staticmethod
-    def _define_gate_mapping() -> dict[str, Callable]:
-        # Define lambda factory for non-parameterized gates
-        def const(x):
-            return lambda _angles: x
-
-        # Note that quick only uses U3, CX, and Global Phase gates and constructs the other gates
-        # by performing decomposition
-        # However, if the user wants to override the decomposition and use the native gates, they
-        # can do so by using the below gate mapping
-        gate_mapping = {
-            "I": const((OpType.noop,)),
-            "X": const((OpType.X,)),
-            "Y": const((OpType.Y,)),
-            "Z": const((OpType.Z,)),
-            "H": const((OpType.H,)),
-            "S": const((OpType.S,)),
-            "Sdg": const((OpType.Sdg,)),
-            "T": const((OpType.T,)),
-            "Tdg": const((OpType.Tdg,)),
-            "RX": lambda angles: (OpType.Rx, angles[0]/PI),
-            "RY": lambda angles: (OpType.Ry, angles[0]/PI),
-            "RZ": lambda angles: (OpType.Rz, angles[0]/PI),
-            "Phase": lambda angles: (OpType.U1, angles[0]/PI),
-            "U3": lambda angles: (OpType.U3, [angles[i]/PI for i in range(3)])
-        }
-
-        return gate_mapping
 
     def _gate_mapping(
             self,

@@ -30,6 +30,7 @@ import pennylane as qml # type: ignore
 if TYPE_CHECKING:
     from quick.backend import Backend
 from quick.circuit import Circuit
+from quick.circuit.utils import const
 from quick.circuit.circuit import GATES
 
 
@@ -71,8 +72,6 @@ class PennylaneCircuit(Circuit):
         The circuit log.
     `global_phase` : float
         The global phase of the circuit.
-    `process_gate_params_flag` : bool
-        The flag to process the gate parameters.
 
     Raises
     ------
@@ -85,6 +84,23 @@ class PennylaneCircuit(Circuit):
     -----
     >>> circuit = PennylaneCircuit(num_qubits=2)
     """
+    gate_mapping: dict[str, Callable] = {
+        "I": const(qml.Identity(0).matrix()),
+        "X": const(qml.PauliX(0).matrix()),
+        "Y": const(qml.PauliY(0).matrix()),
+        "Z": const(qml.PauliZ(0).matrix()),
+        "H": const(qml.Hadamard(wires=0).matrix()),
+        "S": const(qml.S(wires=0).matrix()),
+        "Sdg": const(qml.adjoint(qml.S(0)).matrix()), # type: ignore
+        "T": const(qml.T(wires=0).matrix()),
+        "Tdg": const(qml.adjoint(qml.T(0)).matrix()), # type: ignore
+        "RX": lambda angles: qml.RX(phi=angles[0], wires=0).matrix(), # type: ignore
+        "RY": lambda angles: qml.RY(phi=angles[0], wires=0).matrix(), # type: ignore
+        "RZ": lambda angles: qml.RZ(phi=angles[0], wires=0).matrix(), # type: ignore
+        "Phase": lambda angles: qml.PhaseShift(phi=angles[0], wires=0).matrix(), # type: ignore
+        "U3": lambda angles: qml.U3(theta=angles[0], phi=angles[1], delta=angles[2], wires=0).matrix() # type: ignore
+    }
+
     def __init__(
             self,
             num_qubits: int
@@ -94,35 +110,6 @@ class PennylaneCircuit(Circuit):
 
         self.device = qml.device("default.qubit", wires=self.num_qubits)
         self.circuit: list[qml.Operation] = []
-
-    @staticmethod
-    def _define_gate_mapping() -> dict[str, Callable]:
-        # Define lambda factory for non-parameterized gates
-        def const(x):
-            return lambda _angles: x
-
-        # Note that quick only uses U3, CX, and Global Phase gates and constructs the other gates
-        # by performing decomposition
-        # However, if the user wants to override the decomposition and use the native gates, they
-        # can do so by using the below gate mapping
-        gate_mapping = {
-            "I": const(qml.Identity(0).matrix()),
-            "X": const(qml.PauliX(0).matrix()),
-            "Y": const(qml.PauliY(0).matrix()),
-            "Z": const(qml.PauliZ(0).matrix()),
-            "H": const(qml.Hadamard(wires=0).matrix()),
-            "S": const(qml.S(wires=0).matrix()),
-            "Sdg": const(qml.adjoint(qml.S(0)).matrix()), # type: ignore
-            "T": const(qml.T(wires=0).matrix()),
-            "Tdg": const(qml.adjoint(qml.T(0)).matrix()), # type: ignore
-            "RX": lambda angles: qml.RX(phi=angles[0], wires=0).matrix(), # type: ignore
-            "RY": lambda angles: qml.RY(phi=angles[0], wires=0).matrix(), # type: ignore
-            "RZ": lambda angles: qml.RZ(phi=angles[0], wires=0).matrix(), # type: ignore
-            "Phase": lambda angles: qml.PhaseShift(phi=angles[0], wires=0).matrix(), # type: ignore
-            "U3": lambda angles: qml.U3(theta=angles[0], phi=angles[1], delta=angles[2], wires=0).matrix() # type: ignore
-        }
-
-        return gate_mapping
 
     def _gate_mapping(
             self,
