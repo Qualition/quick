@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 __all__ = [
-    "const"
+    "const",
     "decompose_multiplexor_rotations",
     "multiplexed_rz_angles",
     "extract_uvr_matrices",
@@ -567,5 +567,6 @@ def reshape(
             subtree.append(flattened[i])
 
         result_index += dim # type: ignore
+
 
     return reshaped
